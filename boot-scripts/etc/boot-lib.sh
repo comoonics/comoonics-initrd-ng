@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.11 2004-09-26 14:56:10 marc Exp $
+# $Id: boot-lib.sh,v 1.12 2004-09-27 07:29:41 marc Exp $
 #
 # @(#)$File$
 #
@@ -205,14 +205,35 @@ function generateRedHatIfCfg() {
    return 0
 }
 
+function usage() {
+    echo "$0 [-R] [-s|S] [-d|D] [-h]"
+    echo -e "\t-R: non recursive for nfs-mounts (experimental or obsolete)"
+    echo -e "\t-s|S: set stepmode (s) or unset stepmode (S)"
+    echo -e "\t-d|D: set debugmode (d) or unset stepmode (D)"
+    echo -e "\t-h:   this usage."
+}
+
 function check_cmd_params() {
-    while getopts "R" Option
+    while getopts "Rsd" Option
       do
       case $Option in
 	  R ) # running non recursive for nfs-mounts
 	      non_recursive=1
 	      ;;
+          s) # stepmode
+              stepmode=1
+	      ;;
+	  d) # debug
+	      debug=1
+	      ;;
+	  h) # help
+	      usage
+	      exit 0
+	      ;;
 	  *)
+	      echo "Wrong option."
+	      usage
+	      exit 1
 	      ;;
       esac
     done
@@ -556,7 +577,10 @@ function add_scsi_device() {
 }
 
 # $Log: boot-lib.sh,v $
-# Revision 1.11  2004-09-26 14:56:10  marc
+# Revision 1.12  2004-09-27 07:29:41  marc
+# check_cmd_params and usage
+#
+# Revision 1.11  2004/09/26 14:56:10  marc
 # better ip2Config
 #
 # Revision 1.10  2004/09/26 14:41:28  marc
