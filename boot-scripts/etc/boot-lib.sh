@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.5 2004-09-08 16:12:53 marc Exp $
+# $Id: boot-lib.sh,v 1.6 2004-09-13 09:23:32 marc Exp $
 #
 # @(#)$File$
 #
@@ -154,7 +154,9 @@ function generateRedHatIfCfg() {
   if [ "$bootproto" != "dhcp" ]; then
      (echo "IPADDR=$ipAddr" && 
 	 if [ -n "$ipNetmask" ]; then echo "NETMASK=$ipNetmask"; fi) >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
-     (if [ -n "$ipGate" ]; then echo "GATEWAY=$ipGate"; fi ) >> ${__prefix}/etc/sysconfig/network
+     if [ -n "$ipGate" ]; then 
+	 echo "GATEWAY=$ipGate" >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
+     fi
    fi
    (echo "NETWORKING=yes" &&
     echo "HOSTNAME=$ipHostname") > ${__prefix}/etc/sysconfig/network
@@ -540,7 +542,10 @@ function add_scsi_device() {
 }
 
 # $Log: boot-lib.sh,v $
-# Revision 1.5  2004-09-08 16:12:53  marc
+# Revision 1.6  2004-09-13 09:23:32  marc
+# fixed the default gw in generateRedHatIfCfg()
+#
+# Revision 1.5  2004/09/08 16:12:53  marc
 # first stable version vor autoconfigure from cca
 #
 # Revision 1.4  2004/08/23 08:47:19  marc
