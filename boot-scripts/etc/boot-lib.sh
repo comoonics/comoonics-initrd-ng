@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.18 2005-01-03 08:29:10 marc Exp $
+# $Id: boot-lib.sh,v 1.19 2005-01-05 10:58:02 marc Exp $
 #
 # @(#)$File$
 #
@@ -397,7 +397,7 @@ function pivotRoot() {
     if [ $critical -eq 0 ]; then
 	if [ -n "$tmpfix" ]; then 
 	    echo_local "6. Setting up tmp..."
-	    exec_local "mkfs.ext2 -L tmp /dev/ram1 && mount /dev/ram1 /tmp"
+	    exec_local createTemp /dev/ram1
 	fi
 
 	echo_local "7. Cleaning up..."
@@ -453,8 +453,8 @@ function chRoot() {
 	exec_local umount /proc
 	mtab=$(cat /etc/mtab 2>&1)
 	echo_local_debug "7.1 mtab: $mtab"
-	echo_local "7.2 Stopping syslogd..."
-        exec_local stop_service "syslogd" /initrd
+#	echo_local "7.2 Stopping syslogd..."
+#        exec_local stop_service "syslogd" /initrd
 	echo_local "8. Starting init-process (exec /sbin/init < /dev/console 1>/dev/console 2>&1)..."
 	exec chroot . /sbin/init < /dev/console 1>/dev/console 2>&1
 	echo_local "Error starting init-process falling back to bash."
@@ -491,6 +491,18 @@ function echo_local() {
 function echo_local_debug() {
    if [ ! -z "$debug" ]; then
      echo ${*:0:$#-1} "${*:$#}"
+     echo ${*:0:$#-1} "${*:$#}" >> $bootlog
+     [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
+   fi
+}
+function error_local() {
+   echo ${*:0:$#-1} "${*:$#}" >&2
+   echo ${*:0:$#-1} "${*:$#}" >> $bootlog
+   [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
+}
+function error_local_debug() {
+   if [ ! -z "$debug" ]; then
+     echo ${*:0:$#-1} "${*:$#}" >&2
      echo ${*:0:$#-1} "${*:$#}" >> $bootlog
      [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
    fi
@@ -619,7 +631,11 @@ function add_scsi_device() {
 }
 
 # $Log: boot-lib.sh,v $
-# Revision 1.18  2005-01-03 08:29:10  marc
+# Revision 1.19  2005-01-05 10:58:02  marc
+# added error_local and error_local_debug
+# syslog is only stopped withing pivotroot.
+#
+# Revision 1.18  2005/01/03 08:29:10  marc
 # first offical rpm version
 # - added boot-parm to switch between chroot/pivotroot default pivotroot
 # - added function to stop a service
