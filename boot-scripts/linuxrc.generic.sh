@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.13 2004-09-27 07:36:09 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.14 2005-01-03 08:32:21 marc Exp $
 #
 # @(#)$File$
 #
@@ -32,7 +32,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.13 $ $Date: 2004-09-27 07:36:09 $'
+echo_local 'Internal Version $Revision: 1.14 $ $Date: 2005-01-03 08:32:21 $'
 
 initBootProcess
 
@@ -55,6 +55,7 @@ echo_local_debug "bootpart: $bootpart"
 echo_local_debug "ip: $ipConfig"
 echo_local_debug "tmpfix: $tmpfix"
 echo_local_debug "iscsi: $iscsi"
+echo_local_debug "chroot: $chroot"
 echo_local_debug "*****************************"
 x=`cat /proc/version`; 
 KERNEL_VERSION=`expr "$x" : 'Linux version \([^ ]*\)'`
@@ -78,10 +79,17 @@ if [ -n "$ipConfig" ]; then
   else
       NETDEV=$(getPosFromIPString 6 $ipConfig)
       if [ -z "$NETDEV" ]; then NETDEV=eth0; fi
-      echo_local -n "2.1 Configuring network with bootparm-config ($ipConfig)"
-      exec_local ip2Config $ipConfig
-      echo_local -n "2.1.3 Powering up the network for interface ($NETDEV)..."
-      exec_local my_ifup $NETDEV $ipConfig
+      if [ -z "$netdevs" ]; then 
+	  netdevs=$NETDEV
+      else
+	  netdevs=$(echo "$netdevs:$NETDEV" | tr ":" "\n" | sort -u | tr "\n" " ")
+      fi
+      for _netdev in $netdevs; do
+	  echo_local -n "2.1 Configuring network with bootparm-config ($ipConfig)"
+	  exec_local ip2Config $ipConfig
+	  echo_local -n "2.1.3 Powering up the network for interface ($_netdev)..."
+	  exec_local my_ifup $_netdev $ipConfig
+      done
   fi
 else
   for dev in $NETCONFIG; do
@@ -136,7 +144,7 @@ exec_local_debug /bin/hostname
 echo_local_debug "*****************************"
 step
 if [ ! -e /mnt/newroot ]; then
-	mkdir -p /mnt/newroot
+    mkdir -p /mnt/newroot
 fi
 
 source /linuxrc.part.${bootpart}.sh
