@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.1 2004-07-31 11:24:44 marc Exp $
+# $Id: gfs-lib.sh,v 1.2 2004-08-11 16:53:52 marc Exp $
 #
 # @(#)$File$
 #
@@ -87,7 +87,66 @@ cca_get_lockservers() {
    ccs_read string cluster.ccs cluster/lock_gulm
 }
 
+function cca_autoconfigure_network {
+    local ipconfig=$1
+    local netdev=$2
+    mac=$(ifconfig $netdev | grep HWaddr | awk '{print $5;}')
+    hostname=$(ccs_read file nodes.ccs | awk -v mac=$mac '
+/com_hostname=".+"/ {
+   match($1, /com_hostname="(.+)"/, hn); hostname=hn[1]; print "Found hostname ",hostname;
+}
+/com_hostname[[:space:]]+=".+"/{
+   match($2, /="(.+)"/, hn); hostname=hn[1];
+}
+/com_hostname[[:space:]]+=[[:space:]]".+"/{
+   match($3, /"(.+)"/, hn); hostname=hn[1];
+}
+
+/eth0_mac=\".+\"/ {
+   match($1, /mac="(.+)"/, mc);
+   if (tolower(mac) == tolower(mc[1])) {
+     print hostname;
+   }
+}
+/eth0_mac[[:space:]]+=\".+\"/{
+   match($2, /="(.+)"/, mc);
+   if (tolower(mac) == tolower(mc[1])) {
+     print hostname;
+   }
+}
+/eth0_mac[[:space:]]+=[[:space:]]+\".+\"/{
+   match($3, /"(.+)"/, mc);
+   if (tolower(mac) == tolower(mc[1])) {
+     print hostname;
+   }
+}
+')
+    ipcfg=$(ccs_read section nodes.ccs nodes/$hostname | grep "eth0" | awk -v hostname=$hostname -F '=' '
+function getValue(pre) {
+  match(pre, /"(.+)"/, val);
+  return val[1];
+}
+$1 ~ /eth0[[:space:]]/ {
+  ip=getValue($2);
+}
+$1 ~ /eth0_netmask[[:space:]]/ {
+  netmask=getValue($2);
+}
+$1 ~ /eth0_gateway[[:space:]]/ {
+  gateway=getValue($2);
+}
+END {
+  printf "%s::%s:%s:%s:eth0", ip, gateway, netmask, hostname;
+}
+'
+)
+    echo $ipcfg;
+}
+
 # $Log: gfs-lib.sh,v $
-# Revision 1.1  2004-07-31 11:24:44  marc
+# Revision 1.2  2004-08-11 16:53:52  marc
+# major enhancements concerning the cca-autoconfiguration
+#
+# Revision 1.1  2004/07/31 11:24:44  marc
 # initial revision
 #
