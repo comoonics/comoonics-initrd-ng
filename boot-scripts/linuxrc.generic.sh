@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.6 2004-08-13 15:53:21 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.7 2004-08-23 08:46:56 marc Exp $
 #
 # @(#)$File$
 #
@@ -29,7 +29,7 @@
 source /etc/boot-lib.sh
 
 echo_local "Starting ATIX initrd"
-echo_local 'Version $Revision: 1.6 $ $Date: 2004-08-13 15:53:21 $'
+echo_local 'Version $Revision: 1.7 $ $Date: 2004-08-23 08:46:56 $'
 
 initBootProcess
 
@@ -50,6 +50,7 @@ echo_local_debug "Stepmode: $stepmode"
 echo_local_debug "mount_opts: $mount_opts"
 echo_local_debug "bootpart: $bootpart"
 echo_local_debug "ip: $ipConfig"
+echo_local_debug "tmpfix: $tmpfix"
 echo_local_debug "*****************************"
 x=`cat /proc/version`; 
 KERNEL_VERSION=`expr "$x" : 'Linux version \([^ ]*\)'`
