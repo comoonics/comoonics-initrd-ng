@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.3 2004-08-11 16:52:02 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.4 2004-08-11 16:52:23 marc Exp $
 #
 # @(#)$File$
 #
@@ -24,7 +24,7 @@
 #         Should be the framework for all other functionalities as well.
 
 echo "Starting ATIX initrd"
-echo 'Version $Date: 2004-08-11 16:52:02 $'
+echo 'Version $Revision: 1.4 $ $Date: 2004-08-11 16:52:23 $'
 
 sleep 5 
 
