@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.9 2004-09-26 14:19:38 marc Exp $
+# $Id: boot-lib.sh,v 1.10 2004-09-26 14:41:28 marc Exp $
 #
 # @(#)$File$
 #
@@ -66,14 +66,48 @@ function getRelease() {
 function my_ifup() {
    local dev=$1
    local ipconfig=$2
-   echo_local "2.3.1.1 Loading module for $dev..."
+   echo_local "   Loading module for $dev..."
    exec_local modprobe $dev && sleep 2 && ifconfig $dev up 
    if [ $return_c -eq 0 ] && [ -n "$ipconfig" ] && [ "$ipconfig" != "skip" ]; then
        sleep 2
-       echo_local "2.3.1.2 Starting network configuration for $dev with config $ipconfig"
+       echo_local "   Starting network configuration for $dev with config $ipconfig"
        exec_local ifup $dev
+       echo_local "   Recreating network configuration for $dev"
+       exec_local ip2Config $ipConfig "\""$(getPosFromIPString 1, $ipconfig)"\""  "\""$(getPosFromIPString 3, $ipconfig)"\"" "\""$(getPosFromIPString 4, $ipconfig)"\"" "\""$(hostname -f)"\"" "\""$(getPosFromIPString 6, $1)"\""
    fi
    return $return_c
+}
+
+function ip2Config() {
+  if [ $# -eq 1 ]; then
+    local ipAddr=$(getPosFromIPString 1, $1)
+    local ipGate=$(getPosFromIPString 3, $1)
+    local ipNetmask=$(getPosFromIPString 4, $1)
+    local ipHostname=$(getPosFromIPString 5, $1)
+    local ipDevice=$(getPosFromIPString 6, $1)
+  else
+    local ipAddr=$1
+    local ipGate=$2
+    local ipNetmask=$3
+    local ipHostname=$4
+    local ipDevice=$5
+  fi
+
+  echo_local_debug "ip2Config($ipAddr, $ipGate, $ipNetmask, $ipHostname, $ipDevice)"
+  case `getShortRelease` in
+      "redhat")
+	  echo_local -n "Generating ifcfg for redhat ($ipAddr, $ipGate, $ipNetmask, $ipHostname, $ipDevice)..."
+	  exec_local generateRedHatIfCfg "$ipAddr" "$ipGate" "$ipNetmask" "$ipHostname" "$ipDevice"
+	  ;;
+      "SuSE")
+	  echo_local -n "Generating ifcfg for "`getShortRelease`" ($ipAddr, $ipGate, $ipNetmask, $ipHostname, $ipDevice)..."
+	  exec_local generateSuSEIfCfg "$ipAddr" "$ipGate" "$ipNetmask" "$ipHostname" "$ipDevice"
+	  ;;
+      *)
+	  echo "ERROR: Generic network-config not supported for distribution: "$(getRelease)
+	  return -1
+	  ;;
+  esac
 }
 
 function getPosFromIPString() {
@@ -164,9 +198,9 @@ function generateRedHatIfCfg() {
    if [ $(/bin/hostname) = "(none)" ] || [ $(/bin/hostname) = "localhost.localdomain" ] || [ $(/bin/hostname) = "localhost" ]; then 
        /bin/hostname $ipHostname; 
    fi
-   echo_local_debug "2.1.1 /etc/sysconfig/network"
+   echo_local_debug "   /etc/sysconfig/network"
    exec_local_debug cat /etc/sysconfig/network
-   echo_local_debug "2.1.2 /etc/sysconfig/network-scripts/ifcfg-${NETDEV}"
+   echo_local_debug "   /etc/sysconfig/network-scripts/ifcfg-${NETDEV}"
    exec_local_debug cat /etc/sysconfig/network-scripts/ifcfg-${NETDEV}
    return 0
 }
@@ -182,29 +216,6 @@ function check_cmd_params() {
 	      ;;
       esac
     done
-}
-
-function ip2Config() {
-  local ipAddr=$(getPosFromIPString 1, $1)
-  local ipGate=$(getPosFromIPString 3, $1)
-  local ipNetmask=$(getPosFromIPString 4, $1)
-  local ipHostname=$(getPosFromIPString 5, $1)
-  local ipDevice=$(getPosFromIPString 6, $1)
-  echo_local_debug "ip2Config($ipAddr, $ipGate, $ipNetmask, $ipHostname, $ipDevice)"
-  case `getShortRelease` in
-      "redhat")
-	  echo_local -n "Generating ifcfg for redhat ($ipAddr, $ipGate, $ipNetmask, $ipHostname, $ipDevice)..."
-	  exec_local generateRedHatIfCfg "$ipAddr" "$ipGate" "$ipNetmask" "$ipHostname" "$ipDevice"
-	  ;;
-      "SuSE")
-	  echo_local -n "Generating ifcfg for "`getShortRelease`" ($ipAddr, $ipGate, $ipNetmask, $ipHostname, $ipDevice)..."
-	  exec_local generateSuSEIfCfg "$ipAddr" "$ipGate" "$ipNetmask" "$ipHostname" "$ipDevice"
-	  ;;
-      *)
-	  echo "ERROR: Generic network-config not supported for distribution: "$(getRelease)
-	  return -1
-	  ;;
-  esac
 }
 
 function exec_nondefault_boot_source() {
@@ -545,7 +556,10 @@ function add_scsi_device() {
 }
 
 # $Log: boot-lib.sh,v $
-# Revision 1.9  2004-09-26 14:19:38  marc
+# Revision 1.10  2004-09-26 14:41:28  marc
+# changes to ip2config to generate the proper hostname on redhat.
+#
+# Revision 1.9  2004/09/26 14:19:38  marc
 # small bugfix
 #
 # Revision 1.8  2004/09/24 14:52:02  marc
