@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.8 2004-09-29 14:32:16 marc Exp $
+# $Id: gfs-lib.sh,v 1.9 2005-01-03 08:30:43 marc Exp $
 #
 # @(#)$File$
 #
@@ -25,7 +25,6 @@
 #    com-debug=...         If set debug info is output
 
 function getGFSParameters() {
-
 	echo_local "*********************************"
 	echo_local "Scanning for GFS parameters"
 	echo_local "*********************************"
@@ -35,7 +34,7 @@ function getGFSParameters() {
 	pool_cidev_name=`getBootParm poolcidev`
 	gfs_lock_method=`getBootParm lockmethod`
 	gnbd_server=`getBootParm gnbdserver`
-
+	chroot=`getBootParm chroot`
 }
 
 #
@@ -55,6 +54,7 @@ function getGFSMinorVersion() {
   print version[1];
 }'
 }
+
 
 # returns the first found cca
 # could be optimized a little bit with a given cca.
@@ -83,41 +83,75 @@ cca_get_node_role() {
    ccs_read string nodes.ccs nodes/$hostname/com_role
 }
 
+# syntax: cca_get_host_param name [default] [host]
+cca_get_node_param() {
+  local param=$1
+  local default=$2
+  local hostname=$3
+  [ -z "$hostname" ] && hostname=$(hostname)
+  value=$(ccs_read string nodes.ccs nodes/$hostname/$param 2>/dev/null)
+  if [ -z "$value" ]; then value=$default; fi
+  
+  echo $value
+}
+
+cca_get_syslog_server() {
+  cca_get_node_param com_syslog_server "$2" $1
+}
+
 cca_get_lockservers() {
    ccs_read string cluster.ccs cluster/lock_gulm
 }
 
-cca_make_hosts() {
-   ccs_read 
-}
-
 function cca_generate_hosts {
     local ccs_read="/opt/atix/comoonics_cs/ccs_fileread"
-    local nodes_file=$1
+    local cca_dir=$1
     local hosts_file=$2
 
     local ccs_cmd="/opt/atix/comoonics_cs/ccs_fileread"
 
-    if [ ! -e $nodes_file ]; then ccs_cmd="/opt/atix/comoonics_cs/ccs_read"; fi
+    if [ ! -d $cca_dir ]; then 
+	ccs_cmd="/opt/atix/comoonics_cs/ccs_read"; 
+    else
+	ccs_dir=$1"/"
+    fi
     if [ -n "$debug" ]; then set -x; fi
     cp -f $hosts_file $hosts_file.bak
     (cat $hosts_file.bak && \
-	$ccs_cmd $opts strings $nodes_file nodes/.*/ip_interfaces/eth[0-9] | awk -F= '
+	$ccs_cmd $opts strings ${cca_dir}nodes.ccs nodes/.*/ip_interfaces/eth[0-9] | awk -F= '
 /\s+/ { 
    match($1, /[^\/]+\/([^\/]+)\//, hostname);
    match($2, /"(.+)"/, ip); 
    print ip[1], hostname[1]; 
-}') | sort -u > $hosts_file
+}') | sort -u >> $hosts_file
     ret=$?
     if [ $? -ne 0 ]; then cp $hosts_file.bak $hosts_file; fi
     if [ -n "$debug" ]; then set +x; fi
     return $ret
 }
 
-function cca_autoconfigure_network {
-    local ipconfig=$1
+# returns all configured networkdevices from the cca serperted by " "
+function cca_get_netdevices {
+    local ccs_cmd="/opt/atix/comoonics_cs/ccs_fileread"
+    local cca_dir=$1
+
+    local hostname=$(cca_get_my_hostname $cca_dir)
+    local netdevs=$($ccs_cmd strings ${cca_dir}/nodes.ccs nodes/$hostname/ip_interfaces/eth[0-9]+ | awk -F= '{ 
+  match($1, /[^\/]+\/([^\/]+)$/, netdev)
+  print netdev[1]; 
+}') || return 1
+    if [ -n "$netdevs" ]; then
+	echo $netdevs
+    else
+	return 1
+    fi
+}
+
+#
+# gets for this very host the hostname (identified by the macaddress
+function cca_get_my_hostname {
     local netdev=$2
-    local cca_dir=$3
+    local cca_dir=$1
     local ccs_read="/opt/atix/comoonics_cs/ccs_fileread"
     if [ -z "$netdev" ]; then netdev="eth0"; fi
     local mac=$(ifconfig $netdev | grep HWaddr | awk '{print $5;}')
@@ -151,8 +185,27 @@ function cca_autoconfigure_network {
    }
 }
 ')
+    if [ -n "$hostname" ]; then 
+	echo $hostname
+	return 0
+    else
+	return 1
+    fi
+}
 
-    echo $($ccs_read string ${cca_dir}/nodes.ccs nodes/$hostname/eth0)"::"$($ccs_read string ${cca_dir}/nodes.ccs nodes/$hostname/eth0_gateway)":"$($ccs_read string ${cca_dir}/nodes.ccs nodes/$hostname/eth0_netmask)":$hostname"
+function cca_autoconfigure_network {
+  if [ -n "$debug" ]; then set -x; fi
+  local ipconfig=$1
+  local netdev=$2
+  local cca_dir=$3
+  local ccs_read="/opt/atix/comoonics_cs/ccs_fileread"
+  if [ -z "$netdev" ]; then netdev="eth0"; fi
+  local hostname=$(cca_get_my_hostname $cca_dir $netdev)
+  local ip_addr=$($ccs_read string ${cca_dir}/nodes.ccs nodes/$hostname/eth0) || (set+x; return 1)
+  local gateway=$($ccs_read string ${cca_dir}/nodes.ccs nodes/$hostname/eth0_gateway) || local gateway=""
+  local netmask=$($ccs_read string ${cca_dir}/nodes.ccs nodes/$hostname/eth0_netmask) || (set +x; return 1)
+  echo ${ip_addr}"::"${gateway}":"${netmask}":"${hostname}
+  if [ -n "$debug" ]; then set +x; fi
 }
 
 function copy_relevant_files {
@@ -193,9 +246,79 @@ function copy_relevant_files {
   if [ -n "$debug" ]; then set +x; fi
   return $ret_c
 }
+# This function starts the syslog-server to log the gfs-bootprocess
+function gfs_start_syslog {
+  local syslog_server=$(cca_get_syslog_server)
+  echo_local_debug "Syslog server: $syslog_server, hostname: "$(/bin/hostname)
+  if [ -n "$syslog_server" ]; then
+    echo '*.* @'"$syslog_server" >> /etc/syslog.conf
+  else
+    echo "*.* -/var/log/comoonics_boot.syslog" >> /etc/syslog.conf
+  fi
+  
+  echo "syslog          514/udp" >> /etc/services
+  exec_local /sbin/syslogd -m 1 -a /var/lib/lock_gulmd/dev/log
+}
+
+# This function starts the lockgulmd in a chroot environment per default
+# If no_chroot is given as param the chroot is skipped
+function gfs_start_lockgulmd {
+  lock_gulm_dirs=$(cat /etc/lock_gulmd_dirs.list)
+  lock_gulm_mv_files=$(cat /etc/lock_gulmd_mv_files.list)
+  lock_gulm_cp_files=$(cat /etc/lock_gulmd_cp_files.list)
+  if [ "$1" = "no_chroot" ]; then
+    /sbin/lock_gulmd
+  else
+    chroot_dir="/var/lib/lock_gulmd"
+    echo_local -n "..build chroot.."
+    mkdir -p $chroot_dir
+    for dir in $lock_gulm_dirs; do
+      mkdir -p $chroot_dir/$dir 2>/dev/null
+    done
+    for file in $lock_gulm_cp_files; do
+      cp -a $file $chroot_dir/$file 2>/dev/null
+    done
+    for file in $lock_gulm_mv_files; do
+      mv $file $chroot_dir/$file 2>/dev/null
+      ln -sf $chroot_dir/$file $file 2>/dev/null
+    done
+    for file in /usr/kerberos/lib/*; do
+      ln -sf $file /usr/lib/$(basename $file) 2>/dev/null
+      ln -sf $file ${chroot_dir}/usr/lib/$(basename $file) 2>/dev/null
+    done
+    [ -n "$debug" ] && set +x
+    echo_local -n "..syslogd ..."
+    gfs_start_syslog
+
+    echo_local -n "..lock_gulmd.."
+    /usr/sbin/chroot $chroot_dir /sbin/lock_gulmd || 
+    ( echo_local -n "chroot not worked failing back.." && /sbin/lock_gulmd)
+    [ -n "$debug" ] && set +x
+  fi
+  sts=1
+  if [ $? -eq 0 ]; then
+    echo_local -n "check.."
+    for i in $(seq 1 10); do
+      sleep 1
+      echo_local -n "."
+      if gulm_tool getstats localhost:ltpx &> /dev/null; then
+	sts=0
+	break
+      fi
+    done
+  fi
+  if [ $sts -eq 0 ]; then return 0; else return 1; fi
+}
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.8  2004-09-29 14:32:16  marc
+# Revision 1.9  2005-01-03 08:30:43  marc
+# first offical rpm version
+# - major changes in way of starting lock_gulmd. Is started now in a change root
+# - logs are also written to a started syslogd
+# - cca-param support for com_syslog_server
+# - minor changes
+#
+# Revision 1.8  2004/09/29 14:32:16  marc
 # vacation checkin, stable version
 #
 # Revision 1.7  2004/09/26 14:57:42  marc
