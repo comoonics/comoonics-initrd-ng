@@ -1,5 +1,5 @@
 #
-# $Id: iscsi-lib.sh,v 1.5 2004-09-24 14:33:27 marc Exp $
+# $Id: iscsi-lib.sh,v 1.6 2004-09-24 14:40:47 marc Exp $
 #
 # @(#)$File$
 #
@@ -16,7 +16,7 @@
 # Library for the iscsi-interface
 
 parser1="iscsi://([^:]+)/"
-parser1="iscsi://([^:]+):([[:digit:]]+)/"
+parser2="iscsi://([^:]+):([[:digit:]]+)/"
 
 function getISCSIServerFromParam {
     echo $1 | awk '
@@ -39,7 +39,10 @@ function createCiscoISCSICfgString {
 }
 
 # $Log: iscsi-lib.sh,v $
-# Revision 1.5  2004-09-24 14:33:27  marc
+# Revision 1.6  2004-09-24 14:40:47  marc
+# parser1=>parser2
+#
+# Revision 1.5  2004/09/24 14:33:27  marc
 # bug in parser1
 #
 # Revision 1.4  2004/09/24 14:25:04  marc
