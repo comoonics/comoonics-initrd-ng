@@ -1,5 +1,5 @@
 #
-# $Id: linuxrc.part.gfs.sh,v 1.3 2004-08-11 16:53:16 marc Exp $
+# $Id: linuxrc.part.gfs.sh,v 1.4 2004-08-13 15:53:33 marc Exp $
 #
 # @(#)$File$
 #
@@ -127,13 +127,13 @@ else
 	exec_local /sbin/ccsd -d $GFS_POOL_CCA
 	return_code
 	echo_local_debug "4.4.1 Pool-cca $GFS_POOL_CCA"
-	n_ipConfig=$(cca_autoconfigure_network $ipconfig $NETDEV)
-	if [ -n "$n_ipConfig" ]; then
-	    echo_local -n "4.5.1 Configuring network with bootparm-config ($ipConfig)"
-	    exec_local ip2Config $n_ipConfig
-	    echo_local -n "4.5.2 Powering up the network for interface ($NETDEV)..."
-	    exec_local my_ifup $NETDEV $n_ipConfig
-	fi
+#	n_ipConfig=$(cca_autoconfigure_network $ipconfig $NETDEV)
+#	if [ -n "$n_ipConfig" ]; then
+#	    echo_local -n "4.5.1 Configuring network with bootparm-config ($ipConfig)"
+#	    exec_local ip2Config $n_ipConfig
+#	    echo_local -n "4.5.2 Powering up the network for interface ($NETDEV)..."
+#	    exec_local my_ifup $NETDEV $n_ipConfig
+#	fi
     fi
     echo_local_debug "4.4.1 pool_name: $pool_name"
     [ -z "$pool_name" ] && pool_name=$(cca_get_node_sharedroot)
@@ -145,8 +145,9 @@ else
     step
     echo_local -n "4.5 Starting lock_gulmd"
     sts=1
-    lock_gulmd 2>&1 >> $bootlog
-    if [ $? -eq 0 ]; then
+    exec_local lock_gulmd
+    echo_local -n "4.6 Checking lock_gulmd stats"
+    if [ $? -eq $return_c ]; then
 	for i in $(seq 1 10)
 	  do
 	  sleep 1
@@ -161,7 +162,6 @@ else
 fi
 
 echo_local_debug "*****************************"
-echo_local "5. Pivot-Root..."
 echo_local "5.0.1 Pool: ${GFS_POOL}"
 echo_local_debug "5.0.2 Cdsl_local_dir: ${cdsl_local_dir}"
     
@@ -216,18 +216,22 @@ return_code $ret_code
 step
 
 echo_local -n "5.3.1 Copying logfile to ${bootlog}..."
-exec_local cp ${bootlog} /mnt/newroot/${bootlog}
-echo_local -n "5.4 Pivot-Rooting... (pwd: "$(pwd)")"
+cp ${bootlog} /mnt/newroot/${bootlog}
+bootlog=/mnt/newroot/$bootlog
+if [ $? -eq 0 ]; then echo_local "(OK)"; else echo_local "(FAILED)"; fi
 # [ ! -d initrd ] && mkdir initrd
 # exec_local /sbin/pivot_root . initrd
 #echo_local "6.1 Restarting network with new pivot_root..."
 #mount -t proc proc /proc
 #kill $pid && /sbin/ifup eth0
 
-pivotRoot
+chRoot
 
 # $Log: linuxrc.part.gfs.sh,v $
-# Revision 1.3  2004-08-11 16:53:16  marc
+# Revision 1.4  2004-08-13 15:53:33  marc
+# added support for chroot
+#
+# Revision 1.3  2004/08/11 16:53:16  marc
 # inbetween version
 #
 # Revision 1.2  2004/08/01 21:00:31  marc

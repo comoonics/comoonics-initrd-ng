@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.2 2004-08-11 16:53:26 marc Exp $
+# $Id: boot-lib.sh,v 1.3 2004-08-13 15:53:46 marc Exp $
 #
 # @(#)$File$
 #
@@ -59,11 +59,14 @@ function getRelease() {
 function my_ifup() {
    local dev=$1
    local ipconfig=$2
-   modprobe $dev && sleep 2 && ifconfig $dev up 
-   if [ $? -eq 0 ] && [ -n "$ipconfig" ] && [ "$ipconfig" != "skip" ]; then
-       sleep 2 && ifup $dev
+   echo_local "2.3.1.1 Loading module for $dev..."
+   exec_local modprobe $dev && sleep 2 && ifconfig $dev up 
+   if [ $return_c -eq 0 ] && [ -n "$ipconfig" ] && [ "$ipconfig" != "skip" ]; then
+       sleep 2
+       echo_local "2.3.1.2 Starting network configuration for $dev with config $ipconfig"
+       exec_local ifup $dev
    fi
-   return $?
+   return $return_c
 }
 
 function getPosFromIPString() {
@@ -314,20 +317,52 @@ function setHWClock() {
 
 function pivotRoot() {
     echo_local_debug "**********************************************************************"
+    echo_local -n "5.4 Pivot-Rooting... (pwd: "$(pwd)")"
     cd /mnt/newroot
     [ ! -d initrd ] && mkdir -p initrd
-    exec_local /sbin/pivot_root . initrd
+    /sbin/pivot_root . initrd
+    bootlog="/var/log/comoonics-boot.log"
+    if [ $? -eq 0 ]; then echo_local "(OK)"; else echo_local "(FAILED)"; fi
     step
 
-    echo_local "7. Starting init-process (exec /sbin/init < /dev/console 1>/dev/console 2>&1)..."
     if [ $critical -eq 0 ]; then
-	umount initrd/proc
+	echo_local "6. Cleaning up..."
+	exec_local umount initrd/proc
+	echo_local "7. Setting up tmp..."
+	exec_local "mkfs.ext2 -L tmp /dev/ram1 && mount /dev/ram1 /tmp"
+	
+	echo_local "8. Starting init-process (exec /sbin/init < /dev/console 1>/dev/console 2>&1)..."
 	exec /sbin/init < /dev/console 1>/dev/console 2>&1
-	if [ $? -eq 0 ]; then
-	    echo_local "Error starting init-process falling back to bash."
-	    /rescue.sh
-	    exec /bin/bash
-	fi
+	echo_local "Error starting init-process falling back to bash."
+	/rescue.sh
+	exec /bin/bash
+    else
+	/rescue.sh
+	exec /bin/bash
+    fi
+}
+
+function chRoot() {
+    echo_local_debug "**********************************************************************"
+    echo_local -n "5.4 Change-Root... (pwd: "$(pwd)"=>/mnt/newroot)"
+    cd /mnt/newroot
+#    [ ! -d initrd ] && mkdir -p initrd
+#    /sbin/pivot_root . initrd
+#    bootlog="/var/log/comoonics-boot.log"
+    if [ $? -eq 0 ]; then echo_local "(OK)"; else echo_local "(FAILED)"; fi
+    step
+
+    if [ $critical -eq 0 ]; then
+	echo_local "6. Setting up tmp..."
+	mkfs.ext2 -L tmp /dev/ram1
+	exec_local mount /dev/ram1 tmp
+	echo_local "7. Cleaning up..."
+	exec_local umount /proc
+	echo_local "8. Starting init-process (exec /sbin/init < /dev/console 1>/dev/console 2>&1)..."
+	exec chroot . /sbin/init < /dev/console 1>/dev/console 2>&1
+	echo_local "Error starting init-process falling back to bash."
+	/rescue.sh
+	exec /bin/bash
     else
 	/rescue.sh
 	exec /bin/bash
@@ -485,7 +520,10 @@ function add_scsi_device() {
 }
 
 # $Log: boot-lib.sh,v $
-# Revision 1.2  2004-08-11 16:53:26  marc
+# Revision 1.3  2004-08-13 15:53:46  marc
+# added support for chroot
+#
+# Revision 1.2  2004/08/11 16:53:26  marc
 # bugfixes
 #
 # Revision 1.1  2004/07/31 11:24:43  marc
