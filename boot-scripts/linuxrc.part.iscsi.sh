@@ -1,5 +1,5 @@
 #
-# $Id: linuxrc.part.iscsi.sh,v 1.6 2004-09-24 14:33:40 marc Exp $
+# $Id: linuxrc.part.iscsi.sh,v 1.7 2004-09-24 15:27:15 marc Exp $
 #
 # @(#)$File$
 #
@@ -43,12 +43,16 @@ if [ -n "$iscsi_server" ]; then
   step
 
   echo_local -n "$part $stage: Starting iscsi-client..."
-  exec_local /etc/init.d/iscsi start
+  /etc/init.d/iscsi start
+  ([ $? -eq 0 ] && echo "(OK)") || echo "(FAILED)"
   step
 fi
 
 # $Log: linuxrc.part.iscsi.sh,v $
-# Revision 1.6  2004-09-24 14:33:40  marc
+# Revision 1.7  2004-09-24 15:27:15  marc
+# change way to execute iscsi
+#
+# Revision 1.6  2004/09/24 14:33:40  marc
 # checking for empty or wrong iscsi-server
 #
 # Revision 1.5  2004/09/24 14:15:34  marc
