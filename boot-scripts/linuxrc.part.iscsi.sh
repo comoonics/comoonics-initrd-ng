@@ -1,5 +1,5 @@
 #
-# $Id: linuxrc.part.iscsi.sh,v 1.7 2004-09-24 15:27:15 marc Exp $
+# $Id: linuxrc.part.iscsi.sh,v 1.8 2004-09-24 15:37:11 marc Exp $
 #
 # @(#)$File$
 #
@@ -45,11 +45,15 @@ if [ -n "$iscsi_server" ]; then
   echo_local -n "$part $stage: Starting iscsi-client..."
   /etc/init.d/iscsi start
   ([ $? -eq 0 ] && echo "(OK)") || echo "(FAILED)"
+  sleep 5
   step
 fi
 
 # $Log: linuxrc.part.iscsi.sh,v $
-# Revision 1.7  2004-09-24 15:27:15  marc
+# Revision 1.8  2004-09-24 15:37:11  marc
+# added sleep
+#
+# Revision 1.7  2004/09/24 15:27:15  marc
 # change way to execute iscsi
 #
 # Revision 1.6  2004/09/24 14:33:40  marc
