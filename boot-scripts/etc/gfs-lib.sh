@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.6 2004-09-26 14:25:50 marc Exp $
+# $Id: gfs-lib.sh,v 1.7 2004-09-26 14:57:42 marc Exp $
 #
 # @(#)$File$
 #
@@ -153,7 +153,7 @@ function copy_relevant_files {
   local cdsl_local_dir=$(shift)
   # backup old files
   olddir=$(pwd)
-  echo -n "Backing up created config files"
+  echo -en "\tBacking up created config files"
   (if [ -f /mnt/newroot/etc/modules.conf ]; then 
     mv /mnt/newroot/etc/modules.conf /mnt/newroot/etc/modules.conf.com_back
    fi &&
@@ -161,15 +161,14 @@ function copy_relevant_files {
      mv /mnt/newroot/etc/sysconfig/hwconf /mnt/newroot/etc/sysconfig/hwconf.com_back
    fi &&
    echo "(OK)" ) || (ret_c=$? && echo "(FAILED)")
-  echo -n "Creating config dirs if not exist.."
+  echo -en "\tCreating config dirs if not exist.."
   (if [ ! -d /mnt/newroot/${cdsl_local_dir}/etc ]; then 
     mkdir -p /mnt/newroot/${cdsl_local_dir}/etc
   fi &&
   if [ ! -d /mnt/newroot/${cdsl_local_dir}/etc/sysconfig ]; then 
     mkdir -p /mnt/newroot/${cdsl_local_dir}/etc/sysconfig
   fi && echo "(OK)") || (ret_c=$? && echo "(FAILED)")
-  echo
-  echo -n "Copying the configfiles.."
+  echo -en "\tCopying the configfiles.."
   (cd /mnt/newroot/etc &&
    cp /etc/modules.conf /mnt/newroot/${cdsl_local_dir}/etc/modules.conf &&
    ([ -n "$cdsl_local_dir" ] && 
@@ -188,7 +187,10 @@ function copy_relevant_files {
 }
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.6  2004-09-26 14:25:50  marc
+# Revision 1.7  2004-09-26 14:57:42  marc
+# cosmetic change
+#
+# Revision 1.6  2004/09/26 14:25:50  marc
 # update in copy_config_files
 #
 # Revision 1.5  2004/09/26 14:08:38  marc
