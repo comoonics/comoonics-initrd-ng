@@ -1,5 +1,5 @@
 #
-# $Id: linuxrc.part.gfs.sh,v 1.1 2004-07-31 11:24:43 marc Exp $
+# $Id: linuxrc.part.gfs.sh,v 1.2 2004-08-01 21:00:31 marc Exp $
 #
 # @(#)$File$
 #
@@ -121,7 +121,7 @@ else
     if [ -z "${GFS_POOL_CCA}" ]; then
 	GFS_POOL_CCA="${GFS_POOL}_cca"
     fi
-    cdsl_local_idr="/cdsl.local"
+    cdsl_local_dir="/cdsl.local"
     echo_local -n "4.4 Starting ccsd ($GFS_POOL_CCA)"
     exec_local /sbin/ccsd -d $GFS_POOL_CCA
     return_code
@@ -134,7 +134,7 @@ else
     step
     echo_local -n "4.5 Starting lock_gulmd"
     sts=1
-    if lock_gulmd &> $bootlog; then
+    if lock_gulmd &>> $bootlog; then
 	for i in $(seq 1 10)
 	  do
 	  sleep 1
@@ -151,6 +151,7 @@ fi
 echo_local_debug "*****************************"
 echo_local "5. Pivot-Root..."
 echo_local "5.0.1 Pool: ${GFS_POOL}"
+echo_local_debug "5.0.2 Cdsl_local_dir: ${cdsl_local_dir}"
     
 echo_local "5.1. Mounting newroot ..."
 exec_local /bin/mount -t gfs  /dev/pool/${GFS_POOL} /mnt/newroot -o $mount_opts
@@ -223,6 +224,10 @@ echo_local -n "5.4 Pivot-Rooting... (pwd: "$(pwd)")"
 pivotRoot
 
 # $Log: linuxrc.part.gfs.sh,v $
-# Revision 1.1  2004-07-31 11:24:43  marc
+# Revision 1.2  2004-08-01 21:00:31  marc
+# com-rescan-scsi.sh: made the qla2?00 drivers work without -l option
+# linux.part.gfs.sh:  major bugfixes for debugging.
+#
+# Revision 1.1  2004/07/31 11:24:43  marc
 # initial revision
 #
