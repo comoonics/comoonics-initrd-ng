@@ -1,5 +1,5 @@
 #
-# $Id: linuxrc.part.iscsi.sh,v 1.5 2004-09-24 14:15:34 marc Exp $
+# $Id: linuxrc.part.iscsi.sh,v 1.6 2004-09-24 14:33:40 marc Exp $
 #
 # @(#)$File$
 #
@@ -33,20 +33,25 @@ echo_local_debug "$stage $part: ISCSI-Params: "
 echo_local_debug "$stage ${part}.1 ISCSI-Server: $iscsi_server"
 echo_local_debug "$stage ${part}.1 ISCSI-Port: $iscsi_port"
 
-echo_local -n "$part $stage: Creating iscsi-cfgfile"
-exec_local $(createCiscoISCSICfgString $iscsi_server $iscsi_port>> $iscsi_cfgfile)
-step
+if [ -n "$iscsi_server" ]; then
+  echo_local -n "$part $stage: Creating iscsi-cfgfile"
+  exec_local $(createCiscoISCSICfgString $iscsi_server $iscsi_port>> $iscsi_cfgfile)
+  step
 
-echo_local_debug  "$part $stage: ISCSI CFG-File: $iscsi_cfgfile"
-exec_local_debug  cat $iscsi_cfgfile
-step
+  echo_local_debug  "$part $stage: ISCSI CFG-File: $iscsi_cfgfile"
+  exec_local_debug  cat $iscsi_cfgfile
+  step
 
-echo_local -n "$part $stage: Starting iscsi-client..."
-exec_local /etc/init.d/iscsi start
-step
+  echo_local -n "$part $stage: Starting iscsi-client..."
+  exec_local /etc/init.d/iscsi start
+  step
+fi
 
 # $Log: linuxrc.part.iscsi.sh,v $
-# Revision 1.5  2004-09-24 14:15:34  marc
+# Revision 1.6  2004-09-24 14:33:40  marc
+# checking for empty or wrong iscsi-server
+#
+# Revision 1.5  2004/09/24 14:15:34  marc
 # added steps
 #
 # Revision 1.4  2004/09/24 09:13:59  marc
