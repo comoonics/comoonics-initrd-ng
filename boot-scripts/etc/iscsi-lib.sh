@@ -1,5 +1,5 @@
 #
-# $Id: iscsi-lib.sh,v 1.2 2004-09-24 08:56:14 marc Exp $
+# $Id: iscsi-lib.sh,v 1.3 2004-09-24 09:02:19 marc Exp $
 #
 # @(#)$File$
 #
@@ -34,11 +34,14 @@ function getISCSIPortFromParam {
 }
 
 function createCiscoISCSICfgString {
-    echo "DiscoveryAddress=$1" && [ -n "$2" ] && echo ":$2"
+    echo -n "DiscoveryAddress=$1" && ([ -n "$2" ] && echo ":$2") || echo
 }
 
 # $Log: iscsi-lib.sh,v $
-# Revision 1.2  2004-09-24 08:56:14  marc
+# Revision 1.3  2004-09-24 09:02:19  marc
+# another change for iscsi.cfg
+#
+# Revision 1.2  2004/09/24 08:56:14  marc
 # bug in iscsi.cfg
 #
 # Revision 1.1  2004/09/23 16:30:01  marc
