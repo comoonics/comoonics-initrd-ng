@@ -1,5 +1,5 @@
 #
-# $Id: linuxrc.part.iscsi.sh,v 1.1 2004-09-23 16:29:45 marc Exp $
+# $Id: linuxrc.part.iscsi.sh,v 1.2 2004-09-24 08:56:31 marc Exp $
 #
 # @(#)$File$
 #
@@ -34,7 +34,7 @@ echo_local_debug "$stage ${part}.1 ISCSI-Server: $iscsi_server"
 echo_local_debug "$stage ${part}.1 ISCSI-Port: $iscsi_port"
 
 echo_local -n "$part $stage: Creating iscsi-cfgfile"
-exec_local $(createCiscoISCSICfgString > $iscsi_cfgfile)
+exec_local $(createCiscoISCSICfgString $iscsi_server $iscsi_port> $iscsi_cfgfile)
 
 echo_local_debug  "$part $stage: ISCSI CFG-File: $iscsi_cfgfile"
 exec_local_debug  cat $iscsi_cfgfile
@@ -43,6 +43,9 @@ echo_local -n "$part $stage: Starting iscsi-client..."
 exec_local /etc/init.d/iscsi start
 
 # $Log: linuxrc.part.iscsi.sh,v $
-# Revision 1.1  2004-09-23 16:29:45  marc
+# Revision 1.2  2004-09-24 08:56:31  marc
+# bug in creating iscsi-cfg file.
+#
+# Revision 1.1  2004/09/23 16:29:45  marc
 # initial revision
 #
