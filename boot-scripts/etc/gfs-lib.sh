@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.5 2004-09-26 14:08:38 marc Exp $
+# $Id: gfs-lib.sh,v 1.6 2004-09-26 14:25:50 marc Exp $
 #
 # @(#)$File$
 #
@@ -153,36 +153,45 @@ function copy_relevant_files {
   local cdsl_local_dir=$(shift)
   # backup old files
   olddir=$(pwd)
-  if [ -f /mnt/newroot/etc/modules.conf ]; then 
+  echo -n "Backing up created config files"
+  (if [ -f /mnt/newroot/etc/modules.conf ]; then 
     mv /mnt/newroot/etc/modules.conf /mnt/newroot/etc/modules.conf.com_back
-  fi &&
-  if [ -f /mnt/newroot/etc/sysconfig/hwconf ]; then 
-    mv /mnt/newroot/etc/sysconfig/hwconf /mnt/newroot/etc/sysconfig/hwconf.com_back
-  fi &&
-  if [ ! -d /mnt/newroot/${cdsl_local_dir}/etc ]; then 
+   fi &&
+   if [ -f /mnt/newroot/etc/sysconfig/hwconf ]; then 
+     mv /mnt/newroot/etc/sysconfig/hwconf /mnt/newroot/etc/sysconfig/hwconf.com_back
+   fi &&
+   echo "(OK)" ) || (ret_c=$? && echo "(FAILED)")
+  echo -n "Creating config dirs if not exist.."
+  (if [ ! -d /mnt/newroot/${cdsl_local_dir}/etc ]; then 
     mkdir -p /mnt/newroot/${cdsl_local_dir}/etc
   fi &&
   if [ ! -d /mnt/newroot/${cdsl_local_dir}/etc/sysconfig ]; then 
     mkdir -p /mnt/newroot/${cdsl_local_dir}/etc/sysconfig
-  fi &&
-  cd /mnt/newroot/etc &&
-  cp /etc/modules.conf /mnt/newroot/${cdsl_local_dir}/etc/modules.conf &&
-  ([ -n "$cdsl_local_dir" ] && 
-      ln -sf ../${cdsl_local_dir}/etc/modules.conf modules.conf) &&
-  cd sysconfig &&
-  cp /etc/sysconfig/hwconf /mnt/newroot/${cdsl_local_dir}/etc/sysconfig/
-  ([ -n "$cdsl_local_dir" ] && 
-      ln -fs ../../${cdsl_local_dir}/etc/sysconfig/hwconf hwconf) &&
-  cp /etc/sysconfig/network /mnt/newroot/${cdsl_local_dir}/etc/sysconfig/
-  ([ -n "$cdsl_local_dir" ] && 
-      ln -fs ../../${cdsl_local_dir}/etc/sysconfig/network network)
+  fi && echo "(OK)") || (ret_c=$? && echo "(FAILED)")
+  echo
+  echo -n "Copying the configfiles.."
+  (cd /mnt/newroot/etc &&
+   cp /etc/modules.conf /mnt/newroot/${cdsl_local_dir}/etc/modules.conf &&
+   ([ -n "$cdsl_local_dir" ] && 
+       ln -sf ../${cdsl_local_dir}/etc/modules.conf modules.conf) &&
+   cd sysconfig &&
+   cp /etc/sysconfig/hwconf /mnt/newroot/${cdsl_local_dir}/etc/sysconfig/
+   ([ -n "$cdsl_local_dir" ] && 
+       ln -fs ../../${cdsl_local_dir}/etc/sysconfig/hwconf hwconf) &&
+   cp /etc/sysconfig/network /mnt/newroot/${cdsl_local_dir}/etc/sysconfig/
+   ([ -n "$cdsl_local_dir" ] && 
+       ln -fs ../../${cdsl_local_dir}/etc/sysconfig/network network)
+   echo "(OK)") || (ret_c=$? && echo "(FAILED)")
   ret_c=$?
   cd $olddir
   return $ret_c
 }
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.5  2004-09-26 14:08:38  marc
+# Revision 1.6  2004-09-26 14:25:50  marc
+# update in copy_config_files
+#
+# Revision 1.5  2004/09/26 14:08:38  marc
 # added copy_relevant_files
 #
 # Revision 1.4  2004/09/12 11:11:06  marc
