@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.3 2004-09-08 16:13:30 marc Exp $
+# $Id: gfs-lib.sh,v 1.4 2004-09-12 11:11:06 marc Exp $
 #
 # @(#)$File$
 #
@@ -87,6 +87,27 @@ cca_get_lockservers() {
    ccs_read string cluster.ccs cluster/lock_gulm
 }
 
+cca_make_hosts() {
+   ccs_read 
+}
+
+function cca_generate_hosts {
+    local ccs_read="/opt/atix/comoonics_cs/ccs_fileread"
+    local nodes_file=$1
+    local hosts_file=$2
+    cp -f $hosts_file $hosts_file.bak
+    (cat $hosts_file.bak && \
+	/opt/atix/comoonics_cs/ccs_fileread  strings $nodes_file nodes/.*/ip_interfaces/eth[0-9] | awk -F= '
+/\s+/ { 
+   match($1, /[^\/]+\/([^\/]+)\//, hostname);
+   match($2, /"(.+)"/, ip); 
+   print ip[1], hostname[1]; 
+}') | sort -u > $hosts_file
+    ret=$?
+    if [ $? -ne 0 ]; then cp $hosts_file.bak $hosts_file; fi
+    return $ret
+}
+
 function cca_autoconfigure_network {
     local ipconfig=$1
     local netdev=$2
@@ -129,7 +150,10 @@ function cca_autoconfigure_network {
 }
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.3  2004-09-08 16:13:30  marc
+# Revision 1.4  2004-09-12 11:11:06  marc
+# added generation of hosts file from cca
+#
+# Revision 1.3  2004/09/08 16:13:30  marc
 # first stable version for autoconfigure from cca
 #
 # Revision 1.2  2004/08/11 16:53:52  marc
