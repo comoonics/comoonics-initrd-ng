@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.7 2004-08-23 08:46:56 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.8 2004-09-08 16:13:12 marc Exp $
 #
 # @(#)$File$
 #
@@ -29,7 +29,7 @@
 source /etc/boot-lib.sh
 
 echo_local "Starting ATIX initrd"
-echo_local 'Version $Revision: 1.7 $ $Date: 2004-08-23 08:46:56 $'
+echo_local 'Version $Revision: 1.8 $ $Date: 2004-09-08 16:13:12 $'
 
 initBootProcess
 
@@ -69,7 +69,7 @@ exec_local /sbin/ifconfig lo 127.0.0.1 up
 if [ -n "$ipConfig" ]; then
   if [ "$IFCONFIG" = "boot" ]; then
       echo_local "2.1 Network already configured for device ${NETDEV}."
-  elif [ "$IFCONFIG" = "skip" ]; then
+  elif [ "$ipConfig" = "skip" ] || [ "$ipConfig" = "cca" ]; then
       echo_local "2.1 Explicitly skipping network configuration. Handled later (hopefully)."
   else
       NETDEV=$(getPosFromIPString 6 $ipConfig)

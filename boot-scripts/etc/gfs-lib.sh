@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.2 2004-08-11 16:53:52 marc Exp $
+# $Id: gfs-lib.sh,v 1.3 2004-09-08 16:13:30 marc Exp $
 #
 # @(#)$File$
 #
@@ -90,8 +90,11 @@ cca_get_lockservers() {
 function cca_autoconfigure_network {
     local ipconfig=$1
     local netdev=$2
-    mac=$(ifconfig $netdev | grep HWaddr | awk '{print $5;}')
-    hostname=$(ccs_read file nodes.ccs | awk -v mac=$mac '
+    local cca_dir=$3
+    local ccs_read="/opt/atix/comoonics_cs/ccs_fileread"
+    if [ -z "$netdev" ]; then netdev="eth0"; fi
+    local mac=$(ifconfig $netdev | grep HWaddr | awk '{print $5;}')
+    local hostname=$(cat $cca_dir/nodes.ccs | awk -v mac=$mac '
 /com_hostname=".+"/ {
    match($1, /com_hostname="(.+)"/, hn); hostname=hn[1]; print "Found hostname ",hostname;
 }
@@ -121,30 +124,15 @@ function cca_autoconfigure_network {
    }
 }
 ')
-    ipcfg=$(ccs_read section nodes.ccs nodes/$hostname | grep "eth0" | awk -v hostname=$hostname -F '=' '
-function getValue(pre) {
-  match(pre, /"(.+)"/, val);
-  return val[1];
-}
-$1 ~ /eth0[[:space:]]/ {
-  ip=getValue($2);
-}
-$1 ~ /eth0_netmask[[:space:]]/ {
-  netmask=getValue($2);
-}
-$1 ~ /eth0_gateway[[:space:]]/ {
-  gateway=getValue($2);
-}
-END {
-  printf "%s::%s:%s:%s:eth0", ip, gateway, netmask, hostname;
-}
-'
-)
-    echo $ipcfg;
+
+    echo $($ccs_read string ${cca_dir}/nodes.ccs nodes/$hostname/eth0)"::"$($ccs_read string ${cca_dir}/nodes.ccs nodes/$hostname/eth0_gateway)":"$($ccs_read string ${cca_dir}/nodes.ccs nodes/$hostname/eth0_netmask)":$hostname"
 }
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.2  2004-08-11 16:53:52  marc
+# Revision 1.3  2004-09-08 16:13:30  marc
+# first stable version for autoconfigure from cca
+#
+# Revision 1.2  2004/08/11 16:53:52  marc
 # major enhancements concerning the cca-autoconfiguration
 #
 # Revision 1.1  2004/07/31 11:24:44  marc
