@@ -1,5 +1,5 @@
 #
-# $Id: linuxrc.part.gfs.sh,v 1.13 2005-01-03 08:32:59 marc Exp $
+# $Id: linuxrc.part.gfs.sh,v 1.14 2005-01-05 10:56:31 marc Exp $
 #
 # @(#)$File$
 #
@@ -151,7 +151,7 @@ else
 
     if [ -n "$GFS_POOL_CCA" ]; then
       echo_local -n "4.5 Starting ccsd ($GFS_POOL_CCA)"
-      exec_local /sbin/ccsd -d $GFS_POOL_CCA
+      exec_local gfs_start_ccsd $GFS_POOL_CCA
       echo_local -n "4.5.1 Patching host file..."
       if [ -z "$shortpool" ]; then ccs_opts="-c"; fi
       exec_local cca_generate_hosts ${shortpool} /etc/hosts
@@ -167,10 +167,12 @@ else
     step
     setHWClock
     step
+    echo_local -n "4.6 Starting syslog"
+    exec_local gfs_start_syslog
     if [ -n "$GFS_POOL_CCA" ]; then
       echo_local -n "4.6 Starting lock_gulmd"
       sts=1
-      exec_local gfs_start_lockgulmd
+      exec_local gfs_start_lock_gulmd
       step
 
     fi
@@ -234,7 +236,10 @@ else
 fi
 
 # $Log: linuxrc.part.gfs.sh,v $
-# Revision 1.13  2005-01-03 08:32:59  marc
+# Revision 1.14  2005-01-05 10:56:31  marc
+# added the chroot start of services ccsd.
+#
+# Revision 1.13  2005/01/03 08:32:59  marc
 # first offical rpm version
 # - added support for syslogd
 # - added support for chroot within lock_gulmd
