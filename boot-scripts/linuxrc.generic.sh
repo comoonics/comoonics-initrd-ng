@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.14 2005-01-03 08:32:21 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.15 2005-01-03 08:53:05 marc Exp $
 #
 # @(#)$File$
 #
@@ -32,7 +32,8 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.14 $ $Date: 2005-01-03 08:32:21 $'
+echo_local 'Internal Version $Revision: 1.15 $ $Date: 2005-01-03 08:53:05 $'
+echo_local "Rundate: "$(date)
 
 initBootProcess
 
