@@ -1,0 +1,583 @@
+Problems with the Com.oonics Sharedroot Process:
+
+Description:
+The Fencing of the Master results in Deadlocks when pivotRoot is used to change the root of the initrd to the gfs-root.
+Lock_Gulm always runs in its own changeroot environment. It seems to somehow depend on ccsd or something that gets informed of the pivotroot and freezes in that case. Perhaps it is the reread of the whole configuration, because all Nodes change into Pending state which is not happening if the master is not fenced. Perhaps it is enough to also run the ccsd in the same chroot environment then lock_gulmd.
+
+ATTENTION: That issue should be fixed!!!!
+
+Example: Master is fenced all changeroot in sharedroot environment
+gulm_tool setverb localhost Heartbeat,Forking,Locking,ServerState,LockUpdates,LoginLoops
+--------------------------------------------------------------------------------------------------------------------
+[root@realsv7 root]# gulm_tool nodelist localhost
+ Name: realsv5
+  ip    = 192.168.10.71
+  state = Logged in
+  mode = Slave
+  missed beats = 0
+  last beat = 1104838575830084
+  delay avg = 10017152
+  max delay = 10127749
+
+ Name: realsv8
+  ip    = 192.168.10.74
+  state = Logged in
+  mode = Master
+  missed beats = 0
+  last beat = 1104838569560262
+  delay avg = 10011441
+  max delay = 10020015
+
+ Name: realsv7
+  ip    = 192.168.10.73
+  state = Logged in
+  mode = Slave
+  missed beats = 0
+  last beat = 1104838578908212
+  delay avg = 0
+  max delay = 0
+
+[root@realsv5 root]# fence_node realsv8
+Performing fence method, powerapc, on realsv8.
+The agent (fence_apc_old) reports: success: outlet 8 reboot
+
+Fence of "realsv8" was successful.
+---------------------------------------------------------------------------------------------------------------------------
+Jan  4 16:29:15 realserver5 fence_node[2361]: Performing fence method, powerapc, on realsv7.
+Jan  4 16:29:15 realserver5 -- MARK --
+Jan  4 16:29:17 realserver7 lock_gulmd_core[1071]: Got heartbeat from realsv5 at 1104856140848065 (last:9999897 max:10019934 avg:10015230)
+Jan  4 16:29:17 realserver7 lock_gulmd_core[1071]: Got heartbeat from realsv5 at 1104856140848065 (last:9999897 max:10019934 avg:10015230)
+Jan  4 16:29:17 realserver7 lock_gulmd_core[1071]: Got heartbeat from realsv7 at 1104856141306279 (last:10020003 max:402283815 avg:10009368)
+Jan  4 16:29:17 realserver7 lock_gulmd_core[1071]: Got heartbeat from realsv7 at 1104856141306279 (last:10020003 max:402283815 avg:10009368)
+Jan  4 16:29:18 realserver5 kernel: scsi(0): RSCN database changed -0x61,0x0.
+Jan  4 16:29:18 realserver8 kernel: scsi(0): RSCN database changed -0x61,0x0.
+Jan  4 16:29:18 realserver5 kernel: scsi(0): Waiting for LIP to complete...
+Jan  4 16:29:18 realserver8 kernel: scsi(0): Waiting for LIP to complete...
+Jan  4 16:29:18 realserver5 kernel: scsi(0): Topology - (F_Port), Host Loop address 0xffff
+Jan  4 16:29:18 realserver8 kernel: scsi(0): Topology - (F_Port), Host Loop address 0xffff
+Jan  4 16:29:18 realserver5 fence_node[2361]: The agent (fence_apc_old) reports: success: outlet 7 reboot
+Jan  4 16:29:18 realserver5 fence_node[2361]: Fence of "realsv7" was successful.
+Jan  4 16:29:22 realserver8 lock_gulmd_core[1071]: Sending heartbeat to Core Master at 1104852412612284, last was 1104852402592285
+Jan  4 16:29:22 realserver8 lock_gulmd_core[1071]: Sending heartbeat to Core Master at 1104852412612284, last was 1104852402592285
+Jan  4 16:29:27 realserver8 lock_gulmd_core[1071]: Failed to receive a timely heartbeat reply from Master. (t:1104852417612285 mb:1)
+Jan  4 16:29:27 realserver8 lock_gulmd_core[1071]: Failed to receive a timely heartbeat reply from Master. (t:1104852417612285 mb:1)
+Jan  4 16:29:32 realserver8 lock_gulmd_core[1071]: Sending heartbeat to Core Master at 1104852422612284, last was 1104852412612284
+Jan  4 16:29:32 realserver8 lock_gulmd_core[1071]: Sending heartbeat to Core Master at 1104852422612284, last was 1104852412612284
+Jan  4 16:29:32 realserver5 lock_gulmd_core[1071]: Failed to receive a timely heartbeat reply from Master. (t:1104856195333820 mb:1)
+Jan  4 16:29:32 realserver5 lock_gulmd_core[1071]: Failed to receive a timely heartbeat reply from Master. (t:1104856195333820 mb:1)
+Jan  4 16:29:42 realserver8 lock_gulmd_core[1071]: Sending heartbeat to Core Master at 1104852432612284, last was 1104852422612284
+Jan  4 16:29:42 realserver8 lock_gulmd_core[1071]: Sending heartbeat to Core Master at 1104852432612284, last was 1104852422612284
+Jan  4 16:29:42 realserver8 lock_gulmd_core[1071]: Failed to receive a timely heartbeat reply from Master. (t:1104852432632289 mb:2)
+Jan  4 16:29:42 realserver8 lock_gulmd_core[1071]: Failed to receive a timely heartbeat reply from Master. (t:1104852432632289 mb:2)
+Jan  4 16:29:47 realserver5 lock_gulmd_core[1071]: Failed to receive a timely heartbeat reply from Master. (t:1104856210333821 mb:2)
+Jan  4 16:29:47 realserver5 lock_gulmd_core[1071]: Failed to receive a timely heartbeat reply from Master. (t:1104856210333821 mb:2)
+Jan  4 16:29:52 realserver8 lock_gulmd_core[1071]: Sending heartbeat to Core Master at 1104852442612284, last was 1104852432612284
+Jan  4 16:29:52 realserver8 lock_gulmd_core[1071]: Sending heartbeat to Core Master at 1104852442612284, last was 1104852432612284
+Jan  4 16:29:56 realserver8 kernel: scsi(0): RSCN database changed -0x61,0x0.
+Jan  4 16:29:56 realserver8 kernel: scsi(0): Waiting for LIP to complete...
+Jan  4 16:29:56 realserver8 kernel: scsi(0): Topology - (F_Port), Host Loop address 0xffff
+Jan  4 16:29:57 realserver8 lock_gulmd_core[1071]: Failed to receive a timely heartbeat reply from Master. (t:1104852447652284 mb:3)
+Jan  4 16:29:57 realserver8 lock_gulmd_core[1071]: Failed to receive a timely heartbeat reply from Master. (t:1104852447652284 mb:3)
+Jan  4 16:29:57 realserver8 lock_gulmd_core[1071]: Failed to get timely heartbeat replies
+Jan  4 16:29:57 realserver8 lock_gulmd_core[1071]: Failed to get timely heartbeat replies
+Jan  4 16:29:57 realserver8 lock_gulmd_core[1071]: Sending Membership update "Expired" about realsv7 to child LTPX
+Jan  4 16:29:57 realserver8 lock_gulmd_core[1071]: Sending Membership update "Expired" about realsv7 to child LTPX
+Jan  4 16:29:57 realserver8 lock_gulmd_core[1071]: Sending Membership update "Expired" about realsv7 to child LT000
+Jan  4 16:29:57 realserver8 lock_gulmd_core[1071]: Sending Membership update "Expired" about realsv7 to child LT000
+Jan  4 16:29:57 realserver8 lock_gulmd_core[1071]: Sending Membership update "Expired" about realsv7 to child GFS Kernel Interface
+Jan  4 16:29:57 realserver8 lock_gulmd_core[1071]: Sending Membership update "Expired" about realsv7 to child GFS Kernel Interface
+Jan  4 16:29:57 realserver8 lock_gulmd_core[1071]: Closing connection idx:1, fd:5 to realsv7
+Jan  4 16:29:57 realserver8 lock_gulmd_core[1071]: Closing connection idx:1, fd:5 to realsv7
+Jan  4 16:29:57 realserver8 lock_gulmd_core[1071]: Connection to Master closed.
+Jan  4 16:29:57 realserver8 lock_gulmd_core[1071]: Connection to Master closed.
+Jan  4 16:29:57 realserver8 lock_gulmd_core[1071]: In state: Pending
+Jan  4 16:29:57 realserver8 lock_gulmd_core[1071]: In state: Pending
+Jan  4 16:29:57 realserver8 lock_gulmd_core[1071]: Sending Core state Pending to LTPX
+Jan  4 16:29:57 realserver8 lock_gulmd_core[1071]: Sending Core state Pending to LTPX
+Jan  4 16:29:57 realserver8 lock_gulmd_core[1071]: Sending Core state Pending to LT000
+Jan  4 16:29:57 realserver8 lock_gulmd_core[1071]: Sending Core state Pending to LT000
+Jan  4 16:29:57 realserver8 lock_gulmd_core[1071]: Sending Core state Pending to GFS Kernel Interface
+Jan  4 16:29:57 realserver8 lock_gulmd_core[1071]: Sending Core state Pending to GFS Kernel Interface
+Jan  4 16:29:57 realserver8 lock_gulmd_core[1071]: Looking for Master server at realsv5:192.168.10.71:0x9c68
+Jan  4 16:29:57 realserver8 lock_gulmd_core[1071]: Looking for Master server at realsv5:192.168.10.71:0x9c68
+Jan  4 16:29:57 realserver8 lock_gulmd_core[1071]: Trying to connect to possible Master realsv5:192.168.10.71 idx:1 fd:5
+Jan  4 16:29:57 realserver8 lock_gulmd_core[1071]: Trying to connect to possible Master realsv5:192.168.10.71 idx:1 fd:5
+Jan  4 16:29:57 realserver8 lock_gulmd_core[1071]: Sending login request to possible Master realsv5:192.168.10.71 idx:1 fd:5
+Jan  4 16:29:57 realserver8 lock_gulmd_core[1071]: Sending login request to possible Master realsv5:192.168.10.71 idx:1 fd:5
+Jan  4 16:29:57 realserver8 lock_gulmd_core[1071]: mpm: they(realsv5) are a Slave.
+Jan  4 16:29:57 realserver8 lock_gulmd_core[1071]: mpm: they(realsv5) are a Slave.
+Jan  4 16:29:57 realserver8 lock_gulmd_core[1071]: Closing connection idx:1, fd:5 to realsv5
+Jan  4 16:29:57 realserver8 lock_gulmd_core[1071]: Closing connection idx:1, fd:5 to realsv5
+Jan  4 16:29:58 realserver8 lock_gulmd_core[1071]: Looking for Master server at realsv7:192.168.10.73:0x9c68
+Jan  4 16:29:58 realserver8 lock_gulmd_core[1071]: Looking for Master server at realsv7:192.168.10.73:0x9c68
+Jan  4 16:29:58 realserver8 lock_gulmd_core[1071]: Trying to connect to possible Master realsv7:192.168.10.73 idx:1 fd:5
+Jan  4 16:29:58 realserver8 lock_gulmd_core[1071]: Trying to connect to possible Master realsv7:192.168.10.73 idx:1 fd:5
+Jan  4 16:30:02 realserver5 lock_gulmd_core[1071]: Failed to receive a timely heartbeat reply from Master. (t:1104856225343820 mb:3)
+Jan  4 16:30:02 realserver5 lock_gulmd_core[1071]: Failed to receive a timely heartbeat reply from Master. (t:1104856225343820 mb:3)
+Jan  4 16:30:05 realserver8 lock_gulmd_core[1071]: dnl: We are a Pending. Telling realsv5 to go away.
+Jan  4 16:30:05 realserver8 lock_gulmd_core[1071]: dnl: We are a Pending. Telling realsv5 to go away.
+Jan  4 16:30:05 realserver8 lock_gulmd_core[1071]: Closing connection idx:5, fd:10 to 192.168.10.71
+Jan  4 16:30:05 realserver8 lock_gulmd_core[1071]: Closing connection idx:5, fd:10 to 192.168.10.71
+Jan  4 16:30:05 realserver5 lock_gulmd_core[1071]: I see no Masters, So I am Arbitrating until enough Slaves talk to me.
+Jan  4 16:30:05 realserver5 lock_gulmd_core[1071]: I see no Masters, So I am Arbitrating until enough Slaves talk to me.
+Jan  4 16:30:05 realserver5 lock_gulmd_core[1071]: Could not send quorum update to slave realsv5
+Jan  4 16:30:05 realserver5 lock_gulmd_core[1071]: Could not send quorum update to slave realsv5
+Jan  4 16:30:05 realserver5 lock_gulmd_core[1071]: Could not send quorum update to slave realsv8
+Jan  4 16:30:05 realserver5 lock_gulmd_core[1071]: Could not send quorum update to slave realsv8
+Jan  4 16:30:05 realserver5 lock_gulmd_core[1071]: LastMaster realsv7:192.168.10.73, is being marked Expired.
+Jan  4 16:30:05 realserver5 lock_gulmd_core[1071]: LastMaster realsv7:192.168.10.73, is being marked Expired.
+Jan  4 16:30:05 realserver5 lock_gulmd_core[1071]: Could not send membership update "Expired" about realsv7to slave realsv5
+Jan  4 16:30:05 realserver5 lock_gulmd_core[1071]: Could not send membership update "Expired" about realsv7to slave realsv5
+Jan  4 16:30:05 realserver5 lock_gulmd_core[1071]: Could not send membership update "Expired" about realsv7to slave realsv8
+Jan  4 16:30:05 realserver5 lock_gulmd_core[1071]: Could not send membership update "Expired" about realsv7to slave realsv8
+Jan  4 16:30:05 realserver5 lock_gulmd_core[2365]: Gonna exec fence_node realsv7
+Jan  4 16:30:05 realserver5 lock_gulmd_core[2365]: Gonna exec fence_node realsv7
+Jan  4 16:30:05 realserver5 lock_gulmd_core[1071]: Forked [2365] fence_node realsv7 with a 0 pause.
+Jan  4 16:30:05 realserver5 lock_gulmd_core[1071]: Forked [2365] fence_node realsv7 with a 0 pause.
+Jan  4 16:30:05 realserver5 lock_gulmd_LTPX[1082]: New Master at realsv5:192.168.10.71
+Jan  4 16:30:05 realserver5 lock_gulmd_LTPX[1082]: New Master at realsv5:192.168.10.71
+Jan  4 16:30:05 realserver5 fence_node[2365]: Performing fence method, powerapc, on realsv7.
+Jan  4 16:30:07 realserver8 kernel: scsi(0): RSCN database changed -0x61,0x0.
+Jan  4 16:30:07 realserver8 kernel: scsi(0): Waiting for LIP to complete...
+Jan  4 16:30:07 realserver8 kernel: scsi(0): Topology - (F_Port), Host Loop address 0xffff
+Jan  4 16:30:07 realserver5 fence_node[2365]: The agent (fence_apc_old) reports: success: outlet 7 reboot
+Jan  4 16:30:07 realserver5 fence_node[2365]: Fence of "realsv7" was successful.
+Jan  4 16:30:07 realserver5 lock_gulmd_core[1071]: found match on pid 2365, marking node realsv7 as logged out.
+Jan  4 16:30:07 realserver5 lock_gulmd_core[1071]: found match on pid 2365, marking node realsv7 as logged out.
+Jan  4 16:30:07 realserver5 lock_gulmd_core[1071]: Member update message Fenced about realsv7 to realsv8 islost because node is in OM
+Jan  4 16:30:07 realserver5 lock_gulmd_core[1071]: Member update message Fenced about realsv7 to realsv8 islost because node is in OM
+Jan  4 16:30:09 realserver8 lock_gulmd_core[1071]: dnl: We are a Pending. Telling realsv5 to go away.
+Jan  4 16:30:09 realserver8 lock_gulmd_core[1071]: dnl: We are a Pending. Telling realsv5 to go away.
+Jan  4 16:30:09 realserver8 lock_gulmd_core[1071]: Closing connection idx:5, fd:10 to 192.168.10.71
+Jan  4 16:30:09 realserver8 lock_gulmd_core[1071]: Closing connection idx:5, fd:10 to 192.168.10.71
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: Timeout (15000000) on fd:5 (realsv7:192.168.10.73)
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: Timeout (15000000) on fd:5 (realsv7:192.168.10.73)
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: Closing connection idx:1, fd:5 to realsv7
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: Closing connection idx:1, fd:5 to realsv7
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: In state: Arbitrating
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: In state: Arbitrating
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: I see no Masters, So I am Arbitrating until enough Slaves talk to me.
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: I see no Masters, So I am Arbitrating until enough Slaves talk to me.
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: Sending Quorum update to slave realsv5
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: Sending Quorum update to slave realsv5
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: Could not send quorum update to slave realsv5
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: Could not send quorum update to slave realsv5
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: Sending Quorum update to slave realsv8
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: Sending Quorum update to slave realsv8
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: Could not send quorum update to slave realsv8
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: Could not send quorum update to slave realsv8
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: Sending Core state Arbitrating to LTPX
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: Sending Core state Arbitrating to LTPX
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: Sending Core state Arbitrating to LT000
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: Sending Core state Arbitrating to LT000
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: Sending Core state Arbitrating to GFS Kernel Interface
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: Sending Core state Arbitrating to GFS Kernel Interface
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: LastMaster realsv7:192.168.10.73, is being marked Expired.
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: LastMaster realsv7:192.168.10.73, is being marked Expired.
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: Sending Membership update "Expired" about realsv7 to child LTPX
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: Sending Membership update "Expired" about realsv7 to child LTPX
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: Sending Membership update "Expired" about realsv7 to child LT000
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: Sending Membership update "Expired" about realsv7 to child LT000
+Jan  4 16:30:13 realserver8 lock_gulmd_LTPX[1082]: New Master at realsv8:192.168.10.74
+Jan  4 16:30:13 realserver8 lock_gulmd_LTPX[1082]: New Master at realsv8:192.168.10.74
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: Sending Membership update "Expired" about realsv7 to child GFS Kernel Interface
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: Sending Membership update "Expired" about realsv7 to child GFS Kernel Interface
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: Sending Membership update "Expired" about realsv7 to slave realsv5
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: Sending Membership update "Expired" about realsv7 to slave realsv5
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: Could not send membership update "Expired" about realsv7to slave realsv5
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: Could not send membership update "Expired" about realsv7to slave realsv5
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: Sending Membership update "Expired" about realsv7 to slave realsv8
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: Sending Membership update "Expired" about realsv7 to slave realsv8
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: Could not send membership update "Expired" about realsv7to slave realsv8
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: Could not send membership update "Expired" about realsv7to slave realsv8
+Jan  4 16:30:13 realserver8 lock_gulmd_core[2453]: Gonna exec fence_node realsv7
+Jan  4 16:30:13 realserver8 lock_gulmd_core[2453]: Gonna exec fence_node realsv7
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: Forked [2453] fence_node realsv7 with a 0 pause.
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: Forked [2453] fence_node realsv7 with a 0 pause.
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: Got heartbeat from realsv5 at 1104852463746405 (last:1104852463746405 max:0 avg:0)
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: Got heartbeat from realsv5 at 1104852463746405 (last:1104852463746405 max:0 avg:0)
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: Got heartbeat from realsv8 at 1104852463746539 (last:18446744070597712811 max:5179314 avg:5179314)
+Jan  4 16:30:13 realserver8 lock_gulmd_core[1071]: Got heartbeat from realsv8 at 1104852463746539 (last:18446744070597712811 max:5179314 avg:5179314)
+Jan  4 16:30:13 realserver8 fence_node[2453]: Performing fence method, powerapc, on realsv7.
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Looking for Master server at realsv5:192.168.10.71:0x9c68
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Looking for Master server at realsv5:192.168.10.71:0x9c68
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Trying to connect to possible Master realsv5:192.168.10.71 idx:1 fd:5
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Trying to connect to possible Master realsv5:192.168.10.71 idx:1 fd:5
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Sending login request to possible Master realsv5:192.168.10.71 idx:1 fd:5
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Sending login request to possible Master realsv5:192.168.10.71 idx:1 fd:5
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Closing any Slave connections.
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Closing any Slave connections.
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: In state: Slave
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: In state: Slave
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Found Master at realsv5, so I'm a Slave.
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Found Master at realsv5, so I'm a Slave.
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Sending Core state Slave to LTPX
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Sending Core state Slave to LTPX
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Sending Core state Slave to LT000
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Sending Core state Slave to LT000
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Sending Core state Slave to GFS Kernel Interface
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Sending Core state Slave to GFS Kernel Interface
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Sending Membership update "Fenced" about realsv7 to child LTPX
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Sending Membership update "Fenced" about realsv7 to child LTPX
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Sending Membership update "Fenced" about realsv7 to child LT000
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Sending Membership update "Fenced" about realsv7 to child LT000
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Sending Membership update "Fenced" about realsv7 to child GFS Kernel Interface
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Sending Membership update "Fenced" about realsv7 to child GFS Kernel Interface
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Sending heartbeat to Core Master at 1104852465770097, last was 1104852442612284
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Sending heartbeat to Core Master at 1104852465770097, last was 1104852442612284
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Failed to receive a timely heartbeat reply from Master. (t:1104852465770097 mb:1)
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Failed to receive a timely heartbeat reply from Master. (t:1104852465770097 mb:1)
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Sending Core state Slave to LTPX
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Sending Core state Slave to LTPX
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Sending Core state Slave to LT000
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Sending Core state Slave to LT000
+Jan  4 16:30:15 realserver8 lock_gulmd_LTPX[1082]: New Master at realsv5:192.168.10.71
+Jan  4 16:30:15 realserver8 lock_gulmd_LTPX[1082]: New Master at realsv5:192.168.10.71
+Jan  4 16:30:15 realserver8 lock_gulmd_LT000[1077]: New Master at realsv5:192.168.10.71
+Jan  4 16:30:15 realserver8 lock_gulmd_LT000[1077]: New Master at realsv5:192.168.10.71
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Sending Core state Slave to GFS Kernel Interface
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Sending Core state Slave to GFS Kernel Interface
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: dnl: We are a Slave. Telling realsv5 to go away.
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: dnl: We are a Slave. Telling realsv5 to go away.
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Closing connection idx:5, fd:10 to 192.168.10.71
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Closing connection idx:5, fd:10 to 192.168.10.71
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Sending Membership update "Logged in" about realsv8 to child LTPX
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Sending Membership update "Logged in" about realsv8 to child LTPX
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Sending Membership update "Logged in" about realsv8 to child LT000
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Sending Membership update "Logged in" about realsv8 to child LT000
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Sending Membership update "Logged in" about realsv8 to child GFS Kernel Interface
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: Sending Membership update "Logged in" about realsv8 to child GFS Kernel Interface
+Jan  4 16:30:15 realserver5 lock_gulmd_core[1071]: Now have Slave quorum, going full Master.
+Jan  4 16:30:15 realserver5 lock_gulmd_core[1071]: Now have Slave quorum, going full Master.
+Jan  4 16:30:15 realserver5 lock_gulmd_core[1071]: New Client: idx:5 fd:10 from (192.168.10.74:realsv8)
+Jan  4 16:30:15 realserver5 lock_gulmd_core[1071]: New Client: idx:5 fd:10 from (192.168.10.74:realsv8)
+Jan  4 16:30:15 realserver5 lock_gulmd_LT000[1077]: New Client: idx 2 fd 7 from (192.168.10.71:realsv5)
+Jan  4 16:30:15 realserver5 lock_gulmd_LT000[1077]: New Client: idx 2 fd 7 from (192.168.10.71:realsv5)
+Jan  4 16:30:15 realserver5 lock_gulmd_LTPX[1082]: Logged into LT000 at realsv5:192.168.10.71
+Jan  4 16:30:15 realserver5 lock_gulmd_LTPX[1082]: Logged into LT000 at realsv5:192.168.10.71
+Jan  4 16:30:15 realserver5 lock_gulmd_LTPX[1082]: Finished resending to LT000
+Jan  4 16:30:15 realserver5 lock_gulmd_LTPX[1082]: Finished resending to LT000
+Jan  4 16:30:15 realserver5 lock_gulmd_core[1071]: EOF on xdr (realsv8:192.168.10.74 idx:2 fd:6)
+Jan  4 16:30:15 realserver5 lock_gulmd_core[1071]: EOF on xdr (realsv8:192.168.10.74 idx:2 fd:6)
+Jan  4 16:30:15 realserver5 lock_gulmd_LT000[1077]: New Client: idx 3 fd 8 from (192.168.10.74:realsv8)
+Jan  4 16:30:15 realserver5 lock_gulmd_LT000[1077]: New Client: idx 3 fd 8 from (192.168.10.74:realsv8)
+Jan  4 16:30:15 realserver5 lock_gulmd_LT000[1077]: Attached slave realsv8:192.168.10.74 idx:4 fd:9 (soff:3connected:0x8)
+Jan  4 16:30:15 realserver5 lock_gulmd_LT000[1077]: Attached slave realsv8:192.168.10.74 idx:4 fd:9 (soff:3connected:0x8)
+Jan  4 16:30:15 realserver8 lock_gulmd_LTPX[1082]: Logged into LT000 at realsv5:192.168.10.71
+Jan  4 16:30:15 realserver8 lock_gulmd_LTPX[1082]: Logged into LT000 at realsv5:192.168.10.71
+Jan  4 16:30:15 realserver8 lock_gulmd_LTPX[1082]: Finished resending to LT000
+Jan  4 16:30:15 realserver8 lock_gulmd_LTPX[1082]: Finished resending to LT000
+Jan  4 16:30:15 realserver8 lock_gulmd_LT000[1077]: Logged into Master at realsv5:192.168.10.71
+Jan  4 16:30:15 realserver8 lock_gulmd_LT000[1077]: Logged into Master at realsv5:192.168.10.71
+Jan  4 16:30:15 realserver8 kernel: lock_gulm: Checking for journals for node "realsv7"
+Jan  4 16:30:15 realserver5 kernel: scsi(0): RSCN database changed -0x61,0x0.
+Jan  4 16:30:15 realserver5 kernel: scsi(0): Waiting for LIP to complete...
+Jan  4 16:30:15 realserver5 kernel: scsi(0): Topology - (F_Port), Host Loop address 0xffff
+Jan  4 16:30:15 realserver5 kernel: scsi(0): RSCN database changed -0x61,0x0.
+Jan  4 16:30:15 realserver5 kernel: scsi(0): Waiting for LIP to complete...
+Jan  4 16:30:15 realserver5 kernel: scsi(0): Topology - (F_Port), Host Loop address 0xffff
+Jan  4 16:30:15 realserver5 kernel: lock_gulm: Checking for journals for node "realsv7"
+Jan  4 16:30:15 realserver5 kernel: GFS: fsid=atixcluster3:atixshr.1: jid=2: Trying to acquire journal lock...
+Jan  4 16:30:15 realserver5 kernel: GFS: fsid=atixcluster3:atixshr.1: jid=2: Looking at journal...
+Jan  4 16:30:15 realserver8 fence_node[2453]: The agent (fence_apc_old) reports: success: outlet 7 reboot
+Jan  4 16:30:15 realserver8 fence_node[2453]: Fence of "realsv7" was successful.
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: found match on pid 2453, ignoring since we're not Masteror Arbitrator.
+Jan  4 16:30:15 realserver8 lock_gulmd_core[1071]: found match on pid 2453, ignoring since we're not Masteror Arbitrator.
+Jan  4 16:30:18 realserver5 kernel: GFS: fsid=atixcluster3:atixshr.1: jid=2: Acquiring the transaction lock...
+Jan  4 16:30:18 realserver5 kernel: GFS: fsid=atixcluster3:atixshr.1: jid=2: Replaying journal...
+Jan  4 16:30:18 realserver5 kernel: GFS: fsid=atixcluster3:atixshr.1: jid=2: Replayed 10 of 12 blocks
+Jan  4 16:30:18 realserver5 kernel: GFS: fsid=atixcluster3:atixshr.1: jid=2: replays = 10, skips = 1, sames= 1
+Jan  4 16:30:18 realserver5 kernel: GFS: fsid=atixcluster3:atixshr.1: jid=2: Journal replayed in 3s
+Jan  4 16:30:18 realserver8 kernel: GFS: fsid=atixcluster3:atixshr.0: jid=2: Trying to acquire journal lock...
+Jan  4 16:30:18 realserver8 kernel: GFS: fsid=atixcluster3:atixshr.0: jid=2: Busy
+Jan  4 16:30:18 realserver8 kernel: GFS: fsid=atixcluster3:atixshr.0: jid=2: Trying to acquire journal lock...
+Jan  4 16:30:18 realserver8 kernel: GFS: fsid=atixcluster3:atixshr.0: jid=2: Busy
+Jan  4 16:30:18 realserver8 kernel: GFS: fsid=atixcluster3:atixshr.0: jid=2: Trying to acquire journal lock...
+Jan  4 16:30:18 realserver8 kernel: GFS: fsid=atixcluster3:atixshr.0: jid=2: Busy
+Jan  4 16:30:19 realserver5 kernel: GFS: fsid=atixcluster3:atixshr.1: jid=2: Done
+Jan  4 16:30:19 realserver5 kernel: GFS: fsid=atixcluster3:atixshr.1: jid=2: Trying to acquire journal lock...
+Jan  4 16:30:19 realserver5 kernel: GFS: fsid=atixcluster3:atixshr.1: jid=2: Busy
+Jan  4 16:30:25 realserver8 lock_gulmd_core[1071]: Sending heartbeat to Core Master at 1104852475772285, last was 1104852465770097
+Jan  4 16:30:25 realserver8 lock_gulmd_core[1071]: Sending heartbeat to Core Master at 1104852475772285, last was 1104852465770097
+Jan  4 16:30:35 realserver8 lock_gulmd_core[1071]: Sending heartbeat to Core Master at 1104852485772285, last was 1104852475772285
+Jan  4 16:30:35 realserver8 lock_gulmd_core[1071]: Sending heartbeat to Core Master at 1104852485772285, last was 1104852475772285
+Jan  4 16:30:45 realserver8 lock_gulmd_core[1071]: Sending heartbeat to Core Master at 1104852495772285, last was 1104852485772285
+Jan  4 16:30:45 realserver8 lock_gulmd_core[1071]: Sending heartbeat to Core Master at 1104852495772285, last was 1104852485772285
+Jan  4 16:30:50 realserver5 kernel: scsi(0): RSCN database changed -0x61,0x0.
+Jan  4 16:30:50 realserver8 kernel: scsi(0): RSCN database changed -0x61,0x0.
+Jan  4 16:30:50 realserver5 kernel: scsi(0): Waiting for LIP to complete...
+Jan  4 16:30:50 realserver8 kernel: scsi(0): Waiting for LIP to complete...
+Jan  4 16:30:50 realserver5 kernel: scsi(0): Topology - (F_Port), Host Loop address 0xffff
+Jan  4 16:30:50 realserver8 kernel: scsi(0): Topology - (F_Port), Host Loop address 0xffff
+--------------------------------------------------------------------------------------------------------------------------
+
+Test without Sharedroot nodes but lock_gulmd in chroot:
+gulm_tool setverb localhost Heartbeat,Forking,Locking,ServerState,LockUpdates,LoginLoops
+---------------------------------------------------------------------------------------------------------------------------
+root@realsv7 root]# gulm_tool nodelist localhost
+ Name: realsv5
+  ip    = 192.168.10.71
+  state = Logged in
+  mode = Slave
+  missed beats = 0
+  last beat = 1104841606663963
+  delay avg = 10009825
+  max delay = 10019901
+
+ Name: realsv8
+  ip    = 192.168.10.74
+  state = Logged in
+  mode = Slave
+  missed beats = 0
+  last beat = 1104841605663133
+  delay avg = 10023796
+  max delay = 97020725
+
+ Name: realsv7
+  ip    = 192.168.10.73
+  state = Logged in
+  mode = Master
+  missed beats = 0
+  last beat = 1104841601899603
+  delay avg = 10342477
+  max delay = 93345233
+
+[root@realsv5 root]# fence_node realsv7
+Performing fence method, powerapc, on realsv7.
+The agent (fence_apc_old) reports: success: outlet 7 reboot
+
+Fence of "realsv7" was successful.
+
+----------------------------------------------------------------------------------------------------------------------
+Jan  4 12:27:34 realserver5 fence_node[1656]: The agent (fence_apc_old) reports: success: outlet 7 reboot
+Jan  4 12:27:34 realserver5 fence_node[1656]: Fence of "realsv7" was successful.
+Jan  4 12:27:41 realserver8 lock_gulmd_core[1332]: Sending heartbeat to Core Master at 1104837912361535, last was 1104837902361535
+Jan  4 12:27:41 realserver8 lock_gulmd_core[1332]: Sending heartbeat to Core Master at 1104837912361535, last was 1104837902361535
+Jan  4 12:27:46 realserver5 dhclient: DHCPREQUEST on eth1 to 192.168.10.1 port 67
+Jan  4 12:27:46 realserver5 dhclient: DHCPREQUEST on eth1 to 192.168.10.1 port 67
+Jan  4 12:27:47 realserver8 lock_gulmd_core[1332]: Failed to receive a timely heartbeat reply from Master. (t:1104837917381535 mb:1)
+Jan  4 12:27:47 realserver8 lock_gulmd_core[1332]: Failed to receive a timely heartbeat reply from Master. (t:1104837917381535 mb:1)
+Jan  4 12:27:48 realserver5 lock_gulmd_core[1604]: Failed to receive a timely heartbeat reply from Master. (t:1104841690951166 mb:1)
+Jan  4 12:27:48 realserver5 lock_gulmd_core[1604]: Failed to receive a timely heartbeat reply from Master. (t:1104841690951166 mb:1)
+Jan  4 12:27:51 realserver8 lock_gulmd_core[1332]: Sending heartbeat to Core Master at 1104837922361535, last was 1104837912361535
+Jan  4 12:27:51 realserver8 lock_gulmd_core[1332]: Sending heartbeat to Core Master at 1104837922361535, last was 1104837912361535
+Jan  4 12:28:01 realserver5 dhclient: DHCPREQUEST on eth1 to 192.168.10.1 port 67
+Jan  4 12:28:01 realserver5 dhclient: DHCPREQUEST on eth1 to 192.168.10.1 port 67
+Jan  4 12:28:01 realserver5 kernel: scsi(0): RSCN database changed -0x61,0x0.
+Jan  4 12:28:01 realserver5 kernel: scsi(0): Waiting for LIP to complete...
+Jan  4 12:28:01 realserver8 kernel: scsi(0): RSCN database changed -0x61,0x0.
+Jan  4 12:28:01 realserver5 kernel: scsi(0): Topology - (F_Port), Host Loop address 0xffff
+Jan  4 12:28:01 realserver8 kernel: scsi(0): Waiting for LIP to complete...
+Jan  4 12:28:01 realserver8 kernel: scsi(0): Topology - (F_Port), Host Loop address 0xffff
+Jan  4 12:28:01 realserver8 lock_gulmd_core[1332]: Sending heartbeat to Core Master at 1104837932361545, last was 1104837922361535
+Jan  4 12:28:01 realserver8 lock_gulmd_core[1332]: Sending heartbeat to Core Master at 1104837932361545, last was 1104837922361535
+Jan  4 12:28:02 realserver8 lock_gulmd_core[1332]: Failed to receive a timely heartbeat reply from Master. (t:1104837932381541 mb:2)
+Jan  4 12:28:02 realserver8 lock_gulmd_core[1332]: Failed to receive a timely heartbeat reply from Master. (t:1104837932381541 mb:2)
+Jan  4 12:28:03 realserver5 lock_gulmd_core[1604]: Failed to receive a timely heartbeat reply from Master. (t:1104841705971167 mb:2)
+Jan  4 12:28:03 realserver5 lock_gulmd_core[1604]: Failed to receive a timely heartbeat reply from Master. (t:1104841705971167 mb:2)
+Jan  4 12:28:12 realserver8 lock_gulmd_core[1332]: Sending heartbeat to Core Master at 1104837942381535, last was 1104837932361545
+Jan  4 12:28:12 realserver8 lock_gulmd_core[1332]: Sending heartbeat to Core Master at 1104837942381535, last was 1104837932361545
+Jan  4 12:28:17 realserver8 lock_gulmd_core[1332]: Failed to receive a timely heartbeat reply from Master. (t:1104837947381544 mb:3)
+Jan  4 12:28:17 realserver8 lock_gulmd_core[1332]: Failed to receive a timely heartbeat reply from Master. (t:1104837947381544 mb:3)
+Jan  4 12:28:17 realserver8 lock_gulmd_core[1332]: In state: Pending
+Jan  4 12:28:17 realserver8 lock_gulmd_core[1332]: In state: Pending
+Jan  4 12:28:17 realserver8 lock_gulmd_core[1332]: Looking for Master server at realsv5:192.168.10.71:0x9c68
+Jan  4 12:28:17 realserver8 lock_gulmd_core[1332]: Looking for Master server at realsv5:192.168.10.71:0x9c68
+Jan  4 12:28:17 realserver8 lock_gulmd_core[1332]: Trying to connect to possible Master realsv5:192.168.10.71 idx:1 fd:5
+Jan  4 12:28:17 realserver8 lock_gulmd_core[1332]: Trying to connect to possible Master realsv5:192.168.10.71 idx:1 fd:5
+Jan  4 12:28:17 realserver8 lock_gulmd_core[1332]: Sending login request to possible Master realsv5:192.168.10.71 idx:1 fd:5
+Jan  4 12:28:17 realserver8 lock_gulmd_core[1332]: Sending login request to possible Master realsv5:192.168.10.71 idx:1 fd:5
+Jan  4 12:28:18 realserver8 lock_gulmd_core[1332]: Looking for Master server at realsv7:192.168.10.73:0x9c68
+Jan  4 12:28:18 realserver8 lock_gulmd_core[1332]: Looking for Master server at realsv7:192.168.10.73:0x9c68
+Jan  4 12:28:18 realserver8 lock_gulmd_core[1332]: Trying to connect to possible Master realsv7:192.168.10.73 idx:1 fd:5
+Jan  4 12:28:18 realserver8 lock_gulmd_core[1332]: Trying to connect to possible Master realsv7:192.168.10.73 idx:1 fd:5
+Jan  4 12:28:18 realserver5 lock_gulmd_core[1604]: Failed to receive a timely heartbeat reply from Master. (t:1104841720991167 mb:3)
+Jan  4 12:28:18 realserver5 lock_gulmd_core[1604]: Failed to receive a timely heartbeat reply from Master. (t:1104841720991167 mb:3)
+Jan  4 12:28:20 realserver8 lock_gulmd_core[1332]: No lock_gulmd listening at realsv7:192.168.10.73 idx:1 fd:5
+Jan  4 12:28:20 realserver8 lock_gulmd_core[1332]: No lock_gulmd listening at realsv7:192.168.10.73 idx:1 fd:5
+Jan  4 12:28:20 realserver8 lock_gulmd_core[1332]: In state: Arbitrating
+Jan  4 12:28:20 realserver8 lock_gulmd_core[1332]: In state: Arbitrating
+Jan  4 12:28:20 realserver8 lock_gulmd_core[1332]: I see no Masters, So I am Arbitrating until enough Slaves talk to me.
+Jan  4 12:28:20 realserver8 lock_gulmd_core[1332]: I see no Masters, So I am Arbitrating until enough Slaves talk to me.
+Jan  4 12:28:20 realserver8 lock_gulmd_core[1332]: Could not send quorum update to slave realsv5
+Jan  4 12:28:20 realserver8 lock_gulmd_core[1332]: Could not send quorum update to slave realsv5
+Jan  4 12:28:20 realserver8 lock_gulmd_core[1332]: Could not send quorum update to slave realsv8
+Jan  4 12:28:20 realserver8 lock_gulmd_core[1332]: Could not send quorum update to slave realsv8
+Jan  4 12:28:20 realserver8 lock_gulmd_core[1332]: LastMaster realsv7:192.168.10.73, is being marked Expired.
+Jan  4 12:28:20 realserver8 lock_gulmd_core[1332]: LastMaster realsv7:192.168.10.73, is being marked Expired.
+Jan  4 12:28:20 realserver8 lock_gulmd_core[1332]: Could not send membership update "Expired" about realsv7to slave realsv5
+Jan  4 12:28:20 realserver8 lock_gulmd_core[1332]: Could not send membership update "Expired" about realsv7to slave realsv5
+Jan  4 12:28:20 realserver8 lock_gulmd_core[1332]: Could not send membership update "Expired" about realsv7to slave realsv8
+Jan  4 12:28:20 realserver8 lock_gulmd_core[1332]: Could not send membership update "Expired" about realsv7to slave realsv8
+Jan  4 12:28:20 realserver8 lock_gulmd_core[1511]: Gonna exec fence_node realsv7
+Jan  4 12:28:20 realserver8 lock_gulmd_core[1511]: Gonna exec fence_node realsv7
+Jan  4 12:28:20 realserver8 lock_gulmd_core[1332]: Forked [1511] fence_node realsv7 with a 0 pause.
+Jan  4 12:28:20 realserver8 lock_gulmd_core[1332]: Forked [1511] fence_node realsv7 with a 0 pause.
+Jan  4 12:28:20 realserver8 lock_gulmd_core[1332]: Got heartbeat from realsv5 at 1104837950403411 (last:1104837950403411 max:0 avg:0)
+Jan  4 12:28:20 realserver8 lock_gulmd_core[1332]: Got heartbeat from realsv5 at 1104837950403411 (last:1104837950403411 max:0 avg:0)
+Jan  4 12:28:20 realserver8 lock_gulmd_core[1332]: Got heartbeat from realsv8 at 1104837950403470 (last:18446744070136105420 max:97020725 avg:27787253)
+Jan  4 12:28:20 realserver8 lock_gulmd_core[1332]: Got heartbeat from realsv8 at 1104837950403470 (last:18446744070136105420 max:97020725 avg:27787253)
+Jan  4 12:28:20 realserver8 lock_gulmd_LTPX[1338]: New Master at realsv8:192.168.10.74
+Jan  4 12:28:20 realserver8 lock_gulmd_LTPX[1338]: New Master at realsv8:192.168.10.74
+Jan  4 12:28:20 realserver8 fence_node[1511]: Performing fence method, powerapc, on realsv7.
+Jan  4 12:28:22 realserver8 lock_gulmd_core[1332]: Looking for Master server at realsv5:192.168.10.71:0x9c68
+Jan  4 12:28:22 realserver8 lock_gulmd_core[1332]: Looking for Master server at realsv5:192.168.10.71:0x9c68
+Jan  4 12:28:22 realserver8 lock_gulmd_core[1332]: Trying to connect to possible Master realsv5:192.168.10.71 idx:1 fd:5
+Jan  4 12:28:22 realserver8 lock_gulmd_core[1332]: Trying to connect to possible Master realsv5:192.168.10.71 idx:1 fd:5
+Jan  4 12:28:22 realserver8 lock_gulmd_core[1332]: Sending login request to possible Master realsv5:192.168.10.71 idx:1 fd:5
+Jan  4 12:28:22 realserver8 lock_gulmd_core[1332]: Sending login request to possible Master realsv5:192.168.10.71 idx:1 fd:5
+Jan  4 12:28:23 realserver5 kernel: scsi(0): RSCN database changed -0x61,0x0.
+Jan  4 12:28:23 realserver5 kernel: scsi(0): Waiting for LIP to complete...
+Jan  4 12:28:23 realserver5 kernel: scsi(0): Topology - (F_Port), Host Loop address 0xffff
+Jan  4 12:28:23 realserver8 kernel: scsi(0): RSCN database changed -0x61,0x0.
+Jan  4 12:28:23 realserver8 kernel: scsi(0): Waiting for LIP to complete...
+Jan  4 12:28:23 realserver8 kernel: scsi(0): Topology - (F_Port), Host Loop address 0xffff
+Jan  4 12:28:23 realserver8 lock_gulmd_core[1332]: Looking for Master server at realsv7:192.168.10.73:0x9c68
+Jan  4 12:28:23 realserver8 lock_gulmd_core[1332]: Looking for Master server at realsv7:192.168.10.73:0x9c68
+Jan  4 12:28:23 realserver8 lock_gulmd_core[1332]: Trying to connect to possible Master realsv7:192.168.10.73 idx:1 fd:5
+Jan  4 12:28:23 realserver8 lock_gulmd_core[1332]: Trying to connect to possible Master realsv7:192.168.10.73 idx:1 fd:5
+Jan  4 12:28:23 realserver8 fence_node[1511]: The agent (fence_apc_old) reports: success: outlet 7 reboot
+Jan  4 12:28:23 realserver8 fence_node[1511]: Fence of "realsv7" was successful.
+Jan  4 12:28:23 realserver8 lock_gulmd_core[1332]: found match on pid 1511, marking node realsv7 as logged out.
+Jan  4 12:28:23 realserver8 lock_gulmd_core[1332]: found match on pid 1511, marking node realsv7 as logged out.
+Jan  4 12:28:23 realserver8 lock_gulmd_core[1332]: Member update message Fenced about realsv7 to realsv5 islost because node is in OM
+Jan  4 12:28:23 realserver8 lock_gulmd_core[1332]: Member update message Fenced about realsv7 to realsv5 islost because node is in OM
+Jan  4 12:28:23 realserver8 kernel: lock_gulm: Checking for journals for node "realsv7"
+Jan  4 12:28:23 realserver8 lock_gulmd_core[1332]: No lock_gulmd listening at realsv7:192.168.10.73 idx:1 fd:5
+Jan  4 12:28:23 realserver8 lock_gulmd_core[1332]: No lock_gulmd listening at realsv7:192.168.10.73 idx:1 fd:5
+Jan  4 12:28:25 realserver5 dhclient: DHCPREQUEST on eth1 to 192.168.10.1 port 67
+Jan  4 12:28:25 realserver5 dhclient: DHCPREQUEST on eth1 to 192.168.10.1 port 67
+Jan  4 12:28:26 realserver8 lock_gulmd_core[1332]: Looking for Master server at realsv5:192.168.10.71:0x9c68
+Jan  4 12:28:26 realserver8 lock_gulmd_core[1332]: Looking for Master server at realsv5:192.168.10.71:0x9c68
+Jan  4 12:28:26 realserver8 lock_gulmd_core[1332]: Trying to connect to possible Master realsv5:192.168.10.71 idx:1 fd:5
+Jan  4 12:28:26 realserver8 lock_gulmd_core[1332]: Trying to connect to possible Master realsv5:192.168.10.71 idx:1 fd:5
+Jan  4 12:28:26 realserver8 lock_gulmd_core[1332]: Sending login request to possible Master realsv5:192.168.10.71 idx:1 fd:5
+Jan  4 12:28:26 realserver8 lock_gulmd_core[1332]: Sending login request to possible Master realsv5:192.168.10.71 idx:1 fd:5
+Jan  4 12:28:27 realserver8 lock_gulmd_core[1332]: Looking for Master server at realsv7:192.168.10.73:0x9c68
+Jan  4 12:28:27 realserver8 lock_gulmd_core[1332]: Looking for Master server at realsv7:192.168.10.73:0x9c68
+Jan  4 12:28:27 realserver8 lock_gulmd_core[1332]: Trying to connect to possible Master realsv7:192.168.10.73 idx:1 fd:5
+Jan  4 12:28:27 realserver8 lock_gulmd_core[1332]: Trying to connect to possible Master realsv7:192.168.10.73 idx:1 fd:5
+Jan  4 12:28:30 realserver8 lock_gulmd_core[1332]: Got heartbeat from realsv8 at 1104837960411537 (last:10008067 max:18446744070136105420 avg:9223372035081946336)
+Jan  4 12:28:30 realserver8 lock_gulmd_core[1332]: Got heartbeat from realsv8 at 1104837960411537 (last:10008067 max:18446744070136105420 avg:9223372035081946336)
+Jan  4 12:28:30 realserver8 lock_gulmd_core[1332]: No lock_gulmd listening at realsv7:192.168.10.73 idx:1 fd:5
+Jan  4 12:28:30 realserver8 lock_gulmd_core[1332]: No lock_gulmd listening at realsv7:192.168.10.73 idx:1 fd:5
+Jan  4 12:28:32 realserver8 lock_gulmd_core[1332]: Looking for Master server at realsv5:192.168.10.71:0x9c68
+Jan  4 12:28:32 realserver8 lock_gulmd_core[1332]: Looking for Master server at realsv5:192.168.10.71:0x9c68
+Jan  4 12:28:32 realserver8 lock_gulmd_core[1332]: Trying to connect to possible Master realsv5:192.168.10.71 idx:1 fd:5
+Jan  4 12:28:32 realserver8 lock_gulmd_core[1332]: Trying to connect to possible Master realsv5:192.168.10.71 idx:1 fd:5
+Jan  4 12:28:32 realserver8 lock_gulmd_core[1332]: Sending login request to possible Master realsv5:192.168.10.71 idx:1 fd:5
+Jan  4 12:28:32 realserver8 lock_gulmd_core[1332]: Sending login request to possible Master realsv5:192.168.10.71 idx:1 fd:5
+Jan  4 12:28:33 realserver8 lock_gulmd_core[1332]: Looking for Master server at realsv7:192.168.10.73:0x9c68
+Jan  4 12:28:33 realserver8 lock_gulmd_core[1332]: Looking for Master server at realsv7:192.168.10.73:0x9c68
+Jan  4 12:28:33 realserver8 lock_gulmd_core[1332]: Trying to connect to possible Master realsv7:192.168.10.73 idx:1 fd:5
+Jan  4 12:28:33 realserver8 lock_gulmd_core[1332]: Trying to connect to possible Master realsv7:192.168.10.73 idx:1 fd:5
+Jan  4 12:28:34 realserver5 lock_gulmd_core[1604]: Timeout (15000000) on fd:6 (realsv7:192.168.10.73)
+Jan  4 12:28:34 realserver5 lock_gulmd_core[1604]: Timeout (15000000) on fd:6 (realsv7:192.168.10.73)
+Jan  4 12:28:34 realserver8 lock_gulmd_core[1332]: Got heartbeat from realsv5 at 1104837964547310 (last:14143899 max:0 avg:0)
+Jan  4 12:28:34 realserver8 lock_gulmd_core[1332]: Got heartbeat from realsv5 at 1104837964547310 (last:14143899 max:0 avg:0)
+Jan  4 12:28:34 realserver8 lock_gulmd_core[1332]: Now have Slave quorum, going full Master.
+Jan  4 12:28:34 realserver8 lock_gulmd_core[1332]: Now have Slave quorum, going full Master.
+Jan  4 12:28:34 realserver8 lock_gulmd_core[1332]: In state: Master
+Jan  4 12:28:34 realserver8 lock_gulmd_core[1332]: In state: Master
+Jan  4 12:28:34 realserver8 lock_gulmd_core[1332]: New Client: idx:5 fd:10 from (192.168.10.71:realsv5)
+Jan  4 12:28:34 realserver8 lock_gulmd_core[1332]: New Client: idx:5 fd:10 from (192.168.10.71:realsv5)
+Jan  4 12:28:34 realserver5 lock_gulmd_core[1604]: Node realsv7 dissapeared while we were without a Master.
+Jan  4 12:28:34 realserver5 lock_gulmd_core[1604]: Node realsv7 dissapeared while we were without a Master.
+Jan  4 12:28:34 realserver8 lock_gulmd_LT000[1335]: New Client: idx 2 fd 7 from (192.168.10.74:realsv8)
+Jan  4 12:28:34 realserver8 lock_gulmd_LT000[1335]: New Client: idx 2 fd 7 from (192.168.10.74:realsv8)
+Jan  4 12:28:34 realserver5 lock_gulmd_core[1604]: Found Master at realsv8, so I'm a Slave.
+Jan  4 12:28:34 realserver5 lock_gulmd_core[1604]: Found Master at realsv8, so I'm a Slave.
+Jan  4 12:28:34 realserver8 lock_gulmd_LTPX[1338]: Logged into LT000 at realsv8:192.168.10.74
+Jan  4 12:28:34 realserver8 lock_gulmd_LTPX[1338]: Logged into LT000 at realsv8:192.168.10.74
+Jan  4 12:28:34 realserver5 lock_gulmd_LT000[1607]: New Master at realsv8:192.168.10.74
+Jan  4 12:28:34 realserver5 lock_gulmd_LT000[1607]: New Master at realsv8:192.168.10.74
+Jan  4 12:28:34 realserver8 lock_gulmd_LTPX[1338]: Finished resending to LT000
+Jan  4 12:28:34 realserver8 lock_gulmd_LTPX[1338]: Finished resending to LT000
+Jan  4 12:28:34 realserver5 kernel: lock_gulm: Checking for journals for node "realsv7"
+Jan  4 12:28:34 realserver8 lock_gulmd_core[1332]: Got heartbeat from realsv5 at 1104837964554832 (last:7522 max:14143899 avg:14143899)
+Jan  4 12:28:34 realserver8 lock_gulmd_core[1332]: Got heartbeat from realsv5 at 1104837964554832 (last:7522 max:14143899 avg:14143899)
+Jan  4 12:28:34 realserver5 lock_gulmd_core[1604]: Failed to receive a timely heartbeat reply from Master. (t:1104841737099503 mb:1)
+Jan  4 12:28:34 realserver5 lock_gulmd_core[1604]: Failed to receive a timely heartbeat reply from Master. (t:1104841737099503 mb:1)
+Jan  4 12:28:34 realserver8 lock_gulmd_LT000[1335]: Attached slave realsv5:192.168.10.71 idx:3 fd:8 (soff:3connected:0x8)
+Jan  4 12:28:34 realserver8 lock_gulmd_LT000[1335]: Attached slave realsv5:192.168.10.71 idx:3 fd:8 (soff:3connected:0x8)
+Jan  4 12:28:34 realserver5 lock_gulmd_LTPX[1610]: New Master at realsv8:192.168.10.74
+Jan  4 12:28:34 realserver5 lock_gulmd_LTPX[1610]: New Master at realsv8:192.168.10.74
+Jan  4 12:28:34 realserver8 lock_gulmd_LT000[1335]: New Client: idx 4 fd 9 from (192.168.10.71:realsv5)
+Jan  4 12:28:34 realserver8 lock_gulmd_LT000[1335]: New Client: idx 4 fd 9 from (192.168.10.71:realsv5)
+Jan  4 12:28:34 realserver5 lock_gulmd_LT000[1607]: Logged into Master at realsv8:192.168.10.74
+Jan  4 12:28:34 realserver5 lock_gulmd_LT000[1607]: Logged into Master at realsv8:192.168.10.74
+Jan  4 12:28:34 realserver5 lock_gulmd_LTPX[1610]: Logged into LT000 at realsv8:192.168.10.74
+Jan  4 12:28:34 realserver5 lock_gulmd_LTPX[1610]: Logged into LT000 at realsv8:192.168.10.74
+Jan  4 12:28:34 realserver5 lock_gulmd_LTPX[1610]: Finished resending to LT000
+Jan  4 12:28:34 realserver5 lock_gulmd_LTPX[1610]: Finished resending to LT000
+Jan  4 12:28:34 realserver5 kernel: lock_gulm: Checking for journals for node "realsv7"
+Jan  4 12:28:34 realserver8 kernel: GFS: fsid=atixcluster3:atixshr.1: jid=2: Trying to acquire journal lock...
+Jan  4 12:28:34 realserver8 kernel: GFS: fsid=atixcluster3:atixshr.1: jid=2: Looking at journal...
+Jan  4 12:28:34 realserver5 kernel: GFS: fsid=atixcluster3:atixshr.0: jid=2: Trying to acquire journal lock...
+Jan  4 12:28:34 realserver8 kernel: GFS: fsid=atixcluster3:atixshr.1: jid=2: Acquiring the transaction lock...
+Jan  4 12:28:35 realserver5 kernel: GFS: fsid=atixcluster3:atixshr.0: jid=2: Busy
+Jan  4 12:28:35 realserver5 kernel: GFS: fsid=atixcluster3:atixshr.0: jid=2: Trying to acquire journal lock...
+Jan  4 12:28:35 realserver5 kernel: GFS: fsid=atixcluster3:atixshr.0: jid=2: Busy
+Jan  4 12:28:35 realserver5 kernel: GFS: fsid=atixcluster3:atixshr.0: jid=2: Trying to acquire journal lock...
+Jan  4 12:28:35 realserver5 kernel: GFS: fsid=atixcluster3:atixshr.0: jid=2: Busy
+Jan  4 12:28:35 realserver5 kernel: GFS: fsid=atixcluster3:atixshr.0: jid=2: Trying to acquire journal lock...
+Jan  4 12:28:35 realserver5 kernel: GFS: fsid=atixcluster3:atixshr.0: jid=2: Busy
+Jan  4 12:28:35 realserver8 kernel: GFS: fsid=atixcluster3:atixshr.1: jid=2: Replaying journal...
+Jan  4 12:28:35 realserver8 kernel: GFS: fsid=atixcluster3:atixshr.1: jid=2: Replayed 0 of 1 blocks
+Jan  4 12:28:35 realserver8 kernel: GFS: fsid=atixcluster3:atixshr.1: jid=2: replays = 0, skips = 1, sames = 0
+Jan  4 12:28:35 realserver8 kernel: GFS: fsid=atixcluster3:atixshr.1: jid=2: Journal replayed in 2s
+Jan  4 12:28:36 realserver8 lock_gulmd_core[1332]: No lock_gulmd listening at realsv7:192.168.10.73 idx:1 fd:5
+Jan  4 12:28:36 realserver8 lock_gulmd_core[1332]: No lock_gulmd listening at realsv7:192.168.10.73 idx:1 fd:5
+Jan  4 12:28:37 realserver8 kernel: GFS: fsid=atixcluster3:atixshr.1: jid=2: Done
+Jan  4 12:28:37 realserver8 kernel: GFS: fsid=atixcluster3:atixshr.1: jid=2: Trying to acquire journal lock...
+Jan  4 12:28:37 realserver8 kernel: GFS: fsid=atixcluster3:atixshr.1: jid=2: Busy
+Jan  4 12:28:40 realserver8 lock_gulmd_core[1332]: Got heartbeat from realsv8 at 1104837970431537 (last:10020000 max:18446744070136105420 avg:4611686017545977201)
+Jan  4 12:28:40 realserver8 lock_gulmd_core[1332]: Got heartbeat from realsv8 at 1104837970431537 (last:10020000 max:18446744070136105420 avg:4611686017545977201)
+Jan  4 12:28:44 realserver8 lock_gulmd_core[1332]: Got heartbeat from realsv5 at 1104837974552332 (last:9997500 max:14143899 avg:7075710)
+Jan  4 12:28:44 realserver8 lock_gulmd_core[1332]: Got heartbeat from realsv5 at 1104837974552332 (last:9997500 max:14143899 avg:7075710)
+Jan  4 12:28:50 realserver5 kernel: scsi(0): RSCN database changed -0x61,0x0.
+Jan  4 12:28:50 realserver5 kernel: scsi(0): Waiting for LIP to complete...
+Jan  4 12:28:50 realserver8 kernel: scsi(0): RSCN database changed -0x61,0x0.
+Jan  4 12:28:50 realserver5 kernel: scsi(0): Topology - (F_Port), Host Loop address 0xffff
+Jan  4 12:28:50 realserver8 kernel: scsi(0): Waiting for LIP to complete...
+Jan  4 12:28:50 realserver8 kernel: scsi(0): Topology - (F_Port), Host Loop address 0xffff
+Jan  4 12:28:50 realserver8 lock_gulmd_core[1332]: Got heartbeat from realsv8 at 1104837980431538 (last:10000001 max:18446744070136105420 avg:2305843008777998600)
+Jan  4 12:28:50 realserver8 lock_gulmd_core[1332]: Got heartbeat from realsv8 at 1104837980431538 (last:10000001 max:18446744070136105420 avg:2305843008777998600)
+Jan  4 12:28:54 realserver8 lock_gulmd_core[1332]: Got heartbeat from realsv5 at 1104837984572303 (last:10019971 max:14143899 avg:8536605)
+Jan  4 12:28:54 realserver8 lock_gulmd_core[1332]: Got heartbeat from realsv5 at 1104837984572303 (last:10019971 max:14143899 avg:8536605)
+Jan  4 12:29:00 realserver8 lock_gulmd_core[1332]: Got heartbeat from realsv8 at 1104837990451537 (last:10019999 max:18446744070136105420 avg:1152921504393999300)
+Jan  4 12:29:00 realserver8 lock_gulmd_core[1332]: Got heartbeat from realsv8 at 1104837990451537 (last:10019999 max:18446744070136105420 avg:1152921504393999300)
+Jan  4 12:29:04 realserver8 lock_gulmd_core[1332]: Got heartbeat from realsv5 at 1104837994572281 (last:9999978 max:14143899 avg:9278288)
+Jan  4 12:29:04 realserver8 lock_gulmd_core[1332]: Got heartbeat from realsv5 at 1104837994572281 (last:9999978 max:14143899 avg:9278288)
+Jan  4 12:29:08 realserver5 dhclient: DHCPREQUEST on eth1 to 192.168.10.1 port 67
+Jan  4 12:29:08 realserver5 dhclient: DHCPREQUEST on eth1 to 192.168.10.1 port 67
+Jan  4 12:29:10 realserver8 lock_gulmd_core[1332]: Got heartbeat from realsv8 at 1104838000471538 (last:10020001 max:18446744070136105420 avg:576460752202009649)
+Jan  4 12:29:10 realserver8 lock_gulmd_core[1332]: Got heartbeat from realsv8 at 1104838000471538 (last:10020001 max:18446744070136105420 avg:576460752202009649)
+Jan  4 12:29:14 realserver8 lock_gulmd_core[1332]: Got heartbeat from realsv5 at 1104838004572237 (last:9999956 max:14143899 avg:9639133)
+Jan  4 12:29:14 realserver8 lock_gulmd_core[1332]: Got heartbeat from realsv5 at 1104838004572237 (last:9999956 max:14143899 avg:9639133)
+Jan  4 12:29:20 realserver8 lock_gulmd_core[1332]: Got heartbeat from realsv8 at 1104838010491537 (last:10019999 max:18446744070136105420 avg:288230376106014825)
+Jan  4 12:29:20 realserver8 lock_gulmd_core[1332]: Got heartbeat from realsv8 at 1104838010491537 (last:10019999 max:18446744070136105420 avg:288230376106014825)
+Jan  4 12:29:20 realserver8 kernel: scsi(0) qla2x00_isr MBA_PORT_UPDATE ignored
+Jan  4 12:29:21 realserver5 kernel: scsi(0) qla2x00_isr MBA_PORT_UPDATE ignored
+Jan  4 12:29:21 realserver5 kernel: scsi(0): RSCN database changed -0x61,0x0.
+Jan  4 12:29:21 realserver8 kernel: scsi(0): RSCN database changed -0x61,0x0.
+Jan  4 12:29:21 realserver5 kernel: scsi(0): Waiting for LIP to complete...
+Jan  4 12:29:21 realserver8 kernel: scsi(0): Waiting for LIP to complete...
+Jan  4 12:29:21 realserver5 kernel: scsi(0): Topology - (F_Port), Host Loop address 0xffff
+Jan  4 12:29:21 realserver8 kernel: scsi(0): Topology - (F_Port), Host Loop address 0xffff
+Jan  4 12:29:22 realserver5 kernel: scsi(0): RSCN database changed -0x61,0x0.
+Jan  4 12:29:22 realserver5 kernel: scsi(0): Waiting for LIP to complete...
+Jan  4 12:29:22 realserver8 kernel: scsi(0): RSCN database changed -0x61,0x0.
+Jan  4 12:29:22 realserver5 kernel: scsi(0): Topology - (F_Port), Host Loop address 0xffff
+Jan  4 12:29:22 realserver8 kernel: scsi(0): Waiting for LIP to complete...
+Jan  4 12:29:22 realserver8 kernel: scsi(0): Topology - (F_Port), Host Loop address 0xffff
+Jan  4 12:29:24 realserver8 lock_gulmd_core[1332]: Got heartbeat from realsv5 at 1104838014572213 (last:9999976 max:14143899 avg:9819544)
+Jan  4 12:29:24 realserver8 lock_gulmd_core[1332]: Got heartbeat from realsv5 at 1104838014572213 (last:9999976 max:14143899 avg:9819544)
+Jan  4 12:29:30 realserver8 lock_gulmd_core[1332]: Got heartbeat from realsv8 at 1104838020511537 (last:10020000 max:18446744070136105420 avg:144115188058017412)
+Jan  4 12:29:30 realserver8 lock_gulmd_core[1332]: Got heartbeat from realsv8 at 1104838020511537 (last:10020000 max:18446744070136105420 avg:144115188058017412)
+Jan  4 12:29:34 realserver8 lock_gulmd_core[1332]: Got heartbeat from realsv5 at 1104838024592186 (last:10019973 max:14143899 avg:9909760)
+Jan  4 12:29:34 realserver8 lock_gulmd_core[1332]: Got heartbeat from realsv5 at 1104838024592186 (last:10019973 max:14143899 avg:9909760)
+Jan  4 12:29:40 realserver8 lock_gulmd_core[1332]: Got heartbeat from realsv8 at 1104838030531539 (last:10020002 max:18446744070136105420 avg:72057594034018706)
+Jan  4 12:29:40 realserver8 lock_gulmd_core[1332]: Got heartbeat from realsv8 at 1104838030531539 (last:10020002 max:18446744070136105420 avg:72057594034018706)
+Jan  4 12:29:44 realserver8 lock_gulmd_core[1332]: Got heartbeat from realsv5 at 1104838034612163 (last:10019977 max:14143899 avg:9964866)
+Jan  4 12:29:44 realserver8 lock_gulmd_core[1332]: Got heartbeat from realsv5 at 1104838034612163 (last:10019977 max:14143899 avg:9964866)
