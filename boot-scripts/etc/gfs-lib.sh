@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.9 2005-01-03 08:30:43 marc Exp $
+# $Id: gfs-lib.sh,v 1.10 2005-01-05 10:53:33 marc Exp $
 #
 # @(#)$File$
 #
@@ -246,9 +246,56 @@ function copy_relevant_files {
   if [ -n "$debug" ]; then set +x; fi
   return $ret_c
 }
+
+# This function starts the lockgulmd in a chroot environment per default
+# If no_chroot is given as param the chroot is skipped
+function gfs_start_service {
+  [ -d "$1" ] && chroot_dir=$1 && shift
+  service=$1
+  service_name=$(basename $service)
+  shift
+
+  service_dirs=$(cat /etc/${service_name}_dirs.list 2>/dev/null)
+  service_mv_files=$(cat /etc/${service_name}_mv_files.list 2>/dev/null)
+  service_cp_files=$(cat /etc/${service_name}_cp_files.list 2>/dev/null)
+
+  if [ -z "$service" ]; then
+    error_local "gfs_start_chroot_service: No service given"
+    return -1
+  fi
+  if [ "$1" = "no_chroot" ]; then
+    shift
+    $($service $*)
+  else
+    [ -z "chroot_dir" ] && chroot_dir="/var/lib/${service_name}"
+    echo_local -n "service=$service_name..build chroot.."
+    [ -d $chroot_dir ] || mkdir -p $chroot_dir
+    for dir in $service_dirs; do
+      [ -d $chroot_dir/$dir ] || mkdir -p $chroot_dir/$dir 2>/dev/null
+    done
+    for file in $service_cp_files; do
+      [ -e $chroot_dir/$file ] || cp -a $file $chroot_dir/$file 2>/dev/null
+    done
+    for file in $service_mv_files; do
+      [ -e $chroot_dir/$file ] || mv $file $chroot_dir/$file 2>/dev/null
+      [ -e $file ] || ln -sf $chroot_dir/$file $file 2>/dev/null
+    done
+    for file in /usr/kerberos/lib/*; do
+      [ -e /usr/lib/$(basename $file) ] || ln -sf $file /usr/lib/$(basename $file) 2>/dev/null
+      [ -e ${chroot_dir}/usr/lib/$(basename $file) ] || ln -sf $file ${chroot_dir}/usr/lib/$(basename $file) 2>/dev/null
+    done
+
+    echo_local -n "..$service.."
+    /usr/sbin/chroot $chroot_dir $service $* || 
+    ( echo_local -n "chroot not worked failing back.." && $service)
+  fi
+}
+
+#
 # This function starts the syslog-server to log the gfs-bootprocess
 function gfs_start_syslog {
   local syslog_server=$(cca_get_syslog_server)
+  local chroot_dir="/var/lib/lock_gulmd"
   echo_local_debug "Syslog server: $syslog_server, hostname: "$(/bin/hostname)
   if [ -n "$syslog_server" ]; then
     echo '*.* @'"$syslog_server" >> /etc/syslog.conf
@@ -257,47 +304,17 @@ function gfs_start_syslog {
   fi
   
   echo "syslog          514/udp" >> /etc/services
-  exec_local /sbin/syslogd -m 1 -a /var/lib/lock_gulmd/dev/log
+  mkdir -p $chroot_dir 2> /dev/null
+  exec_local gfs_start_service /sbin/syslogd no_chroot -m 0 -a ${chroot_dir}/dev/log
 }
 
-# This function starts the lockgulmd in a chroot environment per default
-# If no_chroot is given as param the chroot is skipped
-function gfs_start_lockgulmd {
-  lock_gulm_dirs=$(cat /etc/lock_gulmd_dirs.list)
-  lock_gulm_mv_files=$(cat /etc/lock_gulmd_mv_files.list)
-  lock_gulm_cp_files=$(cat /etc/lock_gulmd_cp_files.list)
-  if [ "$1" = "no_chroot" ]; then
-    /sbin/lock_gulmd
-  else
-    chroot_dir="/var/lib/lock_gulmd"
-    echo_local -n "..build chroot.."
-    mkdir -p $chroot_dir
-    for dir in $lock_gulm_dirs; do
-      mkdir -p $chroot_dir/$dir 2>/dev/null
-    done
-    for file in $lock_gulm_cp_files; do
-      cp -a $file $chroot_dir/$file 2>/dev/null
-    done
-    for file in $lock_gulm_mv_files; do
-      mv $file $chroot_dir/$file 2>/dev/null
-      ln -sf $chroot_dir/$file $file 2>/dev/null
-    done
-    for file in /usr/kerberos/lib/*; do
-      ln -sf $file /usr/lib/$(basename $file) 2>/dev/null
-      ln -sf $file ${chroot_dir}/usr/lib/$(basename $file) 2>/dev/null
-    done
-    [ -n "$debug" ] && set +x
-    echo_local -n "..syslogd ..."
-    gfs_start_syslog
-
-    echo_local -n "..lock_gulmd.."
-    /usr/sbin/chroot $chroot_dir /sbin/lock_gulmd || 
-    ( echo_local -n "chroot not worked failing back.." && /sbin/lock_gulmd)
-    [ -n "$debug" ] && set +x
-  fi
+#
+# Function starts the lock_gulmd in a changeroot environment
+function gfs_start_lock_gulmd {
+  exec_local gfs_start_service /sbin/lock_gulmd
   sts=1
   if [ $? -eq 0 ]; then
-    echo_local -n "check.."
+    echo_local -n "   check Lockgulmd.."
     for i in $(seq 1 10); do
       sleep 1
       echo_local -n "."
@@ -310,8 +327,24 @@ function gfs_start_lockgulmd {
   if [ $sts -eq 0 ]; then return 0; else return 1; fi
 }
 
+#
+# Function starts the ccsd in a changeroot environment
+function gfs_start_ccsd {
+  chroot_dir=/var/lib/lock_gulmd
+  mkdir -p $chroot_dir 2> /dev/null
+  mkdir -p ${chroot_dir}/dev
+  for dir in pool raw rawctl; do
+    mv /dev/$dir $chroot_dir/dev/$dir && ln -sf ${chroot_dir}/dev/$dir /dev/$dir
+  done
+  exec_local gfs_start_service $chroot_dir /sbin/ccsd -d $1
+}
+
 # $Log: gfs-lib.sh,v $
-# Revision 1.9  2005-01-03 08:30:43  marc
+# Revision 1.10  2005-01-05 10:53:33  marc
+# moved syslog and ccsd in chroot to /var/lib/lock_gulmd
+# added function gfs_start_service
+#
+# Revision 1.9  2005/01/03 08:30:43  marc
 # first offical rpm version
 # - major changes in way of starting lock_gulmd. Is started now in a change root
 # - logs are also written to a started syslogd
