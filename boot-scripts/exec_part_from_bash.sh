@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: exec_part_from_bash.sh,v 1.1 2004-07-31 11:24:43 marc Exp $
+# $Id: exec_part_from_bash.sh,v 1.2 2004-09-27 07:35:55 marc Exp $
 #
 # @(#)$File$
 #
@@ -24,7 +24,7 @@
 #         Should be the framework for all other functionalities as well.
 
 echo "Starting ATIX $0"
-echo 'Version $Date: 2004-07-31 11:24:43 $'
+echo 'Version $Date: 2004-09-27 07:35:55 $'
 
 
 . etc/sysconfig/comoonics
@@ -57,3 +57,5 @@ echo_local "0.2 Kernel-verion: ${KERNEL_VERSION}"
 echo_local_debug "*****************************"
 
 source $1
+
+# $log$
