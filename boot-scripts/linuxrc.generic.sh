@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.10 2004-09-13 09:38:15 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.11 2004-09-24 08:46:54 marc Exp $
 #
 # @(#)$File$
 #
@@ -32,7 +32,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local $release
-echo_local 'Internal Version $Revision: 1.10 $ $Date: 2004-09-13 09:38:15 $'
+echo_local 'Internal Version $Revision: 1.11 $ $Date: 2004-09-24 08:46:54 $'
 
 initBootProcess
 
@@ -54,6 +54,7 @@ echo_local_debug "mount_opts: $mount_opts"
 echo_local_debug "bootpart: $bootpart"
 echo_local_debug "ip: $ipConfig"
 echo_local_debug "tmpfix: $tmpfix"
+echo_local_debug "iscsi: $iscsi"
 echo_local_debug "*****************************"
 x=`cat /proc/version`; 
 KERNEL_VERSION=`expr "$x" : 'Linux version \([^ ]*\)'`
@@ -138,6 +139,9 @@ if [ ! -e /mnt/newroot ]; then
 	mkdir -p /mnt/newroot
 fi
 
+if [ -n "$iscsi" ]; then
+    source /linuxrc.part.iscsi.sh
+fi
 
 source /linuxrc.part.${bootpart}.sh
 
