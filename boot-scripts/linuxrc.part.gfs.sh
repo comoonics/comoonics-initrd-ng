@@ -1,5 +1,5 @@
 #
-# $Id: linuxrc.part.gfs.sh,v 1.2 2004-08-01 21:00:31 marc Exp $
+# $Id: linuxrc.part.gfs.sh,v 1.3 2004-08-11 16:53:16 marc Exp $
 #
 # @(#)$File$
 #
@@ -122,19 +122,31 @@ else
 	GFS_POOL_CCA="${GFS_POOL}_cca"
     fi
     cdsl_local_dir="/cdsl.local"
-    echo_local -n "4.4 Starting ccsd ($GFS_POOL_CCA)"
-    exec_local /sbin/ccsd -d $GFS_POOL_CCA
-    return_code
-    echo_local_debug "4.4.1 Pool-cca $GFS_POOL_CCA"
+    if [ -e ${GFS_POOL_CCA} ]; then 
+	echo_local -n "4.4 Starting ccsd ($GFS_POOL_CCA)"
+	exec_local /sbin/ccsd -d $GFS_POOL_CCA
+	return_code
+	echo_local_debug "4.4.1 Pool-cca $GFS_POOL_CCA"
+	n_ipConfig=$(cca_autoconfigure_network $ipconfig $NETDEV)
+	if [ -n "$n_ipConfig" ]; then
+	    echo_local -n "4.5.1 Configuring network with bootparm-config ($ipConfig)"
+	    exec_local ip2Config $n_ipConfig
+	    echo_local -n "4.5.2 Powering up the network for interface ($NETDEV)..."
+	    exec_local my_ifup $NETDEV $n_ipConfig
+	fi
+    fi
     echo_local_debug "4.4.1 pool_name: $pool_name"
     [ -z "$pool_name" ] && pool_name=$(cca_get_node_sharedroot)
     echo_local_debug "4.4.1 poolname: $pool_name"
     echo_local_debug "4.4.1 pool_cca_name: $pool_cca_name"
     GFS_POOL=$pool_name
     step
+    setHWClock
+    step
     echo_local -n "4.5 Starting lock_gulmd"
     sts=1
-    if lock_gulmd &>> $bootlog; then
+    lock_gulmd 2>&1 >> $bootlog
+    if [ $? -eq 0 ]; then
 	for i in $(seq 1 10)
 	  do
 	  sleep 1
@@ -208,23 +220,17 @@ exec_local cp ${bootlog} /mnt/newroot/${bootlog}
 echo_local -n "5.4 Pivot-Rooting... (pwd: "$(pwd)")"
 # [ ! -d initrd ] && mkdir initrd
 # exec_local /sbin/pivot_root . initrd
-#echo_local_debug "**********************************************************************"
 #echo_local "6.1 Restarting network with new pivot_root..."
 #mount -t proc proc /proc
 #kill $pid && /sbin/ifup eth0
-#echo_local "6.2 Cleaning up initrd ."
-#echo_local -n "6.2.1 Umounting procfs"
-#exec_local /bin/umount /initrd/proc
-#echo_local -n "6.2.2 Umounting /initrd"
-#exec_local /bin/umount /initrd
-#echo_local -n "6.2.3 Freeing memory"
-#exec_local /sbin/blockdev --flushbufs /dev/ram0
-
 
 pivotRoot
 
 # $Log: linuxrc.part.gfs.sh,v $
-# Revision 1.2  2004-08-01 21:00:31  marc
+# Revision 1.3  2004-08-11 16:53:16  marc
+# inbetween version
+#
+# Revision 1.2  2004/08/01 21:00:31  marc
 # com-rescan-scsi.sh: made the qla2?00 drivers work without -l option
 # linux.part.gfs.sh:  major bugfixes for debugging.
 #
