@@ -1,5 +1,5 @@
 #
-# $Id: linuxrc.part.gfs.sh,v 1.8 2004-09-24 14:25:21 marc Exp $
+# $Id: linuxrc.part.gfs.sh,v 1.9 2004-09-26 14:08:53 marc Exp $
 #
 # @(#)$File$
 #
@@ -205,32 +205,8 @@ fi
 #fi
 #step
 echo_local -n "5.3 Copying relevant files"
-#kill $pid
-output=$( (
-	if [ -f /mnt/newroot/etc/modules.conf ]; then 
-	    mv /mnt/newroot/etc/modules.conf /mnt/newroot/etc/modules.conf.com_back
-	fi &&
-	if [ -f /mnt/newroot/etc/sysconfig/hwconf ]; then 
-	    mv /mnt/newroot/etc/sysconfig/hwconf /mnt/newroot/etc/sysconfig/hwconf.com_back
-	fi &&
-	if [ ! -d /mnt/newroot/${cdsl_local_dir}/etc ]; then mkdir -p /mnt/newroot/${cdsl_local_dir}/etc; fi
-	if [ ! -d /mnt/newroot/${cdsl_local_dir}/etc/sysconfig ]; then mkdir -p /mnt/newroot/${cdsl_local_dir}/etc/sysconfig; fi
-	cd /mnt/newroot/etc &&
-	cp /etc/modules.conf /mnt/newroot/${cdsl_local_dir}/etc/modules.conf &&
-	ln -sf ../${cdsl_local_dir}/etc/modules.conf modules.conf &&
-        cd sysconfig &&
-	cp /etc/sysconfig/hwconf /mnt/newroot/${cdsl_local_dir}/etc/sysconfig/
-	ln -fs ../../${cdsl_local_dir}/etc/sysconfig/hwconf hwconf &&
-	cp /etc/sysconfig/network /mnt/newroot/${cdsl_local_dir}/etc/sysconfig/
-	ln -fs ../../${cdsl_local_dir}/etc/sysconfig/network network &&
-	cd /mnt/newroot ) 2>&1 )
-echo "$output" >> $bootlog
-if [ ! -z "$debug" ]; then 
-    echo "$output"
-fi
-ret_code=$?
-return_code $ret_code
-step
+exec_local copy_relevant_files $cdsl_local_dir
+cd /mnt/newroot
 
 echo_local -n "5.3.1 Copying logfile to ${bootlog}..."
 cp ${bootlog} /mnt/newroot/${bootlog}
@@ -245,7 +221,10 @@ if [ $? -eq 0 ]; then echo_local "(OK)"; else echo_local "(FAILED)"; fi
 chRoot
 
 # $Log: linuxrc.part.gfs.sh,v $
-# Revision 1.8  2004-09-24 14:25:21  marc
+# Revision 1.9  2004-09-26 14:08:53  marc
+# moved copying of relevant files to outside
+#
+# Revision 1.8  2004/09/24 14:25:21  marc
 # minor changes in ordering
 #
 # Revision 1.7  2004/09/24 09:36:03  marc
