@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.4 2004-09-12 11:11:06 marc Exp $
+# $Id: gfs-lib.sh,v 1.5 2004-09-26 14:08:38 marc Exp $
 #
 # @(#)$File$
 #
@@ -149,8 +149,43 @@ function cca_autoconfigure_network {
     echo $($ccs_read string ${cca_dir}/nodes.ccs nodes/$hostname/eth0)"::"$($ccs_read string ${cca_dir}/nodes.ccs nodes/$hostname/eth0_gateway)":"$($ccs_read string ${cca_dir}/nodes.ccs nodes/$hostname/eth0_netmask)":$hostname"
 }
 
+function copy_relevant_files {
+  local cdsl_local_dir=$(shift)
+  # backup old files
+  olddir=$(pwd)
+  if [ -f /mnt/newroot/etc/modules.conf ]; then 
+    mv /mnt/newroot/etc/modules.conf /mnt/newroot/etc/modules.conf.com_back
+  fi &&
+  if [ -f /mnt/newroot/etc/sysconfig/hwconf ]; then 
+    mv /mnt/newroot/etc/sysconfig/hwconf /mnt/newroot/etc/sysconfig/hwconf.com_back
+  fi &&
+  if [ ! -d /mnt/newroot/${cdsl_local_dir}/etc ]; then 
+    mkdir -p /mnt/newroot/${cdsl_local_dir}/etc
+  fi &&
+  if [ ! -d /mnt/newroot/${cdsl_local_dir}/etc/sysconfig ]; then 
+    mkdir -p /mnt/newroot/${cdsl_local_dir}/etc/sysconfig
+  fi &&
+  cd /mnt/newroot/etc &&
+  cp /etc/modules.conf /mnt/newroot/${cdsl_local_dir}/etc/modules.conf &&
+  ([ -n "$cdsl_local_dir" ] && 
+      ln -sf ../${cdsl_local_dir}/etc/modules.conf modules.conf) &&
+  cd sysconfig &&
+  cp /etc/sysconfig/hwconf /mnt/newroot/${cdsl_local_dir}/etc/sysconfig/
+  ([ -n "$cdsl_local_dir" ] && 
+      ln -fs ../../${cdsl_local_dir}/etc/sysconfig/hwconf hwconf) &&
+  cp /etc/sysconfig/network /mnt/newroot/${cdsl_local_dir}/etc/sysconfig/
+  ([ -n "$cdsl_local_dir" ] && 
+      ln -fs ../../${cdsl_local_dir}/etc/sysconfig/network network)
+  ret_c=$?
+  cd $olddir
+  return $ret_c
+}
+
 # $Log: gfs-lib.sh,v $
-# Revision 1.4  2004-09-12 11:11:06  marc
+# Revision 1.5  2004-09-26 14:08:38  marc
+# added copy_relevant_files
+#
+# Revision 1.4  2004/09/12 11:11:06  marc
 # added generation of hosts file from cca
 #
 # Revision 1.3  2004/09/08 16:13:30  marc
