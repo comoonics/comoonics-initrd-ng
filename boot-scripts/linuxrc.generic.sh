@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.5 2004-08-11 17:00:12 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.6 2004-08-13 15:53:21 marc Exp $
 #
 # @(#)$File$
 #
@@ -29,7 +29,7 @@
 source /etc/boot-lib.sh
 
 echo_local "Starting ATIX initrd"
-echo_local 'Version $Revision: 1.5 $ $Date: 2004-08-11 17:00:12 $'
+echo_local 'Version $Revision: 1.6 $ $Date: 2004-08-13 15:53:21 $'
 
 initBootProcess
 
@@ -76,7 +76,7 @@ if [ -n "$ipConfig" ]; then
       echo_local -n "2.1 Configuring network with bootparm-config ($ipConfig)"
       exec_local ip2Config $ipConfig
       echo_local -n "2.1.3 Powering up the network for interface ($NETDEV)..."
-      exec_local my_ifup $NETDEV
+      exec_local my_ifup $NETDEV $ipConfig
   fi
 else
   for dev in $NETCONFIG; do
