@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.8 2004-09-24 14:52:02 marc Exp $
+# $Id: boot-lib.sh,v 1.9 2004-09-26 14:19:38 marc Exp $
 #
 # @(#)$File$
 #
@@ -253,7 +253,8 @@ function getBootParameters() {
 	echo_local "*********************************"
 	echo_local "Scanning for optional parameters"
 	echo_local "*********************************"
-	echo_local_debug "** /proc/cmdline: "$(cat /proc/cmdline)
+	echo_local_debug "** /proc/cmdline: "
+        exec_local_debug cat /proc/cmdline
 	mount_opts=`getBootParm mountopt defaults`
 	boot_source=`getBootParm bootsrc default`
 	bootpart=`getBootParm bootpart bash`
@@ -411,8 +412,8 @@ function ipaddress_from_dev() {
    gfsip=`/sbin/ifconfig ${netdev} | /bin/grep "inet addr:" | /bin/sed -e "s/\\W*inet\\Waddr://" | /bin/sed -e "s/\\W*Bcast:.*$//"`
 }
 function echo_local() {
-   echo ${*:0:$#-1} "${*:$#}"
-   echo ${*:0:$#-1} "${*:$#}" >> $bootlog
+   echo ${*:0:$#-1} ${*:$#}
+   echo ${*:0:$#-1} ${*:$#} >> $bootlog
 }
 function echo_local_debug() {
    if [ ! -z "$debug" ]; then
@@ -544,7 +545,10 @@ function add_scsi_device() {
 }
 
 # $Log: boot-lib.sh,v $
-# Revision 1.8  2004-09-24 14:52:02  marc
+# Revision 1.9  2004-09-26 14:19:38  marc
+# small bugfix
+#
+# Revision 1.8  2004/09/24 14:52:02  marc
 # exit from step
 #
 # Revision 1.7  2004/09/24 08:46:14  marc
