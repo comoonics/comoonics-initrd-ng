@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.10 2004-09-26 14:41:28 marc Exp $
+# $Id: boot-lib.sh,v 1.11 2004-09-26 14:56:10 marc Exp $
 #
 # @(#)$File$
 #
@@ -38,8 +38,8 @@ function getBootParm() {
    parm="$1"
    default="$2"
    cmdline=`cat /proc/cmdline`
-   out=`expr "$cmdline" : ".*$parm=\([^ ]*\)"`
-   if [ $(expr "$cmdline" : ".*$parm") -gt 0 ] && [ -z "$out" ]; then out=1; fi
+   out=`expr "$cmdline" : ".*$parm=\([^ ]*\)" 2>/dev/null`
+   if [ $(expr "$cmdline" : ".*$parm" 2>/dev/null) -gt 0 ] && [ -z "$out" ]; then out=1; fi
    if [ -z "$out" ]; then out="$default"; fi
    echo "$out"
    if [ -z "$out" ]; then
@@ -73,7 +73,7 @@ function my_ifup() {
        echo_local "   Starting network configuration for $dev with config $ipconfig"
        exec_local ifup $dev
        echo_local "   Recreating network configuration for $dev"
-       exec_local ip2Config $ipConfig "\""$(getPosFromIPString 1, $ipconfig)"\""  "\""$(getPosFromIPString 3, $ipconfig)"\"" "\""$(getPosFromIPString 4, $ipconfig)"\"" "\""$(hostname -f)"\"" "\""$(getPosFromIPString 6, $1)"\""
+       exec_local ip2Config $(getPosFromIPString 1, $ipconfig)::$(getPosFromIPString 3, $ipconfig):$(getPosFromIPString 4, $ipconfig):$(hostname -f):$(getPosFromIPString 6, $1)
    fi
    return $return_c
 }
@@ -556,7 +556,10 @@ function add_scsi_device() {
 }
 
 # $Log: boot-lib.sh,v $
-# Revision 1.10  2004-09-26 14:41:28  marc
+# Revision 1.11  2004-09-26 14:56:10  marc
+# better ip2Config
+#
+# Revision 1.10  2004/09/26 14:41:28  marc
 # changes to ip2config to generate the proper hostname on redhat.
 #
 # Revision 1.9  2004/09/26 14:19:38  marc
