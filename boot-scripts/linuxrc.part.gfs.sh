@@ -1,5 +1,5 @@
 #
-# $Id: linuxrc.part.gfs.sh,v 1.6 2004-09-12 11:11:19 marc Exp $
+# $Id: linuxrc.part.gfs.sh,v 1.7 2004-09-24 09:36:03 marc Exp $
 #
 # @(#)$File$
 #
@@ -27,6 +27,10 @@
 #
 # Includes
 # %%include /etc/gfs-lib.sh
+
+if [ -n "$iscsi" ]; then
+    source /linuxrc.part.iscsi.sh
+fi
 
 source /etc/gfs-lib.sh
 
@@ -241,7 +245,10 @@ if [ $? -eq 0 ]; then echo_local "(OK)"; else echo_local "(FAILED)"; fi
 chRoot
 
 # $Log: linuxrc.part.gfs.sh,v $
-# Revision 1.6  2004-09-12 11:11:19  marc
+# Revision 1.7  2004-09-24 09:36:03  marc
+# added iscsi
+#
+# Revision 1.6  2004/09/12 11:11:19  marc
 # added generation of hostsfile from cca
 #
 # Revision 1.5  2004/09/08 16:12:33  marc
