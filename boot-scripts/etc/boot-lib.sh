@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.14 2004-09-27 07:49:48 marc Exp $
+# $Id: boot-lib.sh,v 1.15 2004-09-27 07:59:07 marc Exp $
 #
 # @(#)$File$
 #
@@ -237,6 +237,7 @@ function check_cmd_params() {
 	      ;;
       esac
     done
+    return $OPTINT;
 }
 
 function exec_nondefault_boot_source() {
@@ -577,7 +578,10 @@ function add_scsi_device() {
 }
 
 # $Log: boot-lib.sh,v $
-# Revision 1.14  2004-09-27 07:49:48  marc
+# Revision 1.15  2004-09-27 07:59:07  marc
+# again check_boot_params
+#
+# Revision 1.14  2004/09/27 07:49:48  marc
 # rechanged echo_local
 #
 # Revision 1.13  2004/09/27 07:35:26  marc
