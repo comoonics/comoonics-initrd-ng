@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.6 2004-09-13 09:23:32 marc Exp $
+# $Id: boot-lib.sh,v 1.7 2004-09-24 08:46:14 marc Exp $
 #
 # @(#)$File$
 #
@@ -257,6 +257,7 @@ function getBootParameters() {
 	boot_source=`getBootParm bootsrc default`
 	bootpart=`getBootParm bootpart bash`
 	tmpfix=$(getBootParm tmpfix)
+	iscsi=$(getBootParm iscsi)
 }
 
 function loadSCSI() {
@@ -542,7 +543,10 @@ function add_scsi_device() {
 }
 
 # $Log: boot-lib.sh,v $
-# Revision 1.6  2004-09-13 09:23:32  marc
+# Revision 1.7  2004-09-24 08:46:14  marc
+# added iscsi as parameter
+#
+# Revision 1.6  2004/09/13 09:23:32  marc
 # fixed the default gw in generateRedHatIfCfg()
 #
 # Revision 1.5  2004/09/08 16:12:53  marc
