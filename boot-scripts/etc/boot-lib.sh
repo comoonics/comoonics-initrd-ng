@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.13 2004-09-27 07:35:26 marc Exp $
+# $Id: boot-lib.sh,v 1.14 2004-09-27 07:49:48 marc Exp $
 #
 # @(#)$File$
 #
@@ -444,8 +444,8 @@ function ipaddress_from_dev() {
    gfsip=`/sbin/ifconfig ${netdev} | /bin/grep "inet addr:" | /bin/sed -e "s/\\W*inet\\Waddr://" | /bin/sed -e "s/\\W*Bcast:.*$//"`
 }
 function echo_local() {
-   echo ${*:0:$#-1} ${*:$#}
-   echo ${*:0:$#-1} ${*:$#} >> $bootlog
+   echo ${*:0:$#-1} "${*:$#}"
+   echo ${*:0:$#-1} "${*:$#}" >> $bootlog
 }
 function echo_local_debug() {
    if [ ! -z "$debug" ]; then
@@ -577,7 +577,10 @@ function add_scsi_device() {
 }
 
 # $Log: boot-lib.sh,v $
-# Revision 1.13  2004-09-27 07:35:26  marc
+# Revision 1.14  2004-09-27 07:49:48  marc
+# rechanged echo_local
+#
+# Revision 1.13  2004/09/27 07:35:26  marc
 # on boot=no
 #
 # Revision 1.12  2004/09/27 07:29:41  marc
