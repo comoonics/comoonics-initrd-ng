@@ -1,3 +1,4 @@
+# $Id: gfs6-es30-files.i686.list,v 1.2 2005-01-03 09:08:05 marc Exp $
 bash
 nslookup
 chmod
@@ -299,4 +300,7 @@ iscsi-umountall
 /lib/libcrypto.so.0.9.7a
 /lib/libcrypto.so.2
 /lib/libcrypto.so.4
-@map /usr/ATIX/projects/com.oonics/installation/bootdisk/bootimage-0.01/install/boot-scripts /
+# $Log: gfs6-es30-files.i686.list,v $
+# Revision 1.2  2005-01-03 09:08:05  marc
+# added tags
+#
