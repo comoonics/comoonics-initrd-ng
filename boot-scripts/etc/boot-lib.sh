@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.16 2004-09-27 08:07:43 marc Exp $
+# $Id: boot-lib.sh,v 1.17 2004-09-29 14:32:16 marc Exp $
 #
 # @(#)$File$
 #
@@ -73,7 +73,7 @@ function my_ifup() {
        echo_local "   Starting network configuration for $dev with config $ipconfig"
        exec_local ifup $dev
        echo_local "   Recreating network configuration for $dev"
-       exec_local ip2Config $(getPosFromIPString 1, $ipconfig)::$(getPosFromIPString 3, $ipconfig):$(getPosFromIPString 4, $ipconfig):$(hostname -f):$(getPosFromIPString 6, $1)
+       exec_local ip2Config $(getPosFromIPString 1, $ipconfig)::$(getPosFromIPString 3, $ipconfig):$(getPosFromIPString 4, $ipconfig):$(hostname):$(getPosFromIPString 6, $1)
    fi
    return $return_c
 }
@@ -97,11 +97,13 @@ function ip2Config() {
   case `getShortRelease` in
       "redhat")
 	  echo_local -n "Generating ifcfg for redhat ($ipAddr, $ipGate, $ipNetmask, $ipHostname, $ipDevice)..."
-	  exec_local generateRedHatIfCfg "$ipAddr" "$ipGate" "$ipNetmask" "$ipHostname" "$ipDevice"
+	  (generateRedHatIfCfg "$ipAddr" "$ipGate" "$ipNetmask" "$ipHostname" "$ipDevice" &&
+	   echo_local "(OK)") || echo_local "(FAILED)"
 	  ;;
       "SuSE")
 	  echo_local -n "Generating ifcfg for "`getShortRelease`" ($ipAddr, $ipGate, $ipNetmask, $ipHostname, $ipDevice)..."
-	  exec_local generateSuSEIfCfg "$ipAddr" "$ipGate" "$ipNetmask" "$ipHostname" "$ipDevice"
+	  (generateSuSEIfCfg "$ipAddr" "$ipGate" "$ipNetmask" "$ipHostname" "$ipDevice" &&
+	  echo_local "(OK)") || echo_local "(FAILED)"
 	  ;;
       *)
 	  echo "ERROR: Generic network-config not supported for distribution: "$(getRelease)
@@ -176,7 +178,7 @@ function generateRedHatIfCfg() {
     mv ${__prefix}/etc/sysconfig/network ${__prefix}/etc/sysconfig/network.com_back
   fi
   if [ -e ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice ]; then
-    mv ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice ${__prefix}/etc/sysconfig/network-scripts/ifcfg-${pDevice}.com_back
+    mv ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice ${__prefix}/etc/sysconfig/network-scripts/ifcfg-${ipDevice}.com_back
   fi
   if [ "$ipAddr" = "dhcp" -o "$ipAddr" = "DHCP" -o -z "$ipAddr" ]; then 
     bootproto="dhcp"
@@ -200,8 +202,8 @@ function generateRedHatIfCfg() {
    fi
    echo_local_debug "   /etc/sysconfig/network"
    exec_local_debug cat /etc/sysconfig/network
-   echo_local_debug "   /etc/sysconfig/network-scripts/ifcfg-${NETDEV}"
-   exec_local_debug cat /etc/sysconfig/network-scripts/ifcfg-${NETDEV}
+   echo_local_debug "   /etc/sysconfig/network-scripts/ifcfg-${ipDevice}"
+   exec_local_debug cat /etc/sysconfig/network-scripts/ifcfg-${ipDevice}
    return 0
 }
 
@@ -578,7 +580,10 @@ function add_scsi_device() {
 }
 
 # $Log: boot-lib.sh,v $
-# Revision 1.16  2004-09-27 08:07:43  marc
+# Revision 1.17  2004-09-29 14:32:16  marc
+# vacation checkin, stable version
+#
+# Revision 1.16  2004/09/27 08:07:43  marc
 # small update
 #
 # Revision 1.15  2004/09/27 07:59:07  marc

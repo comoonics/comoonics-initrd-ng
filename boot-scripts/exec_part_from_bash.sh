@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: exec_part_from_bash.sh,v 1.3 2004-09-27 07:59:17 marc Exp $
+# $Id: exec_part_from_bash.sh,v 1.4 2004-09-29 14:32:16 marc Exp $
 #
 # @(#)$File$
 #
@@ -24,7 +24,7 @@
 #         Should be the framework for all other functionalities as well.
 
 echo "Starting ATIX $0"
-echo 'Version $Date: 2004-09-27 07:59:17 $'
+echo 'Version $Date: 2004-09-29 14:32:16 $'
 
 
 . etc/sysconfig/comoonics
@@ -43,8 +43,8 @@ getNetParameters
 # boot parameters
 getBootParameters
 
-opts=check_cmd_params $*
-shift $(($opts - 1))
+check_cmd_params $*
+shift $(($? - 1))
 
 echo_local_debug "Debug: $debug"
 echo_local_debug "Stepmode: $stepmode"

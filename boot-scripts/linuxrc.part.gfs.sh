@@ -1,5 +1,5 @@
 #
-# $Id: linuxrc.part.gfs.sh,v 1.11 2004-09-26 15:07:15 marc Exp $
+# $Id: linuxrc.part.gfs.sh,v 1.12 2004-09-29 14:32:16 marc Exp $
 #
 # @(#)$File$
 #
@@ -129,7 +129,7 @@ else
     if [ -e ${GFS_POOL_CCA} ] && [ "$ipConfig" = "cca" ]; then 
 	if [ -z "$NETDEV" ]; then NETDEV="eth0"; fi
 	mkdir /tmp  > /dev/null 2>&1
-	shortpool="/tmp/"$(basename $GFS_POOL_CCA)
+	shortpool="/tmp/"$(basename $GFS_POOL_CCA)"/"
 	echo_local -n "4.4.1 Extracting Pool-cca $GFS_POOL_CCA to $shortpool: "
 	exec_local ccs_tool extract $GFS_POOL_CCA $shortpool
 	
@@ -142,20 +142,21 @@ else
 	    echo_local -n "4.4.3 Powering up the network for interface ($NETDEV)..."
 	    exec_local my_ifup $NETDEV $n_ipConfig
 	fi
-	echo_local -n "4.5 Patching host file..."
-	exec_local cca_generate_hosts $shortpool/nodes.ccs /etc/hosts
-	echo_local_debug -n "4.5.1 /etc/hosts: "
-	exec_local cat /etc/hosts
     fi
     if [ -n "$GFS_POOL_CCA" ]; then
       echo_local -n "4.5 Starting ccsd ($GFS_POOL_CCA)"
       exec_local /sbin/ccsd -d $GFS_POOL_CCA
+      echo_local -n "4.5.1 Patching host file..."
+      if [ -z "$shortpool" ]; then ccs_opts="-c"; fi
+      exec_local cca_generate_hosts ${shortpool}nodes.ccs /etc/hosts
+      echo_local_debug -n "4.5.1 /etc/hosts: "
+      exec_local cat /etc/hosts
     fi
     
-    echo_local_debug "4.5.1 pool_name: $pool_name"
+    echo_local_debug "4.5.2 pool_name: $pool_name"
     [ -z "$pool_name" ] && pool_name=$(cca_get_node_sharedroot)
-    echo_local_debug "4.5.1 poolname: $pool_name"
-    echo_local_debug "4.5.1 pool_cca_name: $pool_cca_name"
+    echo_local_debug "4.5.2 poolname: $pool_name"
+    echo_local_debug "4.5.2 pool_cca_name: $pool_cca_name"
     GFS_POOL=$pool_name
     step
     setHWClock
@@ -210,10 +211,11 @@ fi
 #fi
 #step
 echo_local -n "5.3 Copying relevant files"
+if [ ! -L /mnt/newroot/$cdsl_local_dir ]; then cdsl_local_dir=""; fi
 exec_local copy_relevant_files $cdsl_local_dir
 cd /mnt/newroot
 
-echo_local -n "5.3.1 Copying logfile to ${bootlog}..."
+echo_local -n "5.3.1 Copying logfile to /mnt/newroot/${bootlog}..."
 cp ${bootlog} /mnt/newroot/${bootlog}
 bootlog=/mnt/newroot/$bootlog
 if [ $? -eq 0 ]; then echo_local "(OK)"; else echo_local "(FAILED)"; fi
@@ -226,7 +228,10 @@ if [ $? -eq 0 ]; then echo_local "(OK)"; else echo_local "(FAILED)"; fi
 chRoot
 
 # $Log: linuxrc.part.gfs.sh,v $
-# Revision 1.11  2004-09-26 15:07:15  marc
+# Revision 1.12  2004-09-29 14:32:16  marc
+# vacation checkin, stable version
+#
+# Revision 1.11  2004/09/26 15:07:15  marc
 # major bug. removed
 #
 # Revision 1.10  2004/09/26 14:56:00  marc

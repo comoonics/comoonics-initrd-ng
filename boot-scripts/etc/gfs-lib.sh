@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.7 2004-09-26 14:57:42 marc Exp $
+# $Id: gfs-lib.sh,v 1.8 2004-09-29 14:32:16 marc Exp $
 #
 # @(#)$File$
 #
@@ -95,9 +95,14 @@ function cca_generate_hosts {
     local ccs_read="/opt/atix/comoonics_cs/ccs_fileread"
     local nodes_file=$1
     local hosts_file=$2
+
+    local ccs_cmd="/opt/atix/comoonics_cs/ccs_fileread"
+
+    if [ ! -e $nodes_file ]; then ccs_cmd="/opt/atix/comoonics_cs/ccs_read"; fi
+    if [ -n "$debug" ]; then set -x; fi
     cp -f $hosts_file $hosts_file.bak
     (cat $hosts_file.bak && \
-	/opt/atix/comoonics_cs/ccs_fileread  strings $nodes_file nodes/.*/ip_interfaces/eth[0-9] | awk -F= '
+	$ccs_cmd $opts strings $nodes_file nodes/.*/ip_interfaces/eth[0-9] | awk -F= '
 /\s+/ { 
    match($1, /[^\/]+\/([^\/]+)\//, hostname);
    match($2, /"(.+)"/, ip); 
@@ -105,6 +110,7 @@ function cca_generate_hosts {
 }') | sort -u > $hosts_file
     ret=$?
     if [ $? -ne 0 ]; then cp $hosts_file.bak $hosts_file; fi
+    if [ -n "$debug" ]; then set +x; fi
     return $ret
 }
 
@@ -153,41 +159,46 @@ function copy_relevant_files {
   local cdsl_local_dir=$(shift)
   # backup old files
   olddir=$(pwd)
+  if [ -n "$debug" ]; then set -x; fi
   echo -en "\tBacking up created config files"
-  (if [ -f /mnt/newroot/etc/modules.conf ]; then 
-    mv /mnt/newroot/etc/modules.conf /mnt/newroot/etc/modules.conf.com_back
+  (if [ -f /mnt/newroot/etc/modules.conf ]; then
+     mv -f /mnt/newroot/etc/modules.conf /mnt/newroot/etc/modules.conf.com_back
    fi &&
-   if [ -f /mnt/newroot/etc/sysconfig/hwconf ]; then 
-     mv /mnt/newroot/etc/sysconfig/hwconf /mnt/newroot/etc/sysconfig/hwconf.com_back
-   fi &&
+   if [ -f /mnt/newroot/etc/sysconfig/hwconf ]; then
+     mv -f /mnt/newroot/etc/sysconfig/hwconf /mnt/newroot/etc/sysconfig/hwconf.com_back
+   fi && 
    echo "(OK)" ) || (ret_c=$? && echo "(FAILED)")
   echo -en "\tCreating config dirs if not exist.."
   (if [ ! -d /mnt/newroot/${cdsl_local_dir}/etc ]; then 
     mkdir -p /mnt/newroot/${cdsl_local_dir}/etc
-  fi &&
-  if [ ! -d /mnt/newroot/${cdsl_local_dir}/etc/sysconfig ]; then 
-    mkdir -p /mnt/newroot/${cdsl_local_dir}/etc/sysconfig
-  fi && echo "(OK)") || (ret_c=$? && echo "(FAILED)")
+   fi &&
+   if [ ! -d /mnt/newroot/${cdsl_local_dir}/etc/sysconfig ]; then 
+     mkdir -p /mnt/newroot/${cdsl_local_dir}/etc/sysconfig
+   fi && echo "(OK)") || (ret_c=$? && echo "(FAILED)")
   echo -en "\tCopying the configfiles.."
-  (cd /mnt/newroot/etc &&
-   cp /etc/modules.conf /mnt/newroot/${cdsl_local_dir}/etc/modules.conf &&
+  cd /mnt/newroot/${cdsl_local_dir}/etc
+  (cp -f /etc/modules.conf /mnt/newroot/${cdsl_local_dir}/etc/modules.conf &&
    ([ -n "$cdsl_local_dir" ] && 
-       ln -sf ../${cdsl_local_dir}/etc/modules.conf modules.conf) &&
-   cd sysconfig &&
-   cp /etc/sysconfig/hwconf /mnt/newroot/${cdsl_local_dir}/etc/sysconfig/
+       ln -sf ../${cdsl_local_dir}/etc/modules.conf modules.conf)
+   cd sysconfig
+   cp -f /etc/sysconfig/hwconf /mnt/newroot/${cdsl_local_dir}/etc/sysconfig/
    ([ -n "$cdsl_local_dir" ] && 
-       ln -fs ../../${cdsl_local_dir}/etc/sysconfig/hwconf hwconf) &&
-   cp /etc/sysconfig/network /mnt/newroot/${cdsl_local_dir}/etc/sysconfig/
+       ln -fs ../../${cdsl_local_dir}/etc/sysconfig/hwconf hwconf)
+   cp -f /etc/sysconfig/network /mnt/newroot/${cdsl_local_dir}/etc/sysconfig/
    ([ -n "$cdsl_local_dir" ] && 
-       ln -fs ../../${cdsl_local_dir}/etc/sysconfig/network network)
+       ln -fs ../../${cdsl_local_dir}/etc/sysconfig/network network) &&
    echo "(OK)") || (ret_c=$? && echo "(FAILED)")
   ret_c=$?
   cd $olddir
+  if [ -n "$debug" ]; then set +x; fi
   return $ret_c
 }
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.7  2004-09-26 14:57:42  marc
+# Revision 1.8  2004-09-29 14:32:16  marc
+# vacation checkin, stable version
+#
+# Revision 1.7  2004/09/26 14:57:42  marc
 # cosmetic change
 #
 # Revision 1.6  2004/09/26 14:25:50  marc
