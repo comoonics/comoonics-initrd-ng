@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.4 2004-08-11 16:52:23 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.5 2004-08-11 17:00:12 marc Exp $
 #
 # @(#)$File$
 #
@@ -23,15 +23,13 @@
 # Marc Grimme: existence of /etc/gfs-lib.sh with all gfs-functions. 
 #         Should be the framework for all other functionalities as well.
 
-echo "Starting ATIX initrd"
-echo 'Version $Revision: 1.4 $ $Date: 2004-08-11 16:52:23 $'
-
-sleep 5 
-
 . etc/sysconfig/comoonics
 
 # initstuff is done in here
 source /etc/boot-lib.sh
+
+echo_local "Starting ATIX initrd"
+echo_local 'Version $Revision: 1.5 $ $Date: 2004-08-11 17:00:12 $'
 
 initBootProcess
 
