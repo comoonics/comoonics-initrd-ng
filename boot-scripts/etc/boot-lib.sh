@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.12 2004-09-27 07:29:41 marc Exp $
+# $Id: boot-lib.sh,v 1.13 2004-09-27 07:35:26 marc Exp $
 #
 # @(#)$File$
 #
@@ -185,7 +185,7 @@ function generateRedHatIfCfg() {
   fi
   (echo "DEVICE=$ipDevice" && 
    echo "BOOTPROTO=$bootproto" && 
-   echo "ONBOOT=yes") > ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
+   echo "ONBOOT=no") > ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
   if [ "$bootproto" != "dhcp" ]; then
      (echo "IPADDR=$ipAddr" && 
 	 if [ -n "$ipNetmask" ]; then echo "NETMASK=$ipNetmask"; fi) >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
@@ -577,7 +577,10 @@ function add_scsi_device() {
 }
 
 # $Log: boot-lib.sh,v $
-# Revision 1.12  2004-09-27 07:29:41  marc
+# Revision 1.13  2004-09-27 07:35:26  marc
+# on boot=no
+#
+# Revision 1.12  2004/09/27 07:29:41  marc
 # check_cmd_params and usage
 #
 # Revision 1.11  2004/09/26 14:56:10  marc
