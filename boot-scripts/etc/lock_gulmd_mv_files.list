@@ -1,4 +1,3 @@
-# $Id: lock_gulmd_mv_files.list,v 1.2 2005-01-03 16:35:31 marc Exp $
 /dev/log
 /dev/null
 /dev/random
@@ -84,7 +83,4 @@
 /usr/kerberos/lib/libpty.so.1.2
 /usr/bin/perl
 /usr/lib/perl5
-# $Log: lock_gulmd_mv_files.list,v $
-# Revision 1.2  2005-01-03 16:35:31  marc
-# added cvs tags and /dev/random, /dev/urandom for fence_ilo
-#
+
