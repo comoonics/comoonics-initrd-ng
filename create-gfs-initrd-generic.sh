@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: create-gfs-initrd-generic.sh,v 1.3 2004-10-21 09:14:52 marc Exp $
+# $Id: create-gfs-initrd-generic.sh,v 1.4 2005-01-03 08:23:21 marc Exp $
 #
 # @(#)$File$
 #
@@ -24,7 +24,7 @@ function getoptions() {
     while getopts vhm:fd:s:r:b: option ; do
 	case "$option" in
 	    v) # version
-		echo "$0 Version $id$"
+		echo "$0 Version "'$Revision: 1.4 $'
 		exit 0
 		;;
 	    h) # help
@@ -65,12 +65,24 @@ if [ -z "$1" ]; then
   exit
 fi
 
+cfg_file=/etc/comoonics/comoonics-bootimage.cfg
+
 cwd=$(pwd)
 force=0
-mountpoint="/mnt/loop"
+TMPDIR=/tmp
+mountpoint=$(mktemp -d ${TMPDIR}/initrd.mnt.XXXXXX)
 #size=32768
-size=65536
+size=120000
 kernel=$(uname -r)
+
+if [ ${1:0:1} = "--" ]; then
+    echo "detected request for old version of mkinitrd."
+    echo "Params: $*"
+    /sbin/mkinitrd $*
+    exit $?
+fi
+
+source ${cfg_file}
 getoptions $*
 
 touch ./.building_initrd
@@ -97,19 +109,39 @@ if [ -n "$rpm_list" ]; then
   echo "(OK)"
 fi
 
-files=`get_all_files_dependent $dep_filename | sort -u`
+# compiling marked perlfiles in this function
+files=( $(get_all_files_dependent $dep_filename) )
 # echo $files
 
 echo -n "Copying files..."
 cd $mountpoint
-for file in $files; do
+i=0
+while [ $i -lt ${#files[@]} ]; do
+  file=${files[$i]}
   if [ -d $file ]; then 
-    copy_file $file/\* ${mountpoint}/
+#    echo "Directory $file => ${mountpoint}/$file"
+    create_dir ${mountpoint}/$file
+    copy_file $file ${mountpoint}/$(dirname $file)
+  elif [ ! -e "$file" ] && [ "$file" = '@map' ]; then
+    i=$(( $i+1 ))
+    file=${files[$i]}
+    i=$(( $i+1 ))
+    todir=${files[$i]}
+    if [ -d $file ]; then 
+#      echo "Directory mapping $file => ${mountpoint}/$todir"
+      create_dir ${mountpoint}/$todir
+      copy_file $file/\* ${mountpoint}/$todir/
+    else
+      dirname=`dirname $file`
+      create_dir ${mountpoint}$todir
+      copy_file $file ${mountpoint}$todir
+    fi
   else
     dirname=`dirname $file`
     create_dir ${mountpoint}$dirname
     copy_file $file ${mountpoint}$dirname
   fi
+  i=$(( $i+1 ))
 done
 echo "(OK)"
 

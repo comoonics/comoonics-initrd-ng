@@ -1,5 +1,5 @@
 #
-# $Id: create-gfs-initrd-lib.sh,v 1.1 2004-09-26 10:10:25 marc Exp $
+# $Id: create-gfs-initrd-lib.sh,v 1.2 2005-01-03 08:23:36 marc Exp $
 #
 # @(#)$File$
 #
@@ -27,7 +27,18 @@ function copy_file() {
   local filename=$1
   local source=$2
 #  echo "copying $filename to ${source}..."
-  cp -a $filename ${source}
+  cp -af $filename ${source}
+}
+
+# Compile perlfile with perlcc to binary
+function perlcc_file() {
+  local filename=$1
+  local destfile=$2
+  [ -z "$destfile" ] && destfile=$filename
+  echo "compiling(perlcc) $filename to ${destfile}..." >&2
+  olddir=pwd
+  cd $(dirname $destfile)
+  perlcc $filename && mv a.out $destfile
 }
 
 # extract rpm
@@ -58,13 +69,9 @@ function extract_all_rpms() {
 # checks if the file is executable.
 # If so it returns all dependent libraries with path as a stringlist.
 function get_dependent_files() {
-  local filename=`which $1 2>/dev/null`
-  if [ -z $filename ]; then
-    filename=$1
-  fi
+  local filename=$1
   # file is a symbolic link
   if [ -L $filename ]; then
-    echo $filename
     local newfile=`ls -l $filename | sed -e "s/.* -> //"`
     if [ "${newfile:0:1}" != "/" ]; then
        echo `dirname $filename`/$newfile
@@ -73,10 +80,9 @@ function get_dependent_files() {
     fi
   # file is executable and not directory
   elif [ -x $filename -a ! -d $filename ]; then
-    echo $filename
     ldd $filename > /dev/null 2>&1
     if [ $? = 0 ]; then
-      local newfiles=`ldd $filename | sed -e "s/^.*=> \(.*\) (.*).*$/\1/"`
+      local newfiles=`ldd $filename | sed -e "s/^.*=> \(.*\) (.*).*$/\1/" | sed -e "s/^.*statically linked.*$//"`
       for newfile in $newfiles; do
          echo $newfile
          if [ -L $newfile ]; then
@@ -89,9 +95,6 @@ function get_dependent_files() {
          fi
       done
     fi
-  # give back the file
-  else
-    echo $filename
   fi
 }
 
@@ -103,7 +106,40 @@ function get_all_files_dependent() {
 
   while read line; do
     if [ ${line:0:1} != '#' ]; then
-	get_dependent_files $line
+      if [ ! -e "$line" ] && [ "${line:0:7}" = '@perlcc' ]; then
+        # take next as filename and compile
+	echo "Skipping line $todir..." >&2
+	line=${line:8}
+	local filename=`which $line 2>/dev/null`
+	if [ -z $filename ]; then
+	  filename=$line
+	fi
+	#echo $filename
+	echo "Taking perl file $filename..." >&2
+	dirname=`dirname $filename`
+	create_dir ${mountpoint}$dirname
+	perlcc_file $filename ${mountpoint}$filename
+	get_dependent_files ${mountpoint}$filename
+      elif [ ! -e "$line" ] && [ "${line:0:4}" = '@map' ]; then
+        declare -a aline
+        aline=( $(echo $line) )
+	mapdir=${aline[2]}
+        line=${aline[1]}
+        echo "Mapping $line to $mapdir" >&2
+	local filename=`which $line 2>/dev/null`
+	if [ -z $filename ]; then
+	  filename=$line
+	fi
+	echo "@map $filename $mapdir"
+	get_dependent_files $filename
+      else
+	local filename=`which $line 2>/dev/null`
+	if [ -z $filename ]; then
+	  filename=$line
+	fi
+	echo $filename
+	get_dependent_files $filename
+      fi
     fi
   done <$filename
 }
