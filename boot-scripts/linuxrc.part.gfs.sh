@@ -1,5 +1,5 @@
 #
-# $Id: linuxrc.part.gfs.sh,v 1.5 2004-09-08 16:12:33 marc Exp $
+# $Id: linuxrc.part.gfs.sh,v 1.6 2004-09-12 11:11:19 marc Exp $
 #
 # @(#)$File$
 #
@@ -138,6 +138,10 @@ else
 	    echo_local -n "4.4.3 Powering up the network for interface ($NETDEV)..."
 	    exec_local my_ifup $NETDEV $n_ipConfig
 	fi
+	echo_local -n "4.5 Patching host file..."
+	exec_local cca_generate_hosts $shortpool/nodes.ccs /etc/hosts
+	echo_local_debug -n "4.5.1 /etc/hosts: "
+	exec_local cat /etc/hosts
     fi
     echo_local -n "4.5 Starting ccsd ($GFS_POOL_CCA)"
     exec_local /sbin/ccsd -d $GFS_POOL_CCA
@@ -210,10 +214,12 @@ output=$( (
 	cd /mnt/newroot/etc &&
 	cp /etc/modules.conf /mnt/newroot/${cdsl_local_dir}/etc/modules.conf &&
 	ln -sf ../${cdsl_local_dir}/etc/modules.conf modules.conf &&
-	    cd sysconfig &&
-	    cp /etc/sysconfig/hwconf /mnt/newroot/${cdsl_local_dir}/etc/sysconfig/
-	    ln -fs ../../${cdsl_local_dir}/etc/sysconfig/hwconf hwconf &&
-	    cd /mnt/newroot ) 2>&1 )
+        cd sysconfig &&
+	cp /etc/sysconfig/hwconf /mnt/newroot/${cdsl_local_dir}/etc/sysconfig/
+	ln -fs ../../${cdsl_local_dir}/etc/sysconfig/hwconf hwconf &&
+	cp /etc/sysconfig/network /mnt/newroot/${cdsl_local_dir}/etc/sysconfig/
+	ln -fs ../../${cdsl_local_dir}/etc/sysconfig/network network &&
+	cd /mnt/newroot ) 2>&1 )
 echo "$output" >> $bootlog
 if [ ! -z "$debug" ]; then 
     echo "$output"
@@ -235,7 +241,10 @@ if [ $? -eq 0 ]; then echo_local "(OK)"; else echo_local "(FAILED)"; fi
 chRoot
 
 # $Log: linuxrc.part.gfs.sh,v $
-# Revision 1.5  2004-09-08 16:12:33  marc
+# Revision 1.6  2004-09-12 11:11:19  marc
+# added generation of hostsfile from cca
+#
+# Revision 1.5  2004/09/08 16:12:33  marc
 # first stabel version for autoconfigure from cca
 #
 # Revision 1.4  2004/08/13 15:53:33  marc
