@@ -1,5 +1,5 @@
 #
-# $Id: linuxrc.part.gfs.sh,v 1.4 2004-08-13 15:53:33 marc Exp $
+# $Id: linuxrc.part.gfs.sh,v 1.5 2004-09-08 16:12:33 marc Exp $
 #
 # @(#)$File$
 #
@@ -122,31 +122,38 @@ else
 	GFS_POOL_CCA="${GFS_POOL}_cca"
     fi
     cdsl_local_dir="/cdsl.local"
-    if [ -e ${GFS_POOL_CCA} ]; then 
-	echo_local -n "4.4 Starting ccsd ($GFS_POOL_CCA)"
-	exec_local /sbin/ccsd -d $GFS_POOL_CCA
-	return_code
-	echo_local_debug "4.4.1 Pool-cca $GFS_POOL_CCA"
-#	n_ipConfig=$(cca_autoconfigure_network $ipconfig $NETDEV)
-#	if [ -n "$n_ipConfig" ]; then
-#	    echo_local -n "4.5.1 Configuring network with bootparm-config ($ipConfig)"
-#	    exec_local ip2Config $n_ipConfig
-#	    echo_local -n "4.5.2 Powering up the network for interface ($NETDEV)..."
-#	    exec_local my_ifup $NETDEV $n_ipConfig
-#	fi
+    if [ -e ${GFS_POOL_CCA} ] && [ "$ipConfig" = "cca" ]; then 
+	if [ -z "$NETDEV" ]; then NETDEV="eth0"; fi
+	mkdir /tmp  > /dev/null 2>&1
+	shortpool="/tmp/"$(basename $GFS_POOL_CCA)
+	echo_local -n "4.4.1 Extracting Pool-cca $GFS_POOL_CCA to $shortpool: "
+	exec_local ccs_tool extract $GFS_POOL_CCA $shortpool
+	
+	echo_local_debug "4.4.1.1 Autconfig for this host ($ipconfig $NETDEV $shortpool) ..."
+	n_ipConfig=$(cca_autoconfigure_network "$ipconfig" "$NETDEV" "$shortpool")
+	echo_local_debug "n_ipconfig: $n_ipConfig "
+	if [ -n "$n_ipConfig" ]; then
+	    echo_local -n "4.4.2 Configuring network with bootparm-config ($n_ipConfig)"
+	    exec_local ip2Config $n_ipConfig
+	    echo_local -n "4.4.3 Powering up the network for interface ($NETDEV)..."
+	    exec_local my_ifup $NETDEV $n_ipConfig
+	fi
     fi
-    echo_local_debug "4.4.1 pool_name: $pool_name"
+    echo_local -n "4.5 Starting ccsd ($GFS_POOL_CCA)"
+    exec_local /sbin/ccsd -d $GFS_POOL_CCA
+    return_code
+    echo_local_debug "4.5.1 pool_name: $pool_name"
     [ -z "$pool_name" ] && pool_name=$(cca_get_node_sharedroot)
-    echo_local_debug "4.4.1 poolname: $pool_name"
-    echo_local_debug "4.4.1 pool_cca_name: $pool_cca_name"
+    echo_local_debug "4.5.1 poolname: $pool_name"
+    echo_local_debug "4.5.1 pool_cca_name: $pool_cca_name"
     GFS_POOL=$pool_name
     step
     setHWClock
     step
-    echo_local -n "4.5 Starting lock_gulmd"
+    echo_local -n "4.6 Starting lock_gulmd"
     sts=1
     exec_local lock_gulmd
-    echo_local -n "4.6 Checking lock_gulmd stats"
+    echo_local -n "4.6.1 Checking lock_gulmd stats"
     if [ $? -eq $return_c ]; then
 	for i in $(seq 1 10)
 	  do
@@ -228,7 +235,10 @@ if [ $? -eq 0 ]; then echo_local "(OK)"; else echo_local "(FAILED)"; fi
 chRoot
 
 # $Log: linuxrc.part.gfs.sh,v $
-# Revision 1.4  2004-08-13 15:53:33  marc
+# Revision 1.5  2004-09-08 16:12:33  marc
+# first stabel version for autoconfigure from cca
+#
+# Revision 1.4  2004/08/13 15:53:33  marc
 # added support for chroot
 #
 # Revision 1.3  2004/08/11 16:53:16  marc
