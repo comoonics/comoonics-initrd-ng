@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.4 2004-08-23 08:47:19 marc Exp $
+# $Id: boot-lib.sh,v 1.5 2004-09-08 16:12:53 marc Exp $
 #
 # @(#)$File$
 #
@@ -158,7 +158,9 @@ function generateRedHatIfCfg() {
    fi
    (echo "NETWORKING=yes" &&
     echo "HOSTNAME=$ipHostname") > ${__prefix}/etc/sysconfig/network
-   if [ $(/bin/hostname) = "(none)" ]; then /bin/hostname $ipHostname; fi
+   if [ $(/bin/hostname) = "(none)" ] || [ $(/bin/hostname) = "localhost.localdomain" ] || [ $(/bin/hostname) = "localhost" ]; then 
+       /bin/hostname $ipHostname; 
+   fi
    echo_local_debug "2.1.1 /etc/sysconfig/network"
    exec_local_debug cat /etc/sysconfig/network
    echo_local_debug "2.1.2 /etc/sysconfig/network-scripts/ifcfg-${NETDEV}"
@@ -538,7 +540,10 @@ function add_scsi_device() {
 }
 
 # $Log: boot-lib.sh,v $
-# Revision 1.4  2004-08-23 08:47:19  marc
+# Revision 1.5  2004-09-08 16:12:53  marc
+# first stable version vor autoconfigure from cca
+#
+# Revision 1.4  2004/08/23 08:47:19  marc
 # first stable release for tmpfix-param.
 #
 # Revision 1.3  2004/08/13 15:53:46  marc
