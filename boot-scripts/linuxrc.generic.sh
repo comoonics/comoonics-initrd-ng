@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.9 2004-09-13 08:51:36 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.10 2004-09-13 09:38:15 marc Exp $
 #
 # @(#)$File$
 #
@@ -30,8 +30,9 @@ source /etc/boot-lib.sh
 
 echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
-exec_local cat /etc/comoonics-release
-echo_local 'Internal Version $Revision: 1.9 $ $Date: 2004-09-13 08:51:36 $'
+release=$(cat /etc/comoonics-release)
+echo_local $release
+echo_local 'Internal Version $Revision: 1.10 $ $Date: 2004-09-13 09:38:15 $'
 
 initBootProcess
 
