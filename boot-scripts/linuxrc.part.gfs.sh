@@ -1,5 +1,5 @@
 #
-# $Id: linuxrc.part.gfs.sh,v 1.9 2004-09-26 14:08:53 marc Exp $
+# $Id: linuxrc.part.gfs.sh,v 1.10 2004-09-26 14:56:00 marc Exp $
 #
 # @(#)$File$
 #
@@ -147,9 +147,11 @@ else
 	echo_local_debug -n "4.5.1 /etc/hosts: "
 	exec_local cat /etc/hosts
     fi
-    echo_local -n "4.5 Starting ccsd ($GFS_POOL_CCA)"
-    exec_local /sbin/ccsd -d $GFS_POOL_CCA
-    return_code
+    if [ -n "$(GFS_POOL_CCA)" ]; then
+      echo_local -n "4.5 Starting ccsd ($GFS_POOL_CCA)"
+      exec_local /sbin/ccsd -d $GFS_POOL_CCA
+    fi
+
     echo_local_debug "4.5.1 pool_name: $pool_name"
     [ -z "$pool_name" ] && pool_name=$(cca_get_node_sharedroot)
     echo_local_debug "4.5.1 poolname: $pool_name"
@@ -158,22 +160,25 @@ else
     step
     setHWClock
     step
-    echo_local -n "4.6 Starting lock_gulmd"
-    sts=1
-    exec_local lock_gulmd
-    echo_local -n "4.6.1 Checking lock_gulmd stats"
-    if [ $? -eq $return_c ]; then
-	for i in $(seq 1 10)
-	  do
-	  sleep 1
-	  if gulm_tool getstats localhost:ltpx &> /dev/null; then
+    if [ -n "$(GFS_POOL_CCA" ]; then
+      echo_local -n "4.6 Starting lock_gulmd"
+      sts=1
+      exec_local lock_gulmd
+      echo_local -n "4.6.1 Checking lock_gulmd stats"
+      if [ $? -eq $return_c ]; then
+	  for i in $(seq 1 10)
+	    do
+	    sleep 1
+	    if gulm_tool getstats localhost:ltpx &> /dev/null; then
 	      sts=0
 	      break
-	  fi
-	done
+	    fi
+	  done
+      fi
+
+      if [ $sts -eq 0 ]; then echo_local "(OK)"; else echo_local "(FAILED)"; fi
+      step
     fi
-    if [ $sts -eq 0 ]; then echo_local "(OK)"; else echo_local "(FAILED)"; fi
-    step
 fi
 
 echo_local_debug "*****************************"
@@ -221,7 +226,10 @@ if [ $? -eq 0 ]; then echo_local "(OK)"; else echo_local "(FAILED)"; fi
 chRoot
 
 # $Log: linuxrc.part.gfs.sh,v $
-# Revision 1.9  2004-09-26 14:08:53  marc
+# Revision 1.10  2004-09-26 14:56:00  marc
+# better error detection
+#
+# Revision 1.9  2004/09/26 14:08:53  marc
 # moved copying of relevant files to outside
 #
 # Revision 1.8  2004/09/24 14:25:21  marc
