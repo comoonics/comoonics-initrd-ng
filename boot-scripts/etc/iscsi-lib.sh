@@ -1,5 +1,5 @@
 #
-# $Id: iscsi-lib.sh,v 1.3 2004-09-24 09:02:19 marc Exp $
+# $Id: iscsi-lib.sh,v 1.4 2004-09-24 14:25:04 marc Exp $
 #
 # @(#)$File$
 #
@@ -15,12 +15,13 @@
 #
 # Library for the iscsi-interface
 
-parser="iscsi://([^:]+):([[:digit:]]+)/"
+parser1="iscsi://([^:]+))/"
+parser1="iscsi://([^:]+):([[:digit:]]+)/"
 
 function getISCSIServerFromParam {
     echo $1 | awk '
 { 
-   match($1, "'$parser'", iscsiparms);
+   match($1, "'$parser1'", iscsiparms);
    print iscsiparms[1];
 }'
 }
@@ -28,7 +29,7 @@ function getISCSIServerFromParam {
 function getISCSIPortFromParam {
     echo $1 | awk '
 { 
-   match($1, "'$parser'", iscsiparms);
+   match($1, "'$parser2'", iscsiparms);
    print iscsiparms[2];
 }'
 }
@@ -38,7 +39,10 @@ function createCiscoISCSICfgString {
 }
 
 # $Log: iscsi-lib.sh,v $
-# Revision 1.3  2004-09-24 09:02:19  marc
+# Revision 1.4  2004-09-24 14:25:04  marc
+# added second parser to support urls like iscsi://hostname//
+#
+# Revision 1.3  2004/09/24 09:02:19  marc
 # another change for iscsi.cfg
 #
 # Revision 1.2  2004/09/24 08:56:14  marc
