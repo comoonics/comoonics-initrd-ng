@@ -1,5 +1,5 @@
 #
-# $Id: linuxrc.part.iscsi.sh,v 1.3 2004-09-24 09:05:31 marc Exp $
+# $Id: linuxrc.part.iscsi.sh,v 1.4 2004-09-24 09:13:59 marc Exp $
 #
 # @(#)$File$
 #
@@ -28,7 +28,7 @@ part="ISCSI"
 [ -z "$iscsi" ] && return 0
 iscsi_server=$(getISCSIServerFromParam $iscsi)
 iscsi_port=$(getISCSIPortFromParam $iscsi)
-iscsi_cfgfile="/etc/iscsi.cfg"
+iscsi_cfgfile="/etc/iscsi.conf"
 echo_local_debug "$stage $part: ISCSI-Params: "
 echo_local_debug "$stage ${part}.1 ISCSI-Server: $iscsi_server"
 echo_local_debug "$stage ${part}.1 ISCSI-Port: $iscsi_port"
@@ -43,7 +43,10 @@ echo_local -n "$part $stage: Starting iscsi-client..."
 exec_local /etc/init.d/iscsi start
 
 # $Log: linuxrc.part.iscsi.sh,v $
-# Revision 1.3  2004-09-24 09:05:31  marc
+# Revision 1.4  2004-09-24 09:13:59  marc
+# change iscsi.cfg to iscsi.conf
+#
+# Revision 1.3  2004/09/24 09:05:31  marc
 # appending to iscsi-cfg file
 #
 # Revision 1.2  2004/09/24 08:56:31  marc
