@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.2 2004-07-31 11:24:43 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.3 2004-08-11 16:52:02 marc Exp $
 #
 # @(#)$File$
 #
@@ -24,7 +24,7 @@
 #         Should be the framework for all other functionalities as well.
 
 echo "Starting ATIX initrd"
-echo 'Version $Date: 2004-07-31 11:24:43 $'
+echo 'Version $Date: 2004-08-11 16:52:02 $'
 
 sleep 5 
 
@@ -34,6 +34,7 @@ sleep 5
 source /etc/boot-lib.sh
 
 initBootProcess
+
 
 # network parameters
 getNetParameters
@@ -67,12 +68,18 @@ echo_local -n "2.0 Interface lo..."
 exec_local /sbin/ifconfig lo 127.0.0.1 up
 
 if [ -n "$ipConfig" ]; then
-  NETDEV=$(getPosFromIPString 6 $ipConfig)
-  if [ -z "$NETDEV" ]; then NETDEV=eth0; fi
-  echo_local -n "2.1 Configuring network with bootparm-config ($ipConfig)"
-  exec_local ip2Config $ipConfig
-  echo_local -n "2.1.3 Powering up the network for interface ($NETDEV)..."
-  exec_local my_ifup $NETDEV
+  if [ "$IFCONFIG" = "boot" ]; then
+      echo_local "2.1 Network already configured for device ${NETDEV}."
+  elif [ "$IFCONFIG" = "skip" ]; then
+      echo_local "2.1 Explicitly skipping network configuration. Handled later (hopefully)."
+  else
+      NETDEV=$(getPosFromIPString 6 $ipConfig)
+      if [ -z "$NETDEV" ]; then NETDEV=eth0; fi
+      echo_local -n "2.1 Configuring network with bootparm-config ($ipConfig)"
+      exec_local ip2Config $ipConfig
+      echo_local -n "2.1.3 Powering up the network for interface ($NETDEV)..."
+      exec_local my_ifup $NETDEV
+  fi
 else
   for dev in $NETCONFIG; do
     eval IFCONFIG=\$IFCONFIG${dev}
@@ -83,6 +90,8 @@ else
       exec_local /sbin/ifup $NETDEV
     elif [ "$IFCONFIG" = "boot" ]; then
       echo_local "2.1 Network already configured for device ${NETDEV}."
+    elif [ "$IFCONFIG" = "skip" ]; then
+      echo_local "2.1 Explicitly skipping network configuration. Handled later (hopefully)."
     else
       echo_local "2.1 Autoprobing for network environment..."
       test `/bin/hostname` || /bin/hostname ${HOSTNAME}
