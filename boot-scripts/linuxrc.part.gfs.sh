@@ -1,5 +1,5 @@
 #
-# $Id: linuxrc.part.gfs.sh,v 1.10 2004-09-26 14:56:00 marc Exp $
+# $Id: linuxrc.part.gfs.sh,v 1.11 2004-09-26 15:07:15 marc Exp $
 #
 # @(#)$File$
 #
@@ -147,11 +147,11 @@ else
 	echo_local_debug -n "4.5.1 /etc/hosts: "
 	exec_local cat /etc/hosts
     fi
-    if [ -n "$(GFS_POOL_CCA)" ]; then
+    if [ -n "$GFS_POOL_CCA" ]; then
       echo_local -n "4.5 Starting ccsd ($GFS_POOL_CCA)"
       exec_local /sbin/ccsd -d $GFS_POOL_CCA
     fi
-
+    
     echo_local_debug "4.5.1 pool_name: $pool_name"
     [ -z "$pool_name" ] && pool_name=$(cca_get_node_sharedroot)
     echo_local_debug "4.5.1 poolname: $pool_name"
@@ -160,7 +160,7 @@ else
     step
     setHWClock
     step
-    if [ -n "$(GFS_POOL_CCA" ]; then
+    if [ -n "$GFS_POOL_CCA" ]; then
       echo_local -n "4.6 Starting lock_gulmd"
       sts=1
       exec_local lock_gulmd
@@ -226,7 +226,10 @@ if [ $? -eq 0 ]; then echo_local "(OK)"; else echo_local "(FAILED)"; fi
 chRoot
 
 # $Log: linuxrc.part.gfs.sh,v $
-# Revision 1.10  2004-09-26 14:56:00  marc
+# Revision 1.11  2004-09-26 15:07:15  marc
+# major bug. removed
+#
+# Revision 1.10  2004/09/26 14:56:00  marc
 # better error detection
 #
 # Revision 1.9  2004/09/26 14:08:53  marc
