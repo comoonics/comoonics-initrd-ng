@@ -1,0 +1,13 @@
+/dev
+/etc
+/lib
+/sbin
+/usr
+/usr/lib
+/usr/kerberos
+/usr/kerberos/lib
+/usr/bin
+/var
+/var/run
+/var/run/sistina
+/tmp

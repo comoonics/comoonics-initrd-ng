@@ -1,0 +1,17 @@
+HOSTNAME=localhost
+DOMAINNAME="localdomain"
+NETCONFIG="_0 _1"
+#IFCONFIG_0="192.168.10.70 netmask 255.255.255.0 broadcast 192.168.10.255"
+IFCONFIG_0=default
+NETDEV_0=eth0
+IFCONFIG_1=default
+NETDEV_1=eth1
+IFCONFIG_1=default
+GFS_MODULES="gfs pool"
+GFS_MODULES_5_1="gfs pool fence"
+GFS_MODULES_5_2="gfs pool fence_driver"
+GFS_MODULES_6="gfs pool"
+
+GFS_POOL_ASSEMBLE="/sbin/pool_assemble"
+GFS_FENCED="/sbin/fenced"
+GFS_POOL=atixpool2
