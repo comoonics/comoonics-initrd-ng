@@ -1,5 +1,5 @@
 #
-# $Id: linuxrc.part.gfs.sh,v 1.7 2004-09-24 09:36:03 marc Exp $
+# $Id: linuxrc.part.gfs.sh,v 1.8 2004-09-24 14:25:21 marc Exp $
 #
 # @(#)$File$
 #
@@ -28,13 +28,13 @@
 # Includes
 # %%include /etc/gfs-lib.sh
 
-if [ -n "$iscsi" ]; then
-    source /linuxrc.part.iscsi.sh
-fi
-
 source /etc/gfs-lib.sh
 
 getGFSParameters
+
+if [ -n "$iscsi" ]; then
+    source /linuxrc.part.iscsi.sh
+fi
 
 # getting gfs version
 gfs_majorversion=$(getGFSMajorVersion)
@@ -245,7 +245,10 @@ if [ $? -eq 0 ]; then echo_local "(OK)"; else echo_local "(FAILED)"; fi
 chRoot
 
 # $Log: linuxrc.part.gfs.sh,v $
-# Revision 1.7  2004-09-24 09:36:03  marc
+# Revision 1.8  2004-09-24 14:25:21  marc
+# minor changes in ordering
+#
+# Revision 1.7  2004/09/24 09:36:03  marc
 # added iscsi
 #
 # Revision 1.6  2004/09/12 11:11:19  marc
