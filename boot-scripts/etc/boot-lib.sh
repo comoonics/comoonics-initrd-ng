@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.7 2004-09-24 08:46:14 marc Exp $
+# $Id: boot-lib.sh,v 1.8 2004-09-24 14:52:02 marc Exp $
 #
 # @(#)$File$
 #
@@ -28,7 +28,8 @@ diskdev="/dev/fd0"
 function step() {
    if [ ! -z "$stepmode" ]; then
      echo -n "Press <RETURN> to continue ..."
-     read
+     read __the_step
+     [ "$__the_step" = "quit" ] && exit 1
    else
      sleep 1
    fi
@@ -543,7 +544,10 @@ function add_scsi_device() {
 }
 
 # $Log: boot-lib.sh,v $
-# Revision 1.7  2004-09-24 08:46:14  marc
+# Revision 1.8  2004-09-24 14:52:02  marc
+# exit from step
+#
+# Revision 1.7  2004/09/24 08:46:14  marc
 # added iscsi as parameter
 #
 # Revision 1.6  2004/09/13 09:23:32  marc
