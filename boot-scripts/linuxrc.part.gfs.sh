@@ -1,5 +1,5 @@
 #
-# $Id: linuxrc.part.gfs.sh,v 1.12 2004-09-29 14:32:16 marc Exp $
+# $Id: linuxrc.part.gfs.sh,v 1.13 2005-01-03 08:32:59 marc Exp $
 #
 # @(#)$File$
 #
@@ -119,6 +119,7 @@ if [ $gfs_majorversion -eq 5 ] && [ $gfs_minorversion -lt 2 ]; then
     cdsl_local_dir="/boot.local"
     echo_local_debug "4.3.1 pool_cidev_name: $pool_cidev_name"
     mount_opts="hostdata=`/bin/hostname`:/dev/pool/$GFS_POOL_CIDEV"
+
 else
     [ -z "$pool_cca_name" ] && pool_cca_name=$(gfs_autodetect_cca)
     [ -n "$pool_cca_name" ] && GFS_POOL_CCA=$pool_cca_name
@@ -126,29 +127,34 @@ else
 	GFS_POOL_CCA="${GFS_POOL}_cca"
     fi
     cdsl_local_dir="/cdsl.local"
+    mkdir /tmp  > /dev/null 2>&1
+    shortpool="/tmp/"$(basename $GFS_POOL_CCA)"/"
+    echo_local_debug "4.4.0 IPConfig: $ipConfig"
+    echo_local -n "4.4.1 Extracting Pool-cca $GFS_POOL_CCA to $shortpool: "
+    exec_local ccs_tool extract $GFS_POOL_CCA $shortpool
     if [ -e ${GFS_POOL_CCA} ] && [ "$ipConfig" = "cca" ]; then 
 	if [ -z "$NETDEV" ]; then NETDEV="eth0"; fi
-	mkdir /tmp  > /dev/null 2>&1
-	shortpool="/tmp/"$(basename $GFS_POOL_CCA)"/"
-	echo_local -n "4.4.1 Extracting Pool-cca $GFS_POOL_CCA to $shortpool: "
-	exec_local ccs_tool extract $GFS_POOL_CCA $shortpool
 	
-	echo_local_debug "4.4.1.1 Autconfig for this host ($ipconfig $NETDEV $shortpool) ..."
-	n_ipConfig=$(cca_autoconfigure_network "$ipconfig" "$NETDEV" "$shortpool")
-	echo_local_debug "n_ipconfig: $n_ipConfig "
-	if [ -n "$n_ipConfig" ]; then
-	    echo_local -n "4.4.2 Configuring network with bootparm-config ($n_ipConfig)"
-	    exec_local ip2Config $n_ipConfig
-	    echo_local -n "4.4.3 Powering up the network for interface ($NETDEV)..."
-	    exec_local my_ifup $NETDEV $n_ipConfig
-	fi
+	for NETDEV in $(cca_get_netdevices "$shortpool"); do
+	    echo_local_debug "4.4.1.1 Autconfig for this host ($ipConfig $NETDEV $shortpool) ..."
+	    n_ipConfig=$(cca_autoconfigure_network "$ipConfig" "$NETDEV" "$shortpool")
+	    echo_local_debug "n_ipconfig: $n_ipConfig "
+	    step
+	    if [ -n "$n_ipConfig" ]; then
+		echo_local -n "4.4.2 Configuring network with bootparm-config ($n_ipConfig)"
+		exec_local ip2Config $n_ipConfig
+		echo_local -n "4.4.3 Powering up the network for interface ($NETDEV)..."
+		exec_local my_ifup $NETDEV $n_ipConfig
+	    fi
+	done
     fi
+
     if [ -n "$GFS_POOL_CCA" ]; then
       echo_local -n "4.5 Starting ccsd ($GFS_POOL_CCA)"
       exec_local /sbin/ccsd -d $GFS_POOL_CCA
       echo_local -n "4.5.1 Patching host file..."
       if [ -z "$shortpool" ]; then ccs_opts="-c"; fi
-      exec_local cca_generate_hosts ${shortpool}nodes.ccs /etc/hosts
+      exec_local cca_generate_hosts ${shortpool} /etc/hosts
       echo_local_debug -n "4.5.1 /etc/hosts: "
       exec_local cat /etc/hosts
     fi
@@ -164,21 +170,9 @@ else
     if [ -n "$GFS_POOL_CCA" ]; then
       echo_local -n "4.6 Starting lock_gulmd"
       sts=1
-      exec_local lock_gulmd
-      echo_local -n "4.6.1 Checking lock_gulmd stats"
-      if [ $? -eq $return_c ]; then
-	  for i in $(seq 1 10)
-	    do
-	    sleep 1
-	    if gulm_tool getstats localhost:ltpx &> /dev/null; then
-	      sts=0
-	      break
-	    fi
-	  done
-      fi
-
-      if [ $sts -eq 0 ]; then echo_local "(OK)"; else echo_local "(FAILED)"; fi
+      exec_local gfs_start_lockgulmd
       step
+
     fi
 fi
 
@@ -186,7 +180,7 @@ echo_local_debug "*****************************"
 echo_local "5.0.1 Pool: ${GFS_POOL}"
 echo_local_debug "5.0.2 Cdsl_local_dir: ${cdsl_local_dir}"
     
-echo_local "5.1. Mounting newroot ..."
+echo_local "5.2. Mounting newroot ..."
 exec_local /bin/mount -t gfs  /dev/pool/${GFS_POOL} /mnt/newroot -o $mount_opts
 critical=0
 if [ ! $return_c -eq 0 ]; then
@@ -194,7 +188,7 @@ if [ ! $return_c -eq 0 ]; then
 fi
 step
 if [ $gfs_majorversion -eq 5 ] && [ $gfs_minorversion -lt 2 ]; then
-    echo_local -n "5.2 Starting fenced ($GFS_FENCED)"
+    echo_local -n "5.2.1 Starting fenced ($GFS_FENCED)"
     exec_local ${GFS_FENCED}
 fi
 
@@ -216,19 +210,38 @@ exec_local copy_relevant_files $cdsl_local_dir
 cd /mnt/newroot
 
 echo_local -n "5.3.1 Copying logfile to /mnt/newroot/${bootlog}..."
-cp ${bootlog} /mnt/newroot/${bootlog}
-bootlog=/mnt/newroot/$bootlog
-if [ $? -eq 0 ]; then echo_local "(OK)"; else echo_local "(FAILED)"; fi
+cp ${bootlog} /mnt/newroot/${bootlog} || cp ${bootlog} /mnt/newroot/tmp/$(basename $bootlog)
+if [ -f /mnt/newroot/$bootlog ]; then 
+  bootlog=/mnt/newroot/$bootlog
+else 
+  bootlog=/mnt/newroot/$(basename $bootlog)
+fi
+if [ $? -eq 0 ]; then 
+  echo_local "(OK)"
+else 
+  echo_local "(FAILED)"
+fi
 # [ ! -d initrd ] && mkdir initrd
 # exec_local /sbin/pivot_root . initrd
 #echo_local "6.1 Restarting network with new pivot_root..."
 #mount -t proc proc /proc
 #kill $pid && /sbin/ifup eth0
 
-chRoot
+if [ -n "$chroot" ]; then
+  chRoot
+else
+  pivotRoot
+fi
 
 # $Log: linuxrc.part.gfs.sh,v $
-# Revision 1.12  2004-09-29 14:32:16  marc
+# Revision 1.13  2005-01-03 08:32:59  marc
+# first offical rpm version
+# - added support for syslogd
+# - added support for chroot within lock_gulmd
+# - added support for chroot bootparm
+# - minor changes
+#
+# Revision 1.12  2004/09/29 14:32:16  marc
 # vacation checkin, stable version
 #
 # Revision 1.11  2004/09/26 15:07:15  marc
