@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.1 2004-07-31 11:24:43 marc Exp $
+# $Id: boot-lib.sh,v 1.2 2004-08-11 16:53:26 marc Exp $
 #
 # @(#)$File$
 #
@@ -58,7 +58,11 @@ function getRelease() {
 
 function my_ifup() {
    local dev=$1
-   modprobe $dev && sleep 2 && ifconfig $dev up && sleep 2 && ifup $dev
+   local ipconfig=$2
+   modprobe $dev && sleep 2 && ifconfig $dev up 
+   if [ $? -eq 0 ] && [ -n "$ipconfig" ] && [ "$ipconfig" != "skip" ]; then
+       sleep 2 && ifup $dev
+   fi
    return $?
 }
 
@@ -140,10 +144,10 @@ function generateRedHatIfCfg() {
    echo "ONBOOT=yes") > ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
   if [ "$bootproto" != "dhcp" ]; then
      (echo "IPADDR=$ipAddr" && 
-	 if [ -n "$ipNetmask" ]; then echo "NETMAKS=$ipNetmask"; fi) >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
+	 if [ -n "$ipNetmask" ]; then echo "NETMASK=$ipNetmask"; fi) >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
      (if [ -n "$ipGate" ]; then echo "GATEWAY=$ipGate"; fi ) >> ${__prefix}/etc/sysconfig/network
    fi
-   (echo "NETWORKINGO=yes" &&
+   (echo "NETWORKING=yes" &&
     echo "HOSTNAME=$ipHostname") > ${__prefix}/etc/sysconfig/network
    if [ $(/bin/hostname) = "(none)" ]; then /bin/hostname $ipHostname; fi
    echo_local_debug "2.1.1 /etc/sysconfig/network"
@@ -268,19 +272,77 @@ function loadSCSI() {
 	exec_local_debug /bin/cat /proc/scsi/scsi
 } 
 
+# must be set before lock_gulmd is started.
+function setHWClock() {
+    # copied from rc.sysinit dependent on /etc/sysconfig/clock should reside in depfile.
+    ARC=0
+    SRM=0
+    UTC=0
+
+    if [ -f /etc/sysconfig/clock ]; then
+	. /etc/sysconfig/clock
+	
+        # convert old style clock config to new values
+	if [ "${CLOCKMODE}" = "GMT" ]; then
+	    UTC=true
+	elif [ "${CLOCKMODE}" = "ARC" ]; then
+	    ARC=true
+	fi
+    fi
+
+    CLOCKDEF=""
+    CLOCKFLAGS="$CLOCKFLAGS --hctosys"
+
+    case "$UTC" in
+	yes|true)   CLOCKFLAGS="$CLOCKFLAGS --utc"
+	    CLOCKDEF="$CLOCKDEF (utc)" ;;
+	no|false)   CLOCKFLAGS="$CLOCKFLAGS --localtime"
+	    CLOCKDEF="$CLOCKDEF (localtime)" ;;
+    esac
+    case "$ARC" in
+	yes|true)   CLOCKFLAGS="$CLOCKFLAGS --arc"
+	    CLOCKDEF="$CLOCKDEF (arc)" ;;
+    esac
+    case "$SRM" in
+	yes|true)   CLOCKFLAGS="$CLOCKFLAGS --srm"
+	    CLOCKDEF="$CLOCKDEF (srm)" ;;
+    esac
+    
+    echo_local "Setting clock $CLOCKDEF: "$(date)
+    exec_local /sbin/hwclock $CLOCKFLAGS
+}
+
 function pivotRoot() {
     echo_local_debug "**********************************************************************"
-    [ ! -d /mnt/oldroot ] && mkdir -p /mnt/oldroot
     cd /mnt/newroot
-    exec_local /sbin/pivot_root . mnt/oldroot
+    [ ! -d initrd ] && mkdir -p initrd
+    exec_local /sbin/pivot_root . initrd
+    step
 
     echo_local "7. Starting init-process (exec /sbin/init < /dev/console 1>/dev/console 2>&1)..."
     if [ $critical -eq 0 ]; then
-		exec /sbin/init < /dev/console 1>/dev/console 2>&1
+	umount initrd/proc
+	exec /sbin/init < /dev/console 1>/dev/console 2>&1
+	if [ $? -eq 0 ]; then
+	    echo_local "Error starting init-process falling back to bash."
+	    /rescue.sh
+	    exec /bin/bash
+	fi
     else
-		/rescue.sh
-		exec /bin/bash
+	/rescue.sh
+	exec /bin/bash
     fi
+}
+
+function clean_initrd() {
+    echo_local_debug "**********************************************************************"
+    echo_local "6.2 Cleaning up initrd ."
+    echo_local -n "6.2.1 Umounting procfs"
+    exec_local /bin/umount /i/proc
+    echo_local -n "6.2.2 Umounting /initrd"
+    exec_local /bin/umount /mnt/oldroot
+    echo_local -n "6.2.3 Freeing memory"
+    exec_local /sbin/blockdev --flushbufs /dev/ram0
 }
 
 function ipaddress_from_name() {
@@ -423,6 +485,9 @@ function add_scsi_device() {
 }
 
 # $Log: boot-lib.sh,v $
-# Revision 1.1  2004-07-31 11:24:43  marc
+# Revision 1.2  2004-08-11 16:53:26  marc
+# bugfixes
+#
+# Revision 1.1  2004/07/31 11:24:43  marc
 # initial revision
 #
