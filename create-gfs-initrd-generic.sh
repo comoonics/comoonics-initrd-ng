@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: create-gfs-initrd-generic.sh,v 1.1 2004-09-26 10:10:25 marc Exp $
+# $Id: create-gfs-initrd-generic.sh,v 1.2 2004-10-21 09:13:08 marc Exp $
 #
 # @(#)$File$
 #
@@ -75,6 +75,12 @@ getoptions $*
 
 touch ./.building_initrd
 #if [ -e $netenv_file ]; then . $netenv_file; fi
+
+if [ -z "$dep_file" ]; then
+  echo "No depfile given. A dep_file is required."
+  usage
+  exit 1
+fi
 
 echo -n "Makeing initrd ..."
 make_initrd $initrdname $size || (echo "(FAILED)" && exit $?)
