@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.3 2004-08-13 15:53:46 marc Exp $
+# $Id: boot-lib.sh,v 1.4 2004-08-23 08:47:19 marc Exp $
 #
 # @(#)$File$
 #
@@ -38,8 +38,14 @@ function getBootParm() {
    default="$2"
    cmdline=`cat /proc/cmdline`
    out=`expr "$cmdline" : ".*$parm=\([^ ]*\)"`
+   if [ $(expr "$cmdline" : ".*$parm") -gt 0 ] && [ -z "$out" ]; then out=1; fi
    if [ -z "$out" ]; then out="$default"; fi
    echo "$out"
+   if [ -z "$out" ]; then
+       return 1
+   else
+       return 0
+   fi
 }
 
 function getShortRelease() {
@@ -240,11 +246,13 @@ function getNetParameters() {
 
 function getBootParameters() {
 	echo_local "*********************************"
-	echo_local "Scanning for optinal parameters"
+	echo_local "Scanning for optional parameters"
 	echo_local "*********************************"
+	echo_local_debug "** /proc/cmdline: "$(cat /proc/cmdline)
 	mount_opts=`getBootParm mountopt defaults`
 	boot_source=`getBootParm bootsrc default`
 	bootpart=`getBootParm bootpart bash`
+	tmpfix=$(getBootParm tmpfix)
 }
 
 function loadSCSI() {
@@ -342,6 +350,13 @@ function pivotRoot() {
     fi
 }
 
+function createTemp {
+    local device=$1
+    mkfs.ext2 -L tmp $device
+    mount $device ./tmp
+    chmod -R a+t,a+rwX ./tmp/. ./tmp/*
+}
+
 function chRoot() {
     echo_local_debug "**********************************************************************"
     echo_local -n "5.4 Change-Root... (pwd: "$(pwd)"=>/mnt/newroot)"
@@ -353,11 +368,14 @@ function chRoot() {
     step
 
     if [ $critical -eq 0 ]; then
-	echo_local "6. Setting up tmp..."
-	mkfs.ext2 -L tmp /dev/ram1
-	exec_local mount /dev/ram1 tmp
+	if [ -n "$tmpfix" ]; then 
+	    echo_local "6. Setting up tmp..."
+	    exec_local createTemp /dev/ram1
+	fi
 	echo_local "7. Cleaning up..."
 	exec_local umount /proc
+	mtab=$(cat /etc/mtab 2>&1)
+	echo_local_debug "7.1 mtab: $mtab"
 	echo_local "8. Starting init-process (exec /sbin/init < /dev/console 1>/dev/console 2>&1)..."
 	exec chroot . /sbin/init < /dev/console 1>/dev/console 2>&1
 	echo_local "Error starting init-process falling back to bash."
@@ -520,7 +538,10 @@ function add_scsi_device() {
 }
 
 # $Log: boot-lib.sh,v $
-# Revision 1.3  2004-08-13 15:53:46  marc
+# Revision 1.4  2004-08-23 08:47:19  marc
+# first stable release for tmpfix-param.
+#
+# Revision 1.3  2004/08/13 15:53:46  marc
 # added support for chroot
 #
 # Revision 1.2  2004/08/11 16:53:26  marc
