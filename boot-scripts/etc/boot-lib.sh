@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.17 2004-09-29 14:32:16 marc Exp $
+# $Id: boot-lib.sh,v 1.18 2005-01-03 08:29:10 marc Exp $
 #
 # @(#)$File$
 #
@@ -24,6 +24,7 @@ export PATH LD_LIBRARY_PATH
 bootlog="/var/log/comoonics-boot.log"
 # the disk where the bootlog should be written to (default /dev/fd0).
 diskdev="/dev/fd0"
+[ -e /usr/bin/logger ] && logger="/usr/bin/logger -t com-bootlog"
 
 function step() {
    if [ ! -z "$stepmode" ]; then
@@ -70,12 +71,21 @@ function my_ifup() {
    exec_local modprobe $dev && sleep 2 && ifconfig $dev up 
    if [ $return_c -eq 0 ] && [ -n "$ipconfig" ] && [ "$ipconfig" != "skip" ]; then
        sleep 2
+       echo_local "   Recreating network configuration for $dev"
+       exec_local ip2Config $(getPosFromIPString 1, $ipconfig)::$(getPosFromIPString 3, $ipconfig):$(getPosFromIPString 4, $ipconfig):$(hostname):$dev
        echo_local "   Starting network configuration for $dev with config $ipconfig"
        exec_local ifup $dev
-       echo_local "   Recreating network configuration for $dev"
-       exec_local ip2Config $(getPosFromIPString 1, $ipconfig)::$(getPosFromIPString 3, $ipconfig):$(getPosFromIPString 4, $ipconfig):$(hostname):$(getPosFromIPString 6, $1)
+       echo_local -n "   Patching /etc/hosts..."
+       exec_local patch_hosts
    fi
    return $return_c
+}
+
+function patch_hosts {
+   ip=$(ifconfig eth0 | grep "inet addr" | awk '{ match($2, ":(.+)$", ip); print ip[1]; }') || return 1
+   hostname=$(hostname)
+   hostname_f=$(hostname -f)
+   echo -e "$ip\t$hostname\t$hostname_f" >> /etc/hosts
 }
 
 function ip2Config() {
@@ -97,12 +107,12 @@ function ip2Config() {
   case `getShortRelease` in
       "redhat")
 	  echo_local -n "Generating ifcfg for redhat ($ipAddr, $ipGate, $ipNetmask, $ipHostname, $ipDevice)..."
-	  (generateRedHatIfCfg "$ipAddr" "$ipGate" "$ipNetmask" "$ipHostname" "$ipDevice" &&
+	  (generateRedHatIfCfg "$ipDevice" "$ipAddr" "$ipGate" "$ipNetmask" "$ipHostname" &&
 	   echo_local "(OK)") || echo_local "(FAILED)"
 	  ;;
       "SuSE")
 	  echo_local -n "Generating ifcfg for "`getShortRelease`" ($ipAddr, $ipGate, $ipNetmask, $ipHostname, $ipDevice)..."
-	  (generateSuSEIfCfg "$ipAddr" "$ipGate" "$ipNetmask" "$ipHostname" "$ipDevice" &&
+	  (generateSuSEIfCfg "$ipDevice" "$ipAddr" "$ipGate" "$ipNetmask" "$ipHostname" &&
 	  echo_local "(OK)") || echo_local "(FAILED)"
 	  ;;
       *)
@@ -119,11 +129,11 @@ function getPosFromIPString() {
 }
 
 function generateSuSEIfCfg() {
-  local ipAddr=$1
-  local ipGate=$2
-  local ipNetmask=$3
-  local ipHostname=$4
-  local ipDevice=$5
+  local ipDevice=$1
+  local ipAddr=$2
+  local ipGate=$3
+  local ipNetmask=$4
+  local ipHostname=$5
 
   awkfile="/etc/sysconfig/network/ifcfg.template.awk"
   # just for testing
@@ -148,7 +158,14 @@ function generateSuSEIfCfg() {
       echo $domainname > /etc/defdomain
   fi
 
-  awk -F'=' -f $awkfile bootproto="$bootproto" ipaddr="$ipAddr" netmask="$ipNetmask" startmode="onboot" > /etc/sysconfig/network/ifcfg-$ipDevice
+  awk -F'=' bootproto="$bootproto" ipaddr="$ipAddr" netmask="$ipNetmask" startmode="onboot" '
+BEGIN {
+  for (i=1; i < ARGC; i++) {
+    split(ARGV[i], value_pair, "=");
+    printf("%s=%s\n", toupper(value_pair[1]), value_pair[2]);
+  }
+}
+'> /etc/sysconfig/network/ifcfg-$ipDevice
   if [ "$ipAddr" != "dhcp" ]; then 
       echo "default $ipGate - -" >> /etc/sysconfig/network/routes
       echo_local_debug "2.1.2 /etc/sysconfig/network-scripts/routes"
@@ -161,11 +178,11 @@ function generateSuSEIfCfg() {
 }
 
 function generateRedHatIfCfg() {
-  local ipAddr=$1
-  local ipGate=$2
-  local ipNetmask=$3
-  local ipHostname=$4
-  local ipDevice=$5
+  local ipDevice=$1
+  local ipAddr=$2
+  local ipGate=$3
+  local ipNetmask=$4
+  local ipHostname=$5
 
   # just for testing
   #local $pref="/tmp"
@@ -285,16 +302,18 @@ function getNetParameters() {
 }
 
 function getBootParameters() {
-	echo_local "*********************************"
-	echo_local "Scanning for optional parameters"
-	echo_local "*********************************"
-	echo_local_debug "** /proc/cmdline: "
-        exec_local_debug cat /proc/cmdline
-	mount_opts=`getBootParm mountopt defaults`
-	boot_source=`getBootParm bootsrc default`
-	bootpart=`getBootParm bootpart bash`
-	tmpfix=$(getBootParm tmpfix)
-	iscsi=$(getBootParm iscsi)
+    echo_local "*********************************"
+    echo_local "Scanning for optional parameters"
+    echo_local "*********************************"
+    echo_local_debug "** /proc/cmdline: "
+    exec_local_debug cat /proc/cmdline
+    mount_opts=`getBootParm mountopt defaults`
+    boot_source=`getBootParm bootsrc default`
+    bootpart=`getBootParm bootpart bash`
+    tmpfix=$(getBootParm tmpfix)
+    iscsi=$(getBootParm iscsi)
+    netdevs=$(getBootParm netdevs | tr ":" " ")
+    chroot=$(getBootParm chroot)
 }
 
 function loadSCSI() {
@@ -376,11 +395,19 @@ function pivotRoot() {
     step
 
     if [ $critical -eq 0 ]; then
-	echo_local "6. Cleaning up..."
+	if [ -n "$tmpfix" ]; then 
+	    echo_local "6. Setting up tmp..."
+	    exec_local "mkfs.ext2 -L tmp /dev/ram1 && mount /dev/ram1 /tmp"
+	fi
+
+	echo_local "7. Cleaning up..."
 	exec_local umount initrd/proc
-	echo_local "7. Setting up tmp..."
-	exec_local "mkfs.ext2 -L tmp /dev/ram1 && mount /dev/ram1 /tmp"
-	
+	mtab=$(cat /etc/mtab 2>&1)
+	echo_local_debug "7.1 mtab: $mtab"
+
+	echo_local "7.2 Stopping syslogd..."
+        exec_local stop_service "syslogd" /initrd
+
 	echo_local "8. Starting init-process (exec /sbin/init < /dev/console 1>/dev/console 2>&1)..."
 	exec /sbin/init < /dev/console 1>/dev/console 2>&1
 	echo_local "Error starting init-process falling back to bash."
@@ -397,6 +424,14 @@ function createTemp {
     mkfs.ext2 -L tmp $device
     mount $device ./tmp
     chmod -R a+t,a+rwX ./tmp/. ./tmp/*
+}
+
+function stop_service {
+  local service_name=$1
+  local other_root=$2
+  if [ -f ${other_root}/var/run/${service_name}.pid ]; then
+    exec_local kill $(cat ${other_root}/var/run/${service_name}.pid)
+  fi
 }
 
 function chRoot() {
@@ -418,6 +453,8 @@ function chRoot() {
 	exec_local umount /proc
 	mtab=$(cat /etc/mtab 2>&1)
 	echo_local_debug "7.1 mtab: $mtab"
+	echo_local "7.2 Stopping syslogd..."
+        exec_local stop_service "syslogd" /initrd
 	echo_local "8. Starting init-process (exec /sbin/init < /dev/console 1>/dev/console 2>&1)..."
 	exec chroot . /sbin/init < /dev/console 1>/dev/console 2>&1
 	echo_local "Error starting init-process falling back to bash."
@@ -449,11 +486,13 @@ function ipaddress_from_dev() {
 function echo_local() {
    echo ${*:0:$#-1} "${*:$#}"
    echo ${*:0:$#-1} "${*:$#}" >> $bootlog
+   [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
 }
 function echo_local_debug() {
    if [ ! -z "$debug" ]; then
      echo ${*:0:$#-1} "${*:$#}"
      echo ${*:0:$#-1} "${*:$#}" >> $bootlog
+     [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
    fi
 }
 
@@ -580,7 +619,13 @@ function add_scsi_device() {
 }
 
 # $Log: boot-lib.sh,v $
-# Revision 1.17  2004-09-29 14:32:16  marc
+# Revision 1.18  2005-01-03 08:29:10  marc
+# first offical rpm version
+# - added boot-parm to switch between chroot/pivotroot default pivotroot
+# - added function to stop a service
+# - minor changes
+#
+# Revision 1.17  2004/09/29 14:32:16  marc
 # vacation checkin, stable version
 #
 # Revision 1.16  2004/09/27 08:07:43  marc
