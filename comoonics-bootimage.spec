@@ -11,7 +11,7 @@
 # with ATIX.
 #
 # %define _initrddir /etc/init.d
-# $Id: comoonics-bootimage.spec,v 1.3 2005-01-05 10:57:07 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.4 2005-06-08 13:33:22 marc Exp $
 %define _user root
 %define         CONFIGDIR       /%{_sysconfdir}/comoonics
 %define         APPDIR       /opt/atix/comoonics_bootimage
@@ -20,7 +20,7 @@
 Name: comoonics-bootimage
 Summary: Comoonics Bootimage. Scripts for creating an initrd in a gfs shared root environment
 Version: 0.1
-Release: 23
+Release: 24
 Vendor: ATIX GmbH
 Packager: Marc Grimme (grimme@atix.de)
 ExclusiveArch: noarch
@@ -103,6 +103,9 @@ cd %{APPDIR}/boot-scripts/ && ln -sf linuxrc.generic.sh linuxrc
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/lock_gulmd_mv_files.list
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/lock_gulmd_cp_files.list
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/lock_gulmd_dirs.list
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/syslogd_mv_files.list
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/syslogd_cp_files.list
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/syslogd_dirs.list
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/ccsd_mv_files.list
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/ccsd_cp_files.list
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/ccsd_dirs.list
@@ -118,7 +121,10 @@ cd %{APPDIR}/boot-scripts/ && ln -sf linuxrc.generic.sh linuxrc
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.3  2005-01-05 10:57:07  marc
+# Revision 1.4  2005-06-08 13:33:22  marc
+# new revision
+#
+# Revision 1.3  2005/01/05 10:57:07  marc
 # new release and added the latest files.
 #
 # Revision 1.2  2005/01/03 08:34:16  marc

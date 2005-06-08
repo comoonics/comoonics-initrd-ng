@@ -1,5 +1,5 @@
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.2 2005-01-05 10:54:53 marc Exp $
+# $Id: Makefile,v 1.3 2005-06-08 13:33:22 marc Exp $
 #
 # @(#)$file$
 #
@@ -41,6 +41,9 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/lock_gulmd_mv_files.list \
   boot-scripts/etc/lock_gulmd_cp_files.list \
   boot-scripts/etc/lock_gulmd_dirs.list \
+  boot-scripts/etc/syslogd_mv_files.list \
+  boot-scripts/etc/syslogd_cp_files.list \
+  boot-scripts/etc/syslogd_dirs.list \
   boot-scripts/etc/ccsd_mv_files.list \
   boot-scripts/etc/ccsd_cp_files.list \
   boot-scripts/etc/ccsd_dirs.list \
@@ -142,7 +145,10 @@ archive:
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.2  2005-01-05 10:54:53  marc
+# Revision 1.3  2005-06-08 13:33:22  marc
+# new revision
+#
+# Revision 1.2  2005/01/05 10:54:53  marc
 # added the files for ccsd in chroot.
 #
 # Revision 1.1  2005/01/03 08:33:17  marc
