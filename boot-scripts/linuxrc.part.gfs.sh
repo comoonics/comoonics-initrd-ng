@@ -1,5 +1,5 @@
 #
-# $Id: linuxrc.part.gfs.sh,v 1.14 2005-01-05 10:56:31 marc Exp $
+# $Id: linuxrc.part.gfs.sh,v 1.15 2005-06-08 13:34:17 marc Exp $
 #
 # @(#)$File$
 #
@@ -167,8 +167,11 @@ else
     step
     setHWClock
     step
-    echo_local -n "4.6 Starting syslog"
-    exec_local gfs_start_syslog
+    echo_local "4.6 Starting syslog"
+    echo_local -n "4.6.1 nochroot"
+    exec_local gfs_start_syslog_nochroot
+    echo_local -n "4.6.2 chroot"
+    gfs_start_syslog_chroot
     if [ -n "$GFS_POOL_CCA" ]; then
       echo_local -n "4.6 Starting lock_gulmd"
       sts=1
@@ -236,7 +239,10 @@ else
 fi
 
 # $Log: linuxrc.part.gfs.sh,v $
-# Revision 1.14  2005-01-05 10:56:31  marc
+# Revision 1.15  2005-06-08 13:34:17  marc
+# added chroot syslog
+#
+# Revision 1.14  2005/01/05 10:56:31  marc
 # added the chroot start of services ccsd.
 #
 # Revision 1.13  2005/01/03 08:32:59  marc
