@@ -1,5 +1,3 @@
-/dev/log
-/dev/null
 /etc/resolv.conf
 /etc/host.conf
 /etc/hosts
@@ -32,4 +30,3 @@
 /lib/libcrypto.so.4
 /lib/libresolv.so.2
 /sbin/ccsd
-

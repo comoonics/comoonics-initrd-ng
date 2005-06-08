@@ -2,3 +2,5 @@
 /lib/ld-2.3.2.so
 /lib/libc.so.6
 /lib/libc-2.3.2.so
+/dev/log
+/dev/null
