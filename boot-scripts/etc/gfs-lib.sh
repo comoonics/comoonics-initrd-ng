@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.10 2005-01-05 10:53:33 marc Exp $
+# $Id: gfs-lib.sh,v 1.11 2005-06-08 13:35:26 marc Exp $
 #
 # @(#)$File$
 #
@@ -209,7 +209,7 @@ function cca_autoconfigure_network {
 }
 
 function copy_relevant_files {
-  local cdsl_local_dir=$(shift)
+  local cdsl_local_dir=$1
   # backup old files
   olddir=$(pwd)
   if [ -n "$debug" ]; then set -x; fi
@@ -267,7 +267,7 @@ function gfs_start_service {
     shift
     $($service $*)
   else
-    [ -z "chroot_dir" ] && chroot_dir="/var/lib/${service_name}"
+    [ -z "$chroot_dir" ] && chroot_dir="/var/lib/${service_name}"
     echo_local -n "service=$service_name..build chroot.."
     [ -d $chroot_dir ] || mkdir -p $chroot_dir
     for dir in $service_dirs; do
@@ -293,7 +293,7 @@ function gfs_start_service {
 
 #
 # This function starts the syslog-server to log the gfs-bootprocess
-function gfs_start_syslog {
+function gfs_start_syslog_nochroot {
   local syslog_server=$(cca_get_syslog_server)
   local chroot_dir="/var/lib/lock_gulmd"
   echo_local_debug "Syslog server: $syslog_server, hostname: "$(/bin/hostname)
@@ -305,7 +305,24 @@ function gfs_start_syslog {
   
   echo "syslog          514/udp" >> /etc/services
   mkdir -p $chroot_dir 2> /dev/null
-  exec_local gfs_start_service /sbin/syslogd no_chroot -m 0 -a ${chroot_dir}/dev/log
+  gfs_start_service /sbin/syslogd no_chroot -m 0
+}
+
+#
+# This function starts the syslog-server to log the gfs-bootprocess
+function gfs_start_syslog_chroot {
+  local syslog_server=$(cca_get_syslog_server)
+  local chroot_dir="/var/lib/lock_gulmd"
+  echo_local_debug "Syslog server: $syslog_server, hostname: "$(/bin/hostname)
+  if [ -n "$syslog_server" ]; then
+    echo '*.* @'"$syslog_server" >> ${chroot_dir}/etc/syslog.conf
+  else
+    echo "*.* -/var/log/comoonics_boot.syslog" >> ${chroot_dir}/etc/syslog.conf
+  fi
+  
+  echo "syslog          514/udp" >> ${chroot_dir}/etc/services
+  mkdir -p $chroot_dir 2> /dev/null
+  gfs_start_service /var/lib/lock_gulmd /sbin/syslogd -m 0
 }
 
 #
@@ -340,7 +357,10 @@ function gfs_start_ccsd {
 }
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.10  2005-01-05 10:53:33  marc
+# Revision 1.11  2005-06-08 13:35:26  marc
+# added chroot_syslog
+#
+# Revision 1.10  2005/01/05 10:53:33  marc
 # moved syslog and ccsd in chroot to /var/lib/lock_gulmd
 # added function gfs_start_service
 #
