@@ -1,5 +1,5 @@
 #
-# $Id: linuxrc.part.gfs.sh,v 1.15 2005-06-08 13:34:17 marc Exp $
+# $Id: linuxrc.part.gfs.sh,v 1.16 2005-06-27 14:21:37 mark Exp $
 #
 # @(#)$File$
 #
@@ -40,9 +40,14 @@ fi
 gfs_majorversion=$(getGFSMajorVersion)
 gfs_minorversion=$(getGFSMinorVersion)
 
-if [ $? -ne 0 ] || [ -z "$gfs_majorversion" ] || [ -z "$gfs_minorversion" ]; then
-    echo_local "Unsupported or no gfs modules for this kernel"
+if [ $? -ne 0 ]; then
+    echo_local "No gfs modules for this kernel"
     exit 1
+fi
+
+if [ -z "$gfs_majorversion" ] || [ -z "$gfs_minorversion" ]; then
+	gfs_majorversion=6
+	gfs_minorversion=1
 fi
 
 eval tmpmods=\$GFS_MODULES_${gfs_majorversion}_${gfs_minor_version}
@@ -56,6 +61,9 @@ if [ "$poolsource" = "gnbd" ]; then
 fi
 
 case $gfs_lock_method in
+	lock_dlm)
+	GFS_MODULES="${GFS_MODULES} lock_dlm"
+	;;
     lock_gulm)
 	GFS_MODULES="${GFS_MODULES} lock_gulm"
 	;;
@@ -93,8 +101,36 @@ if [ "$poolsource" = "gnbd" -a -n "$gnbd_server" ]; then
     exec_local /sbin/gnbd_import -i $gnbd_server
 fi
 
-echo_local "4.3 Assembling pool"
-exec_local ${GFS_POOL_ASSEMBLE}
+
+if [ ! -z "$pool_name" ]; then
+    GFS_POOL="$pool_name"
+fi
+
+# We are unsing CLVM as volume manager
+# ?? Do we need clvmd ?? 
+if  [ $gfs_majorversion -eq 6 -a $gfs_minorversion -eq 1 ]; then
+	echo_local "4.3 Activating volume groups"
+
+	mount -t proc /proc /proc
+	echo_local Mounted /proc filesystem
+	echo_local Mounting sysfs
+	mount -t sysfs none /sys
+	
+	modprobe dm_mod
+
+	echo_local Scanning logical volumes
+	lvm vgscan
+	echo_local Activating logical volumes
+	lvm vgchange -ay
+	echo_local Making device nodes
+	lvm vgmknodes
+
+	#exec_local ${LVM_VG_SCAN}
+	#exec_local ${LVM_VG_CHANGE} -ay $pool_name
+else
+	echo_local "4.3 Assembling pool"
+	exec_local ${GFS_POOL_ASSEMBLE}
+fi
 
 if [ ! -z "$pool_name" ]; then
     GFS_POOL="$pool_name"
@@ -119,74 +155,155 @@ if [ $gfs_majorversion -eq 5 ] && [ $gfs_minorversion -lt 2 ]; then
     cdsl_local_dir="/boot.local"
     echo_local_debug "4.3.1 pool_cidev_name: $pool_cidev_name"
     mount_opts="hostdata=`/bin/hostname`:/dev/pool/$GFS_POOL_CIDEV"
+fi
 
-else
+if [ $gfs_majorversion -eq 6 ] && [ $gfs_minorversion -lt 1 ]; then
+	# check for cca device
+	# only for GFS 6.0
     [ -z "$pool_cca_name" ] && pool_cca_name=$(gfs_autodetect_cca)
-    [ -n "$pool_cca_name" ] && GFS_POOL_CCA=$pool_cca_name
+	[ -n "$pool_cca_name" ] && GFS_POOL_CCA=$pool_cca_name
     if [ -z "${GFS_POOL_CCA}" ]; then
-	GFS_POOL_CCA="${GFS_POOL}_cca"
+		GFS_POOL_CCA="${GFS_POOL}_cca"
     fi
+	##
+	# exctract ccs information from cca file
     cdsl_local_dir="/cdsl.local"
     mkdir /tmp  > /dev/null 2>&1
     shortpool="/tmp/"$(basename $GFS_POOL_CCA)"/"
+    exec_local ccs_tool extract $GFS_POOL_CCA $shortpool
+	##
+	# get networkconfig from ccs_file
     echo_local_debug "4.4.0 IPConfig: $ipConfig"
     echo_local -n "4.4.1 Extracting Pool-cca $GFS_POOL_CCA to $shortpool: "
-    exec_local ccs_tool extract $GFS_POOL_CCA $shortpool
     if [ -e ${GFS_POOL_CCA} ] && [ "$ipConfig" = "cca" ]; then 
-	if [ -z "$NETDEV" ]; then NETDEV="eth0"; fi
-	
-	for NETDEV in $(cca_get_netdevices "$shortpool"); do
-	    echo_local_debug "4.4.1.1 Autconfig for this host ($ipConfig $NETDEV $shortpool) ..."
-	    n_ipConfig=$(cca_autoconfigure_network "$ipConfig" "$NETDEV" "$shortpool")
-	    echo_local_debug "n_ipconfig: $n_ipConfig "
-	    step
-	    if [ -n "$n_ipConfig" ]; then
+		if [ -z "$NETDEV" ]; then NETDEV="eth0"; fi
+		##
+		# power up network configuration
+		for NETDEV in $(cca_get_netdevices "$shortpool"); do
+		echo_local_debug "4.4.1.1 Autconfig for this host ($ipConfig $NETDEV $shortpool) ..."
+		n_ipConfig=$(cca_autoconfigure_network "$ipConfig" "$NETDEV" "$shortpool")
+		echo_local_debug "n_ipconfig: $n_ipConfig "
+		step
+		if [ -n "$n_ipConfig" ]; then
 		echo_local -n "4.4.2 Configuring network with bootparm-config ($n_ipConfig)"
 		exec_local ip2Config $n_ipConfig
 		echo_local -n "4.4.3 Powering up the network for interface ($NETDEV)..."
 		exec_local my_ifup $NETDEV $n_ipConfig
+		fi
+		done
+	fi
+	#
+	# starting ccsd
+	# update hosts file
+	if [ -n "$GFS_POOL_CCA" ]; then
+	echo_local -n "4.5 Starting ccsd ($GFS_POOL_CCA)"
+	exec_local gfs_start_ccsd $GFS_POOL_CCA
+	echo_local -n "4.5.1 Patching host file..."
+	if [ -z "$shortpool" ]; then ccs_opts="-c"; fi
+	exec_local cca_generate_hosts ${shortpool} /etc/hosts
+	echo_local_debug -n "4.5.1 /etc/hosts: "
+	exec_local cat /etc/hosts
+	# get shared root partition
+	echo_local_debug "4.5.2 pool_name: $pool_name"
+	[ -z "$pool_name" ] && pool_name=$(cca_get_node_sharedroot)
+	echo_local_debug "4.5.2 poolname: $pool_name"
+	echo_local_debug "4.5.2 pool_cca_name: $pool_cca_name"
+	GFS_POOL=$pool_name
+	step
+	setHWClock
+	step
+	## 
+	# start syslog
+	echo_local "4.6 Starting syslog"
+	echo_local -n "4.6.1 nochroot"
+	exec_local gfs_start_syslog_nochroot
+	echo_local -n "4.6.2 chroot"
+	gfs_start_syslog_chroot
+	##
+	# start lock_gulmd 
+	if [ -n "$GFS_POOL_CCA" ]; then
+	echo_local -n "4.6 Starting lock_gulmd"
+	sts=1
+	exec_local gfs_start_lock_gulmd
+	step
+	fi
+	fi
+else 
+	# get networkconfig from ccs_file
+    echo_local_debug "4.4.0 IPConfig: $ipConfig"
+	xml_file="/etc/cluster/cluster.conf"
+	##
+	# power up network configuration
+	hostname=$(xml_get_my_hostname ${xml_file})	
+	echo_local "Hostname: $hostname";
+	for NETDEV in $(xml_get_netdevices ${xml_file}); do
+	    echo_local_debug "4.4.1.1 Autconfig for this host ($ipConfig $NETDEV ${xml_file}) ..."
+	    n_ipConfig=$(xml_autoconfigure_network "$ipConfig" "$NETDEV" "${xml_file}")
+	    echo_local_debug "n_ipconfig: $n_ipConfig "
+	    step
+	    if [ -n "$n_ipConfig" ]; then
+			echo_local -n "4.4.2 Configuring network with bootparm-config ($n_ipConfig)"
+			exec_local ip2Config $n_ipConfig
+			echo_local -n "4.4.3 Powering up the network for interface ($NETDEV)..."
+			exec_local my_ifup $NETDEV $n_ipConfig
 	    fi
 	done
-    fi
-
-    if [ -n "$GFS_POOL_CCA" ]; then
-      echo_local -n "4.5 Starting ccsd ($GFS_POOL_CCA)"
-      exec_local gfs_start_ccsd $GFS_POOL_CCA
-      echo_local -n "4.5.1 Patching host file..."
-      if [ -z "$shortpool" ]; then ccs_opts="-c"; fi
-      exec_local cca_generate_hosts ${shortpool} /etc/hosts
-      echo_local_debug -n "4.5.1 /etc/hosts: "
-      exec_local cat /etc/hosts
-    fi
-    
-    echo_local_debug "4.5.2 pool_name: $pool_name"
-    [ -z "$pool_name" ] && pool_name=$(cca_get_node_sharedroot)
-    echo_local_debug "4.5.2 poolname: $pool_name"
-    echo_local_debug "4.5.2 pool_cca_name: $pool_cca_name"
+ 	#
+	# starting ccsd
+	# update hosts file
+    echo_local -n "4.5 Starting ccsd"
+    exec_local gfs61_start_ccsd
+    echo_local -n "4.5.1 Patching host file..."
+	
+	exec_local xml_generate_hosts ${xml_file} /etc/hosts
+    echo_local_debug -n "4.5.1 /etc/hosts: "
+    exec_local cat /etc/hosts
+        
+	# get shared root partition
+    # !!! ROOT DEVICE !!!
+    [ -z "$pool_name" ] && pool_name=$(xml_get_node_sharedroot $hostname)
+    echo_local_debug "4.5.2 rootvolume_name: $pool_name"
     GFS_POOL=$pool_name
     step
     setHWClock
     step
+	## 
+	# start syslog
     echo_local "4.6 Starting syslog"
     echo_local -n "4.6.1 nochroot"
-    exec_local gfs_start_syslog_nochroot
-    echo_local -n "4.6.2 chroot"
-    gfs_start_syslog_chroot
-    if [ -n "$GFS_POOL_CCA" ]; then
-      echo_local -n "4.6 Starting lock_gulmd"
-      sts=1
-      exec_local gfs_start_lock_gulmd
-      step
+	exec_local xml_start_syslog ${xml_file}
+    #exec_local gfs_start_syslog_nochroot
+    #echo_local -n "4.6.2 chroot"
+    #gfs_start_syslog_chroot
+	##
+	# join the cluster
+	echo_local "4.7 starting cluster service"
+	/sbin/cman_tool join -w
+	echo_local "4.8 starting fenced in chroot"
+	exec_local gfs_start_fenced 
+	#chroot / fence_tool join -c -w
+	sleep 3
+	## done
+	step
 
-    fi
-fi
+
+fi 
+
 
 echo_local_debug "*****************************"
 echo_local "5.0.1 Pool: ${GFS_POOL}"
 echo_local_debug "5.0.2 Cdsl_local_dir: ${cdsl_local_dir}"
     
 echo_local "5.2. Mounting newroot ..."
-exec_local /bin/mount -t gfs  /dev/pool/${GFS_POOL} /mnt/newroot -o $mount_opts
+
+
+
+if [ $gfs_majorversion -eq 6 ] && [ $gfs_minorversion -ge 1 ]; then
+	exec_local /bin/mount -t gfs  ${GFS_POOL} /mnt/newroot -o $mount_opts
+else
+	exec_local /bin/mount -t gfs  /dev/pool/${GFS_POOL} /mnt/newroot -o $mount_opts
+fi
+
 critical=0
 if [ ! $return_c -eq 0 ]; then
     critical=1
@@ -232,14 +349,22 @@ fi
 #mount -t proc proc /proc
 #kill $pid && /sbin/ifup eth0
 
-if [ -n "$chroot" ]; then
-  chRoot
+if [ $gfs_majorversion -eq 6 ] && [ $gfs_minorversion -ge 1 ]; then
+  switchRoot
 else
-  pivotRoot
+  if [ -n "$chroot" ]; then
+    chRoot
+  else
+    pivotRoot
+  fi
 fi
 
 # $Log: linuxrc.part.gfs.sh,v $
-# Revision 1.15  2005-06-08 13:34:17  marc
+# Revision 1.16  2005-06-27 14:21:37  mark
+# added rhel4 support
+# .
+#
+# Revision 1.15  2005/06/08 13:34:17  marc
 # added chroot syslog
 #
 # Revision 1.14  2005/01/05 10:56:31  marc
