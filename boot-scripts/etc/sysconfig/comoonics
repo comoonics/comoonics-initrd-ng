@@ -11,7 +11,10 @@ GFS_MODULES="gfs pool"
 GFS_MODULES_5_1="gfs pool fence"
 GFS_MODULES_5_2="gfs pool fence_driver"
 GFS_MODULES_6="gfs pool"
+GFS_MODULES_6_1="gfs cman lvm"
 
+LVM_VG_SCAN="/sbin/vgscan"
+LVM_VG_CHANGE="/sbin/vgchange"
 GFS_POOL_ASSEMBLE="/sbin/pool_assemble"
 GFS_FENCED="/sbin/fenced"
 GFS_POOL=atixpool2
