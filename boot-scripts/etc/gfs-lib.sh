@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.11 2005-06-08 13:35:26 marc Exp $
+# $Id: gfs-lib.sh,v 1.12 2005-06-27 14:23:14 mark Exp $
 #
 # @(#)$File$
 #
@@ -77,6 +77,15 @@ cca_get_node_sharedroot() {
    ccs_read string nodes.ccs nodes/$hostname/com_sharedroot
 }
 
+xml_get_node_sharedroot() {
+   local hostname=$1
+   [ -z "$hostname" ] && hostname=$(hostname)
+    local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query"    
+   $xml_cmd -q rootvolume $hostname
+}
+
+
+
 cca_get_node_role() {
    local hostname=$1
    [ -z "$hostname" ] && hostname=$(hostname)
@@ -130,7 +139,22 @@ function cca_generate_hosts {
     return $ret
 }
 
-# returns all configured networkdevices from the cca serperted by " "
+function xml_generate_hosts {
+    local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query"    
+    local xmlfile=$1
+    local hostsfile=$2
+
+    if [ -n "$debug" ]; then set -x; fi
+    cp -f $hostsfile $hostsfile.bak
+    (cat $hostsfile.bak && \
+	$xml_cmd -f $xmlfile -q hosts) >> $hostsfile
+    ret=$?
+    if [ $? -ne 0 ]; then cp $hostsfile.bak $hostsfile; fi
+    if [ -n "$debug" ]; then set +x; fi
+    return $ret
+}
+
+# returns all configured networkdevices from the cca seperated by " "
 function cca_get_netdevices {
     local ccs_cmd="/opt/atix/comoonics_cs/ccs_fileread"
     local cca_dir=$1
@@ -145,6 +169,20 @@ function cca_get_netdevices {
     else
 	return 1
     fi
+}
+
+# returns all configured networkdevices from the cluster.conf xml file seperated by " "
+function xml_get_netdevices {
+	if [ -n "$debug" ]; then set -x; fi
+    local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query"
+    local xmlfile=$1
+
+    local hostname=$(xml_get_my_hostname $xmlfile)
+
+    local netdevs=$($xml_cmd -f $xmlfile -q netdevs $hostname " ");
+	echo $netdevs
+	if [ -n "$debug" ]; then set +x; fi
+	return 1
 }
 
 #
@@ -193,6 +231,23 @@ function cca_get_my_hostname {
     fi
 }
 
+#
+# gets for this very host the hostname (identified by the macaddress
+function xml_get_my_hostname {
+    local netdev=$2
+    local ccs_file=$1
+    local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query"
+    if [ -z "$netdev" ]; then netdev="eth0"; fi
+    local mac=$(ifconfig $netdev | grep HWaddr | awk '{print $5;}')
+    local hostname=$($xml_cmd -f $ccs_file -q hostname $mac)
+    if [ -n "$hostname" ]; then 
+		echo $hostname
+	return 0
+    else
+	return 1
+    fi
+}
+
 function cca_autoconfigure_network {
   if [ -n "$debug" ]; then set -x; fi
   local ipconfig=$1
@@ -204,6 +259,21 @@ function cca_autoconfigure_network {
   local ip_addr=$($ccs_read string ${cca_dir}/nodes.ccs nodes/$hostname/eth0) || (set+x; return 1)
   local gateway=$($ccs_read string ${cca_dir}/nodes.ccs nodes/$hostname/eth0_gateway) || local gateway=""
   local netmask=$($ccs_read string ${cca_dir}/nodes.ccs nodes/$hostname/eth0_netmask) || (set +x; return 1)
+  echo ${ip_addr}"::"${gateway}":"${netmask}":"${hostname}
+  if [ -n "$debug" ]; then set +x; fi
+}
+
+function xml_autoconfigure_network {
+  if [ -n "$debug" ]; then set -x; fi
+  local ipconfig=$1
+  local netdev=$2
+  local xml_file=$3
+  local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query"
+  if [ -z "$netdev" ]; then netdev="eth0"; fi
+  local hostname=$(xml_get_my_hostname $xml_file $netdev)
+  local ip_addr=$($xml_cmd -f $xml_file -q ip $hostname $netdev)  
+  local gateway=$($xml_cmd -f $xml_file -q gateway $hostname $netdev) || local gateway=""
+  local netmask=$($xml_cmd -f $xml_file -q mask $hostname $netdev)
   echo ${ip_addr}"::"${gateway}":"${netmask}":"${hostname}
   if [ -n "$debug" ]; then set +x; fi
 }
@@ -250,6 +320,7 @@ function copy_relevant_files {
 # This function starts the lockgulmd in a chroot environment per default
 # If no_chroot is given as param the chroot is skipped
 function gfs_start_service {
+  if [ -n "$debug" ]; then set -x; fi
   [ -d "$1" ] && chroot_dir=$1 && shift
   service=$1
   service_name=$(basename $service)
@@ -287,8 +358,9 @@ function gfs_start_service {
 
     echo_local -n "..$service.."
     /usr/sbin/chroot $chroot_dir $service $* || 
-    ( echo_local -n "chroot not worked failing back.." && $service)
+    ( echo_local -n "chroot not worked failing back.." && $service $*)
   fi
+  if [ -n "$debug" ]; then set +x; fi
 }
 
 #
@@ -296,6 +368,25 @@ function gfs_start_service {
 function gfs_start_syslog_nochroot {
   local syslog_server=$(cca_get_syslog_server)
   local chroot_dir="/var/lib/lock_gulmd"
+  echo_local_debug "Syslog server: $syslog_server, hostname: "$(/bin/hostname)
+  if [ -n "$syslog_server" ]; then
+    echo '*.* @'"$syslog_server" >> /etc/syslog.conf
+  else
+    echo "*.* -/var/log/comoonics_boot.syslog" >> /etc/syslog.conf
+  fi
+  
+  echo "syslog          514/udp" >> /etc/services
+  mkdir -p $chroot_dir 2> /dev/null
+  gfs_start_service /sbin/syslogd no_chroot -m 0
+}
+
+#
+# This function starts the syslog-server to log the gfs-bootprocess
+function xml_start_syslog {
+  local xml_file=$1
+  local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query"
+  local hostname=$(xml_get_my_hostname $xml_file)
+  local syslog_server=$($xml_cmd -f $xml_file -q syslog $hostname)
   echo_local_debug "Syslog server: $syslog_server, hostname: "$(/bin/hostname)
   if [ -n "$syslog_server" ]; then
     echo '*.* @'"$syslog_server" >> /etc/syslog.conf
@@ -345,6 +436,12 @@ function gfs_start_lock_gulmd {
 }
 
 #
+# Function starts the lock_gulmd in a changeroot environment
+function gfs_start_fenced {
+  exec_local gfs_start_service /sbin/fence_tool join -c -w
+}
+
+#
 # Function starts the ccsd in a changeroot environment
 function gfs_start_ccsd {
   chroot_dir=/var/lib/lock_gulmd
@@ -356,8 +453,17 @@ function gfs_start_ccsd {
   exec_local gfs_start_service $chroot_dir /sbin/ccsd -d $1
 }
 
+#
+# Function starts the ccsd in a changeroot environment
+function gfs61_start_ccsd {
+  /sbin/ccsd
+}
+
 # $Log: gfs-lib.sh,v $
-# Revision 1.11  2005-06-08 13:35:26  marc
+# Revision 1.12  2005-06-27 14:23:14  mark
+# added gfs 61, rhel 4 support
+#
+# Revision 1.11  2005/06/08 13:35:26  marc
 # added chroot_syslog
 #
 # Revision 1.10  2005/01/05 10:53:33  marc
