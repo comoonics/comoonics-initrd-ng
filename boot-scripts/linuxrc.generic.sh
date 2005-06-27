@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.15 2005-01-03 08:53:05 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.16 2005-06-27 14:21:15 mark Exp $
 #
 # @(#)$File$
 #
@@ -32,7 +32,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.15 $ $Date: 2005-01-03 08:53:05 $'
+echo_local 'Internal Version $Revision: 1.16 $ $Date: 2005-06-27 14:21:15 $'
 echo_local "Rundate: "$(date)
 
 initBootProcess
@@ -60,11 +60,11 @@ echo_local_debug "chroot: $chroot"
 echo_local_debug "*****************************"
 x=`cat /proc/version`; 
 KERNEL_VERSION=`expr "$x" : 'Linux version \([^ ]*\)'`
-echo_local "0.2 Kernel-verion: ${KERNEL_VERSION}"
+echo_local "0.2 Kernel-version: ${KERNEL_VERSION}"
 echo_local_debug "*****************************"
 step 
 
-detectHardware
+detectHardwareSave
 
 echo_local_debug "*****************************"
 echo_local "2. Setting up the network"
