@@ -1,5 +1,5 @@
 #
-# $Id: create-gfs-initrd-lib.sh,v 1.2 2005-01-03 08:23:36 marc Exp $
+# $Id: create-gfs-initrd-lib.sh,v 1.3 2005-06-27 14:25:21 mark Exp $
 #
 # @(#)$File$
 #
@@ -82,7 +82,8 @@ function get_dependent_files() {
   elif [ -x $filename -a ! -d $filename ]; then
     ldd $filename > /dev/null 2>&1
     if [ $? = 0 ]; then
-      local newfiles=`ldd $filename | sed -e "s/^.*=> \(.*\) (.*).*$/\1/" | sed -e "s/^.*statically linked.*$//"`
+#      local newfiles=`ldd $filename | sed -e "s/^.*=> \(.*\) (.*).*$/\1/" | sed -e "s/^.*statically linked.*$//"`
+	local newfiles=`ldd $filename | sed -e "s/\(.*\) (.*)/\1/" | sed -e "s/.* => //" | sed -e "s/\t*//"`
       for newfile in $newfiles; do
          echo $newfile
          if [ -L $newfile ]; then

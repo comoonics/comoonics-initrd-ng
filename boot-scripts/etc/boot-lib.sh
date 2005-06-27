@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.19 2005-01-05 10:58:02 marc Exp $
+# $Id: boot-lib.sh,v 1.20 2005-06-27 14:22:58 mark Exp $
 #
 # @(#)$File$
 #
@@ -419,6 +419,46 @@ function pivotRoot() {
     fi
 }
 
+function switchRoot() {
+    echo_local_debug "**********************************************************************"
+    echo_local -n "5.4 Pivot-Rooting... (pwd: "$(pwd)")"
+    cd /mnt/newroot
+    [ ! -d initrd ] && mkdir -p initrd
+    /sbin/pivot_root . initrd
+    bootlog="/var/log/comoonics-boot.log"
+    if [ $? -eq 0 ]; then echo_local "(OK)"; else echo_local "(FAILED)"; fi
+    step
+
+    if [ $critical -eq 0 ]; then
+	if [ -n "$tmpfix" ]; then 
+	    echo_local "6. Setting up tmp..."
+	    exec_local createTemp /dev/ram1
+	fi
+
+	echo_local "7. Cleaning up..."
+	exec_local umount initrd/proc
+	exec_local umount initrd/sys
+	exec_local killall ccsd
+	echo_local "... restarting cluster services ..."
+	exec_local /sbin/ccsd
+	mtab=$(cat /etc/mtab 2>&1)
+	echo_local_debug "7.1 mtab: $mtab"
+
+	echo_local "7.2 Stopping syslogd..."
+    exec_local stop_service "syslogd" /initrd
+	exec_local killall syslogd
+
+	echo_local "8. Starting init-process (exec /sbin/init < /dev/console 1>/dev/console 2>&1)..."
+	exec /sbin/init < /dev/console 1>/dev/console 2>&1
+	echo_local "Error starting init-process falling back to bash."
+	/rescue.sh
+	exec /bin/bash
+    else
+	/rescue.sh
+	exec /bin/bash
+    fi
+}
+
 function createTemp {
     local device=$1
     mkfs.ext2 -L tmp $device
@@ -538,6 +578,35 @@ function detectHardware() {
     return $ret_c
 }
 
+function detectHardwareSave() {
+    echo_local_debug "*****************************"
+    echo_local -n "1. Hardware autodetection"
+    case `getRelease` in
+	"Red Hat"*)
+	    exec_local /usr/sbin/kudzu -t 30 -c SCSI -q 
+		mv /etc/modprobe.conf /etc/modprobe.conf.scsi
+	    exec_local /usr/sbin/kudzu -t 30 -c NETWORK -q
+		cat /etc/modprobe.conf.scsi >> /etc/modprobe.conf
+	    ;;
+	"SuSE"*)
+	    suse_hwscan
+	    ;;
+	*)
+	    echo_local "No release set. Old bootimage version."
+	    echo_local "Please update to latest Bootimage..."
+	    echo_local "Using red hat kudzu..."
+	    exec_local /usr/sbin/kudzu -t 30 -s -q
+	    ;;
+    esac
+    ret_c=$?
+    echo_local -n "1.1 Module-depency"
+    exec_local /sbin/depmod -a
+    echo_local_debug "File /etc/modules.conf: ***"
+    exec_local_debug cat /etc/modules.conf
+    step
+    return $ret_c
+}
+
 function suse_hwconfig() {
     local name=$1
     local hwinfo_type=$2
@@ -631,7 +700,10 @@ function add_scsi_device() {
 }
 
 # $Log: boot-lib.sh,v $
-# Revision 1.19  2005-01-05 10:58:02  marc
+# Revision 1.20  2005-06-27 14:22:58  mark
+# added rhel4 support
+#
+# Revision 1.19  2005/01/05 10:58:02  marc
 # added error_local and error_local_debug
 # syslog is only stopped withing pivotroot.
 #
