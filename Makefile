@@ -1,5 +1,5 @@
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.3 2005-06-08 13:33:22 marc Exp $
+# $Id: Makefile,v 1.4 2005-06-27 14:24:20 mark Exp $
 #
 # @(#)$file$
 #
@@ -41,6 +41,9 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/lock_gulmd_mv_files.list \
   boot-scripts/etc/lock_gulmd_cp_files.list \
   boot-scripts/etc/lock_gulmd_dirs.list \
+  boot-scripts/etc/fence_tool_mv_files.list \
+  boot-scripts/etc/fence_tool_cp_files.list \
+  boot-scripts/etc/fence_tool_dirs.list \
   boot-scripts/etc/syslogd_mv_files.list \
   boot-scripts/etc/syslogd_cp_files.list \
   boot-scripts/etc/syslogd_dirs.list \
@@ -67,7 +70,8 @@ SYSTEM_CFG_DIR=/etc/comoonics
 SYSTEM_CFG_FILES=comoonics-$(PACKAGE_NAME).cfg
 # subdirs are all in root
 CFG_DIR=$(SYSTEM_CFG_DIR)/$(PACKAGE_NAME)
-CFG_FILES=system-cfg-files/gfs6-es30-files.i686.list
+CFG_FILES=system-cfg-files/gfs6-es30-files.i686.list \
+  system-cfg-files/gfs61-es40-files.i686.list
 
 EMPTY_DIRS=boot-scripts/mnt \
  boot-scripts/cdrom \
@@ -145,7 +149,10 @@ archive:
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.3  2005-06-08 13:33:22  marc
+# Revision 1.4  2005-06-27 14:24:20  mark
+# added gfs 61, rhel4 support
+#
+# Revision 1.3  2005/06/08 13:33:22  marc
 # new revision
 #
 # Revision 1.2  2005/01/05 10:54:53  marc

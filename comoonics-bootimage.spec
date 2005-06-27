@@ -11,7 +11,7 @@
 # with ATIX.
 #
 # %define _initrddir /etc/init.d
-# $Id: comoonics-bootimage.spec,v 1.4 2005-06-08 13:33:22 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.5 2005-06-27 14:24:20 mark Exp $
 %define _user root
 %define         CONFIGDIR       /%{_sysconfdir}/comoonics
 %define         APPDIR       /opt/atix/comoonics_bootimage
@@ -19,8 +19,8 @@
 
 Name: comoonics-bootimage
 Summary: Comoonics Bootimage. Scripts for creating an initrd in a gfs shared root environment
-Version: 0.1
-Release: 24
+Version: 0.2
+Release: 1
 Vendor: ATIX GmbH
 Packager: Marc Grimme (grimme@atix.de)
 ExclusiveArch: noarch
@@ -51,7 +51,7 @@ echo "Creating mkinitrd link..."
 ln -sf %{APPDIR}/create-gfs-initrd-generic.sh %{APPDIR}/mkinitrd
 
 echo "Analysing config files..."
-cfg_files=gfs6-es30-files.i686.list
+cfg_files="gfs6-es30-files.i686.list gfs61-es40-files.i686.list"
 for cfg_file in $cfg_files; do
   if ! $(grep "%{APPDIR}/boot-scripts" /etc/comoonics/bootimage/$cfg_file >/dev/null 2>&1); then
     (echo "# START: RPM-post install added "$(date); echo "@map %{APPDIR}/boot-scripts /"; echo "# END:RPM-post install added ") >> /etc/comoonics/bootimage/$cfg_file
@@ -61,7 +61,11 @@ for cfg_file in $cfg_files; do
   fi
 done
 if [ ! -e /etc/comoonics/bootimage/files-$(uname -r).list ]; then
-  ln -s /etc/comoonics/bootimage/gfs6-es30-files.i686.list /etc/comoonics/bootimage/files-$(uname -r).list
+  if uname -r | grep "^2.4" > /dev/null; then
+	ln -s /etc/comoonics/bootimage/gfs6-es30-files.i686.list /etc/comoonics/bootimage/files-$(uname -r).list
+  else
+	ln -s /etc/comoonics/bootimage/gfs61-es40-files.i686.list /etc/comoonics/bootimage/files-$(uname -r).list
+  fi
 fi
 echo "Creating linuxrc link.."
 cd %{APPDIR}/boot-scripts/ && ln -sf linuxrc.generic.sh linuxrc
@@ -103,6 +107,9 @@ cd %{APPDIR}/boot-scripts/ && ln -sf linuxrc.generic.sh linuxrc
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/lock_gulmd_mv_files.list
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/lock_gulmd_cp_files.list
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/lock_gulmd_dirs.list
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/fence_tool_mv_files.list
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/fence_tool_cp_files.list
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/fence_tool_dirs.list
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/syslogd_mv_files.list
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/syslogd_cp_files.list
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/syslogd_dirs.list
@@ -117,11 +124,15 @@ cd %{APPDIR}/boot-scripts/ && ln -sf linuxrc.generic.sh linuxrc
 %attr(640, root, root) %{APPDIR}/boot-scripts/linuxrc.part.iscsi.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/linuxrc.part.install.sh
 %config(noreplace) %{CONFIGDIR}/bootimage/gfs6-es30-files.i686.list
+%config(noreplace) %{CONFIGDIR}/bootimage/gfs61-es40-files.i686.list
 %config(noreplace) %{CONFIGDIR}/comoonics-bootimage.cfg
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.4  2005-06-08 13:33:22  marc
+# Revision 1.5  2005-06-27 14:24:20  mark
+# added gfs 61, rhel4 support
+#
+# Revision 1.4  2005/06/08 13:33:22  marc
 # new revision
 #
 # Revision 1.3  2005/01/05 10:57:07  marc
