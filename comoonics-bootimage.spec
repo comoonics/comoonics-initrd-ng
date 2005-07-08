@@ -11,7 +11,16 @@
 # with ATIX.
 #
 # %define _initrddir /etc/init.d
-# $Id: comoonics-bootimage.spec,v 1.5 2005-06-27 14:24:20 mark Exp $
+# $Id: comoonics-bootimage.spec,v 1.6 2005-07-08 13:15:57 mark Exp $
+#
+##
+# TO DO
+# etc/rc.sysinit:
+#  #if [ -z "$fastboot" -a "$READONLY" != "yes" -a "X$ROOTFSTYPE" != "Xnfs" -a "X$ROOTFSTYPE" != "Xnfs4" ]; then
+#  if [ -z "$fastboot" -a "$READONLY" != "yes" -a "X$ROOTFSTYPE" != "Xnfs" -a "X$ROOTFSTYPE" != "Xnfs4" -a "X$ROOTFSTYPE" != "Xgfs" ]; then
+##
+
+
 %define _user root
 %define         CONFIGDIR       /%{_sysconfdir}/comoonics
 %define         APPDIR       /opt/atix/comoonics_bootimage
@@ -77,6 +86,7 @@ cd %{APPDIR}/boot-scripts/ && ln -sf linuxrc.generic.sh linuxrc
 - first offical rpm version
 
 %files
+%dir %{APPDIR}/boot-scripts/sys
 %dir %{APPDIR}/boot-scripts/mnt
 %dir %{APPDIR}/boot-scripts/cdrom
 %dir %{APPDIR}/boot-scripts/var/log
@@ -129,7 +139,10 @@ cd %{APPDIR}/boot-scripts/ && ln -sf linuxrc.generic.sh linuxrc
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.5  2005-06-27 14:24:20  mark
+# Revision 1.6  2005-07-08 13:15:57  mark
+# added some files
+#
+# Revision 1.5  2005/06/27 14:24:20  mark
 # added gfs 61, rhel4 support
 #
 # Revision 1.4  2005/06/08 13:33:22  marc

@@ -1,5 +1,5 @@
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.4 2005-06-27 14:24:20 mark Exp $
+# $Id: Makefile,v 1.5 2005-07-08 13:15:57 mark Exp $
 #
 # @(#)$file$
 #
@@ -74,6 +74,7 @@ CFG_FILES=system-cfg-files/gfs6-es30-files.i686.list \
   system-cfg-files/gfs61-es40-files.i686.list
 
 EMPTY_DIRS=boot-scripts/mnt \
+ boot-scripts/sys \
  boot-scripts/cdrom \
  boot-scripts/var/log \
  boot-scripts/var/lib/dhcp \
@@ -149,7 +150,10 @@ archive:
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.4  2005-06-27 14:24:20  mark
+# Revision 1.5  2005-07-08 13:15:57  mark
+# added some files
+#
+# Revision 1.4  2005/06/27 14:24:20  mark
 # added gfs 61, rhel4 support
 #
 # Revision 1.3  2005/06/08 13:33:22  marc
