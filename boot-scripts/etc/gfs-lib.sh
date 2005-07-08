@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.12 2005-06-27 14:23:14 mark Exp $
+# $Id: gfs-lib.sh,v 1.13 2005-07-08 13:00:34 mark Exp $
 #
 # @(#)$File$
 #
@@ -460,8 +460,8 @@ function gfs61_start_ccsd {
 }
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.12  2005-06-27 14:23:14  mark
-# added gfs 61, rhel 4 support
+# Revision 1.13  2005-07-08 13:00:34  mark
+# added devfs support
 #
 # Revision 1.11  2005/06/08 13:35:26  marc
 # added chroot_syslog

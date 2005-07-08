@@ -11,3 +11,4 @@
 /dev/random
 /dev/urandom
 /usr/lib/locale/en_US
+/etc/protocols

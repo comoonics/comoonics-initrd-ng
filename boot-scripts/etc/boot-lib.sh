@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.20 2005-06-27 14:22:58 mark Exp $
+# $Id: boot-lib.sh,v 1.21 2005-07-08 13:00:34 mark Exp $
 #
 # @(#)$File$
 #
@@ -422,6 +422,7 @@ function pivotRoot() {
 function switchRoot() {
     echo_local_debug "**********************************************************************"
     echo_local -n "5.4 Pivot-Rooting... (pwd: "$(pwd)")"
+    exec_local killall ccsd
     cd /mnt/newroot
     [ ! -d initrd ] && mkdir -p initrd
     /sbin/pivot_root . initrd
@@ -438,7 +439,6 @@ function switchRoot() {
 	echo_local "7. Cleaning up..."
 	exec_local umount initrd/proc
 	exec_local umount initrd/sys
-	exec_local killall ccsd
 	echo_local "... restarting cluster services ..."
 	exec_local /sbin/ccsd
 	mtab=$(cat /etc/mtab 2>&1)
@@ -585,8 +585,14 @@ function detectHardwareSave() {
 	"Red Hat"*)
 	    exec_local /usr/sbin/kudzu -t 30 -c SCSI -q 
 		mv /etc/modprobe.conf /etc/modprobe.conf.scsi
+	    #exec_local /usr/sbin/kudzu -t 30 -c RAID -q 
+	    #	mv /etc/modprobe.conf /etc/modprobe.conf.raid
+	    exec_local /usr/sbin/kudzu -t 30 -c USB -q 
+		mv /etc/modprobe.conf /etc/modprobe.conf.usb
 	    exec_local /usr/sbin/kudzu -t 30 -c NETWORK -q
 		cat /etc/modprobe.conf.scsi >> /etc/modprobe.conf
+	    #	cat /etc/modprobe.conf.raid >> /etc/modprobe.conf
+		cat /etc/modprobe.conf.usb >> /etc/modprobe.conf
 	    ;;
 	"SuSE"*)
 	    suse_hwscan
@@ -700,8 +706,8 @@ function add_scsi_device() {
 }
 
 # $Log: boot-lib.sh,v $
-# Revision 1.20  2005-06-27 14:22:58  mark
-# added rhel4 support
+# Revision 1.21  2005-07-08 13:00:34  mark
+# added devfs support
 #
 # Revision 1.19  2005/01/05 10:58:02  marc
 # added error_local and error_local_debug
