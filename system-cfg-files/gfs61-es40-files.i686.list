@@ -1,5 +1,6 @@
-# $Id: gfs61-es40-files.i686.list,v 1.1 2005-06-27 14:27:13 mark Exp $
+# $Id: gfs61-es40-files.i686.list,v 1.2 2005-07-08 12:59:56 mark Exp $
 bash
+nash
 nslookup
 chmod
 df
@@ -20,6 +21,7 @@ sort
 reboot
 rmmod
 mkdir
+mknod
 chroot
 fuser
 gzip
@@ -111,6 +113,8 @@ scsi_info
 lvm
 #vgscan
 #vgchange
+udev
+udevstart
 clvmd
 ccs_tool
 ccsd
@@ -238,6 +242,7 @@ iscsi-umountall
 /etc/hosts.allow
 /etc/hosts.deny
 /etc/profile
+/etc/protocols
 /etc/nsswitch.conf
 /etc/ld.so.conf
 /etc/localtime
@@ -323,8 +328,8 @@ iscsi-umountall
 /lib/libcrypto.so.0.9.7a
 /lib/libcrypto.so.4
 # $Log: gfs61-es40-files.i686.list,v $
-# Revision 1.1  2005-06-27 14:27:13  mark
-# initial revision
+# Revision 1.2  2005-07-08 12:59:56  mark
+# added some files
 #
 # Revision 1.2  2005/01/03 09:08:05  marc
 # added tags
