@@ -1,5 +1,5 @@
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.5 2005-07-08 13:15:57 mark Exp $
+# $Id: Makefile,v 1.6 2006-01-23 14:02:49 mark Exp $
 #
 # @(#)$file$
 #
@@ -81,6 +81,7 @@ EMPTY_DIRS=boot-scripts/mnt \
  boot-scripts/var/run/netreport \
  boot-scripts/proc
 
+INIT_FILES=bootsr
 
 ARCHIVE_FILE=./comoonics-$(PACKAGE_NAME)-$(VERSION).tar.gz
 TAR_PATH=comoonics-$(PACKAGE_NAME)-$(VERSION)/*
@@ -140,6 +141,13 @@ install:
 	   done && \
 	   echo "DONE") || echo "(FAILED)"; \
 	fi
+	@echo -n "Installing init files..."
+	@if [ -n "$(INIT_FILES)" ]; then \
+	   (for file in $(INIT_FILES); do \
+               install -D -g $(INSTALL_GRP) -o $(INSTALL_OWN) $$file $(PREFIX)/etc/init.d/$$file; \
+	   done && \
+	   echo "DONE") || echo "(FAILED)"; \
+	fi
 
 archive:
 	@echo -n "Creating Archive .. $(ARCHIVE_FILE)..."
@@ -150,7 +158,10 @@ archive:
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.5  2005-07-08 13:15:57  mark
+# Revision 1.6  2006-01-23 14:02:49  mark
+# added bootsr
+#
+# Revision 1.5  2005/07/08 13:15:57  mark
 # added some files
 #
 # Revision 1.4  2005/06/27 14:24:20  mark

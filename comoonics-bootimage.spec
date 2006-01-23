@@ -11,7 +11,7 @@
 # with ATIX.
 #
 # %define _initrddir /etc/init.d
-# $Id: comoonics-bootimage.spec,v 1.6 2005-07-08 13:15:57 mark Exp $
+# $Id: comoonics-bootimage.spec,v 1.7 2006-01-23 14:05:30 mark Exp $
 #
 ##
 # TO DO
@@ -29,7 +29,7 @@
 Name: comoonics-bootimage
 Summary: Comoonics Bootimage. Scripts for creating an initrd in a gfs shared root environment
 Version: 0.2
-Release: 1
+Release: 2
 Vendor: ATIX GmbH
 Packager: Marc Grimme (grimme@atix.de)
 ExclusiveArch: noarch
@@ -74,6 +74,9 @@ if [ ! -e /etc/comoonics/bootimage/files-$(uname -r).list ]; then
 	ln -s /etc/comoonics/bootimage/gfs6-es30-files.i686.list /etc/comoonics/bootimage/files-$(uname -r).list
   else
 	ln -s /etc/comoonics/bootimage/gfs61-es40-files.i686.list /etc/comoonics/bootimage/files-$(uname -r).list
+	/sbin/chkconfig --add bootsr
+	/sbin/chkconfig bootsr on
+	/sbin/chkconfig --list bootsr
   fi
 fi
 echo "Creating linuxrc link.."
@@ -86,6 +89,7 @@ cd %{APPDIR}/boot-scripts/ && ln -sf linuxrc.generic.sh linuxrc
 - first offical rpm version
 
 %files
+
 %dir %{APPDIR}/boot-scripts/sys
 %dir %{APPDIR}/boot-scripts/mnt
 %dir %{APPDIR}/boot-scripts/cdrom
@@ -93,6 +97,7 @@ cd %{APPDIR}/boot-scripts/ && ln -sf linuxrc.generic.sh linuxrc
 %dir %{APPDIR}/boot-scripts/var/lib/dhcp
 %dir %{APPDIR}/boot-scripts/var/run/netreport
 %dir %{APPDIR}/boot-scripts/proc
+%attr(750, root, root) /etc/init.d/bootsr
 %attr(750, root, root) %{APPDIR}/create-gfs-initrd-generic.sh
 %attr(750, root, root) %{APPDIR}/boot-scripts/linuxrc.generic.sh
 %attr(750, root, root) %{APPDIR}/boot-scripts/exec_part_from_bash.sh
@@ -139,7 +144,10 @@ cd %{APPDIR}/boot-scripts/ && ln -sf linuxrc.generic.sh linuxrc
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.6  2005-07-08 13:15:57  mark
+# Revision 1.7  2006-01-23 14:05:30  mark
+# added bootsr
+#
+# Revision 1.6  2005/07/08 13:15:57  mark
 # added some files
 #
 # Revision 1.5  2005/06/27 14:24:20  mark
