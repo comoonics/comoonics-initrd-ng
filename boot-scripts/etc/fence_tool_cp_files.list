@@ -4,6 +4,8 @@
 /lib/libdl.so.2
 /lib/ld-2.3.4.so
 /lib/ld-linux.so.2
+/lib/libnsl-2.3.4.so
+/lib/libnsl.so.1
 /lib/tls/libpthread.so.0
 /lib/tls/libc.so.6
 /dev/log
@@ -11,4 +13,7 @@
 /dev/random
 /dev/urandom
 /usr/lib/locale/en_US
+/usr/lib/libxml2.so.2.6.16
+/usr/lib/libxml2.so.2
 /etc/protocols
+/etc/cluster/cluster.conf

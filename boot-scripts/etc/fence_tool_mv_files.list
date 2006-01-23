@@ -8,8 +8,6 @@
 /etc/localtime
 /lib/libcom_err.so.2  
 /lib/libcom_err.so.2.1
-/lib/libnsl-2.3.4.so
-/lib/libnsl.so.1
 /lib/libnss1_compat-2.3.4.so
 /lib/libnss1_compat.so.1
 /lib/libnss1_dns-2.3.4.so
