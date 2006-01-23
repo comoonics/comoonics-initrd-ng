@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.13 2005-07-08 13:00:34 mark Exp $
+# $Id: gfs-lib.sh,v 1.14 2006-01-23 14:12:24 mark Exp $
 #
 # @(#)$File$
 #
@@ -456,11 +456,21 @@ function gfs_start_ccsd {
 #
 # Function starts the ccsd in a changeroot environment
 function gfs61_start_ccsd {
+  #/sbin/chroot_dir=/var/lib/fence_tool
+  #mkdir -p $chroot_dir 2> /dev/null
+  #mkdir -p ${chroot_dir}/dev
+  #for dir in raw rawctl; do
+  #  mv /dev/$dir $chroot_dir/dev/$dir && ln -sf ${chroot_dir}/dev/$dir /dev/$dir
+  #done
+  #exec_local gfs_start_service $chroot_dir /sbin/ccsd $1
   /sbin/ccsd
 }
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.13  2005-07-08 13:00:34  mark
+# Revision 1.14  2006-01-23 14:12:24  mark
+# ...
+#
+# Revision 1.13  2005/07/08 13:00:34  mark
 # added devfs support
 #
 # Revision 1.11  2005/06/08 13:35:26  marc

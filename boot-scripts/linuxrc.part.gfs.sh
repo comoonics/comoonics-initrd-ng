@@ -1,5 +1,5 @@
 #
-# $Id: linuxrc.part.gfs.sh,v 1.17 2005-07-08 13:02:31 mark Exp $
+# $Id: linuxrc.part.gfs.sh,v 1.18 2006-01-23 14:09:24 mark Exp $
 #
 # @(#)$File$
 #
@@ -116,19 +116,20 @@ if  [ $gfs_majorversion -eq 6 -a $gfs_minorversion -eq 1 ]; then
 	echo_local Mounting sysfs
 	mount -t sysfs none /sys
 
-	mount -o mode=0755 -t tmpfs none /dev
-	mknod /dev/console c 5 1
-	mknod /dev/null c 1 3
-	mknod /dev/zero c 1 5
-	mkdir /dev/pts
-	mkdir /dev/shm
+    # Test because fencing is not working properly
+	#mount -o mode=0755 -t tmpfs none /dev
+	#mknod /dev/console c 5 1
+	#mknod /dev/null c 1 3
+	#mknod /dev/zero c 1 5
+	#mkdir /dev/pts
+	#mkdir /dev/shm
 	echo Starting udev
-	#/sbin/udevstart
+	/sbin/udevstart
 	echo -n "/sbin/hotplug" > /proc/sys/kernel/hotplug
 
 	
 	modprobe dm_mod
-	/sbin/udevstart
+	#/sbin/udevstart
 	echo "Making device-mapper control node"
 	mkdmnod
 	echo_local Scanning logical volumes
@@ -313,7 +314,7 @@ echo_local "5.2. Mounting newroot ..."
 
 if [ $gfs_majorversion -eq 6 ] && [ $gfs_minorversion -ge 1 ]; then
 	exec_local /bin/mount -t gfs  ${GFS_POOL} /mnt/newroot -o $mount_opts
-	exec_local /bin/mount -t tmpfs --bind /dev /mnt/newroot/dev
+	#exec_local /bin/mount -t tmpfs --bind /dev /mnt/newroot/dev
 else
 	exec_local /bin/mount -t gfs  /dev/pool/${GFS_POOL} /mnt/newroot -o $mount_opts
 fi
@@ -374,7 +375,10 @@ else
 fi
 
 # $Log: linuxrc.part.gfs.sh,v $
-# Revision 1.17  2005-07-08 13:02:31  mark
+# Revision 1.18  2006-01-23 14:09:24  mark
+# ...
+#
+# Revision 1.17  2005/07/08 13:02:31  mark
 # changed some kudzu settings, support for devfs
 #
 # Revision 1.15  2005/06/08 13:34:17  marc
