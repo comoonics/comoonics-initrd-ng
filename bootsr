@@ -1,0 +1,37 @@
+#! /bin/sh
+#
+# bootsr 	Comoonics Shared Root post boot settings
+# 
+# chkconfig: 2345 25 99
+# description: do the post settings for Comoonics Shared Root
+# Author: hlawatschek@atix.de
+# 
+#
+
+#
+# /etc/rc.d/init.d/bootsr
+#
+
+. /etc/init.d/functions
+
+RETVAL=0
+
+# See how we were called.
+case "$1" in
+  start)
+	echo -n "Doing the Comoonics Shared Root post settings "
+	echo `date` Doing the Comoonics Shared Root post settings | tee -a /var/log/bootsr | logger  
+	/sbin/lvm vgscan --ignorelockingfailure --mknodes 2>&1 | tee -a /var/log/bootsr | logger 
+	/sbin/lvm vgchange --ignorelockingfailure -ay 2>&1 | tee -a /var/log/bootsr | logger
+	sleep 1
+	/sbin/swapon -av 2>&1 | tee -a /var/log/bootsr | logger 
+	/bin/mount -at nonfs 2>&1 | tee -a /var/log/bootsr | logger 
+	echo 
+	;;
+  stop|status|restart|reload)
+        ;;
+  *)
+        echo "Usage: sysstat {start|stop|status|restart|reload}"
+        exit 1
+esac
+exit $RETVAL
