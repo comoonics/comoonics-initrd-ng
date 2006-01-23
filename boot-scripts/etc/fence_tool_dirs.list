@@ -1,6 +1,7 @@
 /dev
 /etc
 /lib
+/lib/magma
 /sbin
 /usr
 /usr/lib
