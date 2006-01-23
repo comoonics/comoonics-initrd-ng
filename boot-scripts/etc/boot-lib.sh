@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.21 2005-07-08 13:00:34 mark Exp $
+# $Id: boot-lib.sh,v 1.22 2006-01-23 14:11:36 mark Exp $
 #
 # @(#)$File$
 #
@@ -422,7 +422,7 @@ function pivotRoot() {
 function switchRoot() {
     echo_local_debug "**********************************************************************"
     echo_local -n "5.4 Pivot-Rooting... (pwd: "$(pwd)")"
-    exec_local killall ccsd
+    #exec_local killall ccsd
     cd /mnt/newroot
     [ ! -d initrd ] && mkdir -p initrd
     /sbin/pivot_root . initrd
@@ -430,6 +430,7 @@ function switchRoot() {
     if [ $? -eq 0 ]; then echo_local "(OK)"; else echo_local "(FAILED)"; fi
     step
 
+	#mountDev
     if [ $critical -eq 0 ]; then
 	if [ -n "$tmpfix" ]; then 
 	    echo_local "6. Setting up tmp..."
@@ -440,7 +441,7 @@ function switchRoot() {
 	exec_local umount initrd/proc
 	exec_local umount initrd/sys
 	echo_local "... restarting cluster services ..."
-	exec_local /sbin/ccsd
+	#exec_local /sbin/ccsd
 	mtab=$(cat /etc/mtab 2>&1)
 	echo_local_debug "7.1 mtab: $mtab"
 
@@ -457,6 +458,27 @@ function switchRoot() {
 	/rescue.sh
 	exec /bin/bash
     fi
+}
+
+function mountDev {
+	mount -t proc proc /proc
+	mount -t sysfs none /sys
+	mount -o mode=0755 -t tmpfs none /dev
+	mknod /dev/console c 5 1
+	mknod /dev/null c 1 3
+	mknod /dev/zero c 1 5
+	mkdir /dev/pts
+	mkdir /dev/shm
+	echo_local "Starting udev"
+	/sbin/udevstart
+	echo_local "Making device-mapper control node"
+	mkdmnod
+	#echo_local Scanning logical volumes
+	#lvm vgscan
+	#echo_local Activating logical volumes
+	#lvm vgchange -ay
+	echo_local "Making device nodes"
+	/sbin/lvm.static vgmknodes
 }
 
 function createTemp {
@@ -706,7 +728,10 @@ function add_scsi_device() {
 }
 
 # $Log: boot-lib.sh,v $
-# Revision 1.21  2005-07-08 13:00:34  mark
+# Revision 1.22  2006-01-23 14:11:36  mark
+# added mountDev
+#
+# Revision 1.21  2005/07/08 13:00:34  mark
 # added devfs support
 #
 # Revision 1.19  2005/01/05 10:58:02  marc
