@@ -2,7 +2,7 @@
 #
 # bootsr 	Comoonics Shared Root post boot settings
 # 
-# chkconfig: 2345 25 99
+# chkconfig: 345 19 99
 # description: do the post settings for Comoonics Shared Root
 # Author: hlawatschek@atix.de
 # 
@@ -12,23 +12,91 @@
 # /etc/rc.d/init.d/bootsr
 #
 
+CCSD_OPTS=
+
 . /etc/init.d/functions
+[ -f /etc/sysconfig/cluster ] && . /etc/sysconfig/cluster
+
+CCSD_LOCK_FILE="/var/lock/subsys/ccsd"
 
 RETVAL=0
+
+function check_sharedroot {
+  root_fstype=$(mount | grep "/ " | awk 'BEGIN { exit_c=1; } { if ($5) { print $5; exit_c=0; } } END{ exit exit_c}')
+  if [ "$root_fstype" = "gfs" ]; then
+    return 1
+  else
+    return 0
+  fi
+}
+function get_runlevel {
+  return $(runlevel | cut -d" " -f2)
+}
 
 # See how we were called.
 case "$1" in
   start)
-	echo -n "Doing the Comoonics Shared Root post settings "
-	echo `date` Doing the Comoonics Shared Root post settings | tee -a /var/log/bootsr | logger  
-	/sbin/lvm vgscan --ignorelockingfailure --mknodes 2>&1 | tee -a /var/log/bootsr | logger 
-	/sbin/lvm vgchange --ignorelockingfailure -ay 2>&1 | tee -a /var/log/bootsr | logger
-	sleep 1
-	/sbin/swapon -av 2>&1 | tee -a /var/log/bootsr | logger 
-	/bin/mount -at nonfs 2>&1 | tee -a /var/log/bootsr | logger 
-	echo 
-	;;
+    if [ check_sharedroot ]; then
+      runlevel=$(get_runlevel)
+      echo -n "Doing the Comoonics Shared Root post settings "
+      echo `date` Doing the Comoonics Shared Root post settings | tee -a /var/log/bootsr | logger -t com-bootsr
+      /sbin/lvm vgscan --ignorelockingfailure --mknodes 2>&1 | tee -a /var/log/bootsr | logger 
+      /sbin/lvm vgchange --ignorelockingfailure -ay 2>&1 | tee -a /var/log/bootsr | logger -t com-bootsr
+      sleep 1
+      /sbin/swapon -av 2>&1 | tee -a /var/log/bootsr | logger -t com-bootsr
+      /bin/mount -at nonfs 2>&1 | tee -a /var/log/bootsr | logger -t com-bootsr
+      success
+      echo
+
+      if [ -e /initrd/var/run/cluster/ccsd.pid ]; then
+        echo -n "Stopping ccsd from initrd"
+        kill $(cat  /initrd/var/run/cluster/ccsd.pid) &&
+        rm -f /initrd/var/run/cluster/ccsd.pid
+        if [ $? -eq 0 ]; then
+          success
+        else
+          failure
+        fi
+        echo
+      fi
+      chkconfig --list ccsd | grep "3:on" >/dev/null 2>/dev/null
+      if [ $? -eq 1 ] && [ ! -e /var/run/cluster/ccsd.pid ]; then
+        echo -n "Starting ccsd"
+        /sbin/ccsd $CCSD_OPTS
+        if [ $? -eq 0 ]; then
+          success
+        else
+          failure
+        fi
+        echo
+      fi   
+    fi
+    ;;
   stop|status|restart|reload)
+      chkconfig --list ccsd | grep "3:on" >/dev/null 2>/dev/null
+      if [ $? -eq 1 ]; then
+        echo -n "Stopping ccsd:"
+        for sec in $(seq 1 10)
+        do
+          if pidof ccsd > /dev/null
+            then
+             # get the pid of ccsd from /var/run/cluster/ccsd.pid
+             # and break if the file is not there
+             [ -r /var/run/cluster/ccsd.pid ] || break
+             pid=$(cat /var/run/cluster/ccsd.pid )
+             kill $pid 2> /dev/null || break
+             sleep 1
+          else
+             success "shutdown"
+	     rm /var/run/cluster/ccsd.pid
+             echo
+             exit 0
+          fi
+        done
+        failure "shutdown"
+        echo
+        exit 1
+      fi   
         ;;
   *)
         echo "Usage: sysstat {start|stop|status|restart|reload}"
