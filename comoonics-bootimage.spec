@@ -11,7 +11,7 @@
 # with ATIX.
 #
 # %define _initrddir /etc/init.d
-# $Id: comoonics-bootimage.spec,v 1.7 2006-01-23 14:05:30 mark Exp $
+# $Id: comoonics-bootimage.spec,v 1.8 2006-01-25 14:55:51 marc Exp $
 #
 ##
 # TO DO
@@ -28,8 +28,8 @@
 
 Name: comoonics-bootimage
 Summary: Comoonics Bootimage. Scripts for creating an initrd in a gfs shared root environment
-Version: 0.2
-Release: 2
+Version: 0.3
+Release: 12
 Vendor: ATIX GmbH
 Packager: Marc Grimme (grimme@atix.de)
 ExclusiveArch: noarch
@@ -51,6 +51,7 @@ Comoonics Bootimage. Scripts for creating an initrd in a gfs shared root environ
 make PREFIX=$RPM_BUILD_ROOT install
 
 %post
+
 echo "Starting postinstall.."
 if ! $(grep '%{APPDIR}' /etc/profile.d/atix.sh > /dev/null 2>&1); then
     echo "Patching path.."
@@ -70,20 +71,51 @@ for cfg_file in $cfg_files; do
   fi
 done
 if [ ! -e /etc/comoonics/bootimage/files-$(uname -r).list ]; then
-  if uname -r | grep "^2.4" > /dev/null; then
+  uname -r | grep "^2.4" > /dev/null
+  if [ $? -eq 0 ]; then
 	ln -s /etc/comoonics/bootimage/gfs6-es30-files.i686.list /etc/comoonics/bootimage/files-$(uname -r).list
   else
 	ln -s /etc/comoonics/bootimage/gfs61-es40-files.i686.list /etc/comoonics/bootimage/files-$(uname -r).list
-	/sbin/chkconfig --add bootsr
-	/sbin/chkconfig bootsr on
-	/sbin/chkconfig --list bootsr
   fi
 fi
-echo "Creating linuxrc link.."
-cd %{APPDIR}/boot-scripts/ && ln -sf linuxrc.generic.sh linuxrc
-%preun
+root_fstype=$(mount | grep "/ " | awk 'BEGIN { exit_c=1; } { if ($5) { print $5; exit_c=0; } } END{ exit exit_c}')
+if [ "$root_fstype" = "gfs" ]; then
+  /sbin/chkconfig --add bootsr &>/dev/null
+  /sbin/chkconfig bootsr on
+  /sbin/chkconfig --list bootsr
+  /sbin/chkconfig --add fenced-chroot &>/dev/null
+  /sbin/chkconfig fenced-chroot on
+  /sbin/chkconfig --list fenced-chroot
+  /sbin/chkconfig fenced off
+  /sbin/chkconfig --del fenced &>/dev/null
+  grep "^FENCE_CHROOT=" /etc/sysconfig/cluster &>/dev/null
+  [ $? -ne 0 ] &&	echo "FENCE_CHROOT=/var/lib/fence_tool" >> /etc/sysconfig/cluster
+  grep "^FENCE_CHROOT_SOURCE=" /etc/sysconfig/cluster &>/dev/null
+  [ $? -ne 0 ] && echo "FENCE_CHROOT_SOURCE=/var/lib/fence_tool.tmp" >> /etc/sysconfig/cluster
+fi
+#echo "Creating linuxrc link.."
+#cd %{APPDIR}/boot-scripts/ && ln -sf linuxrc.generic.sh linuxrc
+
+%postun
+echo "Postuninstalling comoonics-bootimage.."
+rm -f /etc/comoonics/bootimage/files-* &>/dev/null
+root_fstype=$(mount | grep "/ " | awk 'BEGIN { exit_c=1; } { if ($5) { print $5; exit_c=0; } } END{ exit exit_c}')
+if [ "$root_fstype" = "gfs" ]; then
+  /sbin/chkconfig --del bootsr &>/dev/null
+  /sbin/chkconfig bootsr off
+  /sbin/chkconfig --list bootsr
+  /sbin/chkconfig --del fenced-chroot &>/dev/null
+  /sbin/chkconfig fenced-chroot off
+  /sbin/chkconfig --list fenced-chroot
+  /sbin/chkconfig --add fenced &>/dev/null
+  /sbin/chkconfig --list fenced
+fi
+
 
 %changelog
+* Wed Jan 25 2006  <grimme@atix.de> - 0.3-12
+- First stable 0.3 version
+
 
 * Mon Jan  3 2005 Marc Grimme <grimme@atix.de> - 0.1-16
 - first offical rpm version
@@ -91,27 +123,20 @@ cd %{APPDIR}/boot-scripts/ && ln -sf linuxrc.generic.sh linuxrc
 %files
 
 %dir %{APPDIR}/boot-scripts/sys
-%dir %{APPDIR}/boot-scripts/mnt
-%dir %{APPDIR}/boot-scripts/cdrom
 %dir %{APPDIR}/boot-scripts/var/log
 %dir %{APPDIR}/boot-scripts/var/lib/dhcp
 %dir %{APPDIR}/boot-scripts/var/run/netreport
 %dir %{APPDIR}/boot-scripts/proc
 %attr(750, root, root) /etc/init.d/bootsr
+%attr(750, root, root) /etc/init.d/fenced-chroot
 %attr(750, root, root) %{APPDIR}/create-gfs-initrd-generic.sh
 %attr(750, root, root) %{APPDIR}/boot-scripts/linuxrc.generic.sh
 %attr(750, root, root) %{APPDIR}/boot-scripts/exec_part_from_bash.sh
 %attr(750, root, root) %{APPDIR}/boot-scripts/detectHardware.sh
 %attr(750, root, root) %{APPDIR}/boot-scripts/rescue.sh
 %attr(750, root, root) %{APPDIR}/boot-scripts/myifup.sh
+%attr(750, root, root) %{APPDIR}/boot-scripts/linuxrc
 %attr(750, root, root) %{APPDIR}/boot-scripts/linuxrc.bash
-%attr(640, root, root) %{APPDIR}/boot-scripts/usr/share/hwdata/pci.ids
-%attr(640, root, root) %{APPDIR}/boot-scripts/usr/share/hwdata/MonitorsDB
-%attr(640, root, root) %{APPDIR}/boot-scripts/usr/share/hwdata/upgradelist
-%attr(640, root, root) %{APPDIR}/boot-scripts/usr/share/hwdata/Cards
-%attr(640, root, root) %{APPDIR}/boot-scripts/usr/share/hwdata/pcitable
-%attr(640, root, root) %{APPDIR}/boot-scripts/usr/share/hwdata/usb.ids
-%attr(640, root, root) %{APPDIR}/boot-scripts/usr/share/hwdata/CardMonitorCombos
 %attr(640, root, root) %{APPDIR}/create-gfs-initrd-lib.sh 
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/atix.txt
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/modules.conf
@@ -132,6 +157,7 @@ cd %{APPDIR}/boot-scripts/ && ln -sf linuxrc.generic.sh linuxrc
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/ccsd_cp_files.list
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/ccsd_dirs.list
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/sysconfig/comoonics
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/inittab
 %attr(640, root, root) %{APPDIR}/boot-scripts/linuxrc.part.bash.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/linuxrc.part.gfs.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/linuxrc.part.livecd.sh
@@ -144,7 +170,10 @@ cd %{APPDIR}/boot-scripts/ && ln -sf linuxrc.generic.sh linuxrc
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.7  2006-01-23 14:05:30  mark
+# Revision 1.8  2006-01-25 14:55:51  marc
+# first stable 0.3
+#
+# Revision 1.7  2006/01/23 14:05:30  mark
 # added bootsr
 #
 # Revision 1.6  2005/07/08 13:15:57  mark
