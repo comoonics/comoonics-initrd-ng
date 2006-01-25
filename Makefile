@@ -1,5 +1,5 @@
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.6 2006-01-23 14:02:49 mark Exp $
+# $Id: Makefile,v 1.7 2006-01-25 14:57:11 marc Exp $
 #
 # @(#)$file$
 #
@@ -26,12 +26,14 @@ INSTALL_OWN="root"
 
 INSTALL_DIR=/opt/atix/comoonics_bootimage
 EXEC_FILES=create-gfs-initrd-generic.sh \
+  boot-scripts/linuxrc \
   boot-scripts/linuxrc.generic.sh \
   boot-scripts/exec_part_from_bash.sh \
   boot-scripts/detectHardware.sh \
   boot-scripts/rescue.sh \
   boot-scripts/myifup.sh
 LIB_FILES=create-gfs-initrd-lib.sh \
+  boot-scripts/etc/inittab \
   boot-scripts/etc/atix.txt \
   boot-scripts/etc/modules.conf \
   boot-scripts/etc/boot-lib.sh \
@@ -57,14 +59,7 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/linuxrc.part.livecd.sh \
   boot-scripts/linuxrc.part.urlsource.sh \
   boot-scripts/linuxrc.part.iscsi.sh \
-  boot-scripts/linuxrc.part.install.sh \
-  boot-scripts/usr/share/hwdata/pci.ids \
-  boot-scripts/usr/share/hwdata/MonitorsDB \
-  boot-scripts/usr/share/hwdata/upgradelist \
-  boot-scripts/usr/share/hwdata/Cards \
-  boot-scripts/usr/share/hwdata/pcitable \
-  boot-scripts/usr/share/hwdata/usb.ids \
-  boot-scripts/usr/share/hwdata/CardMonitorCombos
+  boot-scripts/linuxrc.part.install.sh
 
 SYSTEM_CFG_DIR=/etc/comoonics
 SYSTEM_CFG_FILES=comoonics-$(PACKAGE_NAME).cfg
@@ -75,13 +70,13 @@ CFG_FILES=system-cfg-files/gfs6-es30-files.i686.list \
 
 EMPTY_DIRS=boot-scripts/mnt \
  boot-scripts/sys \
- boot-scripts/cdrom \
  boot-scripts/var/log \
  boot-scripts/var/lib/dhcp \
  boot-scripts/var/run/netreport \
  boot-scripts/proc
 
-INIT_FILES=bootsr
+INIT_FILES=bootsr \
+fenced-chroot
 
 ARCHIVE_FILE=./comoonics-$(PACKAGE_NAME)-$(VERSION).tar.gz
 TAR_PATH=comoonics-$(PACKAGE_NAME)-$(VERSION)/*
@@ -158,7 +153,10 @@ archive:
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.6  2006-01-23 14:02:49  mark
+# Revision 1.7  2006-01-25 14:57:11  marc
+# new version for new files
+#
+# Revision 1.6  2006/01/23 14:02:49  mark
 # added bootsr
 #
 # Revision 1.5  2005/07/08 13:15:57  mark
