@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.17 2005-07-08 13:02:31 mark Exp $
+# $Id: linuxrc.generic.sh,v 1.18 2006-01-25 14:47:47 marc Exp $
 #
 # @(#)$File$
 #
@@ -28,12 +28,13 @@
 # initstuff is done in here
 source /etc/boot-lib.sh
 
+
 echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.17 $ $Date: 2005-07-08 13:02:31 $'
-echo_local "Rundate: "$(date)
+echo_local 'Internal Version $Revision: 1.18 $ $Date: 2006-01-25 14:47:47 $'
+echo_local "Builddate: "$(date)
 
 initBootProcess
 
@@ -61,10 +62,18 @@ echo_local_debug "*****************************"
 x=`cat /proc/version`; 
 KERNEL_VERSION=`expr "$x" : 'Linux version \([^ ]*\)'`
 echo_local "0.2 Kernel-version: ${KERNEL_VERSION}"
+if [ "${KERNEL_VERSION:0:3}" = "2.4" ]; then
+  modules_conf="/etc/modules.conf"
+else
+  modules_conf="/etc/modprobe.conf"
+fi
 echo_local_debug "*****************************"
-step 
-
-detectHardwareSave
+# step 
+ echo_local -en $"\t\tPress 'I' to enter interactive startup."
+ echo_local
+{
+ sleep 2
+ detectHardwareSave
 
 echo_local_debug "*****************************"
 echo_local "2. Setting up the network"
@@ -134,19 +143,30 @@ else
     fi
   done
 fi
+} &
+read -n1 -t5 confirm
+if [ "$confirm" = "i" ]; then
+  echo_local -e "\t\tInteractivemode recognized. Switching step_mode to on"
+  stepmode=1
+fi
+wait
+
 step
-echo_local_debug "2.2 Network Configuration: "
-echo_local_debug "      1. Interfaces:"
-exec_local_debug /sbin/ifconfig
-echo_local_debug "      2. Routing:"
-exec_local_debug /sbin/route -n
-echo_local_debug "      3. Hostname:"
-exec_local_debug /bin/hostname
-echo_local_debug "*****************************"
-step
+if [ "$ipConfig" = "skip" ] || [ "$ipConfig" = "cca" ]; then
+  echo_local_debug "2.2 skipping";
+else
+  echo_local_debug "2.2 Network Configuration: "
+  echo_local_debug "      1. Interfaces:"
+  exec_local_debug /sbin/ifconfig
+  echo_local_debug "      2. Routing:"
+  exec_local_debug /sbin/route -n
+  echo_local_debug "      3. Hostname:"
+  exec_local_debug /bin/hostname
+  echo_local_debug "*****************************"
+  step
+fi
 if [ ! -e /mnt/newroot ]; then
     mkdir -p /mnt/newroot
 fi
 
 source /linuxrc.part.${bootpart}.sh
-
