@@ -10,3 +10,6 @@
 /var/run
 /var/run/sistina
 /tmp
+/etc/ssh
+/etc/ssh/moduli
+/root/.ssh/

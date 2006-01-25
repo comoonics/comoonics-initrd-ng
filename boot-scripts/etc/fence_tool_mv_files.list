@@ -42,6 +42,7 @@
 /lib/libthread_db.so.1
 /lib/libutil-2.3.4.so
 /lib/libutil.so.1
+/lib/libselinux.so.1
 /lib/libtermcap.so.2
 /lib/libtermcap.so.2.0.8
 /lib/libssl.so.4
@@ -95,4 +96,4 @@
 /usr/lib/libkrb5.so.3.2
 /usr/bin/perl
 /usr/lib/perl5
-
+/usr/bin/ssh
