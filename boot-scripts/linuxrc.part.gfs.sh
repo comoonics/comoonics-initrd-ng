@@ -1,5 +1,5 @@
 #
-# $Id: linuxrc.part.gfs.sh,v 1.18 2006-01-23 14:09:24 mark Exp $
+# $Id: linuxrc.part.gfs.sh,v 1.19 2006-01-25 14:48:41 marc Exp $
 #
 # @(#)$File$
 #
@@ -42,7 +42,7 @@ gfs_minorversion=$(getGFSMinorVersion)
 
 if [ $? -ne 0 ]; then
     echo_local "No gfs modules for this kernel"
-    exit 1
+    exit_linuxrc 1
 fi
 
 if [ -z "$gfs_majorversion" ] || [ -z "$gfs_minorversion" ]; then
@@ -126,18 +126,17 @@ if  [ $gfs_majorversion -eq 6 -a $gfs_minorversion -eq 1 ]; then
 	echo Starting udev
 	/sbin/udevstart
 	echo -n "/sbin/hotplug" > /proc/sys/kernel/hotplug
-
 	
 	modprobe dm_mod
 	#/sbin/udevstart
 	echo "Making device-mapper control node"
-	mkdmnod
+	#mkdmnod
 	echo_local Scanning logical volumes
-	lvm vgscan
+	lvm vgscan >/dev/null 2>&1
 	echo_local Activating logical volumes
-	lvm vgchange -ay
+	lvm vgchange -ay >/dev/null 2>&1
 	echo_local Making device nodes
-	lvm vgmknodes
+	lvm vgmknodes >/dev/null 2>&1
 
 	#exec_local ${LVM_VG_SCAN}
 	#exec_local ${LVM_VG_CHANGE} -ay $pool_name
@@ -243,7 +242,8 @@ if [ $gfs_majorversion -eq 6 ] && [ $gfs_minorversion -lt 1 ]; then
 	fi
 	fi
 else 
-	# get networkconfig from ccs_file
+    # get networkconfig from ccs_file
+    cdsl_local_dir="/cdsl.local"
     echo_local_debug "4.4.0 IPConfig: $ipConfig"
 	xml_file="/etc/cluster/cluster.conf"
 	##
@@ -279,6 +279,7 @@ else
     echo_local_debug "4.5.2 rootvolume_name: $pool_name"
     GFS_POOL=$pool_name
     step
+    [ -z "$pool_name" ] && (echo "Error: No sharedroot found exiting.." >&2 && exit_linuxrc 1)
     setHWClock
     step
 	## 
@@ -303,14 +304,12 @@ else
 
 fi 
 
-
+critical=0
 echo_local_debug "*****************************"
 echo_local "5.0.1 Pool: ${GFS_POOL}"
 echo_local_debug "5.0.2 Cdsl_local_dir: ${cdsl_local_dir}"
     
 echo_local "5.2. Mounting newroot ..."
-
-
 
 if [ $gfs_majorversion -eq 6 ] && [ $gfs_minorversion -ge 1 ]; then
 	exec_local /bin/mount -t gfs  ${GFS_POOL} /mnt/newroot -o $mount_opts
@@ -319,9 +318,9 @@ else
 	exec_local /bin/mount -t gfs  /dev/pool/${GFS_POOL} /mnt/newroot -o $mount_opts
 fi
 
-critical=0
 if [ ! $return_c -eq 0 ]; then
     critical=1
+    exit_linuxrc 1
 fi
 step
 if [ $gfs_majorversion -eq 5 ] && [ $gfs_minorversion -lt 2 ]; then
@@ -347,7 +346,7 @@ exec_local copy_relevant_files $cdsl_local_dir
 cd /mnt/newroot
 
 echo_local -n "5.3.1 Copying logfile to /mnt/newroot/${bootlog}..."
-cp ${bootlog} /mnt/newroot/${bootlog} || cp ${bootlog} /mnt/newroot/tmp/$(basename $bootlog)
+cat ${bootlog} > /mnt/newroot/${bootlog} 2>/dev/null || cp -f ${bootlog} /mnt/newroot/tmp/$(basename $bootlog)
 if [ -f /mnt/newroot/$bootlog ]; then 
   bootlog=/mnt/newroot/$bootlog
 else 
@@ -358,6 +357,7 @@ if [ $? -eq 0 ]; then
 else 
   echo_local "(FAILED)"
 fi
+
 # [ ! -d initrd ] && mkdir initrd
 # exec_local /sbin/pivot_root . initrd
 #echo_local "6.1 Restarting network with new pivot_root..."
@@ -365,7 +365,7 @@ fi
 #kill $pid && /sbin/ifup eth0
 
 if [ $gfs_majorversion -eq 6 ] && [ $gfs_minorversion -ge 1 ]; then
-  switchRoot
+  switchRoot $chroot
 else
   if [ -n "$chroot" ]; then
     chRoot
@@ -375,7 +375,10 @@ else
 fi
 
 # $Log: linuxrc.part.gfs.sh,v $
-# Revision 1.18  2006-01-23 14:09:24  mark
+# Revision 1.19  2006-01-25 14:48:41  marc
+# new boot concept. switchroot. i/o redirection. failing back to bash..
+#
+# Revision 1.18  2006/01/23 14:09:24  mark
 # ...
 #
 # Revision 1.17  2005/07/08 13:02:31  mark
