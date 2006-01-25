@@ -1,10 +1,9 @@
-# $Id: gfs61-es40-files.i686.list,v 1.2 2005-07-08 12:59:56 mark Exp $
+# $Id: gfs61-es40-files.i686.list,v 1.3 2006-01-25 14:58:03 marc Exp $
 bash
 nash
 nslookup
 chmod
 df
-dd
 e2label
 grep
 expr
@@ -121,6 +120,8 @@ ccsd
 cman_tool
 fenced
 fence_tool
+ssh
+tee
 /etc/cluster/cluster.conf
 /lib/libmagma.so
 /lib/libmagma.so.1
@@ -258,8 +259,13 @@ iscsi-umountall
 /etc/hosts
 /etc/iscsi.conf
 /etc/initiatorname.iscsi
+/etc/passwd
+# If fence implicitly uses ssh we need that stuff
+/etc/ssh
+/root/.ssh
+/opt/atix/comoonics-fencing/fence_vmware_client
 # Integrated in rpm (can be changed)!!
-#/usr/share/hwdata/CardMonitorCombos
+/usr/share/hwdata/
 #/usr/share/hwdata/Cards
 #/usr/share/hwdata/MonitorsDB
 #/usr/share/hwdata/pci.ids
@@ -328,7 +334,10 @@ iscsi-umountall
 /lib/libcrypto.so.0.9.7a
 /lib/libcrypto.so.4
 # $Log: gfs61-es40-files.i686.list,v $
-# Revision 1.2  2005-07-08 12:59:56  mark
+# Revision 1.3  2006-01-25 14:58:03  marc
+# new fence files and some minor changes
+#
+# Revision 1.2  2005/07/08 12:59:56  mark
 # added some files
 #
 # Revision 1.2  2005/01/03 09:08:05  marc
