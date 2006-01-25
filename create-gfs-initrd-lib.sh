@@ -1,5 +1,5 @@
 #
-# $Id: create-gfs-initrd-lib.sh,v 1.3 2005-06-27 14:25:21 mark Exp $
+# $Id: create-gfs-initrd-lib.sh,v 1.4 2006-01-25 14:57:42 marc Exp $
 #
 # @(#)$File$
 #
@@ -25,9 +25,14 @@ function create_dir() {
 # copy the file like a dump one.
 function copy_file() {
   local filename=$1
-  local source=$2
-#  echo "copying $filename to ${source}..."
-  cp -af $filename ${source}
+  local dest=$2
+#  [ -n "$verbose" ] && echo "copying $filename to ${dest}..."
+#  if [ -d $dest ] && [ ! -d $filename ]; then
+#    dest="$dest/"$(basename $filename)
+#  fi
+#  if [ ! -e $dest ] || [ $(stat -c%Y $dest) -lt $(stat -c%Y $source) ]; then
+    cp -af $filename ${dest}
+#  fi
 }
 
 # Compile perlfile with perlcc to binary
@@ -83,7 +88,7 @@ function get_dependent_files() {
     ldd $filename > /dev/null 2>&1
     if [ $? = 0 ]; then
 #      local newfiles=`ldd $filename | sed -e "s/^.*=> \(.*\) (.*).*$/\1/" | sed -e "s/^.*statically linked.*$//"`
-	local newfiles=`ldd $filename | sed -e "s/\(.*\) (.*)/\1/" | sed -e "s/.* => //" | sed -e "s/\t*//"`
+	local newfiles=`ldd $filename | sed -e "s/\(.*\) (.*)/\1/" | sed -e "s/.* => //" | sed -e "s/\t*//" | grep -v "statically linked"`
       for newfile in $newfiles; do
          echo $newfile
          if [ -L $newfile ]; then
@@ -104,6 +109,7 @@ function get_dependent_files() {
 # get_dependent_files.
 function get_all_files_dependent() {
   local filename=$1
+  local verbose=$2
 
   while read line; do
     if [ ${line:0:1} != '#' ]; then
@@ -116,7 +122,7 @@ function get_all_files_dependent() {
 	  filename=$line
 	fi
 	#echo $filename
-	echo "Taking perl file $filename..." >&2
+	[ -n "$verbose" ] && echo "Taking perl file $filename..." >&2
 	dirname=`dirname $filename`
 	create_dir ${mountpoint}$dirname
 	perlcc_file $filename ${mountpoint}$filename
@@ -126,7 +132,7 @@ function get_all_files_dependent() {
         aline=( $(echo $line) )
 	mapdir=${aline[2]}
         line=${aline[1]}
-        echo "Mapping $line to $mapdir" >&2
+        [ -n "$verbose" ] && echo "Mapping $line to $mapdir" >&2
 	local filename=`which $line 2>/dev/null`
 	if [ -z $filename ]; then
 	  filename=$line
@@ -169,7 +175,20 @@ function umount_and_zip_initrd() {
   local filename=$2
   local force=$3
   local opts=""
+  local LODEV=$(mount | grep "^$mountpoint" | tail -1 | cut -f6 -d" " | cut -d"=" -f2)
+  LODEV=$(echo ${LODEV/%\)/})
   [ -n "$force" ] && [ $force -gt 0 ] && opts="-f"
   (umount $mountpoint && \
-  gzip $opts -9 $filename) || (lsof | grep "$mountpoint")
+  gzip $opts -9 $filename && losetup -d $LODEV) || (fuser "$mountpoint" && exit 1)
+}
+
+#
+# Creates an imagefile with cpio and compresses it with zip
+function cpio_and_zip_initrd() {
+  local mountpoint=$1
+  local filename=$2
+  local force=$3
+  local opts=""
+  [ -n "$force" ] && [ $force -gt 0 ] && opts="-f"
+  ((cd $mountpoint; find . | cpio --quiet -c -o) >| $filename && gzip $opts -9 $filename)|| (fuser -mv "$mountpoint" && exit 1)
 }
