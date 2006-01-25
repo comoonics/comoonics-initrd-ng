@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.14 2006-01-23 14:12:24 mark Exp $
+# $Id: gfs-lib.sh,v 1.15 2006-01-25 14:49:19 marc Exp $
 #
 # @(#)$File$
 #
@@ -124,7 +124,7 @@ function cca_generate_hosts {
     else
 	ccs_dir=$1"/"
     fi
-    if [ -n "$debug" ]; then set -x; fi
+#    if [ -n "$debug" ]; then set -x; fi
     cp -f $hosts_file $hosts_file.bak
     (cat $hosts_file.bak && \
 	$ccs_cmd $opts strings ${cca_dir}nodes.ccs nodes/.*/ip_interfaces/eth[0-9] | awk -F= '
@@ -135,7 +135,7 @@ function cca_generate_hosts {
 }') | sort -u >> $hosts_file
     ret=$?
     if [ $? -ne 0 ]; then cp $hosts_file.bak $hosts_file; fi
-    if [ -n "$debug" ]; then set +x; fi
+#    if [ -n "$debug" ]; then set +x; fi
     return $ret
 }
 
@@ -144,13 +144,13 @@ function xml_generate_hosts {
     local xmlfile=$1
     local hostsfile=$2
 
-    if [ -n "$debug" ]; then set -x; fi
+#    if [ -n "$debug" ]; then set -x; fi
     cp -f $hostsfile $hostsfile.bak
     (cat $hostsfile.bak && \
 	$xml_cmd -f $xmlfile -q hosts) >> $hostsfile
     ret=$?
     if [ $? -ne 0 ]; then cp $hostsfile.bak $hostsfile; fi
-    if [ -n "$debug" ]; then set +x; fi
+#    if [ -n "$debug" ]; then set +x; fi
     return $ret
 }
 
@@ -173,7 +173,7 @@ function cca_get_netdevices {
 
 # returns all configured networkdevices from the cluster.conf xml file seperated by " "
 function xml_get_netdevices {
-	if [ -n "$debug" ]; then set -x; fi
+#	if [ -n "$debug" ]; then set -x; fi
     local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query"
     local xmlfile=$1
 
@@ -181,7 +181,7 @@ function xml_get_netdevices {
 
     local netdevs=$($xml_cmd -f $xmlfile -q netdevs $hostname " ");
 	echo $netdevs
-	if [ -n "$debug" ]; then set +x; fi
+#	if [ -n "$debug" ]; then set +x; fi
 	return 1
 }
 
@@ -249,7 +249,7 @@ function xml_get_my_hostname {
 }
 
 function cca_autoconfigure_network {
-  if [ -n "$debug" ]; then set -x; fi
+#  if [ -n "$debug" ]; then set -x; fi
   local ipconfig=$1
   local netdev=$2
   local cca_dir=$3
@@ -264,7 +264,7 @@ function cca_autoconfigure_network {
 }
 
 function xml_autoconfigure_network {
-  if [ -n "$debug" ]; then set -x; fi
+#  if [ -n "$debug" ]; then set -x; fi
   local ipconfig=$1
   local netdev=$2
   local xml_file=$3
@@ -275,14 +275,14 @@ function xml_autoconfigure_network {
   local gateway=$($xml_cmd -f $xml_file -q gateway $hostname $netdev) || local gateway=""
   local netmask=$($xml_cmd -f $xml_file -q mask $hostname $netdev)
   echo ${ip_addr}"::"${gateway}":"${netmask}":"${hostname}
-  if [ -n "$debug" ]; then set +x; fi
+#  if [ -n "$debug" ]; then set +x; fi
 }
 
 function copy_relevant_files {
   local cdsl_local_dir=$1
   # backup old files
   olddir=$(pwd)
-  if [ -n "$debug" ]; then set -x; fi
+#  if [ -n "$debug" ]; then set -x; fi
   echo -en "\tBacking up created config files"
   (if [ -f /mnt/newroot/etc/modules.conf ]; then
      mv -f /mnt/newroot/etc/modules.conf /mnt/newroot/etc/modules.conf.com_back
@@ -298,29 +298,29 @@ function copy_relevant_files {
    if [ ! -d /mnt/newroot/${cdsl_local_dir}/etc/sysconfig ]; then 
      mkdir -p /mnt/newroot/${cdsl_local_dir}/etc/sysconfig
    fi && echo "(OK)") || (ret_c=$? && echo "(FAILED)")
-  echo -en "\tCopying the configfiles.."
+  echo -en "\tCopying the configfiles ${cdsl_local_dir}.."
   cd /mnt/newroot/${cdsl_local_dir}/etc
-  (cp -f /etc/modules.conf /mnt/newroot/${cdsl_local_dir}/etc/modules.conf &&
+  (cp -f $modules_conf /mnt/newroot/${cdsl_local_dir}/$modules_conf &&
    ([ -n "$cdsl_local_dir" ] && 
        ln -sf ../${cdsl_local_dir}/etc/modules.conf modules.conf)
    cd sysconfig
    cp -f /etc/sysconfig/hwconf /mnt/newroot/${cdsl_local_dir}/etc/sysconfig/
    ([ -n "$cdsl_local_dir" ] && 
-       ln -fs ../../${cdsl_local_dir}/etc/sysconfig/hwconf hwconf)
-   cp -f /etc/sysconfig/network /mnt/newroot/${cdsl_local_dir}/etc/sysconfig/
+       cd /mnt/newroot && ln -fs ${cdsl_local_dir}/etc/sysconfig/hwconf etc/sysconfig/hwconf)
+   [ -e /mnt/newroot/${cdsl_local_dir}/etc/sysconfig/network ] || cp -f /etc/sysconfig/network /mnt/newroot/${cdsl_local_dir}/etc/sysconfig/
    ([ -n "$cdsl_local_dir" ] && 
-       ln -fs ../../${cdsl_local_dir}/etc/sysconfig/network network) &&
+       cd /mnt/newroot/ && ln -fs ${cdsl_local_dir}/etc/sysconfig/network etc/sysconfig/network) &&
    echo "(OK)") || (ret_c=$? && echo "(FAILED)")
   ret_c=$?
   cd $olddir
-  if [ -n "$debug" ]; then set +x; fi
+#  if [ -n "$debug" ]; then set +x; fi
   return $ret_c
 }
 
 # This function starts the lockgulmd in a chroot environment per default
 # If no_chroot is given as param the chroot is skipped
 function gfs_start_service {
-  if [ -n "$debug" ]; then set -x; fi
+#  if [ -n "$debug" ]; then set -x; fi
   [ -d "$1" ] && chroot_dir=$1 && shift
   service=$1
   service_name=$(basename $service)
@@ -329,38 +329,46 @@ function gfs_start_service {
   service_dirs=$(cat /etc/${service_name}_dirs.list 2>/dev/null)
   service_mv_files=$(cat /etc/${service_name}_mv_files.list 2>/dev/null)
   service_cp_files=$(cat /etc/${service_name}_cp_files.list 2>/dev/null)
+#  echo_local_debug "Service($service_name)dirs: "$service_dirs
+#  echo_local_debug "Service($service_name)cp: "$service_cp_files
+#  echo_local_debug "Service($service_name)mv: "$service_mv_files
 
   if [ -z "$service" ]; then
     error_local "gfs_start_chroot_service: No service given"
     return -1
   fi
-  if [ "$1" = "no_chroot" ]; then
+  if [ -n "$1" ] && [ "$1" = "no_chroot" ]; then
     shift
     $($service $*)
   else
     [ -z "$chroot_dir" ] && chroot_dir="/var/lib/${service_name}"
-    echo_local -n "service=$service_name..build chroot.."
+    echo_local -n "service=$service_name..build chroot ($chroot_dir).."
     [ -d $chroot_dir ] || mkdir -p $chroot_dir
     for dir in $service_dirs; do
       [ -d $chroot_dir/$dir ] || mkdir -p $chroot_dir/$dir 2>/dev/null
     done
+    echo_local -n ".(dir)."
     for file in $service_cp_files; do
-      [ -e $chroot_dir/$file ] || cp -a $file $chroot_dir/$file 2>/dev/null
+      [ -d $(dirname $chroot_dir/$file) ] || mkdir -p $(dirname $chroot_dir/$file)
+      [ -e $chroot_dir/$file ] || cp -af $file $chroot_dir/$file 2>/dev/null
     done
+    echo_local -n ".(cp)."
     for file in $service_mv_files; do
-      [ -e $chroot_dir/$file ] || mv $file $chroot_dir/$file 2>/dev/null
-      [ -e $file ] || ln -sf $chroot_dir/$file $file 2>/dev/null
+      [ -d $(dirname $chroot_dir/$file) ] || mkdir -p $(dirname $chroot_dir/$file)
+      [ -e $chroot_dir/$file ] || mv $file $chroot_dir/$file #2>/dev/null
+      [ -e $file ] || ln -sf $chroot_dir/$file $file #2>/dev/null
     done
-    for file in /usr/kerberos/lib/*; do
-      [ -e /usr/lib/$(basename $file) ] || ln -sf $file /usr/lib/$(basename $file) 2>/dev/null
-      [ -e ${chroot_dir}/usr/lib/$(basename $file) ] || ln -sf $file ${chroot_dir}/usr/lib/$(basename $file) 2>/dev/null
-    done
+    echo_local -n ".(mv)."
+#    for file in /usr/kerberos/lib/*; do
+#      [ -e /usr/lib/$(basename $file) ] || ln -sf $file /usr/lib/$(basename $file) 2>/dev/null
+#      [ -e ${chroot_dir}/usr/lib/$(basename $file) ] || ln -sf $file ${chroot_dir}/usr/lib/$(basename $file) 2>/dev/null
+#    done
 
     echo_local -n "..$service.."
     /usr/sbin/chroot $chroot_dir $service $* || 
     ( echo_local -n "chroot not worked failing back.." && $service $*)
   fi
-  if [ -n "$debug" ]; then set +x; fi
+#  if [ -n "$debug" ]; then set +x; fi
 }
 
 #
@@ -466,8 +474,62 @@ function gfs61_start_ccsd {
   /sbin/ccsd
 }
 
+#
+# Function restarts the ccsd and fenced for removing the deps on /initrd
+function gfs_restart_cluster_services {
+   old_root=$1
+   new_root=$2
+ 
+#   set -x
+#   echo_local -n "5.3.1 restarting cluster services ..."$(pwd)
+   # (kill $(cat ${old_root}/var/run/cluster/ccsd.pid) &&
+   # rm ${old_root}/var/run/cluster/ccsd.pid &&
+   #if [ $? -ne 0 ]; then
+   #   pids=$(ps ax | grep ccsd | awk '$5!="grep" { print $1; }')
+   #   if [ -n "$pids" ]; then
+   #     kill $pids
+   #   fi
+   #   pids=$(ps ax | grep ccsd | awk '$5!="grep" { print $1; }')
+   #   if [ -n "$pids" ]; then
+   #     kill -9 $pids
+   #   fi
+   # fi &&
+#    chroot $new_root /sbin/ccsd &&
+#    echo_local "(OK)") || echo_local "(FAILED)"
+#   step
+
+    echo_local -n "5.3.2 restarting fenced ..."
+   [ ! -d var/lib/fence_tool.tmp ] && mkdir -p var/lib/fence_tool.tmp
+   #mount -t tmpfs none var/lib/fence_tool &&
+   (cp -a ${old_root}/var/lib/fence_tool/* var/lib/fence_tool.tmp &&
+#    kill $(cat ${old_root}/var/lib/fence_tool/var/run/fenced.pid) &&
+#    rm ${old_root}/var/lib/fence_tool/var/run/fenced.pid &&
+#    if [ $? -ne 0 ]; then
+#      pids=$(ps ax | grep fenced | awk '$5!="grep" { print $1; }')
+#      if [ -n "$pids" ]; then
+#        kill $pids
+#      fi
+#      pids=$(ps ax | grep fenced | awk '$5!="grep" { print $1; }')
+#      if [ -n "$pids" ]; then
+#        kill -9 $pids
+#      fi
+#    fi &&
+#    chroot ${new_root}/var/lib/fence_tool /sbin/fenced &&
+    echo_local "(OK)") || echo_local "(FAILED)"
+#   step
+#   set +x
+
+   return $?
+}
+
 # $Log: gfs-lib.sh,v $
-# Revision 1.14  2006-01-23 14:12:24  mark
+# Revision 1.15  2006-01-25 14:49:19  marc
+# new i/o redirection
+# new switchroot
+# bugfixes
+# new stepmode
+#
+# Revision 1.14  2006/01/23 14:12:24  mark
 # ...
 #
 # Revision 1.13  2005/07/08 13:00:34  mark

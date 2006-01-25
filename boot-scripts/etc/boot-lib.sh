@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.22 2006-01-23 14:11:36 mark Exp $
+# $Id: boot-lib.sh,v 1.23 2006-01-25 14:49:19 marc Exp $
 #
 # @(#)$File$
 #
@@ -21,16 +21,48 @@ LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/lib/i686:/usr/lib"
 PATH=/bin:/sbin:/usr/bin:/usr/sbin
 export PATH LD_LIBRARY_PATH
 
+step_timeout=5
 bootlog="/var/log/comoonics-boot.log"
+error_code_file="/var/error_code"
+init_cmd_file="/var/init_cmd"
 # the disk where the bootlog should be written to (default /dev/fd0).
 diskdev="/dev/fd0"
 [ -e /usr/bin/logger ] && logger="/usr/bin/logger -t com-bootlog"
+modules_conf="/etc/modprobe.conf"
+
+# Default init cmd is bash
+init_cmd="/bin/bash"
+
+function exit_linuxrc() {
+    error_code=$1
+    if [ -n "$2" ]; then 
+      init_cmd=$2
+    fi
+    echo_local_debug "exit_linuxrc($error_code)"
+    if [ -z "$error_code" ]; then 
+	error_code=0
+    fi
+    echo $error_code > $error_code_file
+    if [ -n "$error_code" ] && [ $error_code -eq 2 ]; then
+        echo_local "Userquit falling back to bash.."
+	exec 5>&1 6>&2 1>/dev/console 2>/dev/console
+        /bin/bash
+	exec 1>&5 2>&6
+    else
+	echo_local "Writing $init_cmd => $init_cmd_file"
+	echo "$init_cmd" > $init_cmd_file
+	exit $error_code
+    fi
+}
 
 function step() {
    if [ ! -z "$stepmode" ]; then
-     echo -n "Press <RETURN> to continue ..."
-     read __the_step
-     [ "$__the_step" = "quit" ] && exit 1
+     echo_out -n "Press <RETURN> to continue ..."
+     read -t$step_timeout __the_step
+     [ "$__the_step" = "quit" ] && exit_linuxrc 2
+     if [ "$__the_step" = "continue" ]; then
+       stepmode=
+     fi
    else
      sleep 1
    fi
@@ -408,29 +440,65 @@ function pivotRoot() {
 	echo_local "7.2 Stopping syslogd..."
         exec_local stop_service "syslogd" /initrd
 
-	echo_local "8. Starting init-process (exec /sbin/init < /dev/console 1>/dev/console 2>&1)..."
-	exec /sbin/init < /dev/console 1>/dev/console 2>&1
-	echo_local "Error starting init-process falling back to bash."
-	/rescue.sh
-	exec /bin/bash
+	init_cmd="/sbin/init"
+	echo_local "8. Starting init-process ($init_cmd)..."
+	exit_linuxrc 0 $init_cmd
     else
-	/rescue.sh
-	exec /bin/bash
+	exit_linuxrc 1
+    fi
+}
+
+function chRoot() {
+    echo_local_debug "**********************************************************************"
+    echo_local -n "5.4 Change-Root... (pwd: "$(pwd)"=>/mnt/newroot)"
+    cd /mnt/newroot
+#    [ ! -d initrd ] && mkdir -p initrd
+#    /sbin/pivot_root . initrd
+#    bootlog="/var/log/comoonics-boot.log"
+    if [ $? -eq 0 ]; then echo_local "(OK)"; else echo_local "(FAILED)"; fi
+    step
+
+    if [ $critical -eq 0 ]; then
+	if [ -n "$tmpfix" ]; then 
+	    echo_local "6. Setting up tmp..."
+	    exec_local createTemp /dev/ram1
+	fi
+	echo_local "7. Cleaning up..."
+	exec_local umount /proc
+	mtab=$(cat /etc/mtab 2>&1)
+	echo_local_debug "7.1 mtab: $mtab"
+#	echo_local "7.2 Stopping syslogd..."
+#        exec_local stop_service "syslogd" /initrd
+	init_cmd="chroot . /sbin/init"
+	echo_local "8. Starting init-process ($init_cmd)..."
+	exit_linuxrc 0 "$init_cmd"
+    else
+	exit_linuxrc 1
     fi
 }
 
 function switchRoot() {
+    chroot=$1
     echo_local_debug "**********************************************************************"
-    echo_local -n "5.4 Pivot-Rooting... (pwd: "$(pwd)")"
-    #exec_local killall ccsd
     cd /mnt/newroot
-    [ ! -d initrd ] && mkdir -p initrd
-    /sbin/pivot_root . initrd
+    pivot_root=
+    if [ -z "$chroot" ]; then
+      pivot_root=initrd
+      gfs_restart_cluster_services "../../" ./
+      echo_local -n "5.4 Pivot-Rooting... (pwd: "$(pwd)")"
+      [ ! -d $pivot_root ] && mkdir -p $pivot_root
+      /sbin/pivot_root . $pivot_root
+      init_cmd="/sbin/init"
+    else 
+      init_cmd="chroot . /sbin/init"
+      echo_local -n "5.4 Change-Root... (pwd: "$(pwd)")"
+      gfs_restart_cluster_services "/" ./
+    fi
     bootlog="/var/log/comoonics-boot.log"
     if [ $? -eq 0 ]; then echo_local "(OK)"; else echo_local "(FAILED)"; fi
     step
 
-	#mountDev
+    #mountDev
     if [ $critical -eq 0 ]; then
 	if [ -n "$tmpfix" ]; then 
 	    echo_local "6. Setting up tmp..."
@@ -438,25 +506,20 @@ function switchRoot() {
 	fi
 
 	echo_local "7. Cleaning up..."
-	exec_local umount initrd/proc
-	exec_local umount initrd/sys
-	echo_local "... restarting cluster services ..."
-	#exec_local /sbin/ccsd
-	mtab=$(cat /etc/mtab 2>&1)
-	echo_local_debug "7.1 mtab: $mtab"
+	exec_local umount ${pivot_root}/proc
+	exec_local umount ${pivot_root}/sys
+	
+#	mtab=$(cat /etc/mtab 2>&1)
+#	echo_local_debug "7.1 mtab: $mtab"
 
 	echo_local "7.2 Stopping syslogd..."
-    exec_local stop_service "syslogd" /initrd
+	exec_local stop_service "syslogd" /${pivot_root}
 	exec_local killall syslogd
 
-	echo_local "8. Starting init-process (exec /sbin/init < /dev/console 1>/dev/console 2>&1)..."
-	exec /sbin/init < /dev/console 1>/dev/console 2>&1
-	echo_local "Error starting init-process falling back to bash."
-	/rescue.sh
-	exec /bin/bash
+	echo_local "8. Starting init-process ($init_cmd)..."
+	exit_linuxrc 0 "$init_cmd"
     else
-	/rescue.sh
-	exec /bin/bash
+	exit_linuxrc 1
     fi
 }
 
@@ -496,38 +559,6 @@ function stop_service {
   fi
 }
 
-function chRoot() {
-    echo_local_debug "**********************************************************************"
-    echo_local -n "5.4 Change-Root... (pwd: "$(pwd)"=>/mnt/newroot)"
-    cd /mnt/newroot
-#    [ ! -d initrd ] && mkdir -p initrd
-#    /sbin/pivot_root . initrd
-#    bootlog="/var/log/comoonics-boot.log"
-    if [ $? -eq 0 ]; then echo_local "(OK)"; else echo_local "(FAILED)"; fi
-    step
-
-    if [ $critical -eq 0 ]; then
-	if [ -n "$tmpfix" ]; then 
-	    echo_local "6. Setting up tmp..."
-	    exec_local createTemp /dev/ram1
-	fi
-	echo_local "7. Cleaning up..."
-	exec_local umount /proc
-	mtab=$(cat /etc/mtab 2>&1)
-	echo_local_debug "7.1 mtab: $mtab"
-#	echo_local "7.2 Stopping syslogd..."
-#        exec_local stop_service "syslogd" /initrd
-	echo_local "8. Starting init-process (exec /sbin/init < /dev/console 1>/dev/console 2>&1)..."
-	exec chroot . /sbin/init < /dev/console 1>/dev/console 2>&1
-	echo_local "Error starting init-process falling back to bash."
-	/rescue.sh
-	exec /bin/bash
-    else
-	/rescue.sh
-	exec /bin/bash
-    fi
-}
-
 function clean_initrd() {
     echo_local_debug "**********************************************************************"
     echo_local "6.2 Cleaning up initrd ."
@@ -545,28 +576,39 @@ function ipaddress_from_name() {
 function ipaddress_from_dev() {
    gfsip=`/sbin/ifconfig ${netdev} | /bin/grep "inet addr:" | /bin/sed -e "s/\\W*inet\\Waddr://" | /bin/sed -e "s/\\W*Bcast:.*$//"`
 }
+function echo_out() {
+    echo ${*:0:$#-1} "${*:$#}" >&3
+}
+
 function echo_local() {
    echo ${*:0:$#-1} "${*:$#}"
+   echo ${*:0:$#-1} "${*:$#}" >&3
    echo ${*:0:$#-1} "${*:$#}" >> $bootlog
-   [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
+#   [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
 }
 function echo_local_debug() {
    if [ ! -z "$debug" ]; then
      echo ${*:0:$#-1} "${*:$#}"
-     echo ${*:0:$#-1} "${*:$#}" >> $bootlog
-     [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
+     echo ${*:0:$#-1} "${*:$#}" >&3
+#     echo ${*:0:$#-1} "${*:$#}" >> $bootlog
+#     [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
    fi
+}
+function error_out() {
+    echo ${*:0:$#-1} "${*:$#}" >&4
 }
 function error_local() {
    echo ${*:0:$#-1} "${*:$#}" >&2
-   echo ${*:0:$#-1} "${*:$#}" >> $bootlog
-   [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
+   echo ${*:0:$#-1} "${*:$#}" >&4
+#   echo ${*:0:$#-1} "${*:$#}" >> $bootlog
+#   [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
 }
 function error_local_debug() {
    if [ ! -z "$debug" ]; then
      echo ${*:0:$#-1} "${*:$#}" >&2
-     echo ${*:0:$#-1} "${*:$#}" >> $bootlog
-     [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
+     echo ${*:0:$#-1} "${*:$#}" >&4
+#     echo ${*:0:$#-1} "${*:$#}" >> $bootlog
+#     [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
    fi
 }
 
@@ -728,7 +770,13 @@ function add_scsi_device() {
 }
 
 # $Log: boot-lib.sh,v $
-# Revision 1.22  2006-01-23 14:11:36  mark
+# Revision 1.23  2006-01-25 14:49:19  marc
+# new i/o redirection
+# new switchroot
+# bugfixes
+# new stepmode
+#
+# Revision 1.22  2006/01/23 14:11:36  mark
 # added mountDev
 #
 # Revision 1.21  2005/07/08 13:00:34  mark
