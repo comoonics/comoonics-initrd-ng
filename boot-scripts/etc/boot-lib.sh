@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.23 2006-01-25 14:49:19 marc Exp $
+# $Id: boot-lib.sh,v 1.24 2006-01-27 10:54:48 marc Exp $
 #
 # @(#)$File$
 #
@@ -487,7 +487,8 @@ function switchRoot() {
       gfs_restart_cluster_services "../../" ./
       echo_local -n "5.4 Pivot-Rooting... (pwd: "$(pwd)")"
       [ ! -d $pivot_root ] && mkdir -p $pivot_root
-      /sbin/pivot_root . $pivot_root
+#      /sbin/pivot_root . $pivot_root
+      mount --move . /
       init_cmd="/sbin/init"
     else 
       init_cmd="chroot . /sbin/init"
@@ -770,7 +771,10 @@ function add_scsi_device() {
 }
 
 # $Log: boot-lib.sh,v $
-# Revision 1.23  2006-01-25 14:49:19  marc
+# Revision 1.24  2006-01-27 10:54:48  marc
+# with mount --move instead of pivot_root
+#
+# Revision 1.23  2006/01/25 14:49:19  marc
 # new i/o redirection
 # new switchroot
 # bugfixes
