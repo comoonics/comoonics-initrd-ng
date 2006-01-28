@@ -11,7 +11,7 @@
 # with ATIX.
 #
 # %define _initrddir /etc/init.d
-# $Id: comoonics-bootimage.spec,v 1.8 2006-01-25 14:55:51 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.9 2006-01-28 15:01:49 marc Exp $
 #
 ##
 # TO DO
@@ -29,7 +29,7 @@
 Name: comoonics-bootimage
 Summary: Comoonics Bootimage. Scripts for creating an initrd in a gfs shared root environment
 Version: 0.3
-Release: 12
+Release: 13
 Vendor: ATIX GmbH
 Packager: Marc Grimme (grimme@atix.de)
 ExclusiveArch: noarch
@@ -84,7 +84,7 @@ if [ "$root_fstype" = "gfs" ]; then
   /sbin/chkconfig bootsr on
   /sbin/chkconfig --list bootsr
   /sbin/chkconfig --add fenced-chroot &>/dev/null
-  /sbin/chkconfig fenced-chroot on
+  /sbin/chkconfig fenced-chroot off
   /sbin/chkconfig --list fenced-chroot
   /sbin/chkconfig fenced off
   /sbin/chkconfig --del fenced &>/dev/null
@@ -170,7 +170,10 @@ fi
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.8  2006-01-25 14:55:51  marc
+# Revision 1.9  2006-01-28 15:01:49  marc
+# fenced is restarted in the initrd
+#
+# Revision 1.8  2006/01/25 14:55:51  marc
 # first stable 0.3
 #
 # Revision 1.7  2006/01/23 14:05:30  mark
