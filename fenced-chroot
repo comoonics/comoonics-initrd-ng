@@ -36,7 +36,6 @@ start()
       else
         failure
       fi
-      echo
     fi
     
     echo -n "Starting fence domain:"
@@ -159,3 +158,10 @@ case "$1" in
 esac
 
 exit $rtrn
+
+#########################
+# $Log: fenced-chroot,v $
+# Revision 1.2  2006-01-28 15:11:21  marc
+# small changes
+# added cvs tags
+#
