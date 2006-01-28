@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.18 2006-01-25 14:47:47 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.19 2006-01-28 15:10:23 marc Exp $
 #
 # @(#)$File$
 #
@@ -33,7 +33,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.18 $ $Date: 2006-01-25 14:47:47 $'
+echo_local 'Internal Version $Revision: 1.19 $ $Date: 2006-01-28 15:10:23 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -170,3 +170,9 @@ if [ ! -e /mnt/newroot ]; then
 fi
 
 source /linuxrc.part.${bootpart}.sh
+
+###############
+# $Log: linuxrc.generic.sh,v $
+# Revision 1.19  2006-01-28 15:10:23  marc
+# added cvs tags
+#
