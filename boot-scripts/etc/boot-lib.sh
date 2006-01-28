@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.24 2006-01-27 10:54:48 marc Exp $
+# $Id: boot-lib.sh,v 1.25 2006-01-28 15:09:13 marc Exp $
 #
 # @(#)$File$
 #
@@ -478,25 +478,22 @@ function chRoot() {
 }
 
 function switchRoot() {
-    chroot=$1
     echo_local_debug "**********************************************************************"
     cd /mnt/newroot
-    pivot_root=
-    if [ -z "$chroot" ]; then
-      pivot_root=initrd
-      gfs_restart_cluster_services "../../" ./
-      echo_local -n "5.4 Pivot-Rooting... (pwd: "$(pwd)")"
-      [ ! -d $pivot_root ] && mkdir -p $pivot_root
-#      /sbin/pivot_root . $pivot_root
-      mount --move . /
-      init_cmd="/sbin/init"
-    else 
-      init_cmd="chroot . /sbin/init"
-      echo_local -n "5.4 Change-Root... (pwd: "$(pwd)")"
-      gfs_restart_cluster_services "/" ./
+    pivot_root=initrd
+    gfs_restart_cluster_services "../../" ./
+    echo_local -n "5.4 Pivot-Rooting... (pwd: "$(pwd)")"
+    [ ! -d $pivot_root ] && mkdir -p $pivot_root
+    /sbin/pivot_root . $pivot_root
+    if [ $? -eq 0 ]; then
+      echo_local "(OK)"
+    else
+      critical=$?
+      echo_local "(FAILED)"
     fi
+#      mount --move . /
+    init_cmd="/sbin/init"
     bootlog="/var/log/comoonics-boot.log"
-    if [ $? -eq 0 ]; then echo_local "(OK)"; else echo_local "(FAILED)"; fi
     step
 
     #mountDev
@@ -516,6 +513,10 @@ function switchRoot() {
 	echo_local "7.2 Stopping syslogd..."
 	exec_local stop_service "syslogd" /${pivot_root}
 	exec_local killall syslogd
+
+	echo_local "7.3 Removing files in initrd"
+	exec_local rm -rf /initrd/*
+	step
 
 	echo_local "8. Starting init-process ($init_cmd)..."
 	exit_linuxrc 0 "$init_cmd"
@@ -584,7 +585,7 @@ function echo_out() {
 function echo_local() {
    echo ${*:0:$#-1} "${*:$#}"
    echo ${*:0:$#-1} "${*:$#}" >&3
-   echo ${*:0:$#-1} "${*:$#}" >> $bootlog
+#   echo ${*:0:$#-1} "${*:$#}" >> $bootlog
 #   [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
 }
 function echo_local_debug() {
@@ -728,8 +729,8 @@ function exec_local() {
     echo "cmd: $*"
     echo "$output"
   fi
-  echo "cmd: $*" >> $bootlog
-  echo "$output" >> $bootlog
+#  echo "cmd: $*" >> $bootlog
+#  echo "$output" >> $bootlog
   return_code $return_c
 }
 
@@ -771,7 +772,11 @@ function add_scsi_device() {
 }
 
 # $Log: boot-lib.sh,v $
-# Revision 1.24  2006-01-27 10:54:48  marc
+# Revision 1.25  2006-01-28 15:09:13  marc
+# reenabled fenced restart in initrd and added chroot
+# no support for chroot any more
+#
+# Revision 1.24  2006/01/27 10:54:48  marc
 # with mount --move instead of pivot_root
 #
 # Revision 1.23  2006/01/25 14:49:19  marc
