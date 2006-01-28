@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.15 2006-01-25 14:49:19 marc Exp $
+# $Id: gfs-lib.sh,v 1.16 2006-01-28 15:10:53 marc Exp $
 #
 # @(#)$File$
 #
@@ -481,49 +481,53 @@ function gfs_restart_cluster_services {
    new_root=$2
  
 #   set -x
-#   echo_local -n "5.3.1 restarting cluster services ..."$(pwd)
-   # (kill $(cat ${old_root}/var/run/cluster/ccsd.pid) &&
-   # rm ${old_root}/var/run/cluster/ccsd.pid &&
-   #if [ $? -ne 0 ]; then
-   #   pids=$(ps ax | grep ccsd | awk '$5!="grep" { print $1; }')
-   #   if [ -n "$pids" ]; then
-   #     kill $pids
-   #   fi
-   #   pids=$(ps ax | grep ccsd | awk '$5!="grep" { print $1; }')
-   #   if [ -n "$pids" ]; then
-   #     kill -9 $pids
-   #   fi
-   # fi &&
-#    chroot $new_root /sbin/ccsd &&
-#    echo_local "(OK)") || echo_local "(FAILED)"
-#   step
+   echo_local -n "5.3.1 restarting cluster services ..."$(pwd)
+   (kill $(cat ${old_root}/var/run/cluster/ccsd.pid) &&
+   rm ${old_root}/var/run/cluster/ccsd.pid &&
+   if [ $? -ne 0 ]; then
+      pids=$(ps ax | grep ccsd | awk '$5!="grep" { print $1; }')
+      if [ -n "$pids" ]; then
+        kill $pids
+      fi
+      pids=$(ps ax | grep ccsd | awk '$5!="grep" { print $1; }')
+      if [ -n "$pids" ]; then
+        kill -9 $pids
+      fi
+    fi &&
+    chroot $new_root /sbin/ccsd &&
+    echo_local "(OK)") || echo_local "(FAILED)"
+    step
 
     echo_local -n "5.3.2 restarting fenced ..."
-   [ ! -d var/lib/fence_tool.tmp ] && mkdir -p var/lib/fence_tool.tmp
-   #mount -t tmpfs none var/lib/fence_tool &&
-   (cp -a ${old_root}/var/lib/fence_tool/* var/lib/fence_tool.tmp &&
-#    kill $(cat ${old_root}/var/lib/fence_tool/var/run/fenced.pid) &&
-#    rm ${old_root}/var/lib/fence_tool/var/run/fenced.pid &&
-#    if [ $? -ne 0 ]; then
-#      pids=$(ps ax | grep fenced | awk '$5!="grep" { print $1; }')
-#      if [ -n "$pids" ]; then
-#        kill $pids
-#      fi
-#      pids=$(ps ax | grep fenced | awk '$5!="grep" { print $1; }')
-#      if [ -n "$pids" ]; then
-#        kill -9 $pids
-#      fi
-#    fi &&
-#    chroot ${new_root}/var/lib/fence_tool /sbin/fenced &&
+    [ ! -d var/lib/fence_tool.tmp ] && mkdir -p var/lib/fence_tool.tmp
+    mount -t tmpfs none var/lib/fence_tool &&
+    (cp -a ${old_root}/var/lib/fence_tool/* var/lib/fence_tool &&
+    kill $(cat ${old_root}/var/lib/fence_tool/var/run/fenced.pid) &&
+    rm ${old_root}/var/lib/fence_tool/var/run/fenced.pid &&
+    if [ $? -ne 0 ]; then
+      pids=$(ps ax | grep fenced | awk '$5!="grep" { print $1; }')
+      if [ -n "$pids" ]; then
+        kill $pids
+      fi
+      pids=$(ps ax | grep fenced | awk '$5!="grep" { print $1; }')
+      if [ -n "$pids" ]; then
+        kill -9 $pids
+      fi
+    fi &&
+    chroot ${new_root}/var/lib/fence_tool /sbin/fenced &&
     echo_local "(OK)") || echo_local "(FAILED)"
-#   step
+    step
 #   set +x
 
    return $?
 }
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.15  2006-01-25 14:49:19  marc
+# Revision 1.16  2006-01-28 15:10:53  marc
+# reenabled the restart of fenced in ccsd in initrd
+# removing files in initrd
+#
+# Revision 1.15  2006/01/25 14:49:19  marc
 # new i/o redirection
 # new switchroot
 # bugfixes
