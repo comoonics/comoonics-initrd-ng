@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc,v 1.1 2006-01-25 14:46:48 marc Exp $
+# $Id: linuxrc,v 1.2 2006-01-28 15:09:46 marc Exp $
 #
 # @(#)$File$
 #
@@ -50,10 +50,10 @@ fi
 
 if [ -n "$logger" ]; then
   exec 3>/dev/console 4>/dev/console 
-  ./linuxrc.generic.sh | $logger | tee -a $bootlog
+  ./linuxrc.generic.sh 2>&1 | $logger | tee -a $bootlog
 else
   exec 3>/dev/console 4>/dev/console 
-  ./linuxrc.generic.sh | tee -a $bootlog
+  ./linuxrc.generic.sh 2>&1 | tee -a $bootlog
 fi
 
 error_code=0
@@ -66,7 +66,7 @@ if [ -n "$error_code" ] && [ $error_code -eq 0 ]; then
 #  cd /mnt/newroot
   exec 1>&- 2>&- 3>&- 4>&- 
   exec 1>/dev/console 2>/dev/console
-  exec $init_cmd </dev/console >/dev/console 2>&1 3>/dev/console 4>/dev/console
+  exec chroot . $init_cmd </dev/console >/dev/console 2>&1 3>/dev/console 4>/dev/console
 elif [ -n "$error_code" ] && [ $error_code -eq 2 ]; then
   echo_local "Userquit falling back to bash.."
   exec 1>/dev/console 2>/dev/console /bin/bash
