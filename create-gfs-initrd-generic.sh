@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: create-gfs-initrd-generic.sh,v 1.5 2006-01-25 14:57:42 marc Exp $
+# $Id: create-gfs-initrd-generic.sh,v 1.6 2006-02-03 12:39:27 marc Exp $
 #
 # @(#)$File$
 #
@@ -24,7 +24,7 @@ function getoptions() {
     while getopts UoRFVvhm:fd:s:r:b: option ; do
 	case "$option" in
 	    v) # version
-		echo "$0 Version "'$Revision: 1.5 $'
+		echo "$0 Version "'$Revision: 1.6 $'
 		exit 0
 		;;
 	    h) # help
@@ -84,7 +84,7 @@ fi
 
 cfg_file=/etc/comoonics/comoonics-bootimage.cfg
 
-cwd=$(pwd)
+pwd=$(pwd)
 force=0
 TMPDIR=/tmp
 mountpoint=$(mktemp -d ${TMPDIR}/initrd.mnt.XXXXXX)
@@ -153,6 +153,8 @@ fi
 
 echo -n "Retreiving dependent files..."
 # compiling marked perlfiles in this function
+#dep_files=$(get_all_depfiles $dep_filename $verbose)
+
 files=( $(get_all_files_dependent $dep_filename $verbose | sort -u | grep -v "^.$" | grep -v "^..$") )
 echo ${files[@]} | tr ' ' '\n' > ${mountpoint}/file-list.txt
 echo "found ${#files[@]} (OK)"
@@ -219,17 +221,18 @@ chown -R root:root $mountpoint
 if [ -z "$initramfs" ] || [ $initramfs -eq 0 ]; then
   if [ ! -e ${mountpoint}/linuxrc ] && [ -e ${mountpoint}/init ]; then
     cd $mountpoint && ln -s init linuxrc
-    cd $cwd
+    cd $pwd
   fi
 else
   if [ -e ${mountpoint}/linuxrc ] && [ ! -e ${mountpoint}/init ]; then
     cd $mountpoint && ln -s linuxrc init
-    cd $cwd
+    cd $pwd
   fi
 fi
 echo "(OK)"
 
 if [ -z "$initramfs" ] || [ $initramfs -eq 0 ]; then
+  cd $pwd
   echo -n "Unmounting and compressing.."
   (chown -R root:root $mountpoint && umount_and_zip_initrd $mountpoint $initrdname $force && \
    rm $lockfile) || (echo "(FAILED)" && rm $lockfile && exit $?)
@@ -240,7 +243,7 @@ else
 fi
 echo "(OK)"
 
-cd $cwd
+cd $pwd
 if [ -z "$no_remove_tmp" ]; then
   echo -n "Cleaning up ($mountpoint, $no_remove_tmp)..."
   rm -fr $mountpoint
@@ -250,6 +253,10 @@ ls -lk $initrdname.gz
 
 ##########################################
 # $Log: create-gfs-initrd-generic.sh,v $
-# Revision 1.5  2006-01-25 14:57:42  marc
+# Revision 1.6  2006-02-03 12:39:27  marc
+# preset includes.
+# Changed bug for build initrd with loopfs
+#
+# Revision 1.5  2006/01/25 14:57:42  marc
 # new build process bugfixes
 #

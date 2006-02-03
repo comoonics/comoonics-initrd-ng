@@ -1,5 +1,5 @@
 #
-# $Id: create-gfs-initrd-lib.sh,v 1.4 2006-01-25 14:57:42 marc Exp $
+# $Id: create-gfs-initrd-lib.sh,v 1.5 2006-02-03 12:39:27 marc Exp $
 #
 # @(#)$File$
 #
@@ -102,6 +102,19 @@ function get_dependent_files() {
       done
     fi
   fi
+}
+
+#
+# Get all depfiles gets all depfiles from the given file
+# That means if there is a @include tag those files are also returned
+function get_all_depfiles {
+  local $basefile=$1;
+  local $verbose=$2;
+
+  echo $basefile
+  for sub_dep_file in $(grep "^@include" $basefile | awk '{print $2;}'); do
+    [ -e "$sub_dep_file" ] && get_all_depfiles $sub_dep_file $verbose
+  done
 }
 
 #
