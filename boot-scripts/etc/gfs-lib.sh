@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.16 2006-01-28 15:10:53 marc Exp $
+# $Id: gfs-lib.sh,v 1.17 2006-02-03 12:40:13 marc Exp $
 #
 # @(#)$File$
 #
@@ -283,34 +283,34 @@ function copy_relevant_files {
   # backup old files
   olddir=$(pwd)
 #  if [ -n "$debug" ]; then set -x; fi
-  echo -en "\tBacking up created config files"
+  echo_local -en "\tBacking up created config files [$cdsl_local_dir]"
   (if [ -f /mnt/newroot/etc/modules.conf ]; then
      mv -f /mnt/newroot/etc/modules.conf /mnt/newroot/etc/modules.conf.com_back
    fi &&
    if [ -f /mnt/newroot/etc/sysconfig/hwconf ]; then
      mv -f /mnt/newroot/etc/sysconfig/hwconf /mnt/newroot/etc/sysconfig/hwconf.com_back
    fi && 
-   echo "(OK)" ) || (ret_c=$? && echo "(FAILED)")
-  echo -en "\tCreating config dirs if not exist.."
+   echo_local "(OK)" ) || (ret_c=$? && echo_local "(FAILED)")
+  echo_local -en "\tCreating config dirs if not exist.."
   (if [ ! -d /mnt/newroot/${cdsl_local_dir}/etc ]; then 
     mkdir -p /mnt/newroot/${cdsl_local_dir}/etc
    fi &&
    if [ ! -d /mnt/newroot/${cdsl_local_dir}/etc/sysconfig ]; then 
      mkdir -p /mnt/newroot/${cdsl_local_dir}/etc/sysconfig
-   fi && echo "(OK)") || (ret_c=$? && echo "(FAILED)")
-  echo -en "\tCopying the configfiles ${cdsl_local_dir}.."
+   fi && echo_local "(OK)") || (ret_c=$? && echo_local "(FAILED)")
+  echo_local -en "\tCopying the configfiles ${cdsl_local_dir}.."
   cd /mnt/newroot/${cdsl_local_dir}/etc
   (cp -f $modules_conf /mnt/newroot/${cdsl_local_dir}/$modules_conf &&
    ([ -n "$cdsl_local_dir" ] && 
        ln -sf ../${cdsl_local_dir}/etc/modules.conf modules.conf)
    cd sysconfig
-   cp -f /etc/sysconfig/hwconf /mnt/newroot/${cdsl_local_dir}/etc/sysconfig/
+   [ ! -f  /mnt/newroot/${cdsl_local_dir}/etc/sysconfig ] && cp -f /etc/sysconfig/hwconf /mnt/newroot/${cdsl_local_dir}/etc/sysconfig/
    ([ -n "$cdsl_local_dir" ] && 
-       cd /mnt/newroot && ln -fs ${cdsl_local_dir}/etc/sysconfig/hwconf etc/sysconfig/hwconf)
-   [ -e /mnt/newroot/${cdsl_local_dir}/etc/sysconfig/network ] || cp -f /etc/sysconfig/network /mnt/newroot/${cdsl_local_dir}/etc/sysconfig/
+       [ ! -f ${cdsl_local_dir}/etc/sysconfig/hwconf ] && cd /mnt/newroot && ln -fs ${cdsl_local_dir}/etc/sysconfig/hwconf etc/sysconfig/hwconf)
+   [ -f /mnt/newroot/${cdsl_local_dir}/etc/sysconfig/network ] || cp -f /etc/sysconfig/network /mnt/newroot/${cdsl_local_dir}/etc/sysconfig/
    ([ -n "$cdsl_local_dir" ] && 
-       cd /mnt/newroot/ && ln -fs ${cdsl_local_dir}/etc/sysconfig/network etc/sysconfig/network) &&
-   echo "(OK)") || (ret_c=$? && echo "(FAILED)")
+       [ ! -f /mnt/newroot/${cdsl_local_dir}/etc/sysconfig/network ] && cd /mnt/newroot/ && ln -fs ${cdsl_local_dir}/etc/sysconfig/network etc/sysconfig/network) &&
+   echo_local "(OK)") || (ret_c=$? && echo_local "(FAILED)")
   ret_c=$?
   cd $olddir
 #  if [ -n "$debug" ]; then set +x; fi
@@ -523,7 +523,10 @@ function gfs_restart_cluster_services {
 }
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.16  2006-01-28 15:10:53  marc
+# Revision 1.17  2006-02-03 12:40:13  marc
+# small change in copying files
+#
+# Revision 1.16  2006/01/28 15:10:53  marc
 # reenabled the restart of fenced in ccsd in initrd
 # removing files in initrd
 #
