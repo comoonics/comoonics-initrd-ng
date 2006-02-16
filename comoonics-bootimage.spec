@@ -11,7 +11,7 @@
 # with ATIX.
 #
 # %define _initrddir /etc/init.d
-# $Id: comoonics-bootimage.spec,v 1.9 2006-01-28 15:01:49 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.10 2006-02-16 13:59:06 marc Exp $
 #
 ##
 # TO DO
@@ -29,7 +29,7 @@
 Name: comoonics-bootimage
 Summary: Comoonics Bootimage. Scripts for creating an initrd in a gfs shared root environment
 Version: 0.3
-Release: 13
+Release: 20
 Vendor: ATIX GmbH
 Packager: Marc Grimme (grimme@atix.de)
 ExclusiveArch: noarch
@@ -49,6 +49,28 @@ Comoonics Bootimage. Scripts for creating an initrd in a gfs shared root environ
 
 %install
 make PREFIX=$RPM_BUILD_ROOT install
+
+%postun
+
+echo "postun: Param: $1"
+if [ "$1" -eq 0 ]; then
+  echo "Postuninstalling comoonics-bootimage.."
+  rm -f /etc/comoonics/bootimage/files-* &>/dev/null
+  root_fstype=$(mount | grep "/ " | awk '
+BEGIN { exit_c=1; } 
+{ if ($5) {  print $5; exit_c=0; } } 
+END{ exit exit_c}')
+  if [ "$root_fstype" = "gfs" ]; then
+    /sbin/chkconfig --del bootsr &>/dev/null
+    /sbin/chkconfig bootsr off
+    /sbin/chkconfig --list bootsr
+    /sbin/chkconfig --del fenced-chroot &>/dev/null
+    /sbin/chkconfig fenced-chroot off
+    /sbin/chkconfig --list fenced-chroot
+    /sbin/chkconfig --add fenced &>/dev/null
+    /sbin/chkconfig --list fenced
+  fi
+fi
 
 %post
 
@@ -83,33 +105,25 @@ if [ "$root_fstype" = "gfs" ]; then
   /sbin/chkconfig --add bootsr &>/dev/null
   /sbin/chkconfig bootsr on
   /sbin/chkconfig --list bootsr
+  /sbin/chkconfig --add preccsd &>/dev/null
+  /sbin/chkconfig preccsd on
+  /sbin/chkconfig --list preccsd
+  /sbin/chkconfig ccsd on
+  /sbin/chkconfig --list ccsd
   /sbin/chkconfig --add fenced-chroot &>/dev/null
-  /sbin/chkconfig fenced-chroot off
+  /sbin/chkconfig fenced-chroot on
   /sbin/chkconfig --list fenced-chroot
   /sbin/chkconfig fenced off
   /sbin/chkconfig --del fenced &>/dev/null
   grep "^FENCE_CHROOT=" /etc/sysconfig/cluster &>/dev/null
-  [ $? -ne 0 ] &&	echo "FENCE_CHROOT=/var/lib/fence_tool" >> /etc/sysconfig/cluster
+  [ $? -ne 0 ] && echo "FENCE_CHROOT=/var/lib/fence_tool" >> /etc/sysconfig/cluster
+  /bin/true
   grep "^FENCE_CHROOT_SOURCE=" /etc/sysconfig/cluster &>/dev/null
   [ $? -ne 0 ] && echo "FENCE_CHROOT_SOURCE=/var/lib/fence_tool.tmp" >> /etc/sysconfig/cluster
+  /bin/true
 fi
 #echo "Creating linuxrc link.."
 #cd %{APPDIR}/boot-scripts/ && ln -sf linuxrc.generic.sh linuxrc
-
-%postun
-echo "Postuninstalling comoonics-bootimage.."
-rm -f /etc/comoonics/bootimage/files-* &>/dev/null
-root_fstype=$(mount | grep "/ " | awk 'BEGIN { exit_c=1; } { if ($5) { print $5; exit_c=0; } } END{ exit exit_c}')
-if [ "$root_fstype" = "gfs" ]; then
-  /sbin/chkconfig --del bootsr &>/dev/null
-  /sbin/chkconfig bootsr off
-  /sbin/chkconfig --list bootsr
-  /sbin/chkconfig --del fenced-chroot &>/dev/null
-  /sbin/chkconfig fenced-chroot off
-  /sbin/chkconfig --list fenced-chroot
-  /sbin/chkconfig --add fenced &>/dev/null
-  /sbin/chkconfig --list fenced
-fi
 
 
 %changelog
@@ -128,6 +142,7 @@ fi
 %dir %{APPDIR}/boot-scripts/var/run/netreport
 %dir %{APPDIR}/boot-scripts/proc
 %attr(750, root, root) /etc/init.d/bootsr
+%attr(750, root, root) /etc/init.d/preccsd
 %attr(750, root, root) /etc/init.d/fenced-chroot
 %attr(750, root, root) %{APPDIR}/create-gfs-initrd-generic.sh
 %attr(750, root, root) %{APPDIR}/boot-scripts/linuxrc.generic.sh
@@ -170,7 +185,10 @@ fi
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.9  2006-01-28 15:01:49  marc
+# Revision 1.10  2006-02-16 13:59:06  marc
+# stable version 20
+#
+# Revision 1.9  2006/01/28 15:01:49  marc
 # fenced is restarted in the initrd
 #
 # Revision 1.8  2006/01/25 14:55:51  marc
