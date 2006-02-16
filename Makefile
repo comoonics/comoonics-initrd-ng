@@ -1,5 +1,5 @@
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.7 2006-01-25 14:57:11 marc Exp $
+# $Id: Makefile,v 1.8 2006-02-16 13:59:15 marc Exp $
 #
 # @(#)$file$
 #
@@ -76,6 +76,7 @@ EMPTY_DIRS=boot-scripts/mnt \
  boot-scripts/proc
 
 INIT_FILES=bootsr \
+preccsd \
 fenced-chroot
 
 ARCHIVE_FILE=./comoonics-$(PACKAGE_NAME)-$(VERSION).tar.gz
@@ -153,7 +154,10 @@ archive:
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.7  2006-01-25 14:57:11  marc
+# Revision 1.8  2006-02-16 13:59:15  marc
+# added preccsd
+#
+# Revision 1.7  2006/01/25 14:57:11  marc
 # new version for new files
 #
 # Revision 1.6  2006/01/23 14:02:49  mark
