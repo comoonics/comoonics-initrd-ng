@@ -1,0 +1,73 @@
+#!/bin/bash
+#
+# ccsd   start/stop ccsd
+#
+# chkconfig: 345 19 81
+# description: Starts and stops ccsd
+#
+#
+### BEGIN INIT INFO
+# Provides:
+### END INIT INFO
+
+INITRD_DIR=/initrd
+
+. /etc/init.d/functions
+[ -f /etc/sysconfig/cluster ] && . /etc/sysconfig/cluster
+
+LOCK_FILE="/var/lock/subsys/ccsd"
+
+start()
+{
+  echo -n "Checking for ccsd from initrd:"
+  pids=$(fuser -mv ${INITRD_DIR} | grep ccsd | awk '
+BEGIN{ found=1; }
+NF==5 && $5=="ccsd" {print $3; found=0;} 
+NF==4 && $4="ccsd" {print $2; found=0;}
+END { exit found; }
+')
+  if [ $? -eq 0 ]; then
+    kill $pids 
+    if [ $? -eq 0 ]; then
+      success
+      echo
+      return 0
+    else
+      failure
+      echo
+      return 1
+    fi
+  fi
+}
+
+rtrn=1
+
+# See how we were called.
+case "$1" in
+  start)
+        start
+        rtrn=$?
+        ;;
+
+  stop)
+        /bin/true
+        rtrn=$?
+        ;;
+
+  restart)
+        $0 stop
+        $0 start
+        rtrn=$?
+        ;;
+
+  status)
+        status ccsd
+        rtrn=0
+        ;;
+
+  *)
+        echo $"Usage: $0 {start|stop|restart|status}"
+        ;;
+esac
+
+exit $rtrn
