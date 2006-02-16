@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.25 2006-01-28 15:09:13 marc Exp $
+# $Id: boot-lib.sh,v 1.26 2006-02-16 13:58:50 marc Exp $
 #
 # @(#)$File$
 #
@@ -32,11 +32,15 @@ modules_conf="/etc/modprobe.conf"
 
 # Default init cmd is bash
 init_cmd="/bin/bash"
+newroot="/"
 
 function exit_linuxrc() {
     error_code=$1
     if [ -n "$2" ]; then 
       init_cmd=$2
+    fi
+    if [ -n "$3" ]; then 
+      newroot=$3
     fi
     echo_local_debug "exit_linuxrc($error_code)"
     if [ -z "$error_code" ]; then 
@@ -49,8 +53,8 @@ function exit_linuxrc() {
         /bin/bash
 	exec 1>&5 2>&6
     else
-	echo_local "Writing $init_cmd => $init_cmd_file"
-	echo "$init_cmd" > $init_cmd_file
+	echo_local "Writing $init_cmd $newroot => $init_cmd_file"
+	echo "$init_cmd $newroot" > $init_cmd_file
 	exit $error_code
     fi
 }
@@ -480,10 +484,13 @@ function chRoot() {
 function switchRoot() {
     echo_local_debug "**********************************************************************"
     cd /mnt/newroot
+#    pivot_root=
+    gfs_restart_cluster_services / /mnt/newroot
+    cd /mnt/newroot
     pivot_root=initrd
-    gfs_restart_cluster_services "../../" ./
     echo_local -n "5.4 Pivot-Rooting... (pwd: "$(pwd)")"
     [ ! -d $pivot_root ] && mkdir -p $pivot_root
+#    mount --rbind / /mnt/newroot/$pivot_root
     /sbin/pivot_root . $pivot_root
     if [ $? -eq 0 ]; then
       echo_local "(OK)"
@@ -491,8 +498,10 @@ function switchRoot() {
       critical=$?
       echo_local "(FAILED)"
     fi
+    step
 #      mount --move . /
     init_cmd="/sbin/init"
+    newroot="/mnt/newroot"
     bootlog="/var/log/comoonics-boot.log"
     step
 
@@ -511,15 +520,16 @@ function switchRoot() {
 #	echo_local_debug "7.1 mtab: $mtab"
 
 	echo_local "7.2 Stopping syslogd..."
-	exec_local stop_service "syslogd" /${pivot_root}
+	exec_local stop_service "syslogd" ${pivot_root}
 	exec_local killall syslogd
 
 	echo_local "7.3 Removing files in initrd"
-	exec_local rm -rf /initrd/*
+	exec_local rm -rf ${pivot_root}/*
 	step
+	newroot="/"
 
 	echo_local "8. Starting init-process ($init_cmd)..."
-	exit_linuxrc 0 "$init_cmd"
+	exit_linuxrc 0 "$init_cmd" "$newroot"
     else
 	exit_linuxrc 1
     fi
@@ -772,7 +782,11 @@ function add_scsi_device() {
 }
 
 # $Log: boot-lib.sh,v $
-# Revision 1.25  2006-01-28 15:09:13  marc
+# Revision 1.26  2006-02-16 13:58:50  marc
+# pivot_root and chroot changes
+# newroot variable added
+#
+# Revision 1.25  2006/01/28 15:09:13  marc
 # reenabled fenced restart in initrd and added chroot
 # no support for chroot any more
 #
