@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.18 2006-02-16 13:59:30 marc Exp $
+# $Id: gfs-lib.sh,v 1.19 2006-04-08 18:00:19 marc Exp $
 #
 # @(#)$File$
 #
@@ -82,6 +82,14 @@ xml_get_node_sharedroot() {
    [ -z "$hostname" ] && hostname=$(hostname)
     local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query"    
    $xml_cmd -q rootvolume $hostname
+}
+
+xml_get_node_hostname() {
+   local nodename=$1
+   [ -z "$nodename" ] && nodename=$(xml_get_my_hostname)
+   local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query"    
+   $xml_cmd -q hostname $nodename 2>/dev/null
+   return $?
 }
 
 
@@ -177,9 +185,9 @@ function xml_get_netdevices {
     local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query"
     local xmlfile=$1
 
-    local hostname=$(xml_get_my_hostname $xmlfile)
+    local nodename=$(xml_get_my_hostname $xmlfile)
 
-    local netdevs=$($xml_cmd -f $xmlfile -q netdevs $hostname " ");
+    local netdevs=$($xml_cmd -f $xmlfile -q netdevs $nodename " ");
 	echo $netdevs
 #	if [ -n "$debug" ]; then set +x; fi
 	return 1
@@ -239,9 +247,9 @@ function xml_get_my_hostname {
     local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query"
     if [ -z "$netdev" ]; then netdev="eth0"; fi
     local mac=$(ifconfig $netdev | grep HWaddr | awk '{print $5;}')
-    local hostname=$($xml_cmd -f $ccs_file -q hostname $mac)
-    if [ -n "$hostname" ]; then 
-		echo $hostname
+    local nodename=$($xml_cmd -f $ccs_file -q nodename $mac)
+    if [ -n "$nodename" ]; then 
+		echo $nodename
 	return 0
     else
 	return 1
@@ -270,10 +278,14 @@ function xml_autoconfigure_network {
   local xml_file=$3
   local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query"
   if [ -z "$netdev" ]; then netdev="eth0"; fi
-  local hostname=$(xml_get_my_hostname $xml_file $netdev)
-  local ip_addr=$($xml_cmd -f $xml_file -q ip $hostname $netdev)  
-  local gateway=$($xml_cmd -f $xml_file -q gateway $hostname $netdev) || local gateway=""
-  local netmask=$($xml_cmd -f $xml_file -q mask $hostname $netdev)
+  local nodename=$(xml_get_my_hostname $xml_file $netdev)
+  local hostname=$(xml_get_node_hostname $nodename)
+  if [ -z "$hostname" ]; then
+	hostname=$nodename
+  fi
+  local ip_addr=$($xml_cmd -f $xml_file -q ip $nodename $netdev)  
+  local gateway=$($xml_cmd -f $xml_file -q gateway $nodename $netdev) || local gateway=""
+  local netmask=$($xml_cmd -f $xml_file -q mask $nodename $netdev)
   echo ${ip_addr}"::"${gateway}":"${netmask}":"${hostname}
 #  if [ -n "$debug" ]; then set +x; fi
 }
@@ -508,7 +520,7 @@ function gfs_restart_cluster_services {
     step
 
     echo_local -n "5.5.2 restarting fenced ($old_root=>$new_root)..."
-    [ ! -d ${new_root}/var/lib/fence_tool.tmp ] && mkdir -p ${new_root}/var/lib/fence_tool.tmp
+    [ ! -d ${new_root}/var/lib/fence_tool ] && mkdir -p ${new_root}/var/lib/fence_tool
     mount -t tmpfs none ${new_root}/var/lib/fence_tool &&
     echo_local -n ".(mount)." &&
     (cp -a ${old_root}/var/lib/fence_tool/* ${new_root}/var/lib/fence_tool &&
@@ -535,7 +547,10 @@ function gfs_restart_cluster_services {
 }
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.18  2006-02-16 13:59:30  marc
+# Revision 1.19  2006-04-08 18:00:19  marc
+# added nodename and hostname as hostname
+#
+# Revision 1.18  2006/02/16 13:59:30  marc
 # minor changes
 #   copy configs
 #
