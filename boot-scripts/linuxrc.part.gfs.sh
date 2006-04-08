@@ -1,5 +1,5 @@
 #
-# $Id: linuxrc.part.gfs.sh,v 1.19 2006-01-25 14:48:41 marc Exp $
+# $Id: linuxrc.part.gfs.sh,v 1.20 2006-04-08 18:04:32 mark Exp $
 #
 # @(#)$File$
 #
@@ -242,14 +242,21 @@ if [ $gfs_majorversion -eq 6 ] && [ $gfs_minorversion -lt 1 ]; then
 	fi
 	fi
 else 
-    # get networkconfig from ccs_file
-    cdsl_local_dir="/cdsl.local"
-    echo_local_debug "4.4.0 IPConfig: $ipConfig"
+    	# get networkconfig from ccs_file
+    	cdsl_local_dir="/cdsl.local"
+    	echo_local_debug "4.4.0 IPConfig: $ipConfig"
 	xml_file="/etc/cluster/cluster.conf"
 	##
 	# power up network configuration
-	hostname=$(xml_get_my_hostname ${xml_file})	
+	nodename=$(xml_get_my_hostname ${xml_file})	
+	hostname=$(xml_get_node_hostname $nodename)	
+	if [ -z "$hostname" ]; then
+		hostname=$nodename
+	fi
+	// This has really to be fixed !!
+	_my_real_hostname=$hostname
 	echo_local "Hostname: $hostname";
+	step
 	for NETDEV in $(xml_get_netdevices ${xml_file}); do
 	    echo_local_debug "4.4.1.1 Autconfig for this host ($ipConfig $NETDEV ${xml_file}) ..."
 	    n_ipConfig=$(xml_autoconfigure_network "$ipConfig" "$NETDEV" "${xml_file}")
@@ -259,6 +266,8 @@ else
 			echo_local -n "4.4.2 Configuring network with bootparm-config ($n_ipConfig)"
 			exec_local ip2Config $n_ipConfig
 			echo_local -n "4.4.3 Powering up the network for interface ($NETDEV)..."
+			/bin/hostname ${_my_real_hostname}
+			echo_local "Hostname: $(hostname)";
 			exec_local my_ifup $NETDEV $n_ipConfig
 	    fi
 	done
@@ -269,13 +278,13 @@ else
     exec_local gfs61_start_ccsd
     echo_local -n "4.5.1 Patching host file..."
 	
-	exec_local xml_generate_hosts ${xml_file} /etc/hosts
+    exec_local xml_generate_hosts ${xml_file} /etc/hosts
     echo_local_debug -n "4.5.1 /etc/hosts: "
     exec_local cat /etc/hosts
         
-	# get shared root partition
+    # get shared root partition
     # !!! ROOT DEVICE !!!
-    [ -z "$pool_name" ] && pool_name=$(xml_get_node_sharedroot $hostname)
+    [ -z "$pool_name" ] && pool_name=$(xml_get_node_sharedroot $nodename)
     echo_local_debug "4.5.2 rootvolume_name: $pool_name"
     GFS_POOL=$pool_name
     step
@@ -375,7 +384,10 @@ else
 fi
 
 # $Log: linuxrc.part.gfs.sh,v $
-# Revision 1.19  2006-01-25 14:48:41  marc
+# Revision 1.20  2006-04-08 18:04:32  mark
+# added hostname support
+#
+# Revision 1.19  2006/01/25 14:48:41  marc
 # new boot concept. switchroot. i/o redirection. failing back to bash..
 #
 # Revision 1.18  2006/01/23 14:09:24  mark
