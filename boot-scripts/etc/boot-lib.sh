@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.26 2006-02-16 13:58:50 marc Exp $
+# $Id: boot-lib.sh,v 1.27 2006-04-08 18:03:43 mark Exp $
 #
 # @(#)$File$
 #
@@ -353,16 +353,20 @@ function getBootParameters() {
 }
 
 function loadSCSI() {
-	if [ -z "${FC_MODULES}"]; then
-	    FC_MODULES="scsi_hostadapter"
-	fi
 	echo_local "3 Loading scsi-driver..."
 	
 	echo_local -n "3.1 Loading scsi_disk Module..."
 	exec_local /sbin/modprobe sd_mod
 	
-	echo_local -n "3.2 Loading $FC_MODULES"
-	exec_local /sbin/modprobe ${FC_MODULES}
+	if [ -n "${FC_MODULES}" ]; then
+		echo_local -n "3.2 Loading $FC_MODULES"
+		exec_local /sbin/modprobe ${FC_MODULES}
+	else
+		echo_local -n "3.2 Loading all detected SCSI modules"
+		for hostadapter in $(cat ${modules_conf} | awk '/scsi_hostadapter.*/ {print $3}'); do
+			exec_local /sbin/modprobe ${hostadapter}
+		done
+	fi
 	step
 	
 	echo_local "3.2 Importing unconfigured scsi-devices..."
@@ -782,7 +786,10 @@ function add_scsi_device() {
 }
 
 # $Log: boot-lib.sh,v $
-# Revision 1.26  2006-02-16 13:58:50  marc
+# Revision 1.27  2006-04-08 18:03:43  mark
+# added support for multiple scsi_adapter
+#
+# Revision 1.26  2006/02/16 13:58:50  marc
 # pivot_root and chroot changes
 # newroot variable added
 #
