@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.19 2006-04-08 18:00:19 marc Exp $
+# $Id: gfs-lib.sh,v 1.20 2006-04-09 16:33:15 marc Exp $
 #
 # @(#)$File$
 #
@@ -465,7 +465,8 @@ function gfs_start_lock_gulmd {
 #
 # Function starts the lock_gulmd in a changeroot environment
 function gfs_start_fenced {
-  exec_local gfs_start_service /sbin/fence_tool join -c -w
+  mkdir -p /var/lib/fence_tool
+  exec_local gfs_start_service /var/lib/fence_tool /sbin/fenced -c -w
 }
 
 #
@@ -547,7 +548,10 @@ function gfs_restart_cluster_services {
 }
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.19  2006-04-08 18:00:19  marc
+# Revision 1.20  2006-04-09 16:33:15  marc
+# changed fencing from fence_tool join to fenced. Because fence_tool returns 1
+#
+# Revision 1.19  2006/04/08 18:00:19  marc
 # added nodename and hostname as hostname
 #
 # Revision 1.18  2006/02/16 13:59:30  marc
