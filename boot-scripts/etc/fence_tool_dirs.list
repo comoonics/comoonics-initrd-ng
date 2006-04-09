@@ -13,3 +13,7 @@
 /etc/ssh
 /etc/ssh/moduli
 /root/.ssh/
+/lib64
+/lib64/tls
+/lib64/magma
+/usr/lib64

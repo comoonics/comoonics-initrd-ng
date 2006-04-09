@@ -21,4 +21,10 @@
 /etc/cluster/cluster.conf
 /root/.ssh/known_hosts
 /root/.ssh/*id*
+/lib64/ld-2.3.4.so
+/lib64/tls/libc.so.6
+/lib64/tls/libc-2.3.4.so
+/lib64/tls/libpthread-2.3.4.so
+/lib64/tls/libpthread.so.0
+/lib64/ld-linux-x86-64.so.2
 
