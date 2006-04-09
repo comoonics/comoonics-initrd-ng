@@ -1,4 +1,4 @@
-# $Id: gfs61-es40-files.i686.list,v 1.3 2006-01-25 14:58:03 marc Exp $
+# $Id: gfs61-es40-files.i686.list,v 1.4 2006-04-09 16:32:27 marc Exp $
 bash
 nash
 nslookup
@@ -76,6 +76,7 @@ fence_ack_manual
 fence_gnbd
 fence_manual
 fence_node
+fence_drac
 #gfs_conf
 gfs_fsck
 gfs_grow
@@ -334,7 +335,10 @@ iscsi-umountall
 /lib/libcrypto.so.0.9.7a
 /lib/libcrypto.so.4
 # $Log: gfs61-es40-files.i686.list,v $
-# Revision 1.3  2006-01-25 14:58:03  marc
+# Revision 1.4  2006-04-09 16:32:27  marc
+# added fence_drac
+#
+# Revision 1.3  2006/01/25 14:58:03  marc
 # new fence files and some minor changes
 #
 # Revision 1.2  2005/07/08 12:59:56  mark
