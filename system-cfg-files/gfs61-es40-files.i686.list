@@ -1,4 +1,4 @@
-# $Id: gfs61-es40-files.i686.list,v 1.4 2006-04-09 16:32:27 marc Exp $
+# $Id: gfs61-es40-files.i686.list,v 1.5 2006-04-11 13:42:06 marc Exp $
 bash
 nash
 nslookup
@@ -335,7 +335,10 @@ iscsi-umountall
 /lib/libcrypto.so.0.9.7a
 /lib/libcrypto.so.4
 # $Log: gfs61-es40-files.i686.list,v $
-# Revision 1.4  2006-04-09 16:32:27  marc
+# Revision 1.5  2006-04-11 13:42:06  marc
+# removed the mapping. Will be done by rpm.
+#
+# Revision 1.4  2006/04/09 16:32:27  marc
 # added fence_drac
 #
 # Revision 1.3  2006/01/25 14:58:03  marc
@@ -347,4 +350,3 @@ iscsi-umountall
 # Revision 1.2  2005/01/03 09:08:05  marc
 # added tags
 #
-@map /opt/atix/comoonics_bootimage/boot-scripts /
