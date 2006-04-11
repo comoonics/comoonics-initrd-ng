@@ -11,7 +11,7 @@
 # with ATIX.
 #
 # %define _initrddir /etc/init.d
-# $Id: comoonics-bootimage.spec,v 1.10 2006-02-16 13:59:06 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.11 2006-04-11 13:41:20 marc Exp $
 #
 ##
 # TO DO
@@ -28,8 +28,8 @@
 
 Name: comoonics-bootimage
 Summary: Comoonics Bootimage. Scripts for creating an initrd in a gfs shared root environment
-Version: 0.3
-Release: 20
+Version: 0.4
+Release: 4
 Vendor: ATIX GmbH
 Packager: Marc Grimme (grimme@atix.de)
 ExclusiveArch: noarch
@@ -83,11 +83,12 @@ echo "Creating mkinitrd link..."
 ln -sf %{APPDIR}/create-gfs-initrd-generic.sh %{APPDIR}/mkinitrd
 
 echo "Analysing config files..."
-cfg_files="gfs6-es30-files.i686.list gfs61-es40-files.i686.list"
+cfg_files="gfs6-es30-files.i686.list gfs61-es40-files.i686.list gfs61-es40-files.x86_64.list"
 for cfg_file in $cfg_files; do
   if ! $(grep "%{APPDIR}/boot-scripts" /etc/comoonics/bootimage/$cfg_file >/dev/null 2>&1); then
     (echo "# START: RPM-post install added "$(date); echo "@map %{APPDIR}/boot-scripts /"; echo "# END:RPM-post install added ") >> /etc/comoonics/bootimage/$cfg_file
   else
+    echo "File: $cfg_file"
     echo "Please verify that there is at least a line in your config file /etc/comoonics/bootimage/$cfg_file of the following type:"
     echo "@map %{APPDIR}/boot-scripts /"
   fi
@@ -95,9 +96,12 @@ done
 if [ ! -e /etc/comoonics/bootimage/files-$(uname -r).list ]; then
   uname -r | grep "^2.4" > /dev/null
   if [ $? -eq 0 ]; then
-	ln -s /etc/comoonics/bootimage/gfs6-es30-files.i686.list /etc/comoonics/bootimage/files-$(uname -r).list
+    ln -s /etc/comoonics/bootimage/gfs6-es30-files.i686.list /etc/comoonics/bootimage/files-$(uname -r).list
   else
-	ln -s /etc/comoonics/bootimage/gfs61-es40-files.i686.list /etc/comoonics/bootimage/files-$(uname -r).list
+    ln -s /etc/comoonics/bootimage/gfs61-es40-files.$(uname -m).list /etc/comoonics/bootimage/files-$(uname -r).list
+    if [ $? -ne 0 ]; then
+       echo "Could not find gfs lists file for your architecture. )"$(uname -m)"). Please check if architecture is supported."
+    fi
   fi
 fi
 root_fstype=$(mount | grep "/ " | awk 'BEGIN { exit_c=1; } { if ($5) { print $5; exit_c=0; } } END{ exit exit_c}')
@@ -181,11 +185,15 @@ fi
 %attr(640, root, root) %{APPDIR}/boot-scripts/linuxrc.part.install.sh
 %config(noreplace) %{CONFIGDIR}/bootimage/gfs6-es30-files.i686.list
 %config(noreplace) %{CONFIGDIR}/bootimage/gfs61-es40-files.i686.list
+%config(noreplace) %{CONFIGDIR}/bootimage/gfs61-es40-files.x86_64.list
 %config(noreplace) %{CONFIGDIR}/comoonics-bootimage.cfg
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.10  2006-02-16 13:59:06  marc
+# Revision 1.11  2006-04-11 13:41:20  marc
+# added hostnames and x86_64 support
+#
+# Revision 1.10  2006/02/16 13:59:06  marc
 # stable version 20
 #
 # Revision 1.9  2006/01/28 15:01:49  marc
