@@ -1,5 +1,5 @@
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.8 2006-02-16 13:59:15 marc Exp $
+# $Id: Makefile,v 1.9 2006-04-11 13:42:58 marc Exp $
 #
 # @(#)$file$
 #
@@ -17,7 +17,7 @@
 
 PREFIX=/
 
-VERSION=0.1
+VERSION=0.4
 
 PACKAGE_NAME=bootimage
 
@@ -66,7 +66,8 @@ SYSTEM_CFG_FILES=comoonics-$(PACKAGE_NAME).cfg
 # subdirs are all in root
 CFG_DIR=$(SYSTEM_CFG_DIR)/$(PACKAGE_NAME)
 CFG_FILES=system-cfg-files/gfs6-es30-files.i686.list \
-  system-cfg-files/gfs61-es40-files.i686.list
+  system-cfg-files/gfs61-es40-files.i686.list \
+  system-cfg-files/gfs61-es40-files.x86_64.list
 
 EMPTY_DIRS=boot-scripts/mnt \
  boot-scripts/sys \
@@ -154,7 +155,10 @@ archive:
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.8  2006-02-16 13:59:15  marc
+# Revision 1.9  2006-04-11 13:42:58  marc
+# added x86_64 config file
+#
+# Revision 1.8  2006/02/16 13:59:15  marc
 # added preccsd
 #
 # Revision 1.7  2006/01/25 14:57:11  marc
