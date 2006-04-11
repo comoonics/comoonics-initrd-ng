@@ -11,7 +11,7 @@
 # with ATIX.
 #
 # %define _initrddir /etc/init.d
-# $Id: comoonics-bootimage.spec,v 1.11 2006-04-11 13:41:20 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.12 2006-04-11 13:42:45 marc Exp $
 #
 ##
 # TO DO
@@ -29,7 +29,7 @@
 Name: comoonics-bootimage
 Summary: Comoonics Bootimage. Scripts for creating an initrd in a gfs shared root environment
 Version: 0.4
-Release: 4
+Release: 5
 Vendor: ATIX GmbH
 Packager: Marc Grimme (grimme@atix.de)
 ExclusiveArch: noarch
@@ -190,7 +190,10 @@ fi
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.11  2006-04-11 13:41:20  marc
+# Revision 1.12  2006-04-11 13:42:45  marc
+# cvs stable version
+#
+# Revision 1.11  2006/04/11 13:41:20  marc
 # added hostnames and x86_64 support
 #
 # Revision 1.10  2006/02/16 13:59:06  marc
