@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.27 2006-04-08 18:03:43 mark Exp $
+# $Id: boot-lib.sh,v 1.28 2006-04-13 18:48:59 marc Exp $
 #
 # @(#)$File$
 #
@@ -490,6 +490,7 @@ function switchRoot() {
     cd /mnt/newroot
 #    pivot_root=
     gfs_restart_cluster_services / /mnt/newroot
+    restart_error=$?
     cd /mnt/newroot
     pivot_root=initrd
     echo_local -n "5.4 Pivot-Rooting... (pwd: "$(pwd)")"
@@ -527,8 +528,13 @@ function switchRoot() {
 	exec_local stop_service "syslogd" ${pivot_root}
 	exec_local killall syslogd
 
+	
 	echo_local "7.3 Removing files in initrd"
-	exec_local rm -rf ${pivot_root}/*
+	if [ $restart_error -eq 0 ]; then
+	   exec_local rm -rf ${pivot_root}/*
+        else
+           echo_local "(SKIPPED, failed restart clustersvc)"
+        fi
 	step
 	newroot="/"
 
@@ -786,7 +792,10 @@ function add_scsi_device() {
 }
 
 # $Log: boot-lib.sh,v $
-# Revision 1.27  2006-04-08 18:03:43  mark
+# Revision 1.28  2006-04-13 18:48:59  marc
+# checking an error on restart_cluster_services and not removing files from initrd
+#
+# Revision 1.27  2006/04/08 18:03:43  mark
 # added support for multiple scsi_adapter
 #
 # Revision 1.26  2006/02/16 13:58:50  marc
