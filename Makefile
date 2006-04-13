@@ -1,5 +1,5 @@
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.9 2006-04-11 13:42:58 marc Exp $
+# $Id: Makefile,v 1.10 2006-04-13 18:46:11 marc Exp $
 #
 # @(#)$file$
 #
@@ -46,6 +46,9 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/fence_tool_mv_files.list \
   boot-scripts/etc/fence_tool_cp_files.list \
   boot-scripts/etc/fence_tool_dirs.list \
+  boot-scripts/etc/fenced_mv_files.list \
+  boot-scripts/etc/fenced_cp_files.list \
+  boot-scripts/etc/fenced_dirs.list \
   boot-scripts/etc/syslogd_mv_files.list \
   boot-scripts/etc/syslogd_cp_files.list \
   boot-scripts/etc/syslogd_dirs.list \
@@ -155,7 +158,10 @@ archive:
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.9  2006-04-11 13:42:58  marc
+# Revision 1.10  2006-04-13 18:46:11  marc
+# added fencefiles
+#
+# Revision 1.9  2006/04/11 13:42:58  marc
 # added x86_64 config file
 #
 # Revision 1.8  2006/02/16 13:59:15  marc
