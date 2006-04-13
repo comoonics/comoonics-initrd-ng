@@ -94,7 +94,7 @@ END { exit found; }
     cp -a $FENCE_CHROOT_SOURCE/* $FENCE_CHROOT/
   fi &&
   [ -e $FENCE_CHROOT/var/run/fenced.pid ] && rm -r $FENCE_CHROOT/var/run/fenced.pid
-  chroot $FENCE_CHROOT fence_tool join -w > /dev/null 2>&1
+  chroot $FENCE_CHROOT fence -c -w > /dev/null 2>&1
   rtrn=$?
 
   if [ $rtrn -eq 0 ]
@@ -185,7 +185,10 @@ exit $rtrn
 
 #########################
 # $Log: fenced-chroot,v $
-# Revision 1.3  2006-02-16 13:58:33  marc
+# Revision 1.4  2006-04-13 18:47:04  marc
+# changed fence_tool to fenced to not get errors joining in the fencedomain any more
+#
+# Revision 1.3  2006/02/16 13:58:33  marc
 # minor changes
 #
 # Revision 1.2  2006/01/28 15:11:21  marc
