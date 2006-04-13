@@ -1,4 +1,4 @@
-# $Id: gfs61-es40-files.x86_64.list,v 1.1 2006-04-11 13:42:26 marc Exp $
+# $Id: gfs61-es40-files.x86_64.list,v 1.2 2006-04-13 18:50:59 marc Exp $
 bash
 nash
 nslookup
@@ -207,6 +207,7 @@ iscsi-umountall
 /etc/iscsi.conf
 /etc/initiatorname.iscsi
 # Integrated in rpm (can be changed)!!
+/usr/share/hwdata/
 #/usr/share/hwdata/CardMonitorCombos
 #/usr/share/hwdata/Cards
 #/usr/share/hwdata/MonitorsDB
@@ -288,7 +289,10 @@ iscsi-umountall
 /lib64/libcrypto.so.0.9.7a
 /lib64/libcrypto.so.4
 # $Log: gfs61-es40-files.x86_64.list,v $
-# Revision 1.1  2006-04-11 13:42:26  marc
+# Revision 1.2  2006-04-13 18:50:59  marc
+# readded /usr/share/hwdata
+#
+# Revision 1.1  2006/04/11 13:42:26  marc
 # initial revision
 #
 # Revision 1.1  2006/04/09 16:31:27  marc
