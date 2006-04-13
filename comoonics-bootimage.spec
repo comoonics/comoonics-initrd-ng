@@ -9,9 +9,9 @@
 # disclose such Confidential Information and shall use it only in
 # accordance with the terms of the license agreement you entered into
 # with ATIX.
-#
+#/initrd_sr-2.6.9-34.ELsmp.img.gz
 # %define _initrddir /etc/init.d
-# $Id: comoonics-bootimage.spec,v 1.12 2006-04-11 13:42:45 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.13 2006-04-13 18:46:31 marc Exp $
 #
 ##
 # TO DO
@@ -29,7 +29,7 @@
 Name: comoonics-bootimage
 Summary: Comoonics Bootimage. Scripts for creating an initrd in a gfs shared root environment
 Version: 0.4
-Release: 5
+Release: 9
 Vendor: ATIX GmbH
 Packager: Marc Grimme (grimme@atix.de)
 ExclusiveArch: noarch
@@ -169,6 +169,9 @@ fi
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/fence_tool_mv_files.list
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/fence_tool_cp_files.list
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/fence_tool_dirs.list
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/fenced_mv_files.list
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/fenced_cp_files.list
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/fenced_dirs.list
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/syslogd_mv_files.list
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/syslogd_cp_files.list
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/syslogd_dirs.list
@@ -190,7 +193,10 @@ fi
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.12  2006-04-11 13:42:45  marc
+# Revision 1.13  2006-04-13 18:46:31  marc
+# new version
+#
+# Revision 1.12  2006/04/11 13:42:45  marc
 # cvs stable version
 #
 # Revision 1.11  2006/04/11 13:41:20  marc
