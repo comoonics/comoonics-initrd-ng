@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.20 2006-04-09 16:33:15 marc Exp $
+# $Id: gfs-lib.sh,v 1.21 2006-04-13 18:49:51 marc Exp $
 #
 # @(#)$File$
 #
@@ -524,7 +524,7 @@ function gfs_restart_cluster_services {
     [ ! -d ${new_root}/var/lib/fence_tool ] && mkdir -p ${new_root}/var/lib/fence_tool
     mount -t tmpfs none ${new_root}/var/lib/fence_tool &&
     echo_local -n ".(mount)." &&
-    (cp -a ${old_root}/var/lib/fence_tool/* ${new_root}/var/lib/fence_tool &&
+    cp -a ${old_root}/var/lib/fence_tool/* ${new_root}/var/lib/fence_tool &&
     echo_local -n ".(cp)." &&
     kill $(cat ${old_root}/var/lib/fence_tool/var/run/fenced.pid) &&
     echo_local -n ".(kill)." &&
@@ -539,16 +539,24 @@ function gfs_restart_cluster_services {
         kill -9 $pids
       fi
     fi &&
-    chroot ${new_root}/var/lib/fence_tool /sbin/fenced &&
-    echo_local "(OK)") || echo_local "(FAILED)"
+    chroot ${new_root}/var/lib/fence_tool /sbin/fenced
+    error_code=$?
+    if [ $error_code -eq 0 ]; then
+      echo_local "(OK)"
+    else
+      echo_local "(FAILED)"
+    fi
     step
 #   set +x
 
-   return $?
+   return $error_code
 }
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.20  2006-04-09 16:33:15  marc
+# Revision 1.21  2006-04-13 18:49:51  marc
+# better errorhandling on fence_tool chroot
+#
+# Revision 1.20  2006/04/09 16:33:15  marc
 # changed fencing from fence_tool join to fenced. Because fence_tool returns 1
 #
 # Revision 1.19  2006/04/08 18:00:19  marc
