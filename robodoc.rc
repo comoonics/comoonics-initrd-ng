@@ -1,0 +1,19 @@
+# Example robodoc.rc
+#
+options:
+    --src ./
+    --doc ./html
+    --html
+    --multidoc
+    --index
+    --tabsize 8
+headertypes:
+    e  "Makefile Entries"  robo_mk_entries
+    x  "System Tests"      robo_syst_tests
+    q  Queries             robo_queries
+ignore files:
+    README
+    CVS
+    *.bak
+    *~
+    docs/*
