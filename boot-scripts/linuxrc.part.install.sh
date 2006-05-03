@@ -1,4 +1,21 @@
 #!/bin/bash
+#****h* comoonics-bootimage/linuxrc.part.install.sh
+#  NAME
+#    linuxrc.part.install.sh
+#    $Id: linuxrc.part.install.sh,v 1.2 2006-05-03 12:45:59 marc Exp $
+#  DESCRIPTION
+#    The scripts called from linuxrc.generic.sh if bootpart is install.
+#*******
+
+#****f* linuxrc.part.install.sh/main
+#  NAME
+#    main
+#  SYNOPSIS
+#    function main() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 
 echo_local "*************************"
 echo_local "Entering Comoonics Installation"
@@ -65,3 +82,10 @@ else
 	 bash
 fi
 
+#********** main
+
+#################
+# $Log: linuxrc.part.install.sh,v $
+# Revision 1.2  2006-05-03 12:45:59  marc
+# added documentation
+#

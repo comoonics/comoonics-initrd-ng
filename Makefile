@@ -1,5 +1,13 @@
+#****h* comoonics-bootimage/Makefile
+#  NAME
+#    Makefile
+#    $id$
+#  DESCRIPTION
+#    Makefile for the comoonics-bootimage
+#*******
+
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.10 2006-04-13 18:46:11 marc Exp $
+# $Id: Makefile,v 1.11 2006-05-03 12:46:51 marc Exp $
 #
 # @(#)$file$
 #
@@ -15,16 +23,71 @@
 #
 # Makefile for building the documentation
 
+#****d* Makefile/PREFIX
+#  NAME
+#    PREFIX
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 PREFIX=/
 
+#************ PREFIX 
+#****d* Makefile/VERSION
+#  NAME
+#    VERSION
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 VERSION=0.4
 
+#************ VERSION 
+#****d* Makefile/PACKAGE_NAME
+#  NAME
+#    PACKAGE_NAME
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 PACKAGE_NAME=bootimage
 
+#************ PACKAGE_NAME 
+#****d* Makefile/INSTALL_GRP
+#  NAME
+#    INSTALL_GRP
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 INSTALL_GRP="root"
+#************ INSTALL_GRP 
+#****d* Makefile/INSTALL_OWN
+#  NAME
+#    INSTALL_OWN
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 INSTALL_OWN="root"
 
+#************ INSTALL_OWN 
+#****d* Makefile/INSTALL_DIR
+#  NAME
+#    INSTALL_DIR
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 INSTALL_DIR=/opt/atix/comoonics_bootimage
+#************ INSTALL_DIR 
+#****d* Makefile/EXEC_FILES
+#  NAME
+#    EXEC_FILES
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 EXEC_FILES=create-gfs-initrd-generic.sh \
   boot-scripts/linuxrc \
   boot-scripts/linuxrc.generic.sh \
@@ -32,6 +95,14 @@ EXEC_FILES=create-gfs-initrd-generic.sh \
   boot-scripts/detectHardware.sh \
   boot-scripts/rescue.sh \
   boot-scripts/myifup.sh
+#************ EXEC_FILES 
+#****d* Makefile/LIB_FILES
+#  NAME
+#    LIB_FILES
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/inittab \
   boot-scripts/etc/atix.txt \
@@ -64,14 +135,54 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/linuxrc.part.iscsi.sh \
   boot-scripts/linuxrc.part.install.sh
 
+#************ LIB_FILES 
+#****d* Makefile/SYSTEM_CFG_DIR
+#  NAME
+#    SYSTEM_CFG_DIR
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 SYSTEM_CFG_DIR=/etc/comoonics
+#************ SYSTEM_CFG_DIR 
+#****d* Makefile/SYSTEM_CFG_FILES
+#  NAME
+#    SYSTEM_CFG_FILES
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 SYSTEM_CFG_FILES=comoonics-$(PACKAGE_NAME).cfg
 # subdirs are all in root
+#************ SYSTEM_CFG_FILES 
+#****d* Makefile/CFG_DIR
+#  NAME
+#    CFG_DIR
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 CFG_DIR=$(SYSTEM_CFG_DIR)/$(PACKAGE_NAME)
+#************ CFG_DIR 
+#****d* Makefile/CFG_FILES
+#  NAME
+#    CFG_FILES
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 CFG_FILES=system-cfg-files/gfs6-es30-files.i686.list \
   system-cfg-files/gfs61-es40-files.i686.list \
   system-cfg-files/gfs61-es40-files.x86_64.list
 
+#************ CFG_FILES 
+#****d* Makefile/EMPTY_DIRS
+#  NAME
+#    EMPTY_DIRS
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 EMPTY_DIRS=boot-scripts/mnt \
  boot-scripts/sys \
  boot-scripts/var/log \
@@ -79,12 +190,37 @@ EMPTY_DIRS=boot-scripts/mnt \
  boot-scripts/var/run/netreport \
  boot-scripts/proc
 
+#************ EMPTY_DIRS 
+#****d* Makefile/INIT_FILES
+#  NAME
+#    INIT_FILES
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 INIT_FILES=bootsr \
 preccsd \
 fenced-chroot
 
+#************ INIT_FILES 
+#****d* Makefile/ARCHIVE_FILE
+#  NAME
+#    ARCHIVE_FILE
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 ARCHIVE_FILE=./comoonics-$(PACKAGE_NAME)-$(VERSION).tar.gz
+#************ ARCHIVE_FILE 
+#****d* Makefile/TAR_PATH
+#  NAME
+#    TAR_PATH
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 TAR_PATH=comoonics-$(PACKAGE_NAME)-$(VERSION)/*
+#************ TAR_PATH 
 
 .PHONY: install
 install:
@@ -158,7 +294,10 @@ archive:
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.10  2006-04-13 18:46:11  marc
+# Revision 1.11  2006-05-03 12:46:51  marc
+# added documentation
+#
+# Revision 1.10  2006/04/13 18:46:11  marc
 # added fencefiles
 #
 # Revision 1.9  2006/04/11 13:42:58  marc

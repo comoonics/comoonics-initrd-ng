@@ -1,3 +1,9 @@
+#****h* sysconfig/comoonics
+#  NAME
+#    comoonics
+#    $id$
+#  DESCRIPTION
+#*******
 HOSTNAME=localhost
 DOMAINNAME="localdomain"
 NETCONFIG="_0 _1"
@@ -18,3 +24,9 @@ LVM_VG_CHANGE="/sbin/vgchange"
 GFS_POOL_ASSEMBLE="/sbin/pool_assemble"
 GFS_FENCED="/sbin/fenced"
 GFS_POOL=atixpool2
+
+####################
+# $Log: comoonics,v $
+# Revision 1.3  2006-05-03 12:45:05  marc
+# added documentation
+#

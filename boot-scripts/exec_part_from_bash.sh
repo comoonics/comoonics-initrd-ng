@@ -1,6 +1,15 @@
 #!/bin/bash
+#****h* comoonics-bootimage/exec_part_from_bash.sh
+#  NAME
+#    exec_part_from_bash.sh
+#    $Id: exec_part_from_bash.sh,v 1.5 2006-05-03 12:46:35 marc Exp $
+#  DESCRIPTION
+#    helperskript for testing every script for the 
+#    comoonics-bootimage in the running initrd
+#*******
+
 #
-# $Id: exec_part_from_bash.sh,v 1.4 2004-09-29 14:32:16 marc Exp $
+# $Id: exec_part_from_bash.sh,v 1.5 2006-05-03 12:46:35 marc Exp $
 #
 # @(#)$File$
 #
@@ -23,8 +32,17 @@
 # Marc Grimme: existence of /etc/gfs-lib.sh with all gfs-functions. 
 #         Should be the framework for all other functionalities as well.
 
+#****f* exec_part_from_bash.sh/main
+#  NAME
+#    main
+#  SYNOPSIS
+#    function main() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 echo "Starting ATIX $0"
-echo 'Version $Date: 2004-09-29 14:32:16 $'
+echo 'Version $Date: 2006-05-03 12:46:35 $'
 
 
 . etc/sysconfig/comoonics
@@ -58,5 +76,10 @@ echo_local "0.2 Kernel-verion: ${KERNEL_VERSION}"
 echo_local_debug "*****************************"
 
 source $1
+#*********** main
 
-# $log$
+#####################
+# $Log: exec_part_from_bash.sh,v $
+# Revision 1.5  2006-05-03 12:46:35  marc
+# added documentation
+#

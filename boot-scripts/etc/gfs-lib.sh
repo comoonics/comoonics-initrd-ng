@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.21 2006-04-13 18:49:51 marc Exp $
+# $Id: gfs-lib.sh,v 1.22 2006-05-03 12:45:20 marc Exp $
 #
 # @(#)$File$
 #
@@ -24,6 +24,22 @@
 #    com-stepmode=...      If set it asks for <return> after every step
 #    com-debug=...         If set debug info is output
 
+#****h* comoonics-bootimage/gfs-lib.sh
+#  NAME
+#    gfs-lib.sh
+#    $id$
+#  DESCRIPTION
+#*******
+
+#****f* gfs-lib.sh/getGFSParameters
+#  NAME
+#    getGFSParameters
+#  SYNOPSIS
+#    function getGFSParameters() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function getGFSParameters() {
 	echo_local "*********************************"
 	echo_local "Scanning for GFS parameters"
@@ -39,6 +55,16 @@ function getGFSParameters() {
 
 #
 # returns the gfs-majorversion
+#************ getGFSParameters 
+#****f* gfs-lib.sh/getGFSMajorVersion
+#  NAME
+#    getGFSMajorVersion
+#  SYNOPSIS
+#    function getGFSMajorVersion() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function getGFSMajorVersion() {
     modinfo gfs | awk '$1 == "description:" {
   match($5, /v([[:digit:]]+)\./, version);
@@ -48,6 +74,16 @@ function getGFSMajorVersion() {
 
 #
 # returns the gfs-minorversion
+#************ getGFSMajorVersion 
+#****f* gfs-lib.sh/getGFSMinorVersion
+#  NAME
+#    getGFSMinorVersion
+#  SYNOPSIS
+#    function getGFSMinorVersion() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function getGFSMinorVersion() {
     modinfo gfs | awk '$1 == "description:" {
   match($5, /v[[:digit:]]+\.([[:digit:]]+)/, version);
@@ -58,6 +94,16 @@ function getGFSMinorVersion() {
 
 # returns the first found cca
 # could be optimized a little bit with a given cca.
+#************ getGFSMinorVersion 
+#****f* gfs-lib.sh/gfs_autodetect_cca
+#  NAME
+#    gfs_autodetect_cca
+#  SYNOPSIS
+#    gfs_autodetect_cca() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 gfs_autodetect_cca() {
     ccadevs=( $( pool_tool -s | awk '/CCA device /{print $1}' | xargs -r ) )
     [ -z "${ccadevs[0]}" ] && return 1
@@ -67,16 +113,46 @@ gfs_autodetect_cca() {
 }
 
 
+#************ gfs_autodetect_cca 
+#****f* gfs-lib.sh/cca_get_clustername
+#  NAME
+#    cca_get_clustername
+#  SYNOPSIS
+#    cca_get_clustername() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 cca_get_clustername() {
     ccs_read string cluster.ccs cluster/name 2>/dev/null
 }
 
+#************ cca_get_clustername 
+#****f* gfs-lib.sh/cca_get_node_sharedroot
+#  NAME
+#    cca_get_node_sharedroot
+#  SYNOPSIS
+#    cca_get_node_sharedroot() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 cca_get_node_sharedroot() {
    local hostname=$1
    [ -z "$hostname" ] && hostname=$(hostname)
    ccs_read string nodes.ccs nodes/$hostname/com_sharedroot
 }
 
+#************ cca_get_node_sharedroot 
+#****f* gfs-lib.sh/xml_get_node_sharedroot
+#  NAME
+#    xml_get_node_sharedroot
+#  SYNOPSIS
+#    xml_get_node_sharedroot() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 xml_get_node_sharedroot() {
    local hostname=$1
    [ -z "$hostname" ] && hostname=$(hostname)
@@ -84,6 +160,16 @@ xml_get_node_sharedroot() {
    $xml_cmd -q rootvolume $hostname
 }
 
+#************ xml_get_node_sharedroot 
+#****f* gfs-lib.sh/xml_get_node_hostname
+#  NAME
+#    xml_get_node_hostname
+#  SYNOPSIS
+#    xml_get_node_hostname() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 xml_get_node_hostname() {
    local nodename=$1
    [ -z "$nodename" ] && nodename=$(xml_get_my_hostname)
@@ -94,6 +180,16 @@ xml_get_node_hostname() {
 
 
 
+#************ xml_get_node_hostname 
+#****f* gfs-lib.sh/cca_get_node_role
+#  NAME
+#    cca_get_node_role
+#  SYNOPSIS
+#    cca_get_node_role() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 cca_get_node_role() {
    local hostname=$1
    [ -z "$hostname" ] && hostname=$(hostname)
@@ -101,6 +197,16 @@ cca_get_node_role() {
 }
 
 # syntax: cca_get_host_param name [default] [host]
+#************ cca_get_node_role 
+#****f* gfs-lib.sh/cca_get_node_param
+#  NAME
+#    cca_get_node_param
+#  SYNOPSIS
+#    cca_get_node_param() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 cca_get_node_param() {
   local param=$1
   local default=$2
@@ -112,14 +218,44 @@ cca_get_node_param() {
   echo $value
 }
 
+#************ cca_get_node_param 
+#****f* gfs-lib.sh/cca_get_syslog_server
+#  NAME
+#    cca_get_syslog_server
+#  SYNOPSIS
+#    cca_get_syslog_server() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 cca_get_syslog_server() {
   cca_get_node_param com_syslog_server "$2" $1
 }
 
+#************ cca_get_syslog_server 
+#****f* gfs-lib.sh/cca_get_lockservers
+#  NAME
+#    cca_get_lockservers
+#  SYNOPSIS
+#    cca_get_lockservers() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 cca_get_lockservers() {
    ccs_read string cluster.ccs cluster/lock_gulm
 }
 
+#************ cca_get_lockservers 
+#****f* gfs-lib.sh/cca_generate_hosts
+#  NAME
+#    cca_generate_hosts
+#  SYNOPSIS
+#    function cca_generate_hosts {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function cca_generate_hosts {
     local ccs_read="/opt/atix/comoonics_cs/ccs_fileread"
     local cca_dir=$1
@@ -147,6 +283,16 @@ function cca_generate_hosts {
     return $ret
 }
 
+#************ cca_generate_hosts 
+#****f* gfs-lib.sh/xml_generate_hosts
+#  NAME
+#    xml_generate_hosts
+#  SYNOPSIS
+#    function xml_generate_hosts {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function xml_generate_hosts {
     local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query"    
     local xmlfile=$1
@@ -163,6 +309,16 @@ function xml_generate_hosts {
 }
 
 # returns all configured networkdevices from the cca seperated by " "
+#************ xml_generate_hosts 
+#****f* gfs-lib.sh/cca_get_netdevices
+#  NAME
+#    cca_get_netdevices
+#  SYNOPSIS
+#    function cca_get_netdevices {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function cca_get_netdevices {
     local ccs_cmd="/opt/atix/comoonics_cs/ccs_fileread"
     local cca_dir=$1
@@ -180,6 +336,16 @@ function cca_get_netdevices {
 }
 
 # returns all configured networkdevices from the cluster.conf xml file seperated by " "
+#************ cca_get_netdevices 
+#****f* gfs-lib.sh/xml_get_netdevices
+#  NAME
+#    xml_get_netdevices
+#  SYNOPSIS
+#    function xml_get_netdevices {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function xml_get_netdevices {
 #	if [ -n "$debug" ]; then set -x; fi
     local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query"
@@ -195,6 +361,16 @@ function xml_get_netdevices {
 
 #
 # gets for this very host the hostname (identified by the macaddress
+#************ xml_get_netdevices 
+#****f* gfs-lib.sh/cca_get_my_hostname
+#  NAME
+#    cca_get_my_hostname
+#  SYNOPSIS
+#    function cca_get_my_hostname {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function cca_get_my_hostname {
     local netdev=$2
     local cca_dir=$1
@@ -241,6 +417,16 @@ function cca_get_my_hostname {
 
 #
 # gets for this very host the hostname (identified by the macaddress
+#************ cca_get_my_hostname 
+#****f* gfs-lib.sh/xml_get_my_hostname
+#  NAME
+#    xml_get_my_hostname
+#  SYNOPSIS
+#    function xml_get_my_hostname {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function xml_get_my_hostname {
     local netdev=$2
     local ccs_file=$1
@@ -256,6 +442,16 @@ function xml_get_my_hostname {
     fi
 }
 
+#************ xml_get_my_hostname 
+#****f* gfs-lib.sh/cca_autoconfigure_network
+#  NAME
+#    cca_autoconfigure_network
+#  SYNOPSIS
+#    function cca_autoconfigure_network {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function cca_autoconfigure_network {
 #  if [ -n "$debug" ]; then set -x; fi
   local ipconfig=$1
@@ -271,6 +467,16 @@ function cca_autoconfigure_network {
   if [ -n "$debug" ]; then set +x; fi
 }
 
+#************ cca_autoconfigure_network 
+#****f* gfs-lib.sh/xml_autoconfigure_network
+#  NAME
+#    xml_autoconfigure_network
+#  SYNOPSIS
+#    function xml_autoconfigure_network {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function xml_autoconfigure_network {
 #  if [ -n "$debug" ]; then set -x; fi
   local ipconfig=$1
@@ -290,6 +496,16 @@ function xml_autoconfigure_network {
 #  if [ -n "$debug" ]; then set +x; fi
 }
 
+#************ xml_autoconfigure_network 
+#****f* gfs-lib.sh/copy_relevant_files
+#  NAME
+#    copy_relevant_files
+#  SYNOPSIS
+#    function copy_relevant_files {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function copy_relevant_files {
   local cdsl_local_dir=$1
   # backup old files
@@ -338,6 +554,16 @@ function copy_relevant_files {
 
 # This function starts the lockgulmd in a chroot environment per default
 # If no_chroot is given as param the chroot is skipped
+#************ copy_relevant_files 
+#****f* gfs-lib.sh/gfs_start_service
+#  NAME
+#    gfs_start_service
+#  SYNOPSIS
+#    function gfs_start_service {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function gfs_start_service {
 #  if [ -n "$debug" ]; then set -x; fi
   [ -d "$1" ] && chroot_dir=$1 && shift
@@ -392,6 +618,16 @@ function gfs_start_service {
 
 #
 # This function starts the syslog-server to log the gfs-bootprocess
+#************ gfs_start_service 
+#****f* gfs-lib.sh/gfs_start_syslog_nochroot
+#  NAME
+#    gfs_start_syslog_nochroot
+#  SYNOPSIS
+#    function gfs_start_syslog_nochroot {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function gfs_start_syslog_nochroot {
   local syslog_server=$(cca_get_syslog_server)
   local chroot_dir="/var/lib/lock_gulmd"
@@ -409,6 +645,16 @@ function gfs_start_syslog_nochroot {
 
 #
 # This function starts the syslog-server to log the gfs-bootprocess
+#************ gfs_start_syslog_nochroot 
+#****f* gfs-lib.sh/xml_start_syslog
+#  NAME
+#    xml_start_syslog
+#  SYNOPSIS
+#    function xml_start_syslog {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function xml_start_syslog {
   local xml_file=$1
   local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query"
@@ -428,6 +674,16 @@ function xml_start_syslog {
 
 #
 # This function starts the syslog-server to log the gfs-bootprocess
+#************ xml_start_syslog 
+#****f* gfs-lib.sh/gfs_start_syslog_chroot
+#  NAME
+#    gfs_start_syslog_chroot
+#  SYNOPSIS
+#    function gfs_start_syslog_chroot {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function gfs_start_syslog_chroot {
   local syslog_server=$(cca_get_syslog_server)
   local chroot_dir="/var/lib/lock_gulmd"
@@ -445,6 +701,16 @@ function gfs_start_syslog_chroot {
 
 #
 # Function starts the lock_gulmd in a changeroot environment
+#************ gfs_start_syslog_chroot 
+#****f* gfs-lib.sh/gfs_start_lock_gulmd
+#  NAME
+#    gfs_start_lock_gulmd
+#  SYNOPSIS
+#    function gfs_start_lock_gulmd {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function gfs_start_lock_gulmd {
   exec_local gfs_start_service /sbin/lock_gulmd
   sts=1
@@ -464,6 +730,16 @@ function gfs_start_lock_gulmd {
 
 #
 # Function starts the lock_gulmd in a changeroot environment
+#************ gfs_start_lock_gulmd 
+#****f* gfs-lib.sh/gfs_start_fenced
+#  NAME
+#    gfs_start_fenced
+#  SYNOPSIS
+#    function gfs_start_fenced {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function gfs_start_fenced {
   mkdir -p /var/lib/fence_tool
   exec_local gfs_start_service /var/lib/fence_tool /sbin/fenced -c -w
@@ -471,6 +747,16 @@ function gfs_start_fenced {
 
 #
 # Function starts the ccsd in a changeroot environment
+#************ gfs_start_fenced 
+#****f* gfs-lib.sh/gfs_start_ccsd
+#  NAME
+#    gfs_start_ccsd
+#  SYNOPSIS
+#    function gfs_start_ccsd {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function gfs_start_ccsd {
   chroot_dir=/var/lib/lock_gulmd
   mkdir -p $chroot_dir 2> /dev/null
@@ -483,6 +769,16 @@ function gfs_start_ccsd {
 
 #
 # Function starts the ccsd in a changeroot environment
+#************ gfs_start_ccsd 
+#****f* gfs-lib.sh/gfs61_start_ccsd
+#  NAME
+#    gfs61_start_ccsd
+#  SYNOPSIS
+#    function gfs61_start_ccsd {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function gfs61_start_ccsd {
   #/sbin/chroot_dir=/var/lib/fence_tool
   #mkdir -p $chroot_dir 2> /dev/null
@@ -496,6 +792,16 @@ function gfs61_start_ccsd {
 
 #
 # Function restarts the ccsd and fenced for removing the deps on /initrd
+#************ gfs61_start_ccsd 
+#****f* gfs-lib.sh/gfs_restart_cluster_services
+#  NAME
+#    gfs_restart_cluster_services
+#  SYNOPSIS
+#    function gfs_restart_cluster_services {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function gfs_restart_cluster_services {
    old_root=$1
    new_root=$2
@@ -551,9 +857,13 @@ function gfs_restart_cluster_services {
 
    return $error_code
 }
+#************ gfs_restart_cluster_services 
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.21  2006-04-13 18:49:51  marc
+# Revision 1.22  2006-05-03 12:45:20  marc
+# added documentation
+#
+# Revision 1.21  2006/04/13 18:49:51  marc
 # better errorhandling on fence_tool chroot
 #
 # Revision 1.20  2006/04/09 16:33:15  marc

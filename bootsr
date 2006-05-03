@@ -1,6 +1,14 @@
 #! /bin/sh
+#****h* comoonics-bootimage/bootsr
+#  NAME
+#    bootsr
+#    $id$
+#  DESCRIPTION
+#    Comoonics Shared Root post boot settings
+#  AUTHOR
+#    Mark Hlawatschek
 #
-# bootsr 	Comoonics Shared Root post boot settings
+#*******
 # 
 # chkconfig: 345 19 99
 # description: do the post settings for Comoonics Shared Root
@@ -21,6 +29,15 @@ CCSD_LOCK_FILE="/var/lock/subsys/ccsd"
 
 RETVAL=0
 
+#****f* bootsr/check_sharedroot
+#  NAME
+#    check_sharedroot
+#  SYNOPSIS
+#    function check_sharedroot
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function check_sharedroot {
   root_fstype=$(mount | grep "/ " | awk 'BEGIN { exit_c=1; } { if ($5) { print $5; exit_c=0; } } END{ exit exit_c}')
   if [ "$root_fstype" = "gfs" ]; then
@@ -29,9 +46,30 @@ function check_sharedroot {
     return 0
   fi
 }
+#************ check_sharedroot 
+#****f* bootsr/get_runlevel
+#  NAME
+#    get_runlevel
+#  SYNOPSIS
+#    function get_runlevel
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function get_runlevel {
   return $(runlevel | cut -d" " -f2)
 }
+#************ get_runlevel
+
+#****f* bootsr/main
+#  NAME
+#    main
+#  SYNOPSIS
+#    function main
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 
 # See how we were called.
 case "$1" in
@@ -103,3 +141,4 @@ case "$1" in
         exit 1
 esac
 exit $RETVAL
+#************ main

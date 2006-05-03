@@ -1,5 +1,5 @@
 #
-# $Id: iscsi-lib.sh,v 1.7 2004-09-29 14:32:16 marc Exp $
+# $Id: iscsi-lib.sh,v 1.8 2006-05-03 12:45:13 marc Exp $
 #
 # @(#)$File$
 #
@@ -15,9 +15,25 @@
 #
 # Library for the iscsi-interface
 
+#****h* comoonics-bootimage/iscsi-lib.sh
+#  NAME
+#    iscsi-lib.sh
+#    $id$
+#  DESCRIPTION
+#*******
+
 parser1="iscsi://([^:]+)"
 parser2="iscsi://([^:]+):([[:digit:]]+)/"
 
+#****f* iscsi-lib.sh/getISCSIServerFromParam
+#  NAME
+#    getISCSIServerFromParam
+#  SYNOPSIS
+#    function getISCSIServerFromParam {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function getISCSIServerFromParam {
     echo $1 | awk '
 { 
@@ -26,6 +42,16 @@ function getISCSIServerFromParam {
 }'
 }
 
+#************ getISCSIServerFromParam 
+#****f* iscsi-lib.sh/getISCSIPortFromParam
+#  NAME
+#    getISCSIPortFromParam
+#  SYNOPSIS
+#    function getISCSIPortFromParam {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function getISCSIPortFromParam {
     echo $1 | awk '
 { 
@@ -34,12 +60,26 @@ function getISCSIPortFromParam {
 }'
 }
 
+#************ getISCSIPortFromParam 
+#****f* iscsi-lib.sh/createCiscoISCSICfgString
+#  NAME
+#    createCiscoISCSICfgString
+#  SYNOPSIS
+#    function createCiscoISCSICfgString {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function createCiscoISCSICfgString {
     echo -n "DiscoveryAddress=$1" && ([ -n "$2" ] && echo ":$2") || echo
 }
+#************ createCiscoISCSICfgString 
 
 # $Log: iscsi-lib.sh,v $
-# Revision 1.7  2004-09-29 14:32:16  marc
+# Revision 1.8  2006-05-03 12:45:13  marc
+# added documentation
+#
+# Revision 1.7  2004/09/29 14:32:16  marc
 # vacation checkin, stable version
 #
 # Revision 1.6  2004/09/24 14:40:47  marc

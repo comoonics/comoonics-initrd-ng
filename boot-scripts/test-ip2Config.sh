@@ -1,4 +1,22 @@
 #!/bin/bash
+#****h* comoonics-bootimage/test-ip2Config.sh
+#  NAME
+#    test-ip2Config.sh
+#    $Id: test-ip2Config.sh,v 1.2 2006-05-03 12:45:26 marc Exp $
+#  DESCRIPTION
+#    Tests if a given configuration for ip is creating the right 
+#    configuration.
+#*******
+
+#****f* test-ip2Config.sh/main
+#  NAME
+#    main
+#  SYNOPSIS
+#    function main() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 
 __prefix="/tmp"
 
@@ -25,3 +43,10 @@ cat ${__prefix}/etc/sysconfig/network
 cat ${__prefix}/etc/sysconfig/network-scripts/ifcfg-eth0
 
 step
+#************ main
+
+#################
+# $Log: test-ip2Config.sh,v $
+# Revision 1.2  2006-05-03 12:45:26  marc
+# added documentation
+#

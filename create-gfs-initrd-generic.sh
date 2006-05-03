@@ -1,6 +1,12 @@
+#****h* comoonics-bootimage/create-gfs-initrd-generic.sh
+#  NAME
+#    create-gfs-initrd-generic.sh
+#    $id$
+#  DESCRIPTION
+#*******
 #!/bin/bash
 #
-# $Id: create-gfs-initrd-generic.sh,v 1.6 2006-02-03 12:39:27 marc Exp $
+# $Id: create-gfs-initrd-generic.sh,v 1.7 2006-05-03 12:47:10 marc Exp $
 #
 # @(#)$File$
 #
@@ -16,15 +22,34 @@
 #
 . `dirname $0`/create-gfs-initrd-lib.sh
 
+#****f* create-gfs-initrd-generic.sh/usage
+#  NAME
+#    usage
+#  SYNOPSIS
+#    function usage() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function usage() {
   echo "$0 -d dep_filename [-s initrdsize] [-m mountpoint] [-r rpm-list-file] [-b build-date-file] [-V] [-F] [-R] [-o] [-U] initrdname [kernel-version]"
 }
 
+#************ usage 
+#****f* create-gfs-initrd-generic.sh/getoptions
+#  NAME
+#    getoptions
+#  SYNOPSIS
+#    function getoptions() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function getoptions() {
     while getopts UoRFVvhm:fd:s:r:b: option ; do
 	case "$option" in
 	    v) # version
-		echo "$0 Version "'$Revision: 1.6 $'
+		echo "$0 Version "'$Revision: 1.7 $'
 		exit 0
 		;;
 	    h) # help
@@ -74,7 +99,18 @@ function getoptions() {
     initrdname=$(echo $1 | sed s/.gz$//)
     if [ -n "$2" ]; then kernel=$2; fi
 }
+#************ getoptions 
 
+#************ main 
+#****f* create-gfs-initrd-generic.sh/main
+#  NAME
+#    main
+#  SYNOPSIS
+#    function main()
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 initramfs=1
 
 if [ -z "$1" ]; then
@@ -250,10 +286,14 @@ if [ -z "$no_remove_tmp" ]; then
   echo "(OK)"
 fi
 ls -lk $initrdname.gz
+#************ main 
 
 ##########################################
 # $Log: create-gfs-initrd-generic.sh,v $
-# Revision 1.6  2006-02-03 12:39:27  marc
+# Revision 1.7  2006-05-03 12:47:10  marc
+# added documentation
+#
+# Revision 1.6  2006/02/03 12:39:27  marc
 # preset includes.
 # Changed bug for build initrd with loopfs
 #

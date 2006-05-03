@@ -1,4 +1,12 @@
 #!/bin/bash
+#****h* comoonics-bootimage/fenced-chroot
+#  NAME
+#    fenced-chroot
+#    $id$
+#  DESCRIPTION
+#    Initscript for stoping and starting fenced in chroot for 
+#    sharedroots
+#*******
 #
 # chkconfig: 345 23 77
 # description: Starts and stops fence domain
@@ -15,6 +23,15 @@ INITRD_DIR=/initrd
 
 LOCK_FILE="/var/lock/subsys/fenced"
 
+#****f* fenced-chroot/check_sharedroot
+#  NAME
+#    check_sharedroot
+#  SYNOPSIS
+#    function check_sharedroot {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function check_sharedroot {
   root_fstype=$(mount | grep "/ " | awk 'BEGIN { exit_c=1; } { if ($5) { print $5; exit_c=0; } } END{ exit exit_c}')
   if [ "$root_fstype" = "gfs" ]; then
@@ -23,10 +40,30 @@ function check_sharedroot {
     return 0
   fi
 }
+#************ check_sharedroot 
+#****f* fenced-chroot/get_runlevel
+#  NAME
+#    get_runlevel
+#  SYNOPSIS
+#    function get_runlevel {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function get_runlevel {
   return $(runlevel | cut -d" " -f2)
 }
 
+#************ get_runlevel 
+#****f* fenced-chroot/start
+#  NAME
+#    start
+#  SYNOPSIS
+#    start()
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 start()
 {
   pids=$(fuser -mv ${INITRD_DIR} | grep fenced | awk '
@@ -116,6 +153,16 @@ END { exit found; }
   return $rtrn
 }
 
+#************ start 
+#****f* fenced-chroot/stop
+#  NAME
+#    stop
+#  SYNOPSIS
+#    stop()
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 stop()
 {
   echo -n "Stopping fence domain (chroot):"
@@ -144,7 +191,17 @@ stop()
   # need the extra echo to properlly terminate the line
   return $rtrn
 }
+#************ stop 
 
+#****f* fenced-chroot/main
+#  NAME
+#    main
+#  SYNOPSIS
+#    main()
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 rtrn=1
 
 # See how we were called.
@@ -182,10 +239,14 @@ case "$1" in
 esac
 
 exit $rtrn
+#************ main 
 
 #########################
 # $Log: fenced-chroot,v $
-# Revision 1.4  2006-04-13 18:47:04  marc
+# Revision 1.5  2006-05-03 12:47:04  marc
+# added documentation
+#
+# Revision 1.4  2006/04/13 18:47:04  marc
 # changed fence_tool to fenced to not get errors joining in the fencedomain any more
 #
 # Revision 1.3  2006/02/16 13:58:33  marc

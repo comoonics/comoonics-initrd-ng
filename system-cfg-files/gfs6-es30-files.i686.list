@@ -1,4 +1,10 @@
-# $Id: gfs6-es30-files.i686.list,v 1.2 2005-01-03 09:08:05 marc Exp $
+#****h* system-cfg-files/gfs6-es30-files.i686.list
+#  NAME
+#    gfs6-es30-files.i686.list
+#    $id$
+#  DESCRIPTION
+#*******
+# $Id: gfs6-es30-files.i686.list,v 1.3 2006-05-03 12:47:48 marc Exp $
 bash
 nslookup
 chmod
@@ -301,6 +307,9 @@ iscsi-umountall
 /lib/libcrypto.so.2
 /lib/libcrypto.so.4
 # $Log: gfs6-es30-files.i686.list,v $
-# Revision 1.2  2005-01-03 09:08:05  marc
+# Revision 1.3  2006-05-03 12:47:48  marc
+# added documentation
+#
+# Revision 1.2  2005/01/03 09:08:05  marc
 # added tags
 #

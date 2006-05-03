@@ -1,5 +1,5 @@
 #
-# $Id: linuxrc.part.iscsi.sh,v 1.8 2004-09-24 15:37:11 marc Exp $
+# $Id: linuxrc.part.iscsi.sh,v 1.9 2006-05-03 12:45:54 marc Exp $
 #
 # @(#)$File$
 #
@@ -19,6 +19,24 @@
 #
 # Includes
 # %%include /etc/iscsi-lib.sh
+
+#****h* comoonics-bootimage/linuxrc.part.iscsi.sh
+#  NAME
+#    linuxrc.part.iscsi.sh
+#    $Id: linuxrc.part.iscsi.sh,v 1.9 2006-05-03 12:45:54 marc Exp $
+#  DESCRIPTION
+#    The scripts called from linuxrc.generic.sh if iscsi is used.
+#*******
+
+#****f* linuxrc.part.iscsi.sh/main
+#  NAME
+#    main
+#  SYNOPSIS
+#    function main() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 
 source etc/iscsi-lib.sh
 source etc/boot-lib.sh
@@ -48,9 +66,13 @@ if [ -n "$iscsi_server" ]; then
   sleep 5
   step
 fi
+#********** main
 
 # $Log: linuxrc.part.iscsi.sh,v $
-# Revision 1.8  2004-09-24 15:37:11  marc
+# Revision 1.9  2006-05-03 12:45:54  marc
+# added documentation
+#
+# Revision 1.8  2004/09/24 15:37:11  marc
 # added sleep
 #
 # Revision 1.7  2004/09/24 15:27:15  marc

@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.19 2006-01-28 15:10:23 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.20 2006-05-03 12:46:24 marc Exp $
 #
 # @(#)$File$
 #
@@ -23,6 +23,23 @@
 # Marc Grimme: existence of /etc/gfs-lib.sh with all gfs-functions. 
 #         Should be the framework for all other functionalities as well.
 
+#****h* comoonics-bootimage/linuxrc.generic.sh
+#  NAME
+#    linuxrc.generic.sh
+#    $Id: linuxrc.generic.sh,v 1.20 2006-05-03 12:46:24 marc Exp $
+#  DESCRIPTION
+#    The first script called by the initrd.
+#*******
+
+#****f* linuxrc.generic.sh/main
+#  NAME
+#    main
+#  SYNOPSIS
+#    function main() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 . etc/sysconfig/comoonics
 
 # initstuff is done in here
@@ -33,7 +50,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.19 $ $Date: 2006-01-28 15:10:23 $'
+echo_local 'Internal Version $Revision: 1.20 $ $Date: 2006-05-03 12:46:24 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -170,9 +187,13 @@ if [ ! -e /mnt/newroot ]; then
 fi
 
 source /linuxrc.part.${bootpart}.sh
+#********** main
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.19  2006-01-28 15:10:23  marc
+# Revision 1.20  2006-05-03 12:46:24  marc
+# added documentation
+#
+# Revision 1.19  2006/01/28 15:10:23  marc
 # added cvs tags
 #

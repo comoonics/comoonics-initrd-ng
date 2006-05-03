@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# $Id: rescue.sh,v 1.1 2004-07-31 11:24:43 marc Exp $
+# $Id: rescue.sh,v 1.2 2006-05-03 12:45:35 marc Exp $
 #
 # @(#)$File$
 #
@@ -15,6 +15,24 @@
 # with ATIX.
 #
 # Saves the bootlog-file to disk
+#****h* comoonics-bootimage/rescue.sh
+#  NAME
+#    rescue.sh
+#    $Id: rescue.sh,v 1.2 2006-05-03 12:45:35 marc Exp $
+#  DESCRIPTION
+#    Rescue script that is called whenever the initrd ends in errors 
+#    and cannot continue
+#*******
+
+#****f* rescue.sh/main
+#  NAME
+#    main
+#  SYNOPSIS
+#    function main() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 
 source /etc/boot-lib.sh
 
@@ -31,3 +49,10 @@ if [ "$yes" = "Y" -o "$yes" = "y" ]; then
    echo_local "Saving logfiles..."
    exec_local /bin/tar cvf $diskdev /var/log/comoonics*
 fi
+#********** main
+
+###################
+# $Log: rescue.sh,v $
+# Revision 1.2  2006-05-03 12:45:35  marc
+# added documentation
+#

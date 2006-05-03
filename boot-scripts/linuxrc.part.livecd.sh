@@ -1,5 +1,23 @@
 #!/bin/bash
 
+#****h* comoonics-bootimage/linuxrc.part.livecd.sh
+#  NAME
+#    linuxrc.part.livecd.sh
+#    $Id: linuxrc.part.livecd.sh,v 1.2 2006-05-03 12:45:49 marc Exp $
+#  DESCRIPTION
+#    The scripts called from linuxrc.generic.sh if bootpart livecd is used.
+#*******
+
+#****f* linuxrc.part.livecd.sh/main
+#  NAME
+#    main
+#  SYNOPSIS
+#    function main() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+
 echo_local "*************************"
 echo_local "Entering LiveCD"
 echo_local "*************************"
@@ -52,4 +70,10 @@ else
 	/rescue.sh
 exec /bin/bash
 fi
+#*************** main
 
+###############
+# $Log: linuxrc.part.livecd.sh,v $
+# Revision 1.2  2006-05-03 12:45:49  marc
+# added documentation
+#

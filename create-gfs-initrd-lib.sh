@@ -1,5 +1,12 @@
+#****h* comoonics-bootimage/create-gfs-initrd-lib.sh
+#  NAME
+#    create-gfs-initrd-lib.sh
+#    $id$
+#  DESCRIPTION
+#    Library for the creating of initrds for sharedroot
+#*******
 #
-# $Id: create-gfs-initrd-lib.sh,v 1.5 2006-02-03 12:39:27 marc Exp $
+# $Id: create-gfs-initrd-lib.sh,v 1.6 2006-05-03 12:46:45 marc Exp $
 #
 # @(#)$File$
 #
@@ -14,6 +21,15 @@
 # with ATIX.
 #
 
+#****f* create-gfs-initrd-lib.sh/create_dir
+#  NAME
+#    create_dir
+#  SYNOPSIS
+#    function create_dir() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function create_dir() {
   local dirname=$1
   if [ ! -e $dirname ]; then 
@@ -23,6 +39,16 @@ function create_dir() {
 }
 
 # copy the file like a dump one.
+#************ create_dir 
+#****f* create-gfs-initrd-lib.sh/copy_file
+#  NAME
+#    copy_file
+#  SYNOPSIS
+#    function copy_file() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function copy_file() {
   local filename=$1
   local dest=$2
@@ -36,6 +62,16 @@ function copy_file() {
 }
 
 # Compile perlfile with perlcc to binary
+#************ copy_file 
+#****f* create-gfs-initrd-lib.sh/perlcc_file
+#  NAME
+#    perlcc_file
+#  SYNOPSIS
+#    function perlcc_file() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function perlcc_file() {
   local filename=$1
   local destfile=$2
@@ -49,6 +85,16 @@ function perlcc_file() {
 # extract rpm
 # param: $1 rpm-name
 #        $2 dest
+#************ perlcc_file 
+#****f* create-gfs-initrd-lib.sh/extract_rpm
+#  NAME
+#    extract_rpm
+#  SYNOPSIS
+#    function extract_rpm() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function extract_rpm() {
 	 local rpm=$1
 	 local dest=$2
@@ -60,6 +106,16 @@ function extract_rpm() {
 # extract all rpm in file
 # param: $1: file
 #        $2: root
+#************ extract_rpm 
+#****f* create-gfs-initrd-lib.sh/extract_all_rpms
+#  NAME
+#    extract_all_rpms
+#  SYNOPSIS
+#    function extract_all_rpms() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function extract_all_rpms() {
 	 local rpms=`cat $1`
 	 local root=$2
@@ -73,6 +129,16 @@ function extract_all_rpms() {
 # 
 # checks if the file is executable.
 # If so it returns all dependent libraries with path as a stringlist.
+#************ extract_all_rpms 
+#****f* create-gfs-initrd-lib.sh/get_dependent_files
+#  NAME
+#    get_dependent_files
+#  SYNOPSIS
+#    function get_dependent_files() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function get_dependent_files() {
   local filename=$1
   # file is a symbolic link
@@ -107,6 +173,16 @@ function get_dependent_files() {
 #
 # Get all depfiles gets all depfiles from the given file
 # That means if there is a @include tag those files are also returned
+#************ get_dependent_files 
+#****f* create-gfs-initrd-lib.sh/get_all_depfiles
+#  NAME
+#    get_all_depfiles
+#  SYNOPSIS
+#    function get_all_depfiles {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function get_all_depfiles {
   local $basefile=$1;
   local $verbose=$2;
@@ -120,6 +196,16 @@ function get_all_depfiles {
 #
 # Takes a filename as argument and pipes all files listed in this file to 
 # get_dependent_files.
+#************ get_all_depfiles 
+#****f* create-gfs-initrd-lib.sh/get_all_files_dependent
+#  NAME
+#    get_all_files_dependent
+#  SYNOPSIS
+#    function get_all_files_dependent() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function get_all_files_dependent() {
   local filename=$1
   local verbose=$2
@@ -166,6 +252,16 @@ function get_all_files_dependent() {
 
 #
 # Creates a new memory filesystem initrd with the given size
+#************ get_all_files_dependent 
+#****f* create-gfs-initrd-lib.sh/make_initrd
+#  NAME
+#    make_initrd
+#  SYNOPSIS
+#    function make_initrd() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function make_initrd() {
   local filename=$1
   local size=$2
@@ -175,6 +271,16 @@ function make_initrd() {
 
 #
 # Mounts the given unpacked filesystem to the given directory
+#************ make_initrd 
+#****f* create-gfs-initrd-lib.sh/mount_initrd
+#  NAME
+#    mount_initrd
+#  SYNOPSIS
+#    function mount_initrd() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function mount_initrd() {
   local filename=$1
   local mountpoint=$2
@@ -183,6 +289,16 @@ function mount_initrd() {
 
 #
 # Unmounts the given loopback memory filesystem and zips it to the given file
+#************ mount_initrd 
+#****f* create-gfs-initrd-lib.sh/umount_and_zip_initrd
+#  NAME
+#    umount_and_zip_initrd
+#  SYNOPSIS
+#    function umount_and_zip_initrd() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function umount_and_zip_initrd() {
   local mountpoint=$1
   local filename=$2
@@ -197,6 +313,16 @@ function umount_and_zip_initrd() {
 
 #
 # Creates an imagefile with cpio and compresses it with zip
+#************ umount_and_zip_initrd 
+#****f* create-gfs-initrd-lib.sh/cpio_and_zip_initrd
+#  NAME
+#    cpio_and_zip_initrd
+#  SYNOPSIS
+#    function cpio_and_zip_initrd() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function cpio_and_zip_initrd() {
   local mountpoint=$1
   local filename=$2
@@ -205,3 +331,10 @@ function cpio_and_zip_initrd() {
   [ -n "$force" ] && [ $force -gt 0 ] && opts="-f"
   ((cd $mountpoint; find . | cpio --quiet -c -o) >| $filename && gzip $opts -9 $filename)|| (fuser -mv "$mountpoint" && exit 1)
 }
+#************ cpio_and_zip_initrd 
+
+######################
+# $Log: create-gfs-initrd-lib.sh,v $
+# Revision 1.6  2006-05-03 12:46:45  marc
+# added documentation
+#

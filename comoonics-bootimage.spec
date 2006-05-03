@@ -1,3 +1,13 @@
+#****h* comoonics-bootimage/comoonics-bootimage.spec
+#  NAME
+#    comoonics-bootimage.spec
+#    $id$
+#  DESCRIPTION
+#    RPM Configurationfile for the Comoonics bootimage
+#  AUTHOR
+#    Marc Grimme
+#
+#*******
 # @(#)$File:$
 #
 # Copyright (c) 2001 ATIX GmbH.
@@ -11,7 +21,7 @@
 # with ATIX.
 #/initrd_sr-2.6.9-34.ELsmp.img.gz
 # %define _initrddir /etc/init.d
-# $Id: comoonics-bootimage.spec,v 1.14 2006-04-13 18:52:09 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.15 2006-05-03 12:47:17 marc Exp $
 #
 ##
 # TO DO
@@ -193,7 +203,10 @@ fi
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.14  2006-04-13 18:52:09  marc
+# Revision 1.15  2006-05-03 12:47:17  marc
+# added documentation
+#
+# Revision 1.14  2006/04/13 18:52:09  marc
 # latest versino
 #
 # Revision 1.13  2006/04/13 18:46:31  marc

@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.28 2006-04-13 18:48:59 marc Exp $
+# $Id: boot-lib.sh,v 1.29 2006-05-03 12:49:16 marc Exp $
 #
 # @(#)$File$
 #
@@ -16,6 +16,12 @@
 # Kernelparameter for changing the bootprocess for the comoonics generic hardware detection alpha1
 #    com-stepmode=...      If set it asks for <return> after every step
 #    com-debug=...         If set debug info is output
+#****h* comoonics-bootimage/boot-lib.sh
+#  NAME
+#    boot-lib.sh
+#    $id$
+#  DESCRIPTION
+#*******
 
 LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/lib/i686:/usr/lib"
 PATH=/bin:/sbin:/usr/bin:/usr/sbin
@@ -34,6 +40,15 @@ modules_conf="/etc/modprobe.conf"
 init_cmd="/bin/bash"
 newroot="/"
 
+#****f* boot-lib.sh/exit_linuxrc
+#  NAME
+#    exit_linuxrc
+#  SYNOPSIS
+#    function exit_linuxrc() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function exit_linuxrc() {
     error_code=$1
     if [ -n "$2" ]; then 
@@ -59,6 +74,16 @@ function exit_linuxrc() {
     fi
 }
 
+#************ exit_linuxrc 
+#****f* boot-lib.sh/step
+#  NAME
+#    step
+#  SYNOPSIS
+#    function step() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function step() {
    if [ ! -z "$stepmode" ]; then
      echo_out -n "Press <RETURN> to continue ..."
@@ -71,6 +96,16 @@ function step() {
      sleep 1
    fi
 }
+#************ step 
+#****f* boot-lib.sh/getBootParm
+#  NAME
+#    getBootParm
+#  SYNOPSIS
+#    function getBootParm() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function getBootParm() {
    parm="$1"
    default="$2"
@@ -86,6 +121,16 @@ function getBootParm() {
    fi
 }
 
+#************ getBootParm 
+#****f* boot-lib.sh/getShortRelease
+#  NAME
+#    getShortRelease
+#  SYNOPSIS
+#    function getShortRelease() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function getShortRelease() {
   if [ -e /etc/redhat-release ]; then
     echo "redhat"
@@ -96,10 +141,30 @@ function getShortRelease() {
   fi
 }
 
+#************ getShortRelease 
+#****f* boot-lib.sh/getRelease
+#  NAME
+#    getRelease
+#  SYNOPSIS
+#    function getRelease() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function getRelease() {
    cat /etc/$(getShortRelease)-release
 }
 
+#************ getRelease 
+#****f* boot-lib.sh/my_ifup
+#  NAME
+#    my_ifup
+#  SYNOPSIS
+#    function my_ifup() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function my_ifup() {
    local dev=$1
    local ipconfig=$2
@@ -117,6 +182,16 @@ function my_ifup() {
    return $return_c
 }
 
+#************ my_ifup 
+#****f* boot-lib.sh/patch_hosts
+#  NAME
+#    patch_hosts
+#  SYNOPSIS
+#    function patch_hosts {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function patch_hosts {
    ip=$(ifconfig eth0 | grep "inet addr" | awk '{ match($2, ":(.+)$", ip); print ip[1]; }') || return 1
    hostname=$(hostname)
@@ -124,6 +199,16 @@ function patch_hosts {
    echo -e "$ip\t$hostname\t$hostname_f" >> /etc/hosts
 }
 
+#************ patch_hosts 
+#****f* boot-lib.sh/ip2Config
+#  NAME
+#    ip2Config
+#  SYNOPSIS
+#    function ip2Config() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function ip2Config() {
   if [ $# -eq 1 ]; then
     local ipAddr=$(getPosFromIPString 1, $1)
@@ -158,12 +243,32 @@ function ip2Config() {
   esac
 }
 
+#************ ip2Config 
+#****f* boot-lib.sh/getPosFromIPString
+#  NAME
+#    getPosFromIPString
+#  SYNOPSIS
+#    function getPosFromIPString() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function getPosFromIPString() {
   pos=$1
   str=$2
   echo $str | awk -v pos=$pos 'BEGIN { FS=":"; }{ print $pos; }'
 }
 
+#************ getPosFromIPString 
+#****f* boot-lib.sh/generateSuSEIfCfg
+#  NAME
+#    generateSuSEIfCfg
+#  SYNOPSIS
+#    function generateSuSEIfCfg() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function generateSuSEIfCfg() {
   local ipDevice=$1
   local ipAddr=$2
@@ -213,6 +318,16 @@ BEGIN {
   return 0
 }
 
+#************ generateSuSEIfCfg 
+#****f* boot-lib.sh/generateRedHatIfCfg
+#  NAME
+#    generateRedHatIfCfg
+#  SYNOPSIS
+#    function generateRedHatIfCfg() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function generateRedHatIfCfg() {
   local ipDevice=$1
   local ipAddr=$2
@@ -260,6 +375,16 @@ function generateRedHatIfCfg() {
    return 0
 }
 
+#************ generateRedHatIfCfg 
+#****f* boot-lib.sh/usage
+#  NAME
+#    usage
+#  SYNOPSIS
+#    function usage() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function usage() {
     echo "$0 [-R] [-s|S] [-d|D] [-h]"
     echo -e "\t-R: non recursive for nfs-mounts (experimental or obsolete)"
@@ -268,6 +393,16 @@ function usage() {
     echo -e "\t-h:   this usage."
 }
 
+#************ usage 
+#****f* boot-lib.sh/check_cmd_params
+#  NAME
+#    check_cmd_params
+#  SYNOPSIS
+#    function check_cmd_params() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function check_cmd_params() {
     while getopts "Rsd" Option
       do
@@ -295,6 +430,16 @@ function check_cmd_params() {
     return $OPTIND;
 }
 
+#************ check_cmd_params 
+#****f* boot-lib.sh/exec_nondefault_boot_source
+#  NAME
+#    exec_nondefault_boot_source
+#  SYNOPSIS
+#    function exec_nondefault_boot_source() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function exec_nondefault_boot_source() {
     local boot_source=$1
     local mount_dir=$2
@@ -308,6 +453,16 @@ function exec_nondefault_boot_source() {
     exec_local $mnt/$init
 }
 
+#************ exec_nondefault_boot_source 
+#****f* boot-lib.sh/initBootProcess
+#  NAME
+#    initBootProcess
+#  SYNOPSIS
+#    function initBootProcess() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function initBootProcess() {
     date=`/bin/date`
     
@@ -329,6 +484,16 @@ function initBootProcess() {
     return $?
 }
 
+#************ initBootProcess 
+#****f* boot-lib.sh/getNetParameters
+#  NAME
+#    getNetParameters
+#  SYNOPSIS
+#    function getNetParameters() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function getNetParameters() {
 
 	echo_local "*********************************"
@@ -337,6 +502,16 @@ function getNetParameters() {
 	ipConfig=`getBootParm ip dhcp`
 }
 
+#************ getNetParameters 
+#****f* boot-lib.sh/getBootParameters
+#  NAME
+#    getBootParameters
+#  SYNOPSIS
+#    function getBootParameters() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function getBootParameters() {
     echo_local "*********************************"
     echo_local "Scanning for optional parameters"
@@ -352,6 +527,16 @@ function getBootParameters() {
     chroot=$(getBootParm chroot)
 }
 
+#************ getBootParameters 
+#****f* boot-lib.sh/loadSCSI
+#  NAME
+#    loadSCSI
+#  SYNOPSIS
+#    function loadSCSI() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function loadSCSI() {
 	echo_local "3 Loading scsi-driver..."
 	
@@ -385,6 +570,16 @@ function loadSCSI() {
 } 
 
 # must be set before lock_gulmd is started.
+#************ loadSCSI 
+#****f* boot-lib.sh/setHWClock
+#  NAME
+#    setHWClock
+#  SYNOPSIS
+#    function setHWClock() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function setHWClock() {
     # copied from rc.sysinit dependent on /etc/sysconfig/clock should reside in depfile.
     ARC=0
@@ -424,6 +619,16 @@ function setHWClock() {
     exec_local /sbin/hwclock $CLOCKFLAGS
 }
 
+#************ setHWClock 
+#****f* boot-lib.sh/pivotRoot
+#  NAME
+#    pivotRoot
+#  SYNOPSIS
+#    function pivotRoot() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function pivotRoot() {
     echo_local_debug "**********************************************************************"
     echo_local -n "5.4 Pivot-Rooting... (pwd: "$(pwd)")"
@@ -456,6 +661,16 @@ function pivotRoot() {
     fi
 }
 
+#************ pivotRoot 
+#****f* boot-lib.sh/chRoot
+#  NAME
+#    chRoot
+#  SYNOPSIS
+#    function chRoot() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function chRoot() {
     echo_local_debug "**********************************************************************"
     echo_local -n "5.4 Change-Root... (pwd: "$(pwd)"=>/mnt/newroot)"
@@ -485,6 +700,16 @@ function chRoot() {
     fi
 }
 
+#************ chRoot 
+#****f* boot-lib.sh/switchRoot
+#  NAME
+#    switchRoot
+#  SYNOPSIS
+#    function switchRoot() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function switchRoot() {
     echo_local_debug "**********************************************************************"
     cd /mnt/newroot
@@ -545,6 +770,16 @@ function switchRoot() {
     fi
 }
 
+#************ switchRoot 
+#****f* boot-lib.sh/mountDev
+#  NAME
+#    mountDev
+#  SYNOPSIS
+#    function mountDev {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function mountDev {
 	mount -t proc proc /proc
 	mount -t sysfs none /sys
@@ -566,6 +801,16 @@ function mountDev {
 	/sbin/lvm.static vgmknodes
 }
 
+#************ mountDev 
+#****f* boot-lib.sh/createTemp
+#  NAME
+#    createTemp
+#  SYNOPSIS
+#    function createTemp {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function createTemp {
     local device=$1
     mkfs.ext2 -L tmp $device
@@ -573,6 +818,16 @@ function createTemp {
     chmod -R a+t,a+rwX ./tmp/. ./tmp/*
 }
 
+#************ createTemp 
+#****f* boot-lib.sh/stop_service
+#  NAME
+#    stop_service
+#  SYNOPSIS
+#    function stop_service {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function stop_service {
   local service_name=$1
   local other_root=$2
@@ -581,6 +836,16 @@ function stop_service {
   fi
 }
 
+#************ stop_service 
+#****f* boot-lib.sh/clean_initrd
+#  NAME
+#    clean_initrd
+#  SYNOPSIS
+#    function clean_initrd() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function clean_initrd() {
     echo_local_debug "**********************************************************************"
     echo_local "6.2 Cleaning up initrd ."
@@ -592,22 +857,72 @@ function clean_initrd() {
     exec_local /sbin/blockdev --flushbufs /dev/ram0
 }
 
+#************ clean_initrd 
+#****f* boot-lib.sh/ipaddress_from_name
+#  NAME
+#    ipaddress_from_name
+#  SYNOPSIS
+#    function ipaddress_from_name() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function ipaddress_from_name() {
    gfsip=`/bin/nslookup ${name} | /bin/grep -A1 Name: | /bin/grep Address: | /bin/sed -e "s/\\W*Address:\\W*//"`
 }
+#************ ipaddress_from_name 
+#****f* boot-lib.sh/ipaddress_from_dev
+#  NAME
+#    ipaddress_from_dev
+#  SYNOPSIS
+#    function ipaddress_from_dev() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function ipaddress_from_dev() {
    gfsip=`/sbin/ifconfig ${netdev} | /bin/grep "inet addr:" | /bin/sed -e "s/\\W*inet\\Waddr://" | /bin/sed -e "s/\\W*Bcast:.*$//"`
 }
+#************ ipaddress_from_dev 
+#****f* boot-lib.sh/echo_out
+#  NAME
+#    echo_out
+#  SYNOPSIS
+#    function echo_out() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function echo_out() {
     echo ${*:0:$#-1} "${*:$#}" >&3
 }
 
+#************ echo_out 
+#****f* boot-lib.sh/echo_local
+#  NAME
+#    echo_local
+#  SYNOPSIS
+#    function echo_local() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function echo_local() {
    echo ${*:0:$#-1} "${*:$#}"
    echo ${*:0:$#-1} "${*:$#}" >&3
 #   echo ${*:0:$#-1} "${*:$#}" >> $bootlog
 #   [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
 }
+#************ echo_local 
+#****f* boot-lib.sh/echo_local_debug
+#  NAME
+#    echo_local_debug
+#  SYNOPSIS
+#    function echo_local_debug() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function echo_local_debug() {
    if [ ! -z "$debug" ]; then
      echo ${*:0:$#-1} "${*:$#}"
@@ -616,15 +931,45 @@ function echo_local_debug() {
 #     [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
    fi
 }
+#************ echo_local_debug 
+#****f* boot-lib.sh/error_out
+#  NAME
+#    error_out
+#  SYNOPSIS
+#    function error_out() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function error_out() {
     echo ${*:0:$#-1} "${*:$#}" >&4
 }
+#************ error_out 
+#****f* boot-lib.sh/error_local
+#  NAME
+#    error_local
+#  SYNOPSIS
+#    function error_local() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function error_local() {
    echo ${*:0:$#-1} "${*:$#}" >&2
    echo ${*:0:$#-1} "${*:$#}" >&4
 #   echo ${*:0:$#-1} "${*:$#}" >> $bootlog
 #   [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
 }
+#************ error_local 
+#****f* boot-lib.sh/error_local_debug
+#  NAME
+#    error_local_debug
+#  SYNOPSIS
+#    function error_local_debug() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function error_local_debug() {
    if [ ! -z "$debug" ]; then
      echo ${*:0:$#-1} "${*:$#}" >&2
@@ -634,10 +979,30 @@ function error_local_debug() {
    fi
 }
 
+#************ error_local_debug 
+#****f* boot-lib.sh/getDistributionRelease
+#  NAME
+#    getDistributionRelease
+#  SYNOPSIS
+#    function getDistributionRelease {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function getDistributionRelease {
    cat /etc/*-release 2>/dev/null
 }
 
+#************ getDistributionRelease 
+#****f* boot-lib.sh/detectHardware
+#  NAME
+#    detectHardware
+#  SYNOPSIS
+#    function detectHardware() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function detectHardware() {
     echo_local_debug "*****************************"
     echo_local -n "1. Hardware autodetection"
@@ -664,6 +1029,16 @@ function detectHardware() {
     return $ret_c
 }
 
+#************ detectHardware 
+#****f* boot-lib.sh/detectHardwareSave
+#  NAME
+#    detectHardwareSave
+#  SYNOPSIS
+#    function detectHardwareSave() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function detectHardwareSave() {
     echo_local_debug "*****************************"
     echo_local -n "1. Hardware autodetection"
@@ -699,6 +1074,16 @@ function detectHardwareSave() {
     return $ret_c
 }
 
+#************ detectHardwareSave 
+#****f* boot-lib.sh/suse_hwconfig
+#  NAME
+#    suse_hwconfig
+#  SYNOPSIS
+#    function suse_hwconfig() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function suse_hwconfig() {
     local name=$1
     local hwinfo_type=$2
@@ -735,6 +1120,16 @@ END {
     done
 }
 
+#************ suse_hwconfig 
+#****f* boot-lib.sh/suse_hwscan
+#  NAME
+#    suse_hwscan
+#  SYNOPSIS
+#    function suse_hwscan() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function suse_hwscan() {
     echo_local "HWSCAN: Detecting scsi-controller: "
     exec_local suse_hwconfig "scsi-controller" "storage-ctrl" "scsi-hostadapter"
@@ -742,6 +1137,16 @@ function suse_hwscan() {
     exec_local suse_hwconfig "nic" "netcard" "eth"
 }
 
+#************ suse_hwscan 
+#****f* boot-lib.sh/exec_local
+#  NAME
+#    exec_local
+#  SYNOPSIS
+#    function exec_local() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function exec_local() {
   output=`$* 2>&1`
   return_c=$?
@@ -754,12 +1159,32 @@ function exec_local() {
   return_code $return_c
 }
 
+#************ exec_local 
+#****f* boot-lib.sh/exec_local_debug
+#  NAME
+#    exec_local_debug
+#  SYNOPSIS
+#    function exec_local_debug() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function exec_local_debug() {
   if [ ! -z "$debug" ]; then
     exec_local $*
   fi
 }
 
+#************ exec_local_debug 
+#****f* boot-lib.sh/return_code
+#  NAME
+#    return_code
+#  SYNOPSIS
+#    function return_code() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function return_code() {
   if [ -z "$1" ]; then
     return_c=$?
@@ -772,7 +1197,17 @@ function return_code() {
      echo_local "(FAILED)"
   fi
 }
+#************ return_code 
 
+#****f* boot-lib.sh/add_scsi_device
+#  NAME
+#    add_scsi_device
+#  SYNOPSIS
+#    function add_scsi_device() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 function add_scsi_device() {
   id=$1
   channel=$2
@@ -790,9 +1225,13 @@ function add_scsi_device() {
     return 0
   fi
 }
+#************ add_scsi_device 
 
 # $Log: boot-lib.sh,v $
-# Revision 1.28  2006-04-13 18:48:59  marc
+# Revision 1.29  2006-05-03 12:49:16  marc
+# added documentation
+#
+# Revision 1.28  2006/04/13 18:48:59  marc
 # checking an error on restart_cluster_services and not removing files from initrd
 #
 # Revision 1.27  2006/04/08 18:03:43  mark

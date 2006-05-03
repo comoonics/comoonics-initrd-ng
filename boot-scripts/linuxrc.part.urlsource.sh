@@ -1,5 +1,5 @@
 #
-# $Id: linuxrc.part.urlsource.sh,v 1.1 2004-07-31 11:24:43 marc Exp $
+# $Id: linuxrc.part.urlsource.sh,v 1.2 2006-05-03 12:45:44 marc Exp $
 #
 # @(#)$File$
 #
@@ -21,6 +21,24 @@
 # Dependencies are to be identified by the tag # %%include <filename>
 # When such a tag is encountered the filename is read from the urlsource 
 # without the scriptname.
+
+#****h* comoonics-bootimage/linuxrc.part.urlsource.sh
+#  NAME
+#    linuxrc.part.urlsource.sh
+#    $Id: linuxrc.part.urlsource.sh,v 1.2 2006-05-03 12:45:44 marc Exp $
+#  DESCRIPTION
+#    The scripts called from linuxrc.generic.sh if bootpart urlsource is used.
+#*******
+
+#****f* linuxrc.part.urlsource.sh/main
+#  NAME
+#    main
+#  SYNOPSIS
+#    function main() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 
 urlsource=$(getBootParm urlsource)
 
@@ -58,3 +76,10 @@ while [ $input = "yes" ]; do
     echo_local -n "Reread file? [yes/no]"
     read input
 done
+#*********** main
+
+################
+# $Log: linuxrc.part.urlsource.sh,v $
+# Revision 1.2  2006-05-03 12:45:44  marc
+# added documentation
+#

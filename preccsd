@@ -1,4 +1,10 @@
 #!/bin/bash
+#****h* comoonics-bootimage/preccsd
+#  NAME
+#    preccsd
+#    $id$
+#  DESCRIPTION
+#*******
 #
 # ccsd   start/stop ccsd
 #
@@ -17,6 +23,15 @@ INITRD_DIR=/initrd
 
 LOCK_FILE="/var/lock/subsys/ccsd"
 
+#****f* preccsd/start
+#  NAME
+#    start
+#  SYNOPSIS
+#    start()
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 start()
 {
   echo -n "Checking for ccsd from initrd:"
@@ -39,7 +54,17 @@ END { exit found; }
     fi
   fi
 }
+#************ start 
 
+#****f* preccsd/main
+#  NAME
+#    main
+#  SYNOPSIS
+#    main()
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 rtrn=1
 
 # See how we were called.
@@ -71,3 +96,10 @@ case "$1" in
 esac
 
 exit $rtrn
+#************ start 
+
+##################
+# $Log: preccsd,v $
+# Revision 1.2  2006-05-03 12:46:58  marc
+# added documentation
+#

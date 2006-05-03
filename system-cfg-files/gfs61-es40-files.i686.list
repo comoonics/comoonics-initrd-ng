@@ -1,4 +1,10 @@
-# $Id: gfs61-es40-files.i686.list,v 1.5 2006-04-11 13:42:06 marc Exp $
+#****h* system-cfg-files/gfs61-es40-files.i686.list
+#  NAME
+#    gfs61-es40-files.i686.list
+#    $id$
+#  DESCRIPTION
+#*******
+# $Id: gfs61-es40-files.i686.list,v 1.6 2006-05-03 12:47:48 marc Exp $
 bash
 nash
 nslookup
@@ -335,7 +341,10 @@ iscsi-umountall
 /lib/libcrypto.so.0.9.7a
 /lib/libcrypto.so.4
 # $Log: gfs61-es40-files.i686.list,v $
-# Revision 1.5  2006-04-11 13:42:06  marc
+# Revision 1.6  2006-05-03 12:47:48  marc
+# added documentation
+#
+# Revision 1.5  2006/04/11 13:42:06  marc
 # removed the mapping. Will be done by rpm.
 #
 # Revision 1.4  2006/04/09 16:32:27  marc

@@ -1,5 +1,5 @@
 #
-# $Id: linuxrc.part.gfs.sh,v 1.20 2006-04-08 18:04:32 mark Exp $
+# $Id: linuxrc.part.gfs.sh,v 1.21 2006-05-03 12:46:04 marc Exp $
 #
 # @(#)$File$
 #
@@ -27,7 +27,23 @@
 #
 # Includes
 # %%include /etc/gfs-lib.sh
+#****h* comoonics-bootimage/linuxrc.part.gfs.sh
+#  NAME
+#    linuxrc.part.gfs.sh
+#    $Id: linuxrc.part.gfs.sh,v 1.21 2006-05-03 12:46:04 marc Exp $
+#  DESCRIPTION
+#    The scripts called from linuxrc.generic.sh if bootpart is gfs.
+#*******
 
+#****f* linuxrc.part.gfs.sh/main
+#  NAME
+#    main
+#  SYNOPSIS
+#    function main() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
 source /etc/gfs-lib.sh
 
 getGFSParameters
@@ -382,9 +398,14 @@ else
     pivotRoot
   fi
 fi
+#********* main
 
+####################
 # $Log: linuxrc.part.gfs.sh,v $
-# Revision 1.20  2006-04-08 18:04:32  mark
+# Revision 1.21  2006-05-03 12:46:04  marc
+# added documentation
+#
+# Revision 1.20  2006/04/08 18:04:32  mark
 # added hostname support
 #
 # Revision 1.19  2006/01/25 14:48:41  marc
