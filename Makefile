@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.11 2006-05-03 12:46:51 marc Exp $
+# $Id: Makefile,v 1.12 2006-05-07 12:06:56 marc Exp $
 #
 # @(#)$file$
 #
@@ -40,7 +40,7 @@ PREFIX=/
 #  IDEAS
 #  SOURCE
 #
-VERSION=0.4
+VERSION=1.0
 
 #************ VERSION 
 #****d* Makefile/PACKAGE_NAME
@@ -91,11 +91,12 @@ INSTALL_DIR=/opt/atix/comoonics_bootimage
 EXEC_FILES=create-gfs-initrd-generic.sh \
   boot-scripts/linuxrc \
   boot-scripts/linuxrc.generic.sh \
+  boot-scripts/linuxrc.bash \
   boot-scripts/exec_part_from_bash.sh \
   boot-scripts/detectHardware.sh \
-  boot-scripts/rescue.sh \
-  boot-scripts/myifup.sh
+  boot-scripts/rescue.sh
 #************ EXEC_FILES 
+
 #****d* Makefile/LIB_FILES
 #  NAME
 #    LIB_FILES
@@ -106,7 +107,6 @@ EXEC_FILES=create-gfs-initrd-generic.sh \
 LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/inittab \
   boot-scripts/etc/atix.txt \
-  boot-scripts/etc/modules.conf \
   boot-scripts/etc/boot-lib.sh \
   boot-scripts/etc/gfs-lib.sh \
   boot-scripts/etc/comoonics-release \
@@ -127,14 +127,13 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/ccsd_cp_files.list \
   boot-scripts/etc/ccsd_dirs.list \
   boot-scripts/etc/sysconfig/comoonics \
-  boot-scripts/linuxrc.bash \
-  boot-scripts/linuxrc.part.bash.sh \
-  boot-scripts/linuxrc.part.gfs.sh \
-  boot-scripts/linuxrc.part.livecd.sh \
-  boot-scripts/linuxrc.part.urlsource.sh \
-  boot-scripts/linuxrc.part.iscsi.sh \
-  boot-scripts/linuxrc.part.install.sh
-
+  boot-scripts/etc/clusterfs-lib.sh \
+  boot-scripts/etc/hardware-lib.sh \
+  boot-scripts/etc/network-lib.sh \
+  boot-scripts/etc/rhel4/hardware-lib.sh \
+  boot-scripts/etc/rhel4/network-lib.sh \
+  boot-scripts/etc/sles8/hardware-lib.sh \
+  boot-scripts/etc/sles8/network-lib.sh
 #************ LIB_FILES 
 #****d* Makefile/SYSTEM_CFG_DIR
 #  NAME
@@ -294,7 +293,10 @@ archive:
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.11  2006-05-03 12:46:51  marc
+# Revision 1.12  2006-05-07 12:06:56  marc
+# version 1.0 stable
+#
+# Revision 1.11  2006/05/03 12:46:51  marc
 # added documentation
 #
 # Revision 1.10  2006/04/13 18:46:11  marc

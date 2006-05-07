@@ -21,7 +21,7 @@
 # with ATIX.
 #/initrd_sr-2.6.9-34.ELsmp.img.gz
 # %define _initrddir /etc/init.d
-# $Id: comoonics-bootimage.spec,v 1.15 2006-05-03 12:47:17 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.16 2006-05-07 12:06:56 marc Exp $
 #
 ##
 # TO DO
@@ -38,8 +38,8 @@
 
 Name: comoonics-bootimage
 Summary: Comoonics Bootimage. Scripts for creating an initrd in a gfs shared root environment
-Version: 0.4
-Release: 10
+Version: 1.0
+Release: 1
 Vendor: ATIX GmbH
 Packager: Marc Grimme (grimme@atix.de)
 ExclusiveArch: noarch
@@ -163,12 +163,10 @@ fi
 %attr(750, root, root) %{APPDIR}/boot-scripts/exec_part_from_bash.sh
 %attr(750, root, root) %{APPDIR}/boot-scripts/detectHardware.sh
 %attr(750, root, root) %{APPDIR}/boot-scripts/rescue.sh
-%attr(750, root, root) %{APPDIR}/boot-scripts/myifup.sh
 %attr(750, root, root) %{APPDIR}/boot-scripts/linuxrc
 %attr(750, root, root) %{APPDIR}/boot-scripts/linuxrc.bash
 %attr(640, root, root) %{APPDIR}/create-gfs-initrd-lib.sh 
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/atix.txt
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/modules.conf
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/boot-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/gfs-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/comoonics-release
@@ -190,12 +188,13 @@ fi
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/ccsd_dirs.list
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/sysconfig/comoonics
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/inittab
-%attr(640, root, root) %{APPDIR}/boot-scripts/linuxrc.part.bash.sh
-%attr(640, root, root) %{APPDIR}/boot-scripts/linuxrc.part.gfs.sh
-%attr(640, root, root) %{APPDIR}/boot-scripts/linuxrc.part.livecd.sh
-%attr(640, root, root) %{APPDIR}/boot-scripts/linuxrc.part.urlsource.sh
-%attr(640, root, root) %{APPDIR}/boot-scripts/linuxrc.part.iscsi.sh
-%attr(640, root, root) %{APPDIR}/boot-scripts/linuxrc.part.install.sh
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/clusterfs-lib.sh
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/hardware-lib.sh
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/network-lib.sh
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/rhel4/hardware-lib.sh
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/rhel4/network-lib.sh
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/sles8/hardware-lib.sh
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/sles8/network-lib.sh
 %config(noreplace) %{CONFIGDIR}/bootimage/gfs6-es30-files.i686.list
 %config(noreplace) %{CONFIGDIR}/bootimage/gfs61-es40-files.i686.list
 %config(noreplace) %{CONFIGDIR}/bootimage/gfs61-es40-files.x86_64.list
@@ -203,7 +202,10 @@ fi
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.15  2006-05-03 12:47:17  marc
+# Revision 1.16  2006-05-07 12:06:56  marc
+# version 1.0 stable
+#
+# Revision 1.15  2006/05/03 12:47:17  marc
 # added documentation
 #
 # Revision 1.14  2006/04/13 18:52:09  marc
