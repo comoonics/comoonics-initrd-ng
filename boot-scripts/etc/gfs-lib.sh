@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.22 2006-05-03 12:45:20 marc Exp $
+# $Id: gfs-lib.sh,v 1.23 2006-05-07 11:35:20 marc Exp $
 #
 # @(#)$File$
 #
@@ -31,688 +31,311 @@
 #  DESCRIPTION
 #*******
 
-#****f* gfs-lib.sh/getGFSParameters
-#  NAME
-#    getGFSParameters
-#  SYNOPSIS
-#    function getGFSParameters() {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function getGFSParameters() {
-	echo_local "*********************************"
-	echo_local "Scanning for GFS parameters"
-	echo_local "*********************************"
-	poolsource=`getBootParm poolsource scsi`
-	pool_name=`getBootParm pool`
-	pool_cca_name=`getBootParm poolcca`
-	pool_cidev_name=`getBootParm poolcidev`
-	gfs_lock_method=`getBootParm lockmethod`
-	gnbd_server=`getBootParm gnbdserver`
-	chroot=`getBootParm chroot`
-}
-
-#
-# returns the gfs-majorversion
-#************ getGFSParameters 
 #****f* gfs-lib.sh/getGFSMajorVersion
 #  NAME
 #    getGFSMajorVersion
 #  SYNOPSIS
-#    function getGFSMajorVersion() {
-#  MODIFICATION HISTORY
+#    function getGFSMajorVersion()
+#  DESCRIPTION
+#    returns the gfs-majorversion
 #  IDEAS
 #  SOURCE
 #
-function getGFSMajorVersion() {
+function getGFSMajorVersion {
     modinfo gfs | awk '$1 == "description:" {
   match($5, /v([[:digit:]]+)\./, version);
   print version[1];
 }'
 }
-
-#
-# returns the gfs-minorversion
 #************ getGFSMajorVersion 
+
 #****f* gfs-lib.sh/getGFSMinorVersion
 #  NAME
 #    getGFSMinorVersion
 #  SYNOPSIS
-#    function getGFSMinorVersion() {
-#  MODIFICATION HISTORY
+#    function getGFSMinorVersion()
+#  DESCRIPTION
+#    returns the gfs-minorversion
 #  IDEAS
 #  SOURCE
 #
-function getGFSMinorVersion() {
+function getGFSMinorVersion {
     modinfo gfs | awk '$1 == "description:" {
   match($5, /v[[:digit:]]+\.([[:digit:]]+)/, version);
   print version[1];
 }'
 }
+#********* getGFSMinorVersion
 
-
-# returns the first found cca
-# could be optimized a little bit with a given cca.
-#************ getGFSMinorVersion 
-#****f* gfs-lib.sh/gfs_autodetect_cca
+#****f* gfs-lib.sh/gfs_get_rootvolume
 #  NAME
-#    gfs_autodetect_cca
+#    gfs_get_rootvolume
 #  SYNOPSIS
-#    gfs_autodetect_cca() {
-#  MODIFICATION HISTORY
+#    gfs_get_rootvolume(cluster_conf, nodename)
+#  DESCRIPTION
+#    Gets the rootvolume for this node
 #  IDEAS
 #  SOURCE
 #
-gfs_autodetect_cca() {
-    ccadevs=( $( pool_tool -s | awk '/CCA device /{print $1}' | xargs -r ) )
-    [ -z "${ccadevs[0]}" ] && return 1
-    
-    echo ${ccadevs[0]}
-    return 0
-}
-
-
-#************ gfs_autodetect_cca 
-#****f* gfs-lib.sh/cca_get_clustername
-#  NAME
-#    cca_get_clustername
-#  SYNOPSIS
-#    cca_get_clustername() {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-cca_get_clustername() {
-    ccs_read string cluster.ccs cluster/name 2>/dev/null
-}
-
-#************ cca_get_clustername 
-#****f* gfs-lib.sh/cca_get_node_sharedroot
-#  NAME
-#    cca_get_node_sharedroot
-#  SYNOPSIS
-#    cca_get_node_sharedroot() {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-cca_get_node_sharedroot() {
-   local hostname=$1
-   [ -z "$hostname" ] && hostname=$(hostname)
-   ccs_read string nodes.ccs nodes/$hostname/com_sharedroot
-}
-
-#************ cca_get_node_sharedroot 
-#****f* gfs-lib.sh/xml_get_node_sharedroot
-#  NAME
-#    xml_get_node_sharedroot
-#  SYNOPSIS
-#    xml_get_node_sharedroot() {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-xml_get_node_sharedroot() {
-   local hostname=$1
-   [ -z "$hostname" ] && hostname=$(hostname)
-    local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query"    
+function gfs_get_rootvolume {
+   local xml_file=$1
+   local hostname=$2
+   [ -z "$hostname" ] && hostname=$(gfs_get_nodename $xml_file)
+    local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query -f $xml_file"    
    $xml_cmd -q rootvolume $hostname
 }
+#************ gfs_get_rootvolume
 
-#************ xml_get_node_sharedroot 
-#****f* gfs-lib.sh/xml_get_node_hostname
+#****f* gfs-lib.sh/gfs_get_node_hostname
 #  NAME
-#    xml_get_node_hostname
+#    gfs_get_node_hostname
 #  SYNOPSIS
-#    xml_get_node_hostname() {
-#  MODIFICATION HISTORY
+#    gfs_get_node_hostname(clusterconf, [nodename])
+#  DESCRIPTION
+#    returns the hostname for this node
+#    !!!THIS FUNCTION SHOULD NOT BE NEEDED ANY MORE!!!!
 #  IDEAS
 #  SOURCE
 #
-xml_get_node_hostname() {
-   local nodename=$1
-   [ -z "$nodename" ] && nodename=$(xml_get_my_hostname)
-   local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query"    
+function gfs_get_node_hostname {
+   local xml_file=$1
+   local nodename=$2
+   [ -z "$nodename" ] && nodename=$(gfs_get_nodename)
+   local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query -f $xml_file"    
    $xml_cmd -q hostname $nodename 2>/dev/null
    return $?
 }
+#************ gfs_get_node_hostname 
 
-
-
-#************ xml_get_node_hostname 
-#****f* gfs-lib.sh/cca_get_node_role
+#****f* gfs-lib.sh/gfs_get_nodename
 #  NAME
-#    cca_get_node_role
+#    gfs_get_nodename
 #  SYNOPSIS
-#    cca_get_node_role() {
-#  MODIFICATION HISTORY
+#    function gfs_get_nodename(cluster_conf, netdev)
+#  DESCRIPTION
+#    gets for this very host the nodename (identified by the macaddress)
 #  IDEAS
 #  SOURCE
 #
-cca_get_node_role() {
-   local hostname=$1
-   [ -z "$hostname" ] && hostname=$(hostname)
-   ccs_read string nodes.ccs nodes/$hostname/com_role
+function gfs_get_nodename {
+    local ccs_file=$1
+    local mac=$2
+
+    local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query"
+    $xml_cmd -f $ccs_file -q nodename $mac
 }
+#************ gfs_get_nodename
 
-# syntax: cca_get_host_param name [default] [host]
-#************ cca_get_node_role 
-#****f* gfs-lib.sh/cca_get_node_param
+#****f* gfs-lib.sh/gfs_get_nodeid
 #  NAME
-#    cca_get_node_param
+#    gfs_get_nodeid
 #  SYNOPSIS
-#    cca_get_node_param() {
-#  MODIFICATION HISTORY
+#    function gfs_get_nodeid(cluster_conf, mac)
+#  DESCRIPTION
+#    gets for this very host the nodeid (identified by the macaddress)
 #  IDEAS
 #  SOURCE
 #
-cca_get_node_param() {
-  local param=$1
-  local default=$2
-  local hostname=$3
-  [ -z "$hostname" ] && hostname=$(hostname)
-  value=$(ccs_read string nodes.ccs nodes/$hostname/$param 2>/dev/null)
-  if [ -z "$value" ]; then value=$default; fi
-  
-  echo $value
+function gfs_get_nodeid {
+    local ccs_file=$1
+    local mac=$2
+
+    local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query"
+    $xml_cmd -f $ccs_file -q nodeid $mac
 }
+#************ gfs_get_nodeid
 
-#************ cca_get_node_param 
-#****f* gfs-lib.sh/cca_get_syslog_server
+#****f* gfs-lib.sh/gfs_get_netdevs
 #  NAME
-#    cca_get_syslog_server
+#    gfs_get_netdevs
 #  SYNOPSIS
-#    cca_get_syslog_server() {
-#  MODIFICATION HISTORY
+#    function gfs_get_netdevs(cluster_conf, nodename)
+#  DESCRIPTION
+#    returns all configured networkdevices from the cluster.conf xml file 
+#    seperated by " "
 #  IDEAS
 #  SOURCE
 #
-cca_get_syslog_server() {
-  cca_get_node_param com_syslog_server "$2" $1
+function gfs_get_netdevs {
+#	if [ -n "$debug" ]; then set -x; fi
+  local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query"
+  local xmlfile=$1
+  local nodename=$2
+
+  local netdevs=$($xml_cmd -f $xmlfile -q netdevs $nodename " ");
+  echo $netdevs
+#	if [ -n "$debug" ]; then set +x; fi
+  return 0
 }
+#********* gfs_get_netdevs
 
-#************ cca_get_syslog_server 
-#****f* gfs-lib.sh/cca_get_lockservers
+#****f* gfs-lib.sh/gfs_auto_hosts
 #  NAME
-#    cca_get_lockservers
+#    gfs_auto_hosts
 #  SYNOPSIS
-#    cca_get_lockservers() {
-#  MODIFICATION HISTORY
+#    function gfs_auto_hosts(cluster_conf)
+#  DESCRIPTION
+#    Generates a hostsfile of all hosts in the cluster configuration
 #  IDEAS
 #  SOURCE
 #
-cca_get_lockservers() {
-   ccs_read string cluster.ccs cluster/lock_gulm
-}
-
-#************ cca_get_lockservers 
-#****f* gfs-lib.sh/cca_generate_hosts
-#  NAME
-#    cca_generate_hosts
-#  SYNOPSIS
-#    function cca_generate_hosts {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function cca_generate_hosts {
-    local ccs_read="/opt/atix/comoonics_cs/ccs_fileread"
-    local cca_dir=$1
-    local hosts_file=$2
-
-    local ccs_cmd="/opt/atix/comoonics_cs/ccs_fileread"
-
-    if [ ! -d $cca_dir ]; then 
-	ccs_cmd="/opt/atix/comoonics_cs/ccs_read"; 
-    else
-	ccs_dir=$1"/"
-    fi
-#    if [ -n "$debug" ]; then set -x; fi
-    cp -f $hosts_file $hosts_file.bak
-    (cat $hosts_file.bak && \
-	$ccs_cmd $opts strings ${cca_dir}nodes.ccs nodes/.*/ip_interfaces/eth[0-9] | awk -F= '
-/\s+/ { 
-   match($1, /[^\/]+\/([^\/]+)\//, hostname);
-   match($2, /"(.+)"/, ip); 
-   print ip[1], hostname[1]; 
-}') | sort -u >> $hosts_file
-    ret=$?
-    if [ $? -ne 0 ]; then cp $hosts_file.bak $hosts_file; fi
-#    if [ -n "$debug" ]; then set +x; fi
-    return $ret
-}
-
-#************ cca_generate_hosts 
-#****f* gfs-lib.sh/xml_generate_hosts
-#  NAME
-#    xml_generate_hosts
-#  SYNOPSIS
-#    function xml_generate_hosts {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function xml_generate_hosts {
+function gfs_auto_hosts {
     local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query"    
     local xmlfile=$1
-    local hostsfile=$2
 
 #    if [ -n "$debug" ]; then set -x; fi
     cp -f $hostsfile $hostsfile.bak
     (cat $hostsfile.bak && \
-	$xml_cmd -f $xmlfile -q hosts) >> $hostsfile
+	$xml_cmd -f $xmlfile -q hosts)
     ret=$?
-    if [ $? -ne 0 ]; then cp $hostsfile.bak $hostsfile; fi
 #    if [ -n "$debug" ]; then set +x; fi
     return $ret
 }
+#************ gfs_auto_hosts 
 
-# returns all configured networkdevices from the cca seperated by " "
-#************ xml_generate_hosts 
-#****f* gfs-lib.sh/cca_get_netdevices
+#****f* gfs-lib.sh/gfs_auto_netconfig
 #  NAME
-#    cca_get_netdevices
+#    gfs_auto_netconfig
 #  SYNOPSIS
-#    function cca_get_netdevices {
-#  MODIFICATION HISTORY
+#    function gfs_auto_netconfig(ipConfig, $netdev, cluster_conf)
+#  DESCRIPTION
 #  IDEAS
 #  SOURCE
 #
-function cca_get_netdevices {
-    local ccs_cmd="/opt/atix/comoonics_cs/ccs_fileread"
-    local cca_dir=$1
-
-    local hostname=$(cca_get_my_hostname $cca_dir)
-    local netdevs=$($ccs_cmd strings ${cca_dir}/nodes.ccs nodes/$hostname/ip_interfaces/eth[0-9]+ | awk -F= '{ 
-  match($1, /[^\/]+\/([^\/]+)$/, netdev)
-  print netdev[1]; 
-}') || return 1
-    if [ -n "$netdevs" ]; then
-	echo $netdevs
-    else
-	return 1
-    fi
-}
-
-# returns all configured networkdevices from the cluster.conf xml file seperated by " "
-#************ cca_get_netdevices 
-#****f* gfs-lib.sh/xml_get_netdevices
-#  NAME
-#    xml_get_netdevices
-#  SYNOPSIS
-#    function xml_get_netdevices {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function xml_get_netdevices {
-#	if [ -n "$debug" ]; then set -x; fi
-    local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query"
-    local xmlfile=$1
-
-    local nodename=$(xml_get_my_hostname $xmlfile)
-
-    local netdevs=$($xml_cmd -f $xmlfile -q netdevs $nodename " ");
-	echo $netdevs
-#	if [ -n "$debug" ]; then set +x; fi
-	return 1
-}
-
-#
-# gets for this very host the hostname (identified by the macaddress
-#************ xml_get_netdevices 
-#****f* gfs-lib.sh/cca_get_my_hostname
-#  NAME
-#    cca_get_my_hostname
-#  SYNOPSIS
-#    function cca_get_my_hostname {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function cca_get_my_hostname {
-    local netdev=$2
-    local cca_dir=$1
-    local ccs_read="/opt/atix/comoonics_cs/ccs_fileread"
-    if [ -z "$netdev" ]; then netdev="eth0"; fi
-    local mac=$(ifconfig $netdev | grep HWaddr | awk '{print $5;}')
-    local hostname=$(cat $cca_dir/nodes.ccs | awk -v mac=$mac '
-/com_hostname=".+"/ {
-   match($1, /com_hostname="(.+)"/, hn); hostname=hn[1]; print "Found hostname ",hostname;
-}
-/com_hostname[[:space:]]+=".+"/{
-   match($2, /="(.+)"/, hn); hostname=hn[1];
-}
-/com_hostname[[:space:]]+=[[:space:]]".+"/{
-   match($3, /"(.+)"/, hn); hostname=hn[1];
-}
-
-/eth0_mac=\".+\"/ {
-   match($1, /mac="(.+)"/, mc);
-   if (tolower(mac) == tolower(mc[1])) {
-     print hostname;
-   }
-}
-/eth0_mac[[:space:]]+=\".+\"/{
-   match($2, /="(.+)"/, mc);
-   if (tolower(mac) == tolower(mc[1])) {
-     print hostname;
-   }
-}
-/eth0_mac[[:space:]]+=[[:space:]]+\".+\"/{
-   match($3, /"(.+)"/, mc);
-   if (tolower(mac) == tolower(mc[1])) {
-     print hostname;
-   }
-}
-')
-    if [ -n "$hostname" ]; then 
-	echo $hostname
-	return 0
-    else
-	return 1
-    fi
-}
-
-#
-# gets for this very host the hostname (identified by the macaddress
-#************ cca_get_my_hostname 
-#****f* gfs-lib.sh/xml_get_my_hostname
-#  NAME
-#    xml_get_my_hostname
-#  SYNOPSIS
-#    function xml_get_my_hostname {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function xml_get_my_hostname {
-    local netdev=$2
-    local ccs_file=$1
-    local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query"
-    if [ -z "$netdev" ]; then netdev="eth0"; fi
-    local mac=$(ifconfig $netdev | grep HWaddr | awk '{print $5;}')
-    local nodename=$($xml_cmd -f $ccs_file -q nodename $mac)
-    if [ -n "$nodename" ]; then 
-		echo $nodename
-	return 0
-    else
-	return 1
-    fi
-}
-
-#************ xml_get_my_hostname 
-#****f* gfs-lib.sh/cca_autoconfigure_network
-#  NAME
-#    cca_autoconfigure_network
-#  SYNOPSIS
-#    function cca_autoconfigure_network {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function cca_autoconfigure_network {
+function gfs_auto_netconfig {
 #  if [ -n "$debug" ]; then set -x; fi
-  local ipconfig=$1
-  local netdev=$2
-  local cca_dir=$3
-  local ccs_read="/opt/atix/comoonics_cs/ccs_fileread"
-  if [ -z "$netdev" ]; then netdev="eth0"; fi
-  local hostname=$(cca_get_my_hostname $cca_dir $netdev)
-  local ip_addr=$($ccs_read string ${cca_dir}/nodes.ccs nodes/$hostname/eth0) || (set+x; return 1)
-  local gateway=$($ccs_read string ${cca_dir}/nodes.ccs nodes/$hostname/eth0_gateway) || local gateway=""
-  local netmask=$($ccs_read string ${cca_dir}/nodes.ccs nodes/$hostname/eth0_netmask) || (set +x; return 1)
-  echo ${ip_addr}"::"${gateway}":"${netmask}":"${hostname}
-  if [ -n "$debug" ]; then set +x; fi
-}
-
-#************ cca_autoconfigure_network 
-#****f* gfs-lib.sh/xml_autoconfigure_network
-#  NAME
-#    xml_autoconfigure_network
-#  SYNOPSIS
-#    function xml_autoconfigure_network {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function xml_autoconfigure_network {
-#  if [ -n "$debug" ]; then set -x; fi
-  local ipconfig=$1
-  local netdev=$2
-  local xml_file=$3
+  local xml_file=$1
+  local nodename=$2
+  local netdev=$3
   local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query"
   if [ -z "$netdev" ]; then netdev="eth0"; fi
-  local nodename=$(xml_get_my_hostname $xml_file $netdev)
-  local hostname=$(xml_get_node_hostname $nodename)
-  if [ -z "$hostname" ]; then
-	hostname=$nodename
-  fi
   local ip_addr=$($xml_cmd -f $xml_file -q ip $nodename $netdev)  
   local gateway=$($xml_cmd -f $xml_file -q gateway $nodename $netdev) || local gateway=""
   local netmask=$($xml_cmd -f $xml_file -q mask $nodename $netdev)
-  echo ${ip_addr}"::"${gateway}":"${netmask}":"${hostname}
+  echo ${ip_addr}"::"${gateway}":"${netmask}":"${hostname}:$netdev
 #  if [ -n "$debug" ]; then set +x; fi
 }
+#************ gfs_auto_netconfig
 
-#************ xml_autoconfigure_network 
-#****f* gfs-lib.sh/copy_relevant_files
+#****f* gfs-lib.sh/gfs_get_syslogserver
 #  NAME
-#    copy_relevant_files
+#    gfs_get_syslogserver
 #  SYNOPSIS
-#    function copy_relevant_files {
-#  MODIFICATION HISTORY
+#    function gfs_get_syslogserver(cluster_conf)
+#  DESCRIPTION
+#    This function starts the syslog-server to log the gfs-bootprocess
 #  IDEAS
 #  SOURCE
 #
-function copy_relevant_files {
-  local cdsl_local_dir=$1
-  # backup old files
-  olddir=$(pwd)
-#  if [ -n "$debug" ]; then set -x; fi
-  echo_local -en "\tBacking up created config files [$cdsl_local_dir]"
-  (if [ -f /mnt/newroot/etc/modules.conf ]; then
-     mv -f /mnt/newroot/etc/modules.conf /mnt/newroot/etc/modules.conf.com_back
-   fi &&
-   if [ -f /mnt/newroot/etc/sysconfig/hwconf ]; then
-     mv -f /mnt/newroot/etc/sysconfig/hwconf /mnt/newroot/etc/sysconfig/hwconf.com_back
-   fi && 
-   echo_local "(OK)" ) || (ret_c=$? && echo_local "(FAILED)")
-  echo_local -en "\tCreating config dirs if not exist.."
-  (if [ ! -d /mnt/newroot/${cdsl_local_dir}/etc ]; then 
-    mkdir -p /mnt/newroot/${cdsl_local_dir}/etc
-   fi &&
-   if [ ! -d /mnt/newroot/${cdsl_local_dir}/etc/sysconfig ]; then 
-     mkdir -p /mnt/newroot/${cdsl_local_dir}/etc/sysconfig
-   fi && echo_local "(OK)") || (ret_c=$? && echo_local "(FAILED)")
-  echo_local -en "\tCopying the configfiles ${cdsl_local_dir}.."
-  cd /mnt/newroot/${cdsl_local_dir}/etc
-  (cp -f $modules_conf /mnt/newroot/${cdsl_local_dir}/$modules_conf &&
-   ([ -n "$cdsl_local_dir" ] && 
-    cd /mnt/newroot && 
-    ln -sf ../${cdsl_local_dir}/etc/$modules_conf etc/$modules_conf)
-   cd sysconfig 
-   [ ! -f  /mnt/newroot/${cdsl_local_dir}/etc/sysconfig/hwconf ] && 
-   cp -f /etc/sysconfig/hwconf /mnt/newroot/${cdsl_local_dir}/etc/sysconfig/
-   ([ -n "$cdsl_local_dir" ] && 
-    [ ! -f ${cdsl_local_dir}/etc/sysconfig/hwconf ] && 
-    cd /mnt/newroot && 
-    ln -fs ${cdsl_local_dir}/etc/sysconfig/hwconf etc/sysconfig/hwconf)
-   [ ! -f /mnt/newroot/${cdsl_local_dir}/etc/sysconfig/network ] && 
-   cp -f /etc/sysconfig/network /mnt/newroot/${cdsl_local_dir}/etc/sysconfig/
-   ([ -n "$cdsl_local_dir" ] && 
-    [ ! -f /mnt/newroot/${cdsl_local_dir}/etc/sysconfig/network ] && 
-    cd /mnt/newroot/ && 
-    ln -fs ${cdsl_local_dir}/etc/sysconfig/network etc/sysconfig/network) &&
-   echo_local "(OK)") || (ret_c=$? && echo_local "(FAILED)")
-  ret_c=$?
-  cd $olddir
-#  if [ -n "$debug" ]; then set +x; fi
-  return $ret_c
-}
-
-# This function starts the lockgulmd in a chroot environment per default
-# If no_chroot is given as param the chroot is skipped
-#************ copy_relevant_files 
-#****f* gfs-lib.sh/gfs_start_service
-#  NAME
-#    gfs_start_service
-#  SYNOPSIS
-#    function gfs_start_service {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function gfs_start_service {
-#  if [ -n "$debug" ]; then set -x; fi
-  [ -d "$1" ] && chroot_dir=$1 && shift
-  service=$1
-  service_name=$(basename $service)
-  shift
-
-  service_dirs=$(cat /etc/${service_name}_dirs.list 2>/dev/null)
-  service_mv_files=$(cat /etc/${service_name}_mv_files.list 2>/dev/null)
-  service_cp_files=$(cat /etc/${service_name}_cp_files.list 2>/dev/null)
-#  echo_local_debug "Service($service_name)dirs: "$service_dirs
-#  echo_local_debug "Service($service_name)cp: "$service_cp_files
-#  echo_local_debug "Service($service_name)mv: "$service_mv_files
-
-  if [ -z "$service" ]; then
-    error_local "gfs_start_chroot_service: No service given"
-    return -1
-  fi
-  if [ -n "$1" ] && [ "$1" = "no_chroot" ]; then
-    shift
-    $($service $*)
-  else
-    [ -z "$chroot_dir" ] && chroot_dir="/var/lib/${service_name}"
-    echo_local -n "service=$service_name..build chroot ($chroot_dir).."
-    [ -d $chroot_dir ] || mkdir -p $chroot_dir
-    for dir in $service_dirs; do
-      [ -d $chroot_dir/$dir ] || mkdir -p $chroot_dir/$dir 2>/dev/null
-    done
-    echo_local -n ".(dir)."
-    for file in $service_cp_files; do
-      [ -d $(dirname $chroot_dir/$file) ] || mkdir -p $(dirname $chroot_dir/$file)
-      [ -e $chroot_dir/$file ] || cp -af $file $chroot_dir/$file 2>/dev/null
-    done
-    echo_local -n ".(cp)."
-    for file in $service_mv_files; do
-      [ -d $(dirname $chroot_dir/$file) ] || mkdir -p $(dirname $chroot_dir/$file)
-      [ -e $chroot_dir/$file ] || mv $file $chroot_dir/$file #2>/dev/null
-      [ -e $file ] || ln -sf $chroot_dir/$file $file #2>/dev/null
-    done
-    echo_local -n ".(mv)."
-#    for file in /usr/kerberos/lib/*; do
-#      [ -e /usr/lib/$(basename $file) ] || ln -sf $file /usr/lib/$(basename $file) 2>/dev/null
-#      [ -e ${chroot_dir}/usr/lib/$(basename $file) ] || ln -sf $file ${chroot_dir}/usr/lib/$(basename $file) 2>/dev/null
-#    done
-
-    echo_local -n "..$service.."
-    /usr/sbin/chroot $chroot_dir $service $* || 
-    ( echo_local -n "chroot not worked failing back.." && $service $*)
-  fi
-#  if [ -n "$debug" ]; then set +x; fi
-}
-
-#
-# This function starts the syslog-server to log the gfs-bootprocess
-#************ gfs_start_service 
-#****f* gfs-lib.sh/gfs_start_syslog_nochroot
-#  NAME
-#    gfs_start_syslog_nochroot
-#  SYNOPSIS
-#    function gfs_start_syslog_nochroot {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function gfs_start_syslog_nochroot {
-  local syslog_server=$(cca_get_syslog_server)
-  local chroot_dir="/var/lib/lock_gulmd"
-  echo_local_debug "Syslog server: $syslog_server, hostname: "$(/bin/hostname)
-  if [ -n "$syslog_server" ]; then
-    echo '*.* @'"$syslog_server" >> /etc/syslog.conf
-  else
-    echo "*.* -/var/log/comoonics_boot.syslog" >> /etc/syslog.conf
-  fi
-  
-  echo "syslog          514/udp" >> /etc/services
-  mkdir -p $chroot_dir 2> /dev/null
-  gfs_start_service /sbin/syslogd no_chroot -m 0
-}
-
-#
-# This function starts the syslog-server to log the gfs-bootprocess
-#************ gfs_start_syslog_nochroot 
-#****f* gfs-lib.sh/xml_start_syslog
-#  NAME
-#    xml_start_syslog
-#  SYNOPSIS
-#    function xml_start_syslog {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function xml_start_syslog {
+function gfs_get_syslogserver {
   local xml_file=$1
   local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query"
-  local hostname=$(xml_get_my_hostname $xml_file)
-  local syslog_server=$($xml_cmd -f $xml_file -q syslog $hostname)
-  echo_local_debug "Syslog server: $syslog_server, hostname: "$(/bin/hostname)
-  if [ -n "$syslog_server" ]; then
-    echo '*.* @'"$syslog_server" >> /etc/syslog.conf
-  else
-    echo "*.* -/var/log/comoonics_boot.syslog" >> /etc/syslog.conf
-  fi
-  
-  echo "syslog          514/udp" >> /etc/services
-  mkdir -p $chroot_dir 2> /dev/null
-  gfs_start_service /sbin/syslogd no_chroot -m 0
+  local nodename=$2
+  $xml_cmd -f $xml_file -q syslog $nodename
 }
+#************ gfs_get_syslogserver
 
-#
-# This function starts the syslog-server to log the gfs-bootprocess
-#************ xml_start_syslog 
-#****f* gfs-lib.sh/gfs_start_syslog_chroot
+#****f* gfs-lib.sh/gfs_load
 #  NAME
-#    gfs_start_syslog_chroot
+#    gfs_load
 #  SYNOPSIS
-#    function gfs_start_syslog_chroot {
-#  MODIFICATION HISTORY
+#    function gfs_load(lockmethod)
+#  DESCRIPTION
+#    This function loads all relevant gfs modules
 #  IDEAS
 #  SOURCE
 #
-function gfs_start_syslog_chroot {
-  local syslog_server=$(cca_get_syslog_server)
-  local chroot_dir="/var/lib/lock_gulmd"
-  echo_local_debug "Syslog server: $syslog_server, hostname: "$(/bin/hostname)
-  if [ -n "$syslog_server" ]; then
-    echo '*.* @'"$syslog_server" >> ${chroot_dir}/etc/syslog.conf
-  else
-    echo "*.* -/var/log/comoonics_boot.syslog" >> ${chroot_dir}/etc/syslog.conf
-  fi
-  
-  echo "syslog          514/udp" >> ${chroot_dir}/etc/services
-  mkdir -p $chroot_dir 2> /dev/null
-  gfs_start_service /var/lib/lock_gulmd /sbin/syslogd -m 0
-}
+function gfs_load {
+  local lock_method=$1
 
-#
-# Function starts the lock_gulmd in a changeroot environment
-#************ gfs_start_syslog_chroot 
-#****f* gfs-lib.sh/gfs_start_lock_gulmd
+  GFS_MODULES="gfs cman"
+
+  case $lock_method in
+    lock_dlm)
+      GFS_MODULES="${GFS_MODULES} lock_dlm"
+      ;;
+    lock_gulm)
+      GFS_MODULES="${GFS_MODULES} lock_gulm"
+      ;;
+    *)
+      GFS_MODULES="${GFS_MODULES} lock_dlm"
+      ;;
+  esac
+
+  echo_local -n "Loading GFS modules ($GFS_MODULES)..."
+  for module in ${GFS_MODULES}; do
+    exec_local /sbin/modprobe ${module}
+  done
+  return_code
+
+  echo_local_debug  "Loaded modules:"
+  exec_local_debug /sbin/lsmod
+  
+  return $return_c
+}
+#************ gfs_load
+
+#****f* gfs-lib.sh/gfs_services_start
 #  NAME
-#    gfs_start_lock_gulmd
+#    gfs_services_start
 #  SYNOPSIS
-#    function gfs_start_lock_gulmd {
-#  MODIFICATION HISTORY
+#    function gfs_services_start(lockmethod)
+#  DESCRIPTION
+#    This function loads all relevant gfs modules
 #  IDEAS
 #  SOURCE
 #
-function gfs_start_lock_gulmd {
-  exec_local gfs_start_service /sbin/lock_gulmd
+function gfs_services_start {
+  local lock_method=$1
+
+  services="ccsd $lock_method cman fenced"
+  for service in $services; do
+    gfs_start_$service
+    if [ $? -ne 0 ]; then
+      return $?
+    fi
+  done
+  return $return_c
+}
+#************ gfs_services_start
+
+#****f* gfs-lib.sh/gfs_services_restart
+#  NAME
+#    gfs_services_restart
+#  SYNOPSIS
+#    function gfs_services_restart(lockmethod)
+#  DESCRIPTION
+#    This function loads all relevant gfs modules
+#  IDEAS
+#  SOURCE
+#
+function gfs_services_restart {
+  local old_root=$1
+  local new_root=$2
+
+  services="ccsd fenced"
+  for service in $services; do
+    gfs_restart_$service $old_root $new_root
+    if [ $? -ne 0 ]; then
+      return $?
+    fi
+  done
+  return $return_c
+}
+#************ gfs_services_restart
+
+#****f* gfs-lib.sh/gfs_start_lock_gulm
+#  NAME
+#    gfs_start_lock_gulm
+#  SYNOPSIS
+#    function gfs_start_lock_gulm
+#  DESCRIPTION
+#    Function starts the lock_gulm in a changeroot environment
+#  IDEAS
+#  SOURCE
+#
+function gfs_start_lock_gulm {
+  exec_local start_service /sbin/lock_gulmd
   sts=1
   if [ $? -eq 0 ]; then
     echo_local -n "   check Lockgulmd.."
@@ -727,59 +350,67 @@ function gfs_start_lock_gulmd {
   fi
   if [ $sts -eq 0 ]; then return 0; else return 1; fi
 }
+#************ gfs_start_lock_gulmd
 
+#****f* gfs-lib.sh/gfs_start_lock_dlm
+#  NAME
+#    gfs_start_lock_dlm
+#  SYNOPSIS
+#    function gfs_start_lock_dlm
+#  DESCRIPTION
+#    Function starts the lock_dlm in a changeroot environment
+#  IDEAS
+#  SOURCE
 #
-# Function starts the lock_gulmd in a changeroot environment
-#************ gfs_start_lock_gulmd 
+function gfs_start_lock_dlm {
+  return 0
+}
+#************ gfs_start_lock_dlm
+
+#****f* gfs-lib.sh/gfs_start_cman
+#  NAME
+#    gfs_start_cman
+#  SYNOPSIS
+#    function gfs_start_cman
+#  DESCRIPTION
+#    Function starts the cman in a changeroot environment
+#  IDEAS
+#  SOURCE
+#
+function gfs_start_cman {
+  echo_local -n "Joining the cluster manager"
+  exec_local cman_tool join -w
+  return_code
+}
+#************ gfs_start_cman
+
 #****f* gfs-lib.sh/gfs_start_fenced
 #  NAME
 #    gfs_start_fenced
 #  SYNOPSIS
 #    function gfs_start_fenced {
-#  MODIFICATION HISTORY
+#  DESCRIPTION
+#    Function starts the fenced in a changeroot environment
 #  IDEAS
 #  SOURCE
 #
 function gfs_start_fenced {
   mkdir -p /var/lib/fence_tool
-  exec_local gfs_start_service /var/lib/fence_tool /sbin/fenced -c -w
+  start_service /var/lib/fence_tool /sbin/fenced -c -w
 }
-
-#
-# Function starts the ccsd in a changeroot environment
 #************ gfs_start_fenced 
+
 #****f* gfs-lib.sh/gfs_start_ccsd
 #  NAME
-#    gfs_start_ccsd
+#    gfs61_start_ccsd
 #  SYNOPSIS
 #    function gfs_start_ccsd {
-#  MODIFICATION HISTORY
+#  DESCRIPTION
+#    Function starts the ccsd in nochroot environment
 #  IDEAS
 #  SOURCE
 #
 function gfs_start_ccsd {
-  chroot_dir=/var/lib/lock_gulmd
-  mkdir -p $chroot_dir 2> /dev/null
-  mkdir -p ${chroot_dir}/dev
-  for dir in pool raw rawctl; do
-    mv /dev/$dir $chroot_dir/dev/$dir && ln -sf ${chroot_dir}/dev/$dir /dev/$dir
-  done
-  exec_local gfs_start_service $chroot_dir /sbin/ccsd -d $1
-}
-
-#
-# Function starts the ccsd in a changeroot environment
-#************ gfs_start_ccsd 
-#****f* gfs-lib.sh/gfs61_start_ccsd
-#  NAME
-#    gfs61_start_ccsd
-#  SYNOPSIS
-#    function gfs61_start_ccsd {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function gfs61_start_ccsd {
   #/sbin/chroot_dir=/var/lib/fence_tool
   #mkdir -p $chroot_dir 2> /dev/null
   #mkdir -p ${chroot_dir}/dev
@@ -787,30 +418,31 @@ function gfs61_start_ccsd {
   #  mv /dev/$dir $chroot_dir/dev/$dir && ln -sf ${chroot_dir}/dev/$dir /dev/$dir
   #done
   #exec_local gfs_start_service $chroot_dir /sbin/ccsd $1
-  /sbin/ccsd
+  start_service /sbin/ccsd "no_chroot"
 }
 
-#
-# Function restarts the ccsd and fenced for removing the deps on /initrd
-#************ gfs61_start_ccsd 
-#****f* gfs-lib.sh/gfs_restart_cluster_services
+#************ gfs_start_ccsd 
+
+#****f* gfs-lib.sh/gfs_restart_ccsd
 #  NAME
-#    gfs_restart_cluster_services
+#    gfs_restart_ccsd
 #  SYNOPSIS
-#    function gfs_restart_cluster_services {
-#  MODIFICATION HISTORY
+#    function gfs_restart_ccsd(old_root, new_root)
+#  DESCRIPTION
+#    Function restarts the ccsd for removing the deps on /initrd
 #  IDEAS
 #  SOURCE
 #
-function gfs_restart_cluster_services {
+function gfs_restart_ccsd {
    old_root=$1
    new_root=$2
  
 #   set -x
-   echo_local -n "5.5.1 restarting cluster services ($old_root=>$new_root)..."$(pwd)
-   (kill $(cat ${old_root}/var/run/cluster/ccsd.pid) &&
+   echo_local -n "Restarting ccsd ($old_root=>$new_root) "$(pwd)
+   [ -e ${old_root}/var/run/cluster/ccsd.pid ] &&
+   kill $(cat ${old_root}/var/run/cluster/ccsd.pid) &&
    rm ${old_root}/var/run/cluster/ccsd.pid &&
-   echo_local -n ".(kill)." &&
+   echo_local -n ".(kill)."
    if [ $? -ne 0 ]; then
       pids=$(ps ax | grep ccsd | awk '$5!="grep" { print $1; }')
       if [ -n "$pids" ]; then
@@ -820,47 +452,63 @@ function gfs_restart_cluster_services {
       if [ -n "$pids" ]; then
         kill -9 $pids
       fi
-    fi &&
-    chroot $new_root /sbin/ccsd &&
-    echo_local -n ".(start)." &&
-    echo_local "(OK)") || echo_local "(FAILED)"
-    step
-
-    echo_local -n "5.5.2 restarting fenced ($old_root=>$new_root)..."
-    [ ! -d ${new_root}/var/lib/fence_tool ] && mkdir -p ${new_root}/var/lib/fence_tool
-    mount -t tmpfs none ${new_root}/var/lib/fence_tool &&
-    echo_local -n ".(mount)." &&
-    cp -a ${old_root}/var/lib/fence_tool/* ${new_root}/var/lib/fence_tool &&
-    echo_local -n ".(cp)." &&
-    kill $(cat ${old_root}/var/lib/fence_tool/var/run/fenced.pid) &&
-    echo_local -n ".(kill)." &&
-    rm ${old_root}/var/lib/fence_tool/var/run/fenced.pid &&
-    if [ $? -ne 0 ]; then
-      pids=$(ps ax | grep fenced | awk '$5!="grep" { print $1; }')
-      if [ -n "$pids" ]; then
-        kill $pids
-      fi
-      pids=$(ps ax | grep fenced | awk '$5!="grep" { print $1; }')
-      if [ -n "$pids" ]; then
-        kill -9 $pids
-      fi
-    fi &&
-    chroot ${new_root}/var/lib/fence_tool /sbin/fenced
-    error_code=$?
-    if [ $error_code -eq 0 ]; then
-      echo_local "(OK)"
-    else
-      echo_local "(FAILED)"
     fi
+    chroot $new_root /sbin/ccsd &&
+    echo_local -n ".(start)."
+    return_code $?
     step
+}
+#******gfs_restart_ccsd
+
+#****f* gfs-lib.sh/gfs_restart_fenced
+#  NAME
+#    gfs_restart_fenced
+#  SYNOPSIS
+#    function gfs_restart_fenced(old_root, new_root)
+#  DESCRIPTION
+#    Function restarts the fenced for removing the deps on /initrd
+#  IDEAS
+#  SOURCE
+#
+function gfs_restart_fenced {
+   old_root=$1
+   new_root=$2
+ 
+   echo_local -n "Restarting fenced ($old_root=>$new_root) "
+   [ ! -d ${new_root}/cluster/shared/var/lib/fence_tool ] && mkdir -p ${new_root}/cluster/shared/var/lib/fence_tool
+   mount -t tmpfs none ${new_root}/cluster/shared/var/lib/fence_tool &&
+   echo_local -n ".(mount)." &&
+   cp -a ${old_root}/var/lib/fence_tool/* ${new_root}/cluster/shared/var/lib/fence_tool &&
+   echo_local -n ".(cp)." &&
+   kill $(cat ${old_root}/var/lib/fence_tool/var/run/fenced.pid) &&
+   echo_local -n ".(kill)." &&
+   rm ${old_root}/var/lib/fence_tool/var/run/fenced.pid
+   if [ $? -ne 0 ]; then
+     pids=$(ps ax | grep fenced | awk '$5!="grep" { print $1; }')
+     if [ -n "$pids" ]; then
+       kill $pids
+     fi
+     pids=$(ps ax | grep fenced | awk '$5!="grep" { print $1; }')
+     if [ -n "$pids" ]; then
+       kill -9 $pids
+     fi
+   fi &&
+   chroot ${new_root}/cluster/shared/var/lib/fence_tool /sbin/fenced
+   error_code=$?
+   return_code $error_code
+   step
 #   set +x
 
    return $error_code
 }
-#************ gfs_restart_cluster_services 
+#************ gfs_restart_fenced
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.22  2006-05-03 12:45:20  marc
+# Revision 1.23  2006-05-07 11:35:20  marc
+# major change to version 1.0.
+# Complete redesign.
+#
+# Revision 1.22  2006/05/03 12:45:20  marc
 # added documentation
 #
 # Revision 1.21  2006/04/13 18:49:51  marc

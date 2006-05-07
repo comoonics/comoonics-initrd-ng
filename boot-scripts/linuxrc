@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc,v 1.4 2006-05-03 12:46:30 marc Exp $
+# $Id: linuxrc,v 1.5 2006-05-07 11:35:05 marc Exp $
 #
 # @(#)$File$
 #
@@ -25,7 +25,7 @@
 #****h* comoonics-bootimage/linuxrc
 #  NAME
 #    linuxrc
-#    $Id: linuxrc,v 1.4 2006-05-03 12:46:30 marc Exp $
+#    $Id: linuxrc,v 1.5 2006-05-07 11:35:05 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -66,10 +66,11 @@ fi
 
 if [ -n "$logger" ]; then
   exec 3>/dev/console 4>/dev/console 
-  ./linuxrc.generic.sh 2>&1 | $logger | tee -a $bootlog
+  exec 5> $bootlog
+  ./linuxrc.generic.sh 2>&1 | $logger
 else
   exec 3>/dev/console 4>/dev/console 
-  ./linuxrc.generic.sh 2>&1 | tee -a $bootlog
+  ./linuxrc.generic.sh 2>&1 >> $bootlog
 fi
 
 error_code=0
@@ -99,6 +100,10 @@ fi
 
 ################
 # $Log: linuxrc,v $
-# Revision 1.4  2006-05-03 12:46:30  marc
+# Revision 1.5  2006-05-07 11:35:05  marc
+# major change to version 1.0.
+# Complete redesign.
+#
+# Revision 1.4  2006/05/03 12:46:30  marc
 # added documentation
 #

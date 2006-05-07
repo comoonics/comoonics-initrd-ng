@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.29 2006-05-03 12:49:16 marc Exp $
+# $Id: boot-lib.sh,v 1.30 2006-05-07 11:37:15 marc Exp $
 #
 # @(#)$File$
 #
@@ -39,343 +39,8 @@ modules_conf="/etc/modprobe.conf"
 # Default init cmd is bash
 init_cmd="/bin/bash"
 newroot="/"
+mount_point="/mnt/newroot"
 
-#****f* boot-lib.sh/exit_linuxrc
-#  NAME
-#    exit_linuxrc
-#  SYNOPSIS
-#    function exit_linuxrc() {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function exit_linuxrc() {
-    error_code=$1
-    if [ -n "$2" ]; then 
-      init_cmd=$2
-    fi
-    if [ -n "$3" ]; then 
-      newroot=$3
-    fi
-    echo_local_debug "exit_linuxrc($error_code)"
-    if [ -z "$error_code" ]; then 
-	error_code=0
-    fi
-    echo $error_code > $error_code_file
-    if [ -n "$error_code" ] && [ $error_code -eq 2 ]; then
-        echo_local "Userquit falling back to bash.."
-	exec 5>&1 6>&2 1>/dev/console 2>/dev/console
-        /bin/bash
-	exec 1>&5 2>&6
-    else
-	echo_local "Writing $init_cmd $newroot => $init_cmd_file"
-	echo "$init_cmd $newroot" > $init_cmd_file
-	exit $error_code
-    fi
-}
-
-#************ exit_linuxrc 
-#****f* boot-lib.sh/step
-#  NAME
-#    step
-#  SYNOPSIS
-#    function step() {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function step() {
-   if [ ! -z "$stepmode" ]; then
-     echo_out -n "Press <RETURN> to continue ..."
-     read -t$step_timeout __the_step
-     [ "$__the_step" = "quit" ] && exit_linuxrc 2
-     if [ "$__the_step" = "continue" ]; then
-       stepmode=
-     fi
-   else
-     sleep 1
-   fi
-}
-#************ step 
-#****f* boot-lib.sh/getBootParm
-#  NAME
-#    getBootParm
-#  SYNOPSIS
-#    function getBootParm() {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function getBootParm() {
-   parm="$1"
-   default="$2"
-   cmdline=`cat /proc/cmdline`
-   out=`expr "$cmdline" : ".*$parm=\([^ ]*\)" 2>/dev/null`
-   if [ $(expr "$cmdline" : ".*$parm" 2>/dev/null) -gt 0 ] && [ -z "$out" ]; then out=1; fi
-   if [ -z "$out" ]; then out="$default"; fi
-   echo "$out"
-   if [ -z "$out" ]; then
-       return 1
-   else
-       return 0
-   fi
-}
-
-#************ getBootParm 
-#****f* boot-lib.sh/getShortRelease
-#  NAME
-#    getShortRelease
-#  SYNOPSIS
-#    function getShortRelease() {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function getShortRelease() {
-  if [ -e /etc/redhat-release ]; then
-    echo "redhat"
-  elif [ -e /etc/SuSE-release ]; then
-    echo "SuSE"
-  else
-    echo "Unknown"
-  fi
-}
-
-#************ getShortRelease 
-#****f* boot-lib.sh/getRelease
-#  NAME
-#    getRelease
-#  SYNOPSIS
-#    function getRelease() {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function getRelease() {
-   cat /etc/$(getShortRelease)-release
-}
-
-#************ getRelease 
-#****f* boot-lib.sh/my_ifup
-#  NAME
-#    my_ifup
-#  SYNOPSIS
-#    function my_ifup() {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function my_ifup() {
-   local dev=$1
-   local ipconfig=$2
-   echo_local "   Loading module for $dev..."
-   exec_local modprobe $dev && sleep 2 && ifconfig $dev up 
-   if [ $return_c -eq 0 ] && [ -n "$ipconfig" ] && [ "$ipconfig" != "skip" ]; then
-       sleep 2
-       echo_local "   Recreating network configuration for $dev"
-       exec_local ip2Config $(getPosFromIPString 1, $ipconfig)::$(getPosFromIPString 3, $ipconfig):$(getPosFromIPString 4, $ipconfig):$(hostname):$dev
-       echo_local "   Starting network configuration for $dev with config $ipconfig"
-       exec_local ifup $dev
-       echo_local -n "   Patching /etc/hosts..."
-       exec_local patch_hosts
-   fi
-   return $return_c
-}
-
-#************ my_ifup 
-#****f* boot-lib.sh/patch_hosts
-#  NAME
-#    patch_hosts
-#  SYNOPSIS
-#    function patch_hosts {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function patch_hosts {
-   ip=$(ifconfig eth0 | grep "inet addr" | awk '{ match($2, ":(.+)$", ip); print ip[1]; }') || return 1
-   hostname=$(hostname)
-   hostname_f=$(hostname -f)
-   echo -e "$ip\t$hostname\t$hostname_f" >> /etc/hosts
-}
-
-#************ patch_hosts 
-#****f* boot-lib.sh/ip2Config
-#  NAME
-#    ip2Config
-#  SYNOPSIS
-#    function ip2Config() {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function ip2Config() {
-  if [ $# -eq 1 ]; then
-    local ipAddr=$(getPosFromIPString 1, $1)
-    local ipGate=$(getPosFromIPString 3, $1)
-    local ipNetmask=$(getPosFromIPString 4, $1)
-    local ipHostname=$(getPosFromIPString 5, $1)
-    local ipDevice=$(getPosFromIPString 6, $1)
-  else
-    local ipAddr=$1
-    local ipGate=$2
-    local ipNetmask=$3
-    local ipHostname=$4
-    local ipDevice=$5
-  fi
-
-  echo_local_debug "ip2Config($ipAddr, $ipGate, $ipNetmask, $ipHostname, $ipDevice)"
-  case `getShortRelease` in
-      "redhat")
-	  echo_local -n "Generating ifcfg for redhat ($ipAddr, $ipGate, $ipNetmask, $ipHostname, $ipDevice)..."
-	  (generateRedHatIfCfg "$ipDevice" "$ipAddr" "$ipGate" "$ipNetmask" "$ipHostname" &&
-	   echo_local "(OK)") || echo_local "(FAILED)"
-	  ;;
-      "SuSE")
-	  echo_local -n "Generating ifcfg for "`getShortRelease`" ($ipAddr, $ipGate, $ipNetmask, $ipHostname, $ipDevice)..."
-	  (generateSuSEIfCfg "$ipDevice" "$ipAddr" "$ipGate" "$ipNetmask" "$ipHostname" &&
-	  echo_local "(OK)") || echo_local "(FAILED)"
-	  ;;
-      *)
-	  echo "ERROR: Generic network-config not supported for distribution: "$(getRelease)
-	  return -1
-	  ;;
-  esac
-}
-
-#************ ip2Config 
-#****f* boot-lib.sh/getPosFromIPString
-#  NAME
-#    getPosFromIPString
-#  SYNOPSIS
-#    function getPosFromIPString() {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function getPosFromIPString() {
-  pos=$1
-  str=$2
-  echo $str | awk -v pos=$pos 'BEGIN { FS=":"; }{ print $pos; }'
-}
-
-#************ getPosFromIPString 
-#****f* boot-lib.sh/generateSuSEIfCfg
-#  NAME
-#    generateSuSEIfCfg
-#  SYNOPSIS
-#    function generateSuSEIfCfg() {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function generateSuSEIfCfg() {
-  local ipDevice=$1
-  local ipAddr=$2
-  local ipGate=$3
-  local ipNetmask=$4
-  local ipHostname=$5
-
-  awkfile="/etc/sysconfig/network/ifcfg.template.awk"
-  # just for testing
-  local __prefix="/tmp"
-
-  if [ -z "$ipHostname" ]; then hostname="localhost.localdomain"; fi
-  if [ -z "$ipDevice" ]; then ipDevice="eth0"; fi
-
-  if [ "$ipAddr" = "dhcp" -o "$ipAddr" = "DHCP" -o -z "$ipAddr" ]; then 
-    bootproto="dhcp"
-  else 
-    bootproto="static"
-  fi
-
-  if [ "$ipAddr" != "dhcp" ]; then 
-      hostname=$(expr match "$ipAddr" '\([^.]*\).')
-      domainname=$(expr match "$ipAddr" '[^.]*.\(.*\)$')
-  
-      /bin/hostname $hostname
-      /bin/domainname $domainname
-      echo $hostname > /etc/HOSTNAME
-      echo $domainname > /etc/defdomain
-  fi
-
-  awk -F'=' bootproto="$bootproto" ipaddr="$ipAddr" netmask="$ipNetmask" startmode="onboot" '
-BEGIN {
-  for (i=1; i < ARGC; i++) {
-    split(ARGV[i], value_pair, "=");
-    printf("%s=%s\n", toupper(value_pair[1]), value_pair[2]);
-  }
-}
-'> /etc/sysconfig/network/ifcfg-$ipDevice
-  if [ "$ipAddr" != "dhcp" ]; then 
-      echo "default $ipGate - -" >> /etc/sysconfig/network/routes
-      echo_local_debug "2.1.2 /etc/sysconfig/network-scripts/routes"
-      exec_local_debug cat /etc/sysconfig/network/routes
-  fi
-
-  echo_local_debug "2.1.1 /etc/sysconfig/network/ifcfg-$ipDevice"
-  exec_local_debug cat /etc/sysconfig/network/ifcfg-$ipDevice
-  return 0
-}
-
-#************ generateSuSEIfCfg 
-#****f* boot-lib.sh/generateRedHatIfCfg
-#  NAME
-#    generateRedHatIfCfg
-#  SYNOPSIS
-#    function generateRedHatIfCfg() {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function generateRedHatIfCfg() {
-  local ipDevice=$1
-  local ipAddr=$2
-  local ipGate=$3
-  local ipNetmask=$4
-  local ipHostname=$5
-
-  # just for testing
-  #local $pref="/tmp"
-
-  if [ -z "$ipHostname" ]; then ipHostname="localhost.localdomain"; fi
-  if [ -z "$ipDevice" ]; then ipDevice="eth0"; fi
-
-  # first save
-  if [ -e ${__prefix}/etc/sysconfig/network ]; then
-    mv ${__prefix}/etc/sysconfig/network ${__prefix}/etc/sysconfig/network.com_back
-  fi
-  if [ -e ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice ]; then
-    mv ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice ${__prefix}/etc/sysconfig/network-scripts/ifcfg-${ipDevice}.com_back
-  fi
-  if [ "$ipAddr" = "dhcp" -o "$ipAddr" = "DHCP" -o -z "$ipAddr" ]; then 
-    bootproto="dhcp"
-  else 
-    bootproto="static"
-  fi
-  (echo "DEVICE=$ipDevice" && 
-   echo "BOOTPROTO=$bootproto" && 
-   echo "ONBOOT=no") > ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
-  if [ "$bootproto" != "dhcp" ]; then
-     (echo "IPADDR=$ipAddr" && 
-	 if [ -n "$ipNetmask" ]; then echo "NETMASK=$ipNetmask"; fi) >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
-     if [ -n "$ipGate" ]; then 
-	 echo "GATEWAY=$ipGate" >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
-     fi
-   fi
-   (echo "NETWORKING=yes" &&
-    echo "HOSTNAME=$ipHostname") > ${__prefix}/etc/sysconfig/network
-   if [ $(/bin/hostname) = "(none)" ] || [ $(/bin/hostname) = "localhost.localdomain" ] || [ $(/bin/hostname) = "localhost" ]; then 
-       /bin/hostname $ipHostname; 
-   fi
-   echo_local_debug "   /etc/sysconfig/network"
-   exec_local_debug cat /etc/sysconfig/network
-   echo_local_debug "   /etc/sysconfig/network-scripts/ifcfg-${ipDevice}"
-   exec_local_debug cat /etc/sysconfig/network-scripts/ifcfg-${ipDevice}
-   return 0
-}
-
-#************ generateRedHatIfCfg 
 #****f* boot-lib.sh/usage
 #  NAME
 #    usage
@@ -392,8 +57,8 @@ function usage() {
     echo -e "\t-d|D: set debugmode (d) or unset stepmode (D)"
     echo -e "\t-h:   this usage."
 }
-
 #************ usage 
+
 #****f* boot-lib.sh/check_cmd_params
 #  NAME
 #    check_cmd_params
@@ -429,8 +94,95 @@ function check_cmd_params() {
     done
     return $OPTIND;
 }
-
 #************ check_cmd_params 
+
+#****f* boot-lib.sh/exit_linuxrc
+#  NAME
+#    exit_linuxrc
+#  SYNOPSIS
+#    function exit_linuxrc() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function exit_linuxrc() {
+    error_code=$1
+    if [ -n "$2" ]; then 
+      init_cmd=$2
+    fi
+    if [ -n "$3" ]; then 
+      newroot=$3
+    fi
+    echo_local_debug "exit_linuxrc($error_code)"
+    if [ -z "$error_code" ]; then 
+	error_code=0
+    fi
+    echo $error_code > $error_code_file
+    if [ -n "$error_code" ] && [ $error_code -eq 2 ]; then
+        echo_local "Userquit falling back to bash.."
+	exec 5>&1 6>&2 1>/dev/console 2>/dev/console
+        /bin/bash
+	exec 1>&5 2>&6
+    else
+	echo_local "Writing $init_cmd $newroot => $init_cmd_file"
+	echo "$init_cmd $newroot" > $init_cmd_file
+	exit $error_code
+    fi
+}
+#************ exit_linuxrc 
+
+#****f* boot-lib.sh/step
+#  NAME
+#    step
+#  SYNOPSIS
+#    function step() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function step() {
+   if [ ! -z "$stepmode" ]; then
+     echo_out -n "Press <RETURN> to continue ..."
+     read -t$step_timeout __the_step
+     [ "$__the_step" = "quit" ] && exit_linuxrc 2
+     if [ "$__the_step" = "continue" ]; then
+       stepmode=
+     fi
+     if [ -z "$__the_step" ]; then
+       echo_out
+     fi
+   else
+     return 0
+   fi
+}
+#************ step 
+
+#****f* boot-lib.sh/getBootParm
+#  NAME
+#    getBootParm
+#  SYNOPSIS
+#    function getBootParm(param, [default])
+#  DESCRIPTION
+#    Gets the given parameter from the bootloader command line. If not
+#    found default or the empty string is returned.
+#  SOURCE
+#
+function getBootParm() {
+   parm="$1"
+   default="$2"
+   cmdline=`cat /proc/cmdline`
+   out=`expr "$cmdline" : ".*$parm=\([^ ]*\)" 2>/dev/null`
+   if [ $(expr "$cmdline" : ".*$parm" 2>/dev/null) -gt 0 ] && [ -z "$out" ]; then out=1; fi
+   if [ -z "$out" ]; then out="$default"; fi
+   echo "$out"
+   if [ -z "$out" ]; then
+       return 1
+   else
+       return 0
+   fi
+}
+#************ getBootParm 
+
 #****f* boot-lib.sh/exec_nondefault_boot_source
 #  NAME
 #    exec_nondefault_boot_source
@@ -452,8 +204,54 @@ function exec_nondefault_boot_source() {
     echo_local "Executing \"$mnt/$init\"..."
     exec_local $mnt/$init
 }
-
 #************ exec_nondefault_boot_source 
+
+#****f* boot-lib.sh/getDistribution
+#  NAME
+#    getDistribution
+#  SYNOPSIS
+#    funtion getDistribution
+#  DESCRIPTION
+#    returns the name of the Linux Distribution right now only redhat
+#    works. Else an undefined value is returned.
+#  SOURCE
+function getDistribution {
+#   if [ -e /etc/redhat-release ]; then
+#     cat /etc/redhat-release | grep -i "Red Hat Enterprise Linux ES release 4" > /dev/null 2>&1
+#     if [ $? -eq 0 ]; then
+       echo "rhel4"
+#     fi
+#   else
+#     return 2
+#   fi
+}
+#**** getDistribution
+
+#****f* boot-lib.sh/getBootParameters
+#  NAME
+#    getBootParameters
+#  SYNOPSIS
+#    function getBootParameters() {
+#  DESCRIPTION
+#    sets all clusterfs relevant parameters given by the bootloader 
+#    via /proc/cmdline as global variables.
+#    The following global variables are set
+#      * debug: debug mode (bootparm com-debug unset)
+#      * stepmode: step mode (bootparm com-step unset)
+#      * mountopts: mountopts (bootparm mountopts defaults)
+#      * tmpfix: mount tmp as ramfs (bootparm tmpfix unset)
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function getBootParameters() {
+    getBootParm com-debug
+    getBootParm com-step
+    getBootParm mountopt defaults
+    getBootParm tmpfix
+}
+#************ getBootParameters 
+
 #****f* boot-lib.sh/initBootProcess
 #  NAME
 #    initBootProcess
@@ -464,313 +262,187 @@ function exec_nondefault_boot_source() {
 #  SOURCE
 #
 function initBootProcess() {
-    date=`/bin/date`
-    
-    echo_local "***********************************"
-    echo_local "Starting GFS Shared Root for $HOSTNAME"
-    echo_local "Date: $date"
-    echo_local "***********************************"
-    
-    echo_local_debug "*****************************"
-    echo_local -n "0.1 Mounting Proc-FS"
-    exec_local /bin/mount -t proc proc /proc
-    echo_local_debug "*****************************"
-    echo_local_debug "0.2 /proc/cmdline"
-    exec_local_debug cat /proc/cmdline
-    
-    # getting all bootparams
-    debug=`getBootParm com-debug`
-    stepmode=`getBootParm com-step`
-    return $?
-}
 
+  # copied from redhat /etc/init.d/functions
+  TEXTDOMAIN=initscripts
+
+  # Make sure umask is sane
+  umask 022
+
+  # Get a sane screen width
+  [ -z "${COLUMNS:-}" ] && COLUMNS=80
+
+  [ -z "${CONSOLETYPE:-}" ] && CONSOLETYPE="`/sbin/consoletype`"
+
+  if [ -f /etc/sysconfig/i18n -a -z "${NOLOCALE:-}" ] ; then
+    . /etc/sysconfig/i18n
+    if [ "$CONSOLETYPE" != "pty" ]; then
+      case "${LANG:-}" in
+        ja_JP*|ko_KR*|zh_CN*|zh_TW*|bn_*|bd_*|pa_*|hi_*|ta_*|gu_*)
+          export LC_MESSAGES=en_US
+          export LANG
+        ;;
+      *)
+        export LANG
+        ;;
+      esac
+    else
+      [ -n "$LC_MESSAGES" ] && export LC_MESSAGES
+      export LANG
+    fi
+  fi
+
+  # Read in our configuration
+  if [ -z "${BOOTUP:-}" ]; then
+#    if [ -f /etc/sysconfig/init ]; then
+#      . /etc/sysconfig/init
+#    else
+#      # This all seem confusing? Look in /etc/sysconfig/init,
+#      # or in /usr/doc/initscripts-*/sysconfig.txt
+#      BOOTUP=color
+#      RES_COL=60
+#      MOVE_TO_COL="echo -en \\033[${RES_COL}G"
+#      SETCOLOR_SUCCESS="echo -en \\033[1;32m"
+#      SETCOLOR_FAILURE="echo -en \\033[1;31m"
+#      SETCOLOR_WARNING="echo -en \\033[1;33m"
+#      SETCOLOR_NORMAL="echo -en \\033[0;39m"
+#      LOGLEVEL=1
+#    fi
+#    if [ "$CONSOLETYPE" = "serial" ]; then
+      BOOTUP=serial
+      MOVE_TO_COL=
+      SETCOLOR_SUCCESS=
+      SETCOLOR_FAILURE=
+      SETCOLOR_WARNING=
+      SETCOLOR_NORMAL=
+#    fi
+  fi
+
+  if [ "${BOOTUP:-}" != "verbose" ]; then
+    INITLOG_ARGS="-q"
+  else
+    INITLOG_ARGS=
+  fi
+  date=`/bin/date`
+    
+  echo_local "***********************************"
+  echo_local "Starting GFS Shared Root for $HOSTNAME"
+  echo_local "Date: $date"
+  echo_local "***********************************"
+    
+  echo_local_debug "*****************************"
+  echo_local -n "Mounting Proc-FS"
+  exec_local /bin/mount -t proc proc /proc
+  return_code
+
+  echo_local -n "Mounting Sys-FS"
+  exec_local /bin/mount -t sysfs none /sys
+  return_code
+
+  echo_local_debug "/proc/cmdline"
+  exec_local_debug cat /proc/cmdline
+
+  if [ ! -e /mnt/newroot ]; then
+    mkdir -p /mnt/newroot
+  fi
+  return $?
+}
 #************ initBootProcess 
-#****f* boot-lib.sh/getNetParameters
+
+#****f* boot-lib.sh/start_service
 #  NAME
-#    getNetParameters
+#    start_service
 #  SYNOPSIS
-#    function getNetParameters() {
-#  MODIFICATION HISTORY
+#    function start_service(service, chroot)
+#  DESCRIPTION
+#    This function starts the given service in a chroot environment per default
+#    If no_chroot is given as param the chroot is skipped
 #  IDEAS
 #  SOURCE
 #
-function getNetParameters() {
+function start_service {
+#  if [ -n "$debug" ]; then set -x; fi
+  [ -d "$1" ] && chroot_dir=$1 && shift
+  service=$1
+  service_name=$(basename $service)
+  shift
 
-	echo_local "*********************************"
-	echo_local "Scanning for Network parameters"
-	echo_local "*********************************"
-	ipConfig=`getBootParm ip dhcp`
+  service_dirs=$(cat /etc/${service_name}_dirs.list 2>/dev/null)
+  service_mv_files=$(cat /etc/${service_name}_mv_files.list 2>/dev/null)
+  service_cp_files=$(cat /etc/${service_name}_cp_files.list 2>/dev/null)
+#  echo_local_debug "Service($service_name)dirs: "$service_dirs
+#  echo_local_debug "Service($service_name)cp: "$service_cp_files
+#  echo_local_debug "Service($service_name)mv: "$service_mv_files
+
+  if [ -z "$service" ]; then
+    error_local "start_service: No service given"
+    return -1
+  fi
+  echo_local -n "Starting service $service_name"
+  if [ -n "$1" ] && [ "$1" = "no_chroot" ]; then
+    shift
+    $($service $*)
+  else
+    [ -z "$chroot_dir" ] && chroot_dir="/var/lib/${service_name}"
+    echo_local -n "service=$service_name..build chroot ($chroot_dir).."
+    [ -d $chroot_dir ] || mkdir -p $chroot_dir
+    for dir in $service_dirs; do
+      [ -d $chroot_dir/$dir ] || mkdir -p $chroot_dir/$dir 2>/dev/null
+    done
+    echo_local -n ".(dir)."
+    for file in $service_cp_files; do
+      [ -d $(dirname $chroot_dir/$file) ] || mkdir -p $(dirname $chroot_dir/$file)
+      [ -e $chroot_dir/$file ] || cp -af $file $chroot_dir/$file 2>/dev/null
+    done
+    echo_local -n ".(cp)."
+    for file in $service_mv_files; do
+      [ -d $(dirname $chroot_dir/$file) ] || mkdir -p $(dirname $chroot_dir/$file)
+      [ -e $chroot_dir/$file ] || mv $file $chroot_dir/$file #2>/dev/null
+      [ -e $file ] || ln -sf $chroot_dir/$file $file #2>/dev/null
+    done
+    echo_local -n ".(mv)."
+#    for file in /usr/kerberos/lib/*; do
+#      [ -e /usr/lib/$(basename $file) ] || ln -sf $file /usr/lib/$(basename $file) 2>/dev/null
+#      [ -e ${chroot_dir}/usr/lib/$(basename $file) ] || ln -sf $file ${chroot_dir}/usr/lib/$(basename $file) 2>/dev/null
+#    done
+
+    echo_local -n "..$service.."
+    /usr/sbin/chroot $chroot_dir $service $* || 
+    ( echo_local -n "chroot not worked failing back.." && $service $*)
+    return_code $?
+  fi
+#  if [ -n "$debug" ]; then set +x; fi
 }
+#************ start_service 
 
-#************ getNetParameters 
-#****f* boot-lib.sh/getBootParameters
-#  NAME
-#    getBootParameters
-#  SYNOPSIS
-#    function getBootParameters() {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function getBootParameters() {
-    echo_local "*********************************"
-    echo_local "Scanning for optional parameters"
-    echo_local "*********************************"
-    echo_local_debug "** /proc/cmdline: "
-    exec_local_debug cat /proc/cmdline
-    mount_opts=`getBootParm mountopt defaults`
-    boot_source=`getBootParm bootsrc default`
-    bootpart=`getBootParm bootpart bash`
-    tmpfix=$(getBootParm tmpfix)
-    iscsi=$(getBootParm iscsi)
-    netdevs=$(getBootParm netdevs | tr ":" " ")
-    chroot=$(getBootParm chroot)
-}
-
-#************ getBootParameters 
-#****f* boot-lib.sh/loadSCSI
-#  NAME
-#    loadSCSI
-#  SYNOPSIS
-#    function loadSCSI() {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function loadSCSI() {
-	echo_local "3 Loading scsi-driver..."
-	
-	echo_local -n "3.1 Loading scsi_disk Module..."
-	exec_local /sbin/modprobe sd_mod
-	
-	if [ -n "${FC_MODULES}" ]; then
-		echo_local -n "3.2 Loading $FC_MODULES"
-		exec_local /sbin/modprobe ${FC_MODULES}
-	else
-		echo_local -n "3.2 Loading all detected SCSI modules"
-		for hostadapter in $(cat ${modules_conf} | awk '/scsi_hostadapter.*/ {print $3}'); do
-			exec_local /sbin/modprobe ${hostadapter}
-		done
-	fi
-	step
-	
-	echo_local "3.2 Importing unconfigured scsi-devices..."
-	devs=$(find /proc/scsi -name "[0-9]*" 2> /dev/null)
-#  ids=$(find /proc/scsi -name "[0-9]*" -printf "%f\n" 2>/dev/null)
-	channels=0
-	for dev in $devs; do 
-	    for channel in $channels; do
-		id=$(basename $dev)
-		echo_local -n "3.2.$dev On id $id and channel $channel"
-		add_scsi_device $id $channel $dev
-	    done
-	done
-	echo_local_debug "3.3 Configured SCSI-Devices:"
-	exec_local_debug /bin/cat /proc/scsi/scsi
-} 
-
-# must be set before lock_gulmd is started.
-#************ loadSCSI 
-#****f* boot-lib.sh/setHWClock
-#  NAME
-#    setHWClock
-#  SYNOPSIS
-#    function setHWClock() {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function setHWClock() {
-    # copied from rc.sysinit dependent on /etc/sysconfig/clock should reside in depfile.
-    ARC=0
-    SRM=0
-    UTC=0
-
-    if [ -f /etc/sysconfig/clock ]; then
-	. /etc/sysconfig/clock
-	
-        # convert old style clock config to new values
-	if [ "${CLOCKMODE}" = "GMT" ]; then
-	    UTC=true
-	elif [ "${CLOCKMODE}" = "ARC" ]; then
-	    ARC=true
-	fi
-    fi
-
-    CLOCKDEF=""
-    CLOCKFLAGS="$CLOCKFLAGS --hctosys"
-
-    case "$UTC" in
-	yes|true)   CLOCKFLAGS="$CLOCKFLAGS --utc"
-	    CLOCKDEF="$CLOCKDEF (utc)" ;;
-	no|false)   CLOCKFLAGS="$CLOCKFLAGS --localtime"
-	    CLOCKDEF="$CLOCKDEF (localtime)" ;;
-    esac
-    case "$ARC" in
-	yes|true)   CLOCKFLAGS="$CLOCKFLAGS --arc"
-	    CLOCKDEF="$CLOCKDEF (arc)" ;;
-    esac
-    case "$SRM" in
-	yes|true)   CLOCKFLAGS="$CLOCKFLAGS --srm"
-	    CLOCKDEF="$CLOCKDEF (srm)" ;;
-    esac
-    
-    echo_local "Setting clock $CLOCKDEF: "$(date)
-    exec_local /sbin/hwclock $CLOCKFLAGS
-}
-
-#************ setHWClock 
-#****f* boot-lib.sh/pivotRoot
-#  NAME
-#    pivotRoot
-#  SYNOPSIS
-#    function pivotRoot() {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function pivotRoot() {
-    echo_local_debug "**********************************************************************"
-    echo_local -n "5.4 Pivot-Rooting... (pwd: "$(pwd)")"
-    cd /mnt/newroot
-    [ ! -d initrd ] && mkdir -p initrd
-    /sbin/pivot_root . initrd
-    bootlog="/var/log/comoonics-boot.log"
-    if [ $? -eq 0 ]; then echo_local "(OK)"; else echo_local "(FAILED)"; fi
-    step
-
-    if [ $critical -eq 0 ]; then
-	if [ -n "$tmpfix" ]; then 
-	    echo_local "6. Setting up tmp..."
-	    exec_local createTemp /dev/ram1
-	fi
-
-	echo_local "7. Cleaning up..."
-	exec_local umount initrd/proc
-	mtab=$(cat /etc/mtab 2>&1)
-	echo_local_debug "7.1 mtab: $mtab"
-
-	echo_local "7.2 Stopping syslogd..."
-        exec_local stop_service "syslogd" /initrd
-
-	init_cmd="/sbin/init"
-	echo_local "8. Starting init-process ($init_cmd)..."
-	exit_linuxrc 0 $init_cmd
-    else
-	exit_linuxrc 1
-    fi
-}
-
-#************ pivotRoot 
-#****f* boot-lib.sh/chRoot
-#  NAME
-#    chRoot
-#  SYNOPSIS
-#    function chRoot() {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function chRoot() {
-    echo_local_debug "**********************************************************************"
-    echo_local -n "5.4 Change-Root... (pwd: "$(pwd)"=>/mnt/newroot)"
-    cd /mnt/newroot
-#    [ ! -d initrd ] && mkdir -p initrd
-#    /sbin/pivot_root . initrd
-#    bootlog="/var/log/comoonics-boot.log"
-    if [ $? -eq 0 ]; then echo_local "(OK)"; else echo_local "(FAILED)"; fi
-    step
-
-    if [ $critical -eq 0 ]; then
-	if [ -n "$tmpfix" ]; then 
-	    echo_local "6. Setting up tmp..."
-	    exec_local createTemp /dev/ram1
-	fi
-	echo_local "7. Cleaning up..."
-	exec_local umount /proc
-	mtab=$(cat /etc/mtab 2>&1)
-	echo_local_debug "7.1 mtab: $mtab"
-#	echo_local "7.2 Stopping syslogd..."
-#        exec_local stop_service "syslogd" /initrd
-	init_cmd="chroot . /sbin/init"
-	echo_local "8. Starting init-process ($init_cmd)..."
-	exit_linuxrc 0 "$init_cmd"
-    else
-	exit_linuxrc 1
-    fi
-}
-
-#************ chRoot 
 #****f* boot-lib.sh/switchRoot
 #  NAME
 #    switchRoot
 #  SYNOPSIS
-#    function switchRoot() {
+#    function switchRoot(newroot, initrdroot) {
 #  MODIFICATION HISTORY
 #  IDEAS
 #  SOURCE
 #
 function switchRoot() {
-    echo_local_debug "**********************************************************************"
-    cd /mnt/newroot
-#    pivot_root=
-    gfs_restart_cluster_services / /mnt/newroot
-    restart_error=$?
-    cd /mnt/newroot
-    pivot_root=initrd
-    echo_local -n "5.4 Pivot-Rooting... (pwd: "$(pwd)")"
-    [ ! -d $pivot_root ] && mkdir -p $pivot_root
-#    mount --rbind / /mnt/newroot/$pivot_root
-    /sbin/pivot_root . $pivot_root
-    if [ $? -eq 0 ]; then
-      echo_local "(OK)"
-    else
-      critical=$?
-      echo_local "(FAILED)"
-    fi
-    step
-#      mount --move . /
-    init_cmd="/sbin/init"
-    newroot="/mnt/newroot"
-    bootlog="/var/log/comoonics-boot.log"
-    step
+  local new_root=$1
+  if [ -z "$new_root" ]; then
+     new_root="/mnt/newroot"
+  fi
 
-    #mountDev
-    if [ $critical -eq 0 ]; then
-	if [ -n "$tmpfix" ]; then 
-	    echo_local "6. Setting up tmp..."
-	    exec_local createTemp /dev/ram1
-	fi
+  echo_local_debug "**********************************************************************"
+  cd ${new_root}
 
-	echo_local "7. Cleaning up..."
-	exec_local umount ${pivot_root}/proc
-	exec_local umount ${pivot_root}/sys
-	
-#	mtab=$(cat /etc/mtab 2>&1)
-#	echo_local_debug "7.1 mtab: $mtab"
-
-	echo_local "7.2 Stopping syslogd..."
-	exec_local stop_service "syslogd" ${pivot_root}
-	exec_local killall syslogd
-
-	
-	echo_local "7.3 Removing files in initrd"
-	if [ $restart_error -eq 0 ]; then
-	   exec_local rm -rf ${pivot_root}/*
-        else
-           echo_local "(SKIPPED, failed restart clustersvc)"
-        fi
-	step
-	newroot="/"
-
-	echo_local "8. Starting init-process ($init_cmd)..."
-	exit_linuxrc 0 "$init_cmd" "$newroot"
-    else
-	exit_linuxrc 1
-    fi
+  pivot_root=initrd
+  echo_local -n "Pivot-Rooting... (pwd: "$(pwd)")"
+  [ ! -d $pivot_root ] && mkdir -p $pivot_root
+  exec_local /sbin/pivot_root . $pivot_root
+  return_code
+  critical=$?
+  return $critical
 }
-
 #************ switchRoot 
+
 #****f* boot-lib.sh/mountDev
 #  NAME
 #    mountDev
@@ -800,8 +472,8 @@ function mountDev {
 	echo_local "Making device nodes"
 	/sbin/lvm.static vgmknodes
 }
-
 #************ mountDev 
+
 #****f* boot-lib.sh/createTemp
 #  NAME
 #    createTemp
@@ -910,6 +582,7 @@ function echo_out() {
 function echo_local() {
    echo ${*:0:$#-1} "${*:$#}"
    echo ${*:0:$#-1} "${*:$#}" >&3
+   echo ${*:0:$#-1} "${*:$#}" >&5
 #   echo ${*:0:$#-1} "${*:$#}" >> $bootlog
 #   [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
 }
@@ -927,6 +600,7 @@ function echo_local_debug() {
    if [ ! -z "$debug" ]; then
      echo ${*:0:$#-1} "${*:$#}"
      echo ${*:0:$#-1} "${*:$#}" >&3
+     echo ${*:0:$#-1} "${*:$#}" >&5
 #     echo ${*:0:$#-1} "${*:$#}" >> $bootlog
 #     [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
    fi
@@ -943,6 +617,7 @@ function echo_local_debug() {
 #
 function error_out() {
     echo ${*:0:$#-1} "${*:$#}" >&4
+    echo ${*:0:$#-1} "${*:$#}" >&5
 }
 #************ error_out 
 #****f* boot-lib.sh/error_local
@@ -957,6 +632,7 @@ function error_out() {
 function error_local() {
    echo ${*:0:$#-1} "${*:$#}" >&2
    echo ${*:0:$#-1} "${*:$#}" >&4
+   echo ${*:0:$#-1} "${*:$#}" >&5
 #   echo ${*:0:$#-1} "${*:$#}" >> $bootlog
 #   [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
 }
@@ -974,181 +650,27 @@ function error_local_debug() {
    if [ ! -z "$debug" ]; then
      echo ${*:0:$#-1} "${*:$#}" >&2
      echo ${*:0:$#-1} "${*:$#}" >&4
+     echo ${*:0:$#-1} "${*:$#}" >&5
 #     echo ${*:0:$#-1} "${*:$#}" >> $bootlog
 #     [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
    fi
 }
 
 #************ error_local_debug 
-#****f* boot-lib.sh/getDistributionRelease
-#  NAME
-#    getDistributionRelease
-#  SYNOPSIS
-#    function getDistributionRelease {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function getDistributionRelease {
-   cat /etc/*-release 2>/dev/null
-}
 
-#************ getDistributionRelease 
-#****f* boot-lib.sh/detectHardware
-#  NAME
-#    detectHardware
-#  SYNOPSIS
-#    function detectHardware() {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function detectHardware() {
-    echo_local_debug "*****************************"
-    echo_local -n "1. Hardware autodetection"
-    case `getRelease` in
-	"Red Hat"*)
-	    exec_local /usr/sbin/kudzu -t 30 -s -q
-	    ;;
-	"SuSE"*)
-	    suse_hwscan
-	    ;;
-	*)
-	    echo_local "No release set. Old bootimage version."
-	    echo_local "Please update to latest Bootimage..."
-	    echo_local "Using red hat kudzu..."
-	    exec_local /usr/sbin/kudzu -t 30 -s -q
-	    ;;
-    esac
-    ret_c=$?
-    echo_local -n "1.1 Module-depency"
-    exec_local /sbin/depmod -a
-    echo_local_debug "File /etc/modules.conf: ***"
-    exec_local_debug cat /etc/modules.conf
-    step
-    return $ret_c
-}
-
-#************ detectHardware 
-#****f* boot-lib.sh/detectHardwareSave
-#  NAME
-#    detectHardwareSave
-#  SYNOPSIS
-#    function detectHardwareSave() {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function detectHardwareSave() {
-    echo_local_debug "*****************************"
-    echo_local -n "1. Hardware autodetection"
-    case `getRelease` in
-	"Red Hat"*)
-	    exec_local /usr/sbin/kudzu -t 30 -c SCSI -q 
-		mv /etc/modprobe.conf /etc/modprobe.conf.scsi
-	    #exec_local /usr/sbin/kudzu -t 30 -c RAID -q 
-	    #	mv /etc/modprobe.conf /etc/modprobe.conf.raid
-	    exec_local /usr/sbin/kudzu -t 30 -c USB -q 
-		mv /etc/modprobe.conf /etc/modprobe.conf.usb
-	    exec_local /usr/sbin/kudzu -t 30 -c NETWORK -q
-		cat /etc/modprobe.conf.scsi >> /etc/modprobe.conf
-	    #	cat /etc/modprobe.conf.raid >> /etc/modprobe.conf
-		cat /etc/modprobe.conf.usb >> /etc/modprobe.conf
-	    ;;
-	"SuSE"*)
-	    suse_hwscan
-	    ;;
-	*)
-	    echo_local "No release set. Old bootimage version."
-	    echo_local "Please update to latest Bootimage..."
-	    echo_local "Using red hat kudzu..."
-	    exec_local /usr/sbin/kudzu -t 30 -s -q
-	    ;;
-    esac
-    ret_c=$?
-    echo_local -n "1.1 Module-depency"
-    exec_local /sbin/depmod -a
-    echo_local_debug "File /etc/modules.conf: ***"
-    exec_local_debug cat /etc/modules.conf
-    step
-    return $ret_c
-}
-
-#************ detectHardwareSave 
-#****f* boot-lib.sh/suse_hwconfig
-#  NAME
-#    suse_hwconfig
-#  SYNOPSIS
-#    function suse_hwconfig() {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function suse_hwconfig() {
-    local name=$1
-    local hwinfo_type=$2
-    local alias=$3
-    local hwinfo=$(hwinfo --$hwinfo_type | grep "Driver Info #0" -A2)
-    local index=0
-    while [ -n "$hwinfo" ]; do
-	lines=$(echo "$hwinfo" | wc -l)
-	local cmd=$(echo "$hwinfo" | grep "Driver Activation Cmd" | head -n1 | awk -F ':' '{ match($2, "\"([^\"]+)\"", cmd); print $1, cmd[1];}');
-	local module=$(echo "$hwinfo" | grep "Driver Status" | head -n1 | awk -F ':' '{ print $2;}' | awk '{print $1;}');
-	echo_local "   suse_hwscan: loading $name ($hwinfo_type/$module)..."
-	exec_local modprobe $cmd
-    
-	if [ -n "$alias" ]; then
-	    cp /etc/modules.conf /etc/modules.conf.bak
-	    echo_local "   suse_hwscan: registering alias \"$alias\" to module \"$module\"..."
-	    cat /etc/modules.conf.bak | awk -v alias="$alias$index" -v module="$module" '
-$1 == "alias" && $2 == alias {
-   print "alias", alias, module;
-   alias_set=1;
-   next;
-}
-{ print; }
-END {
-  if (!alias_set) {
-     print "alias", alias, module;
-  }
-}
-' > /etc/modules.conf
-	fi
-	let lines="$lines-3"
-	hwinfo=$(echo "$hwinfo" | tail -n $lines)
-	let index++
-    done
-}
-
-#************ suse_hwconfig 
-#****f* boot-lib.sh/suse_hwscan
-#  NAME
-#    suse_hwscan
-#  SYNOPSIS
-#    function suse_hwscan() {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function suse_hwscan() {
-    echo_local "HWSCAN: Detecting scsi-controller: "
-    exec_local suse_hwconfig "scsi-controller" "storage-ctrl" "scsi-hostadapter"
-    echo_local "HWSCAN: Detecting NIC: "
-    exec_local suse_hwconfig "nic" "netcard" "eth"
-}
-
-#************ suse_hwscan 
 #****f* boot-lib.sh/exec_local
 #  NAME
 #    exec_local
 #  SYNOPSIS
 #    function exec_local() {
-#  MODIFICATION HISTORY
+#  DESCRIPTION
+#    execs the given parameters in a subshell and returns the 
+#    error_code
 #  IDEAS
 #  SOURCE
 #
 function exec_local() {
-  output=`$* 2>&1`
+  $*
   return_c=$?
   if [ ! -z "$debug" ]; then 
     echo "cmd: $*"
@@ -1156,10 +678,10 @@ function exec_local() {
   fi
 #  echo "cmd: $*" >> $bootlog
 #  echo "$output" >> $bootlog
-  return_code $return_c
+  return $return_c
 }
-
 #************ exec_local 
+
 #****f* boot-lib.sh/exec_local_debug
 #  NAME
 #    exec_local_debug
@@ -1174,61 +696,194 @@ function exec_local_debug() {
     exec_local $*
   fi
 }
-
 #************ exec_local_debug 
+
 #****f* boot-lib.sh/return_code
 #  NAME
 #    return_code
 #  SYNOPSIS
 #    function return_code() {
-#  MODIFICATION HISTORY
-#  IDEAS
+#  DESCRIPTION
+#    Displays the actual return code. Either from $1 if given or from $?
 #  SOURCE
 #
-function return_code() {
+function return_code {
+  if [ -n "$1" ]; then
+    return_c=$1
+  fi
+  if [ -n "$return_c" ] && [ $return_c -eq 0 ]; then
+    success
+  else
+    failure
+  fi
+  local code=$return_c
+  return_c=
+  return $code
+}
+#************ return_code 
+
+#****f* boot-lib.sh/return_code_warning
+#  NAME
+#    return_code_warning
+#  SYNOPSIS
+#    function return_code_warning() {
+#  DESCRIPTION
+#    Displays the actual return code. Warning instead of failed.
+#    Either from $1 if given or from $?
+#  SOURCE
+#
+function return_code_warning() {
   if [ -z "$1" ]; then
     return_c=$?
   else
     return_c=$1
   fi
   if [ $return_c -eq 0 ]; then
-     echo_local "(OK)"
+    success
   else
-     echo_local "(FAILED)"
+    warning
   fi
 }
-#************ return_code 
+#************ return_code_warning 
 
-#****f* boot-lib.sh/add_scsi_device
+#****f* boot-lib.sh/return_code_passed
 #  NAME
-#    add_scsi_device
+#    return_code_passed
 #  SYNOPSIS
-#    function add_scsi_device() {
-#  MODIFICATION HISTORY
-#  IDEAS
+#    function return_code_passed() {
+#  DESCRIPTION
+#    Displays the actual return code. Warning instead of failed.
+#    Either from $1 if given or from $?
 #  SOURCE
 #
-function add_scsi_device() {
-  id=$1
-  channel=$2
-  dev=$3
-  if [ "$(basename $(dirname $dev))" = "qla2200" -o "$(basename $(dirname $dev))" = "qla2300" ]; then
-    out=$(cat $dev | awk -v id=$id -v channel=$channel '
-/\(([0-9 ]+):([0-9 ]+)\): Total reqs [0-9]+, Pending reqs [0-9]+, flags 0x0.+/ { 
-  match($_, /\(\W*([0-9]+):\W*([0-9]+)\)/, res); 
-  print "echo \"scsi add-single-device", id, channel, res[1], res[2],  "\" > /proc/scsi/scsi; sleep 1"; 
-}')
-    eval "$out"
-    return $?
+function return_code_passed() {
+  if [ -z "$1" ]; then
+    return_c=$?
   else
-    exec_local echo -n ""
-    return 0
+    return_c=$1
+  fi
+  if [ $return_c -eq 0 ]; then
+    success
+  else
+    warning
   fi
 }
-#************ add_scsi_device 
+#************ return_code_passed 
+
+#****f* boot-lib.sh/success
+#  NAME
+#    success
+#  SYNOPSIS
+#    function success()
+#  DESCRIPTION
+#    returns formated OK
+#  SOURCE
+function success {
+  [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
+  echo -n "[  "
+  echo -n "[  " >&3
+  echo -n "[  " >&5
+  [ "$BOOTUP" = "color" ] && $SETCOLOR_SUCCESS
+  echo -n "OK"
+  echo -n "OK" >&3
+  echo -n "OK" >&5
+  [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
+  echo "  ]"
+  echo "  ]" >&3
+  echo "  ]" >&5
+#  echo -ne "\r"
+#  echo -ne "\r" >&3
+  return 0
+}
+#********** success 
+
+#****f* boot-lib.sh/failure
+#  NAME
+#    failure
+#  SYNOPSIS
+#    function failure()
+#  DESCRIPTION
+#    returns formated FAILURE
+#  SOURCE
+function failure {
+  [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
+  echo -n "["
+  echo -n "[" >&3
+  echo -n "[" >&5
+  [ "$BOOTUP" = "color" ] && $SETCOLOR_FAILURE
+  echo -n "FAILED"
+  echo -n "FAILED" >&3
+  echo -n "FAILED" >&5
+  [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
+  echo "]"
+#  echo -ne "\r"
+  echo "]" >&3
+  echo "]" >&5
+#  echo -ne "\r" >&3
+  return 1
+}
+#********** warning 
+
+#****f* boot-lib.sh/warning
+#  NAME
+#    warning
+#  SYNOPSIS
+#    function warning()
+#  DESCRIPTION
+#    returns formated WARNING
+#  SOURCE
+function warning {
+  [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
+  echo -n "["
+  echo -n "[" >&3
+  echo -n "[" >&5
+  [ "$BOOTUP" = "color" ] && $SETCOLOR_WARNING
+  echo -n "WARNING"
+  echo -n "WARNING" >&3
+  echo -n "WARNING" >&5
+  [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
+  echo "]"
+#  echo -ne "\r"
+  echo "]" >&3
+  echo "]" >&5
+#  echo -ne "\r" >&3
+  return 1
+}
+#********** warning 
+
+#****f* boot-lib.sh/passed
+#  NAME
+#    passed
+#  SYNOPSIS
+#    function passed()
+#  DESCRIPTION
+#    returns formated PASSED
+#  SOURCE
+function passed {
+  [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
+  echo -n "["
+  echo -n "[" >&3
+  echo -n "[" >&5
+  [ "$BOOTUP" = "color" ] && $SETCOLOR_WARNING
+  echo -n "PASSED"
+  echo -n "PASSED" >&3
+  echo -n "PASSED" >&5
+  [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
+  echo "]"
+#  echo -ne "\r"
+  echo "]" >&3
+  echo "]" >&5
+#  echo -ne "\r" >&3
+  return 1
+}
+#********** passed 
 
 # $Log: boot-lib.sh,v $
-# Revision 1.29  2006-05-03 12:49:16  marc
+# Revision 1.30  2006-05-07 11:37:15  marc
+# major change to version 1.0.
+# Complete redesign.
+#
+# Revision 1.29  2006/05/03 12:49:16  marc
 # added documentation
 #
 # Revision 1.28  2006/04/13 18:48:59  marc
