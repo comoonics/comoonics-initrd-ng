@@ -4,10 +4,12 @@
 #    $id$
 #  DESCRIPTION
 #*******
-# $Id: gfs61-es40-files.i686.list,v 1.6 2006-05-03 12:47:48 marc Exp $
+# $Id: gfs61-es40-files.i686.list,v 1.7 2006-05-07 11:37:45 marc Exp $
 bash
 nash
 nslookup
+head
+tail
 chmod
 df
 e2label
@@ -341,7 +343,10 @@ iscsi-umountall
 /lib/libcrypto.so.0.9.7a
 /lib/libcrypto.so.4
 # $Log: gfs61-es40-files.i686.list,v $
-# Revision 1.6  2006-05-03 12:47:48  marc
+# Revision 1.7  2006-05-07 11:37:45  marc
+# added tail and head
+#
+# Revision 1.6  2006/05/03 12:47:48  marc
 # added documentation
 #
 # Revision 1.5  2006/04/11 13:42:06  marc
