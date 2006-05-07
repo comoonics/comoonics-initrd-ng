@@ -131,7 +131,7 @@ END { exit found; }
     cp -a $FENCE_CHROOT_SOURCE/* $FENCE_CHROOT/
   fi &&
   [ -e $FENCE_CHROOT/var/run/fenced.pid ] && rm -r $FENCE_CHROOT/var/run/fenced.pid
-  chroot $FENCE_CHROOT fence -c -w > /dev/null 2>&1
+  chroot $FENCE_CHROOT fenced -c -w > /dev/null 2>&1
   rtrn=$?
 
   if [ $rtrn -eq 0 ]
@@ -243,7 +243,10 @@ exit $rtrn
 
 #########################
 # $Log: fenced-chroot,v $
-# Revision 1.5  2006-05-03 12:47:04  marc
+# Revision 1.6  2006-05-07 11:35:34  marc
+# changed fence to fenced.
+#
+# Revision 1.5  2006/05/03 12:47:04  marc
 # added documentation
 #
 # Revision 1.4  2006/04/13 18:47:04  marc
