@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.21 2006-05-07 11:34:58 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.22 2006-05-12 13:02:24 marc Exp $
 #
 # @(#)$File$
 #
@@ -17,7 +17,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.21 2006-05-07 11:34:58 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.22 2006-05-12 13:02:24 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -68,7 +68,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.21 $ $Date: 2006-05-07 11:34:58 $'
+echo_local 'Internal Version $Revision: 1.22 $ $Date: 2006-05-12 13:02:24 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -86,25 +86,25 @@ fi
 echo_local -n "Scanning for Bootparameters..."
 bootparms=$(getBootParameters)
 return_code=$?
-debug=$(echo "$bootparms" | head -1 | tail -1)
-stepmode=$(echo "$bootparms" | head -2 | tail -1)
-mount_opts=$(echo "$bootparms" | head -3 | tail -1)
-tmpfix=$(echo "$bootparms" | head -4 | tail -1)
+debug=$(getParm ${bootparms} 1)
+stepmode=$(getParm ${bootparms} 2)
+mount_opts=$(getParm ${bootparms} 3)
+tmpfix=$(getParm ${bootparms} 4)
 return_code 0
 
 # network parameters
 echo_local -n "Scanning for network parameters..."
 netparms=$(getNetParameters)
-ipConfig=$(echo "$netparms" | head -1 | tail -1)
+ipConfig=$(getParm ${netparms} 1)
 return_code 0
 
 # clusterfs parameters
 echo_local -n "Scanning for clusterfs parameters..."
 cfsparams=$(getClusterFSParameters)
-rootsource=$(echo "$cfsparams" | head -1 | tail -1)
-root=$(echo "$cfsparams" | head -2 | tail -1)
-lockmethod=$(echo "$cfsparams" | head -3 | tail -1)
-sourceserver=$(echo "$cfsparams" | head -4 | tail -1)
+rootsource=$(getParm ${cfsparams} 1)
+root=$(getParm ${cfsparams} 2)
+lockmethod=$(getParm ${cfsparams} 3)
+sourceserver=$(getParm ${cfsparams} 4)
 return_code 0
 
 if [ -n "$rootsource" ] && [ "$rootsource" = "iscsi" ]; then
@@ -150,12 +150,14 @@ wait
 step
 
 # cluster_conf is set in clusterfs-lib.sh or overwritten in gfs-lib.sh
-cfsparams=$(clusterfs_config $cluster_conf)
-nodeid=$(echo "$cfsparams" | head -1)
-nodename=$(echo "$cfsparams" | head -2 | tail -1)
-rootvolume=$(echo "$cfsparams" | head -3 | tail -1)
-_ipConfig=$(echo "$cfsparams" | head -5 | tail -1)
+cfsparams=( $(clusterfs_config $cluster_conf $ipConfig) )
+nodeid=${cfsparams[0]}
+nodename=${cfsparams[1]}
+rootvolume=${cfsparams[2]}
+_mount_opts=${cfsparams[3]}
+_ipConfig=${cfsparams[@]:4}
 [ -n "$_ipConfig" ] && ipConfig=$_ipConfig
+[ -n "$_mount_opts" ] && mount_opts=$_mount_opts
 clusterfs_auto_hosts $cluster_conf
 
 echo_local_debug "*****************************"
@@ -168,12 +170,27 @@ echo_local_debug "*****************************"
 scsi_start
 lvm_start
 
-nicConfig $ipConfig
-dev=$(getPosFromIPString 6, $ipConfig)
+netdevs=""
+for ipconfig in $ipConfig; do
+  dev=$(getPosFromIPString 6, $ipconfig)
 
-echo_local -n "Powering up $dev.."
-exec_local nicUp $dev >/dev/null 2>&1
-return_code
+#  echo_local "Device $dev"
+  # Special case for bonding
+  { echo "$dev"| grep "^bond" && grep -v "alias $dev" $modules_conf; } >/dev/null 2>&1
+  if [ $? -eq 0 ]; then
+    echo_local -n "Patching $modules_conf for bonding "
+    echo "alias bond0 bonding" >> $modules_conf
+    return_code $?
+    depmod -a >/dev/null 2>&1
+  fi
+
+  nicConfig $ipconfig
+
+  echo_local -n "Powering up $dev.."
+  exec_local nicUp $dev >/dev/null 2>&1
+  return_code
+  netdevs="$netdevs $dev"
+done
 
 cc_auto_syslogconfig $cluster_conf $nodename
 start_service /sbin/syslogd no_chroot -m 0
@@ -188,11 +205,12 @@ if [ $return_c -ne 0 ]; then
    echo_local "Could not start all cluster services. Exiting"
    exit_linuxrc 1
 fi
+sleep 2
 step
 
 clusterfs_mount $rootfs $root $mount_point $mount_opts
 if [ $return_c -ne 0 ]; then
-   echo_local "Could not mount cluster filesystem $rootfs $root to $mountpoint. Exiting"
+   echo_local "Could not mount cluster filesystem $rootfs $root to $mount_point. Exiting ($mount_opts)"
    exit_linuxrc 1
 fi
 step
@@ -204,7 +222,9 @@ if [ $return_c -ne 0 ]; then
 fi
 step
 
-copy_relevant_files $cdsl_local_dir $mount_point
+#if [ -n "$debug" ]; then set -x; fi
+copy_relevant_files $cdsl_local_dir $mount_point $netdevs
+#if [ -n "$debug" ]; then set +x; fi
 step
 
 cd $mount_point
@@ -219,9 +239,20 @@ step
 switchRoot $mount_point initrd
 critical=$?
 
+echo_local -n "Copying logfile to $new_root/${bootlog}..."
+cp -f ${pivot_root}/${bootlog} ${new_root}/${bootlog} || cp -f ${pivot_root}/${bootlog} ${new_root}/$(basename $bootlog)
+return_code_warning $?
+if [ -f ${new_root}/$bootlog ]; then 
+  bootlog=${new_root}/$bootlog
+else 
+  bootlog=${new_root}/$(basename $bootlog)
+fi
+exec 5>> $bootlog
+step
+
 init_cmd="/sbin/init"
 newroot="${new_root}"
-bootlog="/var/log/comoonics-boot.log"
+#bootlog="/var/log/comoonics-boot.log"
 
 if [ $critical -eq 0 ]; then
   if [ -n "$tmpfix" ]; then 
@@ -235,20 +266,8 @@ if [ $critical -eq 0 ]; then
   return_code
 	
   echo_local -n "Stopping syslogd..."
-  exec_local stop_service "syslogd" /initrd &&
-  exec_local killall syslogd
+  exec_local stop_service "syslogd" /${pivot_root} &&
   return_code
-
-  echo_local -n "Copying logfile to $new_root/${bootlog}..."
-  cat ${bootlog} >> ${new_root}/${bootlog} 2>/dev/null || cp -f ${bootlog} ${new_root}/$(basename $bootlog)
-  return_code $?
-  if [ -f ${new_root}/$bootlog ]; then 
-    bootlog=${new_root}/$bootlog
-  else 
-    bootlog=${new_root}/$(basename $bootlog)
-  fi
-#  exec 5>> $bootlog
-  step
 
   echo_local -n "Removing files in initrd"
   if [ $restart_error -eq 0 ]; then
@@ -271,7 +290,11 @@ fi
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.21  2006-05-07 11:34:58  marc
+# Revision 1.22  2006-05-12 13:02:24  marc
+# Major changes for Version 1.0.
+# Loads of Bugfixes everywhere.
+#
+# Revision 1.21  2006/05/07 11:34:58  marc
 # major change to version 1.0.
 # Complete redesign.
 #
