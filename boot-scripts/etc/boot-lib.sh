@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.30 2006-05-07 11:37:15 marc Exp $
+# $Id: boot-lib.sh,v 1.31 2006-05-12 13:02:41 marc Exp $
 #
 # @(#)$File$
 #
@@ -142,14 +142,14 @@ function exit_linuxrc() {
 #
 function step() {
    if [ ! -z "$stepmode" ]; then
-     echo_out -n "Press <RETURN> to continue ..."
+     echo -n "Press <RETURN> to continue ..."
      read -t$step_timeout __the_step
      [ "$__the_step" = "quit" ] && exit_linuxrc 2
      if [ "$__the_step" = "continue" ]; then
        stepmode=
      fi
      if [ -z "$__the_step" ]; then
-       echo_out
+       echo
      fi
    else
      return 0
@@ -174,7 +174,7 @@ function getBootParm() {
    out=`expr "$cmdline" : ".*$parm=\([^ ]*\)" 2>/dev/null`
    if [ $(expr "$cmdline" : ".*$parm" 2>/dev/null) -gt 0 ] && [ -z "$out" ]; then out=1; fi
    if [ -z "$out" ]; then out="$default"; fi
-   echo "$out"
+   echo -n "$out"
    if [ -z "$out" ]; then
        return 1
    else
@@ -182,6 +182,22 @@ function getBootParm() {
    fi
 }
 #************ getBootParm 
+#****f* boot-lib.sh/getBootParm
+#  NAME
+#    getParm
+#  SYNOPSIS
+#    function getParm(param, [default])
+#  DESCRIPTION
+#    Gets the given parameter from the bootloader command line. If not
+#    found default or the empty string is returned.
+#  SOURCE
+#
+function getParm() {
+   cmdline="$1"
+   parm="$2"
+   echo $cmdline | awk -v pos=$parm 'BEGIN { FS=":"; }{ printf "%s", $pos; }'
+}
+#************ getParm 
 
 #****f* boot-lib.sh/exec_nondefault_boot_source
 #  NAME
@@ -246,8 +262,11 @@ function getDistribution {
 #
 function getBootParameters() {
     getBootParm com-debug
+    echo -n ":"
     getBootParm com-step
+    echo -n ":"
     getBootParm mountopt defaults
+    echo -n ":"
     getBootParm tmpfix
 }
 #************ getBootParameters 
@@ -294,28 +313,28 @@ function initBootProcess() {
 
   # Read in our configuration
   if [ -z "${BOOTUP:-}" ]; then
-#    if [ -f /etc/sysconfig/init ]; then
-#      . /etc/sysconfig/init
-#    else
-#      # This all seem confusing? Look in /etc/sysconfig/init,
-#      # or in /usr/doc/initscripts-*/sysconfig.txt
-#      BOOTUP=color
-#      RES_COL=60
-#      MOVE_TO_COL="echo -en \\033[${RES_COL}G"
-#      SETCOLOR_SUCCESS="echo -en \\033[1;32m"
-#      SETCOLOR_FAILURE="echo -en \\033[1;31m"
-#      SETCOLOR_WARNING="echo -en \\033[1;33m"
-#      SETCOLOR_NORMAL="echo -en \\033[0;39m"
-#      LOGLEVEL=1
-#    fi
-#    if [ "$CONSOLETYPE" = "serial" ]; then
+    if [ -f /etc/sysconfig/init ]; then
+      . /etc/sysconfig/init
+    else
+      # This all seem confusing? Look in /etc/sysconfig/init,
+      # or in /usr/doc/initscripts-*/sysconfig.txt
+      BOOTUP=color
+      RES_COL=60
+      MOVE_TO_COL="echo -en \\033[${RES_COL}G"
+      SETCOLOR_SUCCESS="echo -en \\033[1;32m"
+      SETCOLOR_FAILURE="echo -en \\033[1;31m"
+      SETCOLOR_WARNING="echo -en \\033[1;33m"
+      SETCOLOR_NORMAL="echo -en \\033[0;39m"
+      LOGLEVEL=1
+    fi
+    if [ "$CONSOLETYPE" = "serial" ]; then
       BOOTUP=serial
       MOVE_TO_COL=
       SETCOLOR_SUCCESS=
       SETCOLOR_FAILURE=
       SETCOLOR_WARNING=
       SETCOLOR_NORMAL=
-#    fi
+    fi
   fi
 
   if [ "${BOOTUP:-}" != "verbose" ]; then
@@ -391,14 +410,14 @@ function start_service {
     done
     echo_local -n ".(dir)."
     for file in $service_cp_files; do
-      [ -d $(dirname $chroot_dir/$file) ] || mkdir -p $(dirname $chroot_dir/$file)
+      [ -d $(dirname $chroot_dir/$file) ] || mkdir -p $(dirname $chroot_dir/$file) 2>/dev/null
       [ -e $chroot_dir/$file ] || cp -af $file $chroot_dir/$file 2>/dev/null
     done
     echo_local -n ".(cp)."
     for file in $service_mv_files; do
-      [ -d $(dirname $chroot_dir/$file) ] || mkdir -p $(dirname $chroot_dir/$file)
-      [ -e $chroot_dir/$file ] || mv $file $chroot_dir/$file #2>/dev/null
-      [ -e $file ] || ln -sf $chroot_dir/$file $file #2>/dev/null
+      [ -d $(dirname $chroot_dir/$file) ] || mkdir -p $(dirname $chroot_dir/$file) 2>/dev/null
+      [ -e $chroot_dir/$file ] || mv $file $chroot_dir/$file 2>/dev/null
+      [ -e $file ] || ln -sf $chroot_dir/$file $file 2>/dev/null
     done
     echo_local -n ".(mv)."
 #    for file in /usr/kerberos/lib/*; do
@@ -581,8 +600,8 @@ function echo_out() {
 #
 function echo_local() {
    echo ${*:0:$#-1} "${*:$#}"
-   echo ${*:0:$#-1} "${*:$#}" >&3
-   echo ${*:0:$#-1} "${*:$#}" >&5
+#   echo ${*:0:$#-1} "${*:$#}" >&3
+#   echo ${*:0:$#-1} "${*:$#}" >&5
 #   echo ${*:0:$#-1} "${*:$#}" >> $bootlog
 #   [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
 }
@@ -600,7 +619,7 @@ function echo_local_debug() {
    if [ ! -z "$debug" ]; then
      echo ${*:0:$#-1} "${*:$#}"
      echo ${*:0:$#-1} "${*:$#}" >&3
-     echo ${*:0:$#-1} "${*:$#}" >&5
+#     echo ${*:0:$#-1} "${*:$#}" >&5
 #     echo ${*:0:$#-1} "${*:$#}" >> $bootlog
 #     [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
    fi
@@ -632,7 +651,7 @@ function error_out() {
 function error_local() {
    echo ${*:0:$#-1} "${*:$#}" >&2
    echo ${*:0:$#-1} "${*:$#}" >&4
-   echo ${*:0:$#-1} "${*:$#}" >&5
+#   echo ${*:0:$#-1} "${*:$#}" >&5
 #   echo ${*:0:$#-1} "${*:$#}" >> $bootlog
 #   [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
 }
@@ -650,7 +669,7 @@ function error_local_debug() {
    if [ ! -z "$debug" ]; then
      echo ${*:0:$#-1} "${*:$#}" >&2
      echo ${*:0:$#-1} "${*:$#}" >&4
-     echo ${*:0:$#-1} "${*:$#}" >&5
+#     echo ${*:0:$#-1} "${*:$#}" >&5
 #     echo ${*:0:$#-1} "${*:$#}" >> $bootlog
 #     [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
    fi
@@ -673,8 +692,7 @@ function exec_local() {
   $*
   return_c=$?
   if [ ! -z "$debug" ]; then 
-    echo "cmd: $*"
-    echo "$output"
+    echo "cmd: $*" >&3
   fi
 #  echo "cmd: $*" >> $bootlog
 #  echo "$output" >> $bootlog
@@ -717,7 +735,6 @@ function return_code {
     failure
   fi
   local code=$return_c
-  return_c=
   return $code
 }
 #************ return_code 
@@ -733,12 +750,10 @@ function return_code {
 #  SOURCE
 #
 function return_code_warning() {
-  if [ -z "$1" ]; then
-    return_c=$?
-  else
+  if [ -n "$1" ]; then
     return_c=$1
   fi
-  if [ $return_c -eq 0 ]; then
+  if [ -n "$return_c" ] && [ $return_c -eq 0 ]; then
     success
   else
     warning
@@ -757,12 +772,10 @@ function return_code_warning() {
 #  SOURCE
 #
 function return_code_passed() {
-  if [ -z "$1" ]; then
-    return_c=$?
-  else
+  if [ -n "$1" ]; then
     return_c=$1
   fi
-  if [ $return_c -eq 0 ]; then
+  if [ -n "$return_c" ] && [ $return_c -eq 0 ]; then
     success
   else
     warning
@@ -781,17 +794,17 @@ function return_code_passed() {
 function success {
   [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
   echo -n "[  "
-  echo -n "[  " >&3
-  echo -n "[  " >&5
+#  echo -n "[  " >&3
+#  echo -n "[  " >&5
   [ "$BOOTUP" = "color" ] && $SETCOLOR_SUCCESS
   echo -n "OK"
-  echo -n "OK" >&3
-  echo -n "OK" >&5
+#  echo -n "OK" >&3
+#  echo -n "OK" >&5
   [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
   echo "  ]"
-  echo "  ]" >&3
-  echo "  ]" >&5
-#  echo -ne "\r"
+#  echo "  ]" >&3
+#  echo "  ]" >&5
+  echo -ne "\r"
 #  echo -ne "\r" >&3
   return 0
 }
@@ -808,17 +821,17 @@ function success {
 function failure {
   [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
   echo -n "["
-  echo -n "[" >&3
-  echo -n "[" >&5
+#  echo -n "[" >&3
+#  echo -n "[" >&5
   [ "$BOOTUP" = "color" ] && $SETCOLOR_FAILURE
   echo -n "FAILED"
-  echo -n "FAILED" >&3
-  echo -n "FAILED" >&5
+#  echo -n "FAILED" >&3
+#  echo -n "FAILED" >&5
   [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
   echo "]"
-#  echo -ne "\r"
-  echo "]" >&3
-  echo "]" >&5
+  echo -ne "\r"
+#  echo "]" >&3
+#  echo "]" >&5
 #  echo -ne "\r" >&3
   return 1
 }
@@ -835,17 +848,17 @@ function failure {
 function warning {
   [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
   echo -n "["
-  echo -n "[" >&3
-  echo -n "[" >&5
+#  echo -n "[" >&3
+#  echo -n "[" >&5
   [ "$BOOTUP" = "color" ] && $SETCOLOR_WARNING
   echo -n "WARNING"
-  echo -n "WARNING" >&3
-  echo -n "WARNING" >&5
+#  echo -n "WARNING" >&3
+#  echo -n "WARNING" >&5
   [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
   echo "]"
-#  echo -ne "\r"
-  echo "]" >&3
-  echo "]" >&5
+  echo -ne "\r"
+#  echo "]" >&3
+#  echo "]" >&5
 #  echo -ne "\r" >&3
   return 1
 }
@@ -862,24 +875,27 @@ function warning {
 function passed {
   [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
   echo -n "["
-  echo -n "[" >&3
-  echo -n "[" >&5
+#  echo -n "[" >&3
+#  echo -n "[" >&5
   [ "$BOOTUP" = "color" ] && $SETCOLOR_WARNING
   echo -n "PASSED"
-  echo -n "PASSED" >&3
-  echo -n "PASSED" >&5
+#  echo -n "PASSED" >&3
+#  echo -n "PASSED" >&5
   [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
   echo "]"
-#  echo -ne "\r"
-  echo "]" >&3
-  echo "]" >&5
+  echo -ne "\r"
+#  echo "]" >&3
+#  echo "]" >&5
 #  echo -ne "\r" >&3
   return 1
 }
 #********** passed 
 
 # $Log: boot-lib.sh,v $
-# Revision 1.30  2006-05-07 11:37:15  marc
+# Revision 1.31  2006-05-12 13:02:41  marc
+# First stable Version for 1.0.
+#
+# Revision 1.30  2006/05/07 11:37:15  marc
 # major change to version 1.0.
 # Complete redesign.
 #

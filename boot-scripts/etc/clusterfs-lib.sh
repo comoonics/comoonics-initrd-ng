@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.1 2006-05-07 11:33:40 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.2 2006-05-12 13:03:42 marc Exp $
 #
 # @(#)$File$
 #
@@ -72,10 +72,13 @@ fi
 #  SOURCE
 #
 function getClusterFSParameters() {
-	getBootParm rootsource scsi
-	getBootParm root
-	getBootParm lockmethod
-	getBootParm sourceserver
+  getBootParm rootsource scsi
+  echo -n ":"
+  getBootParm root
+  echo -n ":"
+  getBootParm lockmethod $default_lockmethod
+  echo -n ":"
+  getBootParm sourceserver
 }
 #******** getClusterFSParameters
 
@@ -117,13 +120,15 @@ function clusterfs_config {
   local _foundmac=
   macs=$(ifconfig -a | grep -i hwaddr | awk '{print $5;};')
   for mac in $macs; do
-    [ -z "$_nodeid" ] && _nodeid=$(cc_get_nodeid ${cluster_conf} $mac)
-    [ -z "$_nodename" ] && _nodename=$(cc_get_nodename ${cluster_conf} $mac)
+    [ -z "$_nodeid" ] && _nodeid=$(cc_get_nodeid ${cluster_conf} $mac 2</dev/null)
+    [ -z "$_nodename" ] && _nodename=$(cc_get_nodename ${cluster_conf} $mac 2>/dev/null)
   done
   echo $_nodeid
   echo $_nodename
 
   cc_get_rootvolume ${cluster_conf} $_nodename
+  echo
+  cc_get_mountopts ${cluster_conf} $_nodename
   echo
   for _dev in $(cc_get_netdevs ${cluster_conf} $_nodename); do
     cc_auto_netconfig ${cluster_conf} $_nodename $_dev
@@ -179,6 +184,22 @@ function cc_get_rootvolume {
 }
 #******** cc_get_rootvolume
 
+#****f* clusterfs-lib.sh/cc_get_mountopts
+#  NAME
+#    cc_get_mountopts
+#  SYNOPSIS
+#    function cc_get_mountopts(cluster_conf, nodename)
+#  DESCRIPTION
+#    gets the nodename of this node referenced by the networkdevice
+#  SOURCE
+function cc_get_mountopts {
+   local cluster_conf=$1
+   local nodename=$2
+
+   ${rootfs}_get_mountopts $cluster_conf $nodename
+}
+#******** cc_get_mountopts
+
 #****f* clusterfs-lib.sh/cc_get_netdevs
 #  NAME
 #    cc_get_netdevs
@@ -199,15 +220,16 @@ function cc_get_netdevs {
 #  NAME
 #    cc_auto_netconfig
 #  SYNOPSIS
-#    function cc_auto_netconfig(cluster_conf, nodename)
+#    function cc_auto_netconfig(cluster_conf, nodename, netdev)
 #  DESCRIPTION
 #    gets the network devcices of this node referenced by the networkdevice
 #  SOURCE
 function cc_auto_netconfig {
    local cluster_conf=$1
    local nodename=$2
+   local netdev=$3
 
-   ${rootfs}_auto_netconfig $cluster_conf $nodename
+   ${rootfs}_auto_netconfig $cluster_conf $nodename $netdev
 }
 #******** cc_auto_netconfig
 
@@ -372,56 +394,66 @@ function clusterfs_mount_cdsl {
 #  SYNOPSIS
 #    function copy_relevant_files(cdsl_local_dir, newroot)
 #  MODIFICATION HISTORY
+#     HAS TO BE MADE DISTRIBUTION DEPENDENT!!
+#     WILL NOT WORK WITH OTHER DISTROS!!!!!!
 #  IDEAS
 #  SOURCE
 #
 function copy_relevant_files {
   local cdsl_local_dir=$1
-  local new_root=$2
+  local newroot=$2
+  local netdevs=$3
 
   # backup old files
   olddir=$(pwd)
-#  if [ -n "$debug" ]; then set -x; fi
-  echo_local -en "\tBacking up created config files [$cdsl_local_dir]"
+  return_c=1
+  echo_local -n "Backing up created config files [$cdsl_local_dir]"
   if [ -f $newroot/etc/sysconfig/hwconf ]; then
     exec_local mv -f $newroot/etc/sysconfig/hwconf $newroot/etc/sysconfig/hwconf.com_back
   fi
   return_code_passed
 
-  echo_local -en "\tCreating config dirs if not exist.."
+  return_c=1
+  echo_local -n "Creating config dirs if not exist.."
   if [ ! -d $newroot/${cdsl_local_dir}/etc ]; then 
     mkdir -p $newroot/${cdsl_local_dir}/etc
   fi &&
   if [ ! -d $newroot/${cdsl_local_dir}/etc/sysconfig ]; then 
     exec_local mkdir -p $newroot/${cdsl_local_dir}/etc/sysconfig
   fi
-  return_code
+  return_code_passed
 
-  echo_local -en "\tCopying the configfiles ${cdsl_local_dir}.."
+  echo_local -n "Copying the configfiles ${cdsl_local_dir}.."
   cd $newroot/${cdsl_local_dir}/etc
-  (cp -f $modules_conf $newroot/${cdsl_local_dir}/$modules_conf &&
-   ([ -n "$cdsl_local_dir" ] && 
-    cd $newroot && 
-    ln -sf ../${cdsl_local_dir}/etc/$modules_conf etc/$modules_conf)
-   cd sysconfig 
-   [ ! -f  $newroot/${cdsl_local_dir}/etc/sysconfig/hwconf ] && 
-   cp -f /etc/sysconfig/hwconf $newroot/${cdsl_local_dir}/etc/sysconfig/
-   ([ -n "$cdsl_local_dir" ] && 
-    [ ! -f ${cdsl_local_dir}/etc/sysconfig/hwconf ] && 
-    cd $newroot && 
-    ln -fs ${cdsl_local_dir}/etc/sysconfig/hwconf etc/sysconfig/hwconf))
-#   [ ! -f $newroot/${cdsl_local_dir}/etc/sysconfig/network ] && 
-#   cp -f /etc/sysconfig/network $newroot/${cdsl_local_dir}/etc/sysconfig/
-#   ([ -n "$cdsl_local_dir" ] && 
-#    [ ! -f $newroot/${cdsl_local_dir}/etc/sysconfig/network ] && 
-#    cd $newroot/ && 
-#    ln -fs ${cdsl_local_dir}/etc/sysconfig/network etc/sysconfig/network))
-  return_code
+  cp -f $modules_conf $newroot/${cdsl_local_dir}/$modules_conf &&
+  ([ -n "$cdsl_local_dir" ] && 
+   cd $newroot/etc && 
+   ln -sf ../${cdsl_local_dir}/$modules_conf $(basename $modules_conf))
+#   cd sysconfig 
+#   cp -f /etc/sysconfig/hwconf $newroot/${cdsl_local_dir}/etc/sysconfig/
+#    [ ! -f ${newroot}/etc/sysconfig/hwconf ] && 
+#    cd $newroot && 
+#    ln -fs ${cdsl_local_dir}/etc/sysconfig/hwconf etc/sysconfig/hwconf)
+  return_code=$?
+  echo_local -n ".(hw $return_c)."
+#  cd $newroot
+#  for netdev in $netdevs; do
+#    cp -f /etc/sysconfig/network-scripts/ifcfg-$netdev $newroot/${cdsl_local_dir}/etc/sysconfig/network-scripts/ifcfg-$netdev &&
+#    cd ${newroot}/etc/sysconfig/network-scripts &&
+#    ln -sf ../../../${cdsl_local_dir}/etc/sysconfig/network-scripts/ifcfg-$netdev ifcfg-$netdev
+#    __ret=$?
+#    [ $return_code -eq 0 ] && return_code=$__ret
+#    echo_local -n ".($dev $return_c $__ret)."
+#  done
+  return_code_warning
 }
 #************ copy_relevant_files 
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.1  2006-05-07 11:33:40  marc
+# Revision 1.2  2006-05-12 13:03:42  marc
+# First stable Version for 1.0.
+#
+# Revision 1.1  2006/05/07 11:33:40  marc
 # initial revision
 #
