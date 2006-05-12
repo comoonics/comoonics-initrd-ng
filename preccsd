@@ -28,9 +28,8 @@ LOCK_FILE="/var/lock/subsys/ccsd"
 #    start
 #  SYNOPSIS
 #    start()
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
+#  DESCRIPTION
+#    Stops the ccsd that is running from the initrd
 #
 start()
 {
@@ -56,6 +55,19 @@ END { exit found; }
 }
 #************ start 
 
+#****f* preccsd/stop
+#  NAME
+#    start
+#  SYNOPSIS
+#    start()
+#  DESCRIPTION
+#    Umounts the bindmount /cdsl.local
+#SSL23_GET_CLIENT_HELLO:unknown protocol
+stop() {
+#   echo "Processes running on /cdsl.local "
+#   fuser -mv /cdsl.local   
+}
+
 #****f* preccsd/main
 #  NAME
 #    main
@@ -75,7 +87,7 @@ case "$1" in
         ;;
 
   stop)
-        /bin/true
+        stop
         rtrn=$?
         ;;
 
@@ -100,6 +112,9 @@ exit $rtrn
 
 ##################
 # $Log: preccsd,v $
-# Revision 1.2  2006-05-03 12:46:58  marc
+# Revision 1.3  2006-05-12 13:05:07  marc
+# No big changes
+#
+# Revision 1.2  2006/05/03 12:46:58  marc
 # added documentation
 #
