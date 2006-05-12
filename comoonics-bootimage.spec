@@ -21,7 +21,7 @@
 # with ATIX.
 #/initrd_sr-2.6.9-34.ELsmp.img.gz
 # %define _initrddir /etc/init.d
-# $Id: comoonics-bootimage.spec,v 1.16 2006-05-07 12:06:56 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.17 2006-05-12 13:01:56 marc Exp $
 #
 ##
 # TO DO
@@ -39,7 +39,7 @@
 Name: comoonics-bootimage
 Summary: Comoonics Bootimage. Scripts for creating an initrd in a gfs shared root environment
 Version: 1.0
-Release: 1
+Release: 7
 Vendor: ATIX GmbH
 Packager: Marc Grimme (grimme@atix.de)
 ExclusiveArch: noarch
@@ -141,6 +141,9 @@ fi
 
 
 %changelog
+* Fri May 12 2006  <grimme@atix.de> - 1.0-7
+- First stable 1.0 Version is RPM 1.0-7
+
 * Wed Jan 25 2006  <grimme@atix.de> - 0.3-12
 - First stable 0.3 version
 
@@ -202,7 +205,10 @@ fi
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.16  2006-05-07 12:06:56  marc
+# Revision 1.17  2006-05-12 13:01:56  marc
+# First stable 1.0 Version
+#
+# Revision 1.16  2006/05/07 12:06:56  marc
 # version 1.0 stable
 #
 # Revision 1.15  2006/05/03 12:47:17  marc
