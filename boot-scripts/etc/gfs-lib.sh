@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.23 2006-05-07 11:35:20 marc Exp $
+# $Id: gfs-lib.sh,v 1.24 2006-05-12 13:06:41 marc Exp $
 #
 # @(#)$File$
 #
@@ -30,6 +30,9 @@
 #    $id$
 #  DESCRIPTION
 #*******
+
+default_lockmethod="lock_dlm"
+default_mountopts="defaults,noatime,nodiratime"
 
 #****f* gfs-lib.sh/getGFSMajorVersion
 #  NAME
@@ -85,6 +88,30 @@ function gfs_get_rootvolume {
    $xml_cmd -q rootvolume $hostname
 }
 #************ gfs_get_rootvolume
+
+#****f* gfs-lib.sh/gfs_get_mountopts
+#  NAME
+#    gfs_get_mountopts
+#  SYNOPSIS
+#    gfs_get_mountopts(cluster_conf, nodename)
+#  DESCRIPTION
+#    Gets the mountopts for this node
+#  IDEAS
+#  SOURCE
+#
+function gfs_get_mountopts {
+   local xml_file=$1
+   local hostname=$2
+   [ -z "$hostname" ] && hostname=$(gfs_get_nodename $xml_file)
+    local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query -f $xml_file"    
+   _mount_opts=$($xml_cmd -q mountopts $hostname)
+   if [ -z "$_mount_opts" ]; then
+     echo $default_mountopts
+   else
+     echo $_mountopts
+   fi
+}
+#************ gfs_get_mountopts
 
 #****f* gfs-lib.sh/gfs_get_node_hostname
 #  NAME
@@ -209,10 +236,18 @@ function gfs_auto_netconfig {
   local netdev=$3
   local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query"
   if [ -z "$netdev" ]; then netdev="eth0"; fi
-  local ip_addr=$($xml_cmd -f $xml_file -q ip $nodename $netdev)  
-  local gateway=$($xml_cmd -f $xml_file -q gateway $nodename $netdev) || local gateway=""
-  local netmask=$($xml_cmd -f $xml_file -q mask $nodename $netdev)
-  echo ${ip_addr}"::"${gateway}":"${netmask}":"${hostname}:$netdev
+
+  local ip_addr=$($xml_cmd -f $xml_file -q ip $nodename $netdev 2>/dev/null)
+  if [ $? -eq 0 ] && [ "$ip_addr" != "" ]; then
+    local gateway=$($xml_cmd -f $xml_file -q gateway $nodename $netdev) || local gateway=""
+    local netmask=$($xml_cmd -f $xml_file -q mask $nodename $netdev)
+    echo ${ip_addr}"::"${gateway}":"${netmask}"::"$netdev
+  else
+    local master=$($xml_cmd -f $xml_file -q master $nodename $netdev 2>/dev/null)
+    local slave=$($xml_cmd -f $xml_file -q slave $nodename $netdev 2>/dev/null)
+    echo ":${master}:${slave}:::${netdev}"
+  fi
+
 #  if [ -n "$debug" ]; then set +x; fi
 }
 #************ gfs_auto_netconfig
@@ -319,6 +354,7 @@ function gfs_services_restart {
     if [ $? -ne 0 ]; then
       return $?
     fi
+    step
   done
   return $return_c
 }
@@ -456,7 +492,31 @@ function gfs_restart_ccsd {
     chroot $new_root /sbin/ccsd &&
     echo_local -n ".(start)."
     return_code $?
-    step
+}
+#******gfs_restart_ccsd
+
+#****f* gfs-lib.sh/gfs_restart_clvmd
+#  NAME
+#    gfs_restart_clvmd
+#  SYNOPSIS
+#    function gfs_restart_clvmd(old_root, new_root)
+#  DESCRIPTION
+#    Function restarts the clvmd for removing the deps on /initrd
+#  IDEAS
+#  SOURCE
+#
+function gfs_restart_clvmd {
+   old_root=$1
+   new_root=$2
+ 
+#   set -x
+   echo_local -n "Starting clvmd ($new_root) "$(pwd)
+   chroot $new_root /usr/sbin/clvmd
+   return_code $?
+   echo_local -n "ActivatinActivating VGs:"
+   chroot $new_root /sbin/vgscan --mknodes >/dev/null 2>&1
+   chroot $new_root /sbin/vgchange -ayl >/dev/null 2>&1
+   return_code $?
 }
 #******gfs_restart_ccsd
 
@@ -496,7 +556,6 @@ function gfs_restart_fenced {
    chroot ${new_root}/cluster/shared/var/lib/fence_tool /sbin/fenced
    error_code=$?
    return_code $error_code
-   step
 #   set +x
 
    return $error_code
@@ -504,7 +563,10 @@ function gfs_restart_fenced {
 #************ gfs_restart_fenced
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.23  2006-05-07 11:35:20  marc
+# Revision 1.24  2006-05-12 13:06:41  marc
+# First stable Version 1.0 for initrd.
+#
+# Revision 1.23  2006/05/07 11:35:20  marc
 # major change to version 1.0.
 # Complete redesign.
 #

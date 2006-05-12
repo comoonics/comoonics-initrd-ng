@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.1 2006-05-07 11:33:40 marc Exp $
+# $Id: network-lib.sh,v 1.2 2006-05-12 13:06:41 marc Exp $
 #
 # @(#)$File$
 #
@@ -64,8 +64,7 @@ function nicConfig {
 
   return_c=0
   if [ "$dev" != "lo" ] && [ "$dev" != "lo0" ]; then
-    echo_local -n "Loadchroot /var/lib/fence_tool fence -c -w
-ing module for $dev..."
+    echo_local -n "Loading module for $dev..."
     exec_local modprobe $dev && sleep 2 && ifconfig $dev up
     return_code
   fi
@@ -73,7 +72,8 @@ ing module for $dev..."
   if [ -n "$ipconfig" ] && [ "$ipconfig" != "skip" ]; then
     sleep 2
     echo_local "Creating network configuration for $dev"
-    exec_local ip2Config $(getPosFromIPString 1, $ipconfig)::$(getPosFromIPString 3, $ipconfig):$(getPosFromIPString 4, $ipconfig):$(hostname):$dev
+    exec_local ip2Config $ipconfig
+#    exec_local ip2Config $(getPosFromIPString 1, $ipconfig):$(getPosFromIPString 2, $ipconfig):$(getPosFromIPString 3, $ipconfig):$(getPosFromIPString 4, $ipconfig):$(hostname):$dev
   fi  
 }
 #******** nicConfig
@@ -107,9 +107,17 @@ function nicUp() {
 function ip2Config() {
   if [ $# -eq 1 ]; then
     local ipAddr=$(getPosFromIPString 1, $1)
-    local ipGate=$(getPosFromIPString 3, $1)
-    local ipNetmask=$(getPosFromIPString 4, $1)
-    local ipHostname=$(getPosFromIPString 5, $1)
+
+    #Bonding
+    echo "$ipAddr" | grep "[[:digit:]][[:digit:]]*.[[:digit:]][[:digit:]]*.[[:digit:]][[:digit:]]*.[[:digit:]][[:digit:]]*" </dev/null 2>&1
+    if [ -n "$ipAddr" ]; then
+      local ipGate=$(getPosFromIPString 3, $1)
+      local ipNetmask=$(getPosFromIPString 4, $1)
+      local ipHostname=$(getPosFromIPString 5, $1)
+    else
+      local master=$(getPosFromIPString 2, $1)
+      local slave=$(getPosFromIPString 3, $1)
+    fi
     local ipDevice=$(getPosFromIPString 6, $1)
   else
     local ipAddr=$1
@@ -120,8 +128,13 @@ function ip2Config() {
   fi
 
   echo_local -n "Generating ifcfg for ${distribution} ($ipAddr, $ipGate, $ipNetmask, $ipHostname, $ipDevice)..."
-  exec_local ${distribution}_ip2Config "$ipDevice" "$ipAddr" "$ipNetmask" "$ipHostname" "$ipGate"
-  return_code
+  # Bonding
+  if [ -n "$ipAddr" ]; then
+    ${distribution}_ip2Config "$ipDevice" "$ipAddr" "$ipNetmask" "$ipHostname" "$ipGate"
+  else
+    ${distribution}_ip2Config "$ipDevice" "" "$master" "$slave"
+  fi
+  return_code $?
 }
 #************ ip2Config 
 
@@ -161,6 +174,9 @@ function getPosFromIPString() {
 
 #############
 # $Log: network-lib.sh,v $
-# Revision 1.1  2006-05-07 11:33:40  marc
+# Revision 1.2  2006-05-12 13:06:41  marc
+# First stable Version 1.0 for initrd.
+#
+# Revision 1.1  2006/05/07 11:33:40  marc
 # initial revision
 #
