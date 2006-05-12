@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.1 2006-05-07 11:33:40 marc Exp $
+# $Id: network-lib.sh,v 1.2 2006-05-12 13:03:24 marc Exp $
 #
 # @(#)$File$
 #
@@ -34,9 +34,17 @@
 function rhel4_ip2Config() {
   local ipDevice=$1
   local ipAddr=$2
-  local ipNetmask=$3
-  local ipHostname=$3
-  local ipGate=$5
+
+  #Bonding
+  echo "$ipAddr" | grep "[[:digit:]][[:digit:]]*.[[:digit:]][[:digit:]]*.[[:digit:]][[:digit:]]*.[[:digit:]][[:digit:]]*" </dev/null 2>&1
+  if [ -n "$ipAddr" ]; then
+    local ipNetmask=$3
+    local ipHostname=$3
+    local ipGate=$5
+  else
+    local master=$3
+    local slave=$4
+  fi
 
   # just for testing
   #local $pref="/tmp"
@@ -51,21 +59,31 @@ function rhel4_ip2Config() {
   if [ -e ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice ]; then
     mv ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice ${__prefix}/etc/sysconfig/network-scripts/ifcfg-${ipDevice}.com_back
   fi
-  if [ "$ipAddr" = "dhcp" -o "$ipAddr" = "DHCP" -o -z "$ipAddr" ]; then 
-    bootproto="dhcp"
-  else 
-    bootproto="static"
+  if [ -n "$ipAddr" ]; then
+    if [ "$ipAddr" = "dhcp" -o "$ipAddr" = "DHCP" -o -z "$ipAddr" ]; then 
+      bootproto="dhcp"
+    else 
+      bootproto="none"
+    fi
+    (echo "DEVICE=$ipDevice" && 
+     echo "BOOTPROTO=$bootproto" && 
+     echo "ONBOOT=no" &&
+     echo "TYPE=Ethernet") > ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
+    if [ "$bootproto" != "dhcp" ]; then
+      (echo "IPADDR=$ipAddr" && 
+       if [ -n "$ipNetmask" ]; then echo "NETMASK=$ipNetmask"; fi) >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
+      if [ -n "$ipGate" ]; then 
+	echo "GATEWAY=$ipGate" >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
+      fi
+    fi
+  else
+    (echo "DEVICE=$ipDevice" && 
+     echo "BOOTPROTO=none" && 
+     echo "ONBOOT=no" &&
+     echo "MASTER=${master}" &&
+     echo "SLAVE=${slave}" &&
+     echo "TYPE=Ethernet") > ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
   fi
-  (echo "DEVICE=$ipDevice" && 
-   echo "BOOTPROTO=$bootproto" && 
-   echo "ONBOOT=no") > ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
-  if [ "$bootproto" != "dhcp" ]; then
-     (echo "IPADDR=$ipAddr" && 
-	 if [ -n "$ipNetmask" ]; then echo "NETMASK=$ipNetmask"; fi) >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
-     if [ -n "$ipGate" ]; then 
-	 echo "GATEWAY=$ipGate" >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
-     fi
-   fi
 #   (echo "NETWORKING=yes" &&
 #    echo "HOSTNAME=$ipHostname") > ${__prefix}/etc/sysconfig/network
 #   if [ $(/bin/hostname) = "(none)" ] || [ $(/bin/hostname) = "localhost.localdomain" ] || [ $(/bin/hostname) = "localhost" ]; then 
@@ -81,6 +99,9 @@ function rhel4_ip2Config() {
 
 #################
 # $Log: network-lib.sh,v $
-# Revision 1.1  2006-05-07 11:33:40  marc
+# Revision 1.2  2006-05-12 13:03:24  marc
+# First stable version 1.0.
+#
+# Revision 1.1  2006/05/07 11:33:40  marc
 # initial revision
 #
