@@ -66,25 +66,22 @@ function get_runlevel {
 #
 start()
 {
-  pids=$(fuser -mv ${INITRD_DIR} | grep fenced | awk '
-BEGIN{ found=1; }
-NF==5 && $5=="fenced" {print $3; found=0;} 
-NF==4 && $4="fenced" {print $2; found=0;}
-END { exit found; }
-')
-  if [ $? -eq 0 ]; then
-    echo -n $"Stopping fenced from initrd"
-    kill $pids 
-    if [ $? -eq 0 ]; then
-      success
-      echo
-      return 0
-    else
-      failure
-      echo
-      return 1
-    fi
-  elif [ -e ${INITRD_DIR}/var/lib/fence_tool/var/run/fenced.pid ]; then
+#  pids=$(fuser -mv ${INITRD_DIR} | grep fenced | awk '
+#BEGIN{ found=1; }
+#NF==5 && $5=="fenced" {print $3; found=0;} 
+#NF==4 && $4="fenced" {print $2; found=0;}
+#END { exit found; }
+#')
+#  if [ $? -eq 0 ]; then
+#    echo -n $"Stopping fenced from initrd"
+#    kill $pids 
+#    if [ $? -eq 0 ]; then
+##      success
+#    else
+#      failure
+#    fi
+#  el
+  if [ -e ${INITRD_DIR}/var/lib/fence_tool/var/run/fenced.pid ]; then
     echo -n $"Stopping fenced from initrd"
     kill $(cat ${INITRD_DIR}/var/lib/fence_tool/var/run/fenced.pid) &&
     rm -f ${INITRD_DIR}/var/lib/fence_tool/var/run/fenced.pid
@@ -243,7 +240,10 @@ exit $rtrn
 
 #########################
 # $Log: fenced-chroot,v $
-# Revision 1.6  2006-05-07 11:35:34  marc
+# Revision 1.7  2006-05-12 13:05:50  marc
+# Major Bug fixed that leaded to fenced-chroot not working when booting up.
+#
+# Revision 1.6  2006/05/07 11:35:34  marc
 # changed fence to fenced.
 #
 # Revision 1.5  2006/05/03 12:47:04  marc
