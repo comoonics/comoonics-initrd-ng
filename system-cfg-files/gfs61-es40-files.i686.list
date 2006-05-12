@@ -4,7 +4,7 @@
 #    $id$
 #  DESCRIPTION
 #*******
-# $Id: gfs61-es40-files.i686.list,v 1.7 2006-05-07 11:37:45 marc Exp $
+# $Id: gfs61-es40-files.i686.list,v 1.8 2006-05-12 13:04:42 marc Exp $
 bash
 nash
 nslookup
@@ -35,6 +35,7 @@ gzip
 gunzip
 ps
 ifconfig
+ifenslave
 route
 insmod
 pivot_root
@@ -132,6 +133,7 @@ fence_tool
 ssh
 tee
 /etc/cluster/cluster.conf
+/etc/modprobe.conf
 /lib/libmagma.so
 /lib/libmagma.so.1
 /lib/libmagma.so.1.0.0
@@ -343,7 +345,10 @@ iscsi-umountall
 /lib/libcrypto.so.0.9.7a
 /lib/libcrypto.so.4
 # $Log: gfs61-es40-files.i686.list,v $
-# Revision 1.7  2006-05-07 11:37:45  marc
+# Revision 1.8  2006-05-12 13:04:42  marc
+# Some new files for Version 1.0.
+#
+# Revision 1.7  2006/05/07 11:37:45  marc
 # added tail and head
 #
 # Revision 1.6  2006/05/03 12:47:48  marc
