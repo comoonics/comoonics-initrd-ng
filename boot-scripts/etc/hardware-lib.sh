@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.1 2006-05-07 11:33:40 marc Exp $
+# $Id: hardware-lib.sh,v 1.2 2006-06-07 09:42:23 marc Exp $
 #
 # @(#)$File$
 #
@@ -105,6 +105,10 @@ function lvm_start {
    echo_local -n Making device nodes
    lvm vgmknodes >/dev/null 2>&1
    return_code $?
+
+   echo_local_debug "Found lvm devices (/dev/mapper): "
+   lvm_devices=$(ls -1 /dev/mapper)
+   echo_local_debug $lvm_devices
 
    #exec_local ${LVM_VG_SCAN}
    #exec_local ${LVM_VG_CHANGE} -ay $pool_name
@@ -222,6 +226,9 @@ function add_scsi_device() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.1  2006-05-07 11:33:40  marc
+# Revision 1.2  2006-06-07 09:42:23  marc
+# *** empty log message ***
+#
+# Revision 1.1  2006/05/07 11:33:40  marc
 # initial revision
 #

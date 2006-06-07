@@ -6,7 +6,7 @@
 #*******
 #!/bin/bash
 #
-# $Id: create-gfs-initrd-generic.sh,v 1.7 2006-05-03 12:47:10 marc Exp $
+# $Id: create-gfs-initrd-generic.sh,v 1.8 2006-06-07 09:42:23 marc Exp $
 #
 # @(#)$File$
 #
@@ -20,7 +20,13 @@
 # accordance with the terms of the license agreement you entered into
 # with ATIX.
 #
-. `dirname $0`/create-gfs-initrd-lib.sh
+. $(dirname $0)/create-gfs-initrd-lib.sh
+if [ -e $(dirname $0)/boot-scripts/etc/boot-lib.sh ]; then
+  source $(dirname $0)/boot-scripts/etc/boot-lib.sh
+  initEnv
+fi
+exec 3>/dev/null
+exec 4>/dev/null 5>/dev/null
 
 #****f* create-gfs-initrd-generic.sh/usage
 #  NAME
@@ -49,7 +55,7 @@ function getoptions() {
     while getopts UoRFVvhm:fd:s:r:b: option ; do
 	case "$option" in
 	    v) # version
-		echo "$0 Version "'$Revision: 1.7 $'
+		echo "$0 Version "'$Revision: 1.8 $'
 		exit 0
 		;;
 	    h) # help
@@ -172,19 +178,19 @@ fi
 
 if [ -z "$initramfs" ] || [ $initramfs -eq 0 ]; then
   echo -n "Makeing initrd ..."
-  make_initrd $initrdname $size || (echo "(FAILED)" && rm $lockfile && exit $?)
-  echo "(OK)"
+  make_initrd $initrdname $size || (failure && rm $lockfile && exit $?)
+  success
 
   echo -n "Mounting initrd ..."
-  mount_initrd $initrdname $mountpoint || (echo "(FAILED)" && rm $lockfile && exit $?)
-  echo "(OK)"
+  mount_initrd $initrdname $mountpoint || (failure && rm $lockfile && exit $?)
+  success
 fi
 
 # extracting rpms
-if [ -n "$rpm_list" ]; then
+if [ -n "$rpm_filename" ] && [ -e "$rpm_filename" ]; then
   echo -n "Extracting rpms..."
-  extract_all_rpms $rpm_list $mountpoint || (echo "(FAILED)" && rm $lockfile && exit $?)
-  echo "(OK)"
+  extract_all_rpms $rpm_filename $mountpoint $rpm_dir || echo "(WARNING)"
+  success
 fi
 
 echo -n "Retreiving dependent files..."
@@ -193,7 +199,7 @@ echo -n "Retreiving dependent files..."
 
 files=( $(get_all_files_dependent $dep_filename $verbose | sort -u | grep -v "^.$" | grep -v "^..$") )
 echo ${files[@]} | tr ' ' '\n' > ${mountpoint}/file-list.txt
-echo "found ${#files[@]} (OK)"
+echo -n "found ${#files[@]}" && success
 
 echo -n "Copying files..."
 cd $mountpoint
@@ -227,20 +233,20 @@ while [ $i -lt ${#files[@]} ]; do
   fi
   i=$(( $i+1 ))
 done
-echo "(OK)"
+success
 
 # copying kernel modules
 echo -n "Copying kernelmodules ($kernel)..."
 if [ ! -d ${mountpoint}/lib/modules/$kernel ]; then 
   mkdir -p ${mountpoint}/lib/modules/
 fi
-cp -a /lib/modules/$kernel ${mountpoint}/lib/modules/$kernel || (echo "(FAILED)" && rm $lockfile && exit $?)
-echo "(OK)"
+cp -a /lib/modules/$kernel ${mountpoint}/lib/modules/$kernel || (failure && rm $lockfile && exit $?)
+success
 
 # patching build file
 if [ -n "$build_file" ]; then
     echo -n "Patching buildfile \"$build_file\"..."
-    (echo "Build Date: "$(date) >> ${mountpoint}/$build_file && echo "(OK)") || echo "(FAILED)"
+    (echo "Build Date: "$(date) >> ${mountpoint}/$build_file && success) || failure
 fi
 
 
@@ -265,32 +271,35 @@ else
     cd $pwd
   fi
 fi
-echo "(OK)"
+success
 
 if [ -z "$initramfs" ] || [ $initramfs -eq 0 ]; then
   cd $pwd
   echo -n "Unmounting and compressing.."
   (chown -R root:root $mountpoint && umount_and_zip_initrd $mountpoint $initrdname $force && \
-   rm $lockfile) || (echo "(FAILED)" && rm $lockfile && exit $?)
+   rm $lockfile) || (failure && rm $lockfile && exit $?)
 else
   echo -n "Cpio and compress.."
   (chown -R root:root $mountpoint && cpio_and_zip_initrd $mountpoint $initrdname $force && \
-   rm $lockfile) || (echo "(FAILED)" && rm $lockfile && exit $?)
+   rm $lockfile) || (failure && rm $lockfile && exit $?)
 fi
-echo "(OK)"
+success
 
 cd $pwd
 if [ -z "$no_remove_tmp" ]; then
   echo -n "Cleaning up ($mountpoint, $no_remove_tmp)..."
   rm -fr $mountpoint
-  echo "(OK)"
+  success
 fi
 ls -lk $initrdname.gz
 #************ main 
 
 ##########################################
 # $Log: create-gfs-initrd-generic.sh,v $
-# Revision 1.7  2006-05-03 12:47:10  marc
+# Revision 1.8  2006-06-07 09:42:23  marc
+# *** empty log message ***
+#
+# Revision 1.7  2006/05/03 12:47:10  marc
 # added documentation
 #
 # Revision 1.6  2006/02/03 12:39:27  marc

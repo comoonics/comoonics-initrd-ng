@@ -6,7 +6,7 @@
 #    Library for the creating of initrds for sharedroot
 #*******
 #
-# $Id: create-gfs-initrd-lib.sh,v 1.6 2006-05-03 12:46:45 marc Exp $
+# $Id: create-gfs-initrd-lib.sh,v 1.7 2006-06-07 09:42:23 marc Exp $
 #
 # @(#)$File$
 #
@@ -67,9 +67,12 @@ function copy_file() {
 #  NAME
 #    perlcc_file
 #  SYNOPSIS
-#    function perlcc_file() {
-#  MODIFICATION HISTORY
+#    function perlcc_file(perlfile, destfile) {
+#  DESCRIPTION
+#    Compiles the perlfile to a binary in destfile
 #  IDEAS
+#    To be used if special perlfiles are needed without puting all
+#    perl things into the initrd.
 #  SOURCE
 #
 function perlcc_file() {
@@ -81,61 +84,98 @@ function perlcc_file() {
   cd $(dirname $destfile)
   perlcc $filename && mv a.out $destfile
 }
-
-# extract rpm
-# param: $1 rpm-name
-#        $2 dest
 #************ perlcc_file 
+
 #****f* create-gfs-initrd-lib.sh/extract_rpm
 #  NAME
 #    extract_rpm
 #  SYNOPSIS
-#    function extract_rpm() {
-#  MODIFICATION HISTORY
+#    function extract_rpm(rpmfile, root) {
+#  DESCRIPTION
+#    Extracts the given rpmfile to the given root
 #  IDEAS
 #  SOURCE
 #
 function extract_rpm() {
 	 local rpm=$1
 	 local dest=$2
-	 cd $dest
-	 rpm2cpio $1 | cpio -ivdum
-	 cd -
+	 (cd $dest &&
+	  rpm2cpio $rpm | cpio -ivdum)
 }
-
-# extract all rpm in file
-# param: $1: file
-#        $2: root
 #************ extract_rpm 
+
+#****f* create-gfs-initrd-lib.sh/extract_installed_rpm
+#  NAME
+#    extract_installed_rpm
+#  SYNOPSIS
+#    function extract_installed_rpm(rpmfile, root) {
+#  DESCRIPTION
+#    Extracts the found file from rpm rpmfile to the given root
+#  IDEAS
+#    Run rpm -ql rpmfile and copy all listed files to root.
+#  SOURCE
+#
+function extract_installed_rpm() {
+  local rpm=$1
+  local dest=$2
+  rpm -q $rpm >/dev/null 2>&1
+  if [ $? -ne 0 ]; then 
+    echo "Cannot find rpm \"$rpm\". Skipping." >&2
+    return 1
+  fi
+  pushd $dest >/dev/null
+  for file in $(rpm -ql $rpm); do
+    [ ! -e ${dest}$(dirname $file) ] && mkdir -p ${dest}$(dirname $file)
+    if [ -d $file ]; then
+      mkdir ${dest}$file 2>/dev/null
+    else
+      cp -a $file ${dest}$(dirname $file)
+    fi
+  done
+  popd >/dev/null
+}
+#************ extract_installed_rpm 
+
 #****f* create-gfs-initrd-lib.sh/extract_all_rpms
 #  NAME
 #    extract_all_rpms
 #  SYNOPSIS
-#    function extract_all_rpms() {
-#  MODIFICATION HISTORY
+#    function extract_all_rpms(rpm_listfile, root, rpmdir) {
+#  DESCRIPTION
+#    Calls extract_rpm/extract_installed for all files listed in 
+#    rpm_listfile
 #  IDEAS
 #  SOURCE
 #
 function extract_all_rpms() {
-	 local rpms=`cat $1`
-	 local root=$2
-	 for rpm in $rpms; do
+  local rpm_listfile=$1
+  local root=$2
+  if [ ! -e "$rpm_listfile" ]; then
+    echo "Cannot find rpmlistfile \"$rpm_listfile\". Exiting." >&2
+    return 1
+  fi
+  rpms=$(cat $rpm_listfile)
+
+  for rpm in $rpms; do
     if [ ${rpm:0:1} != '#' ]; then
-		  extract_rpm $rpm $root
+      if [ -f $rpm ]; then
+        extract_rpm $rpm $root
+      else
+        extract_installed_rpm $rpm $root
+      fi
     fi
   done
 }
-
-# 
-# checks if the file is executable.
-# If so it returns all dependent libraries with path as a stringlist.
 #************ extract_all_rpms 
-#****f* create-gfs-initrd-lib.sh/get_dependent_files
+
+##****f* create-gfs-initrd-lib.sh/get_dependent_files
 #  NAME
 #    get_dependent_files
 #  SYNOPSIS
-#    function get_dependent_files() {
-#  MODIFICATION HISTORY
+#    function get_dependent_files(filename) {
+#  DESCRIPTION
+#    checks if the file is executable.
+#    If so it returns all dependent libraries with path as a stringlist.
 #  IDEAS
 #  SOURCE
 #
@@ -249,16 +289,15 @@ function get_all_files_dependent() {
     fi
   done <$filename
 }
-
-#
-# Creates a new memory filesystem initrd with the given size
 #************ get_all_files_dependent 
+
 #****f* create-gfs-initrd-lib.sh/make_initrd
 #  NAME
 #    make_initrd
 #  SYNOPSIS
 #    function make_initrd() {
-#  MODIFICATION HISTORY
+#  DESCRIPTION
+#    Creates a new memory filesystem initrd with the given size
 #  IDEAS
 #  SOURCE
 #
@@ -268,16 +307,15 @@ function make_initrd() {
   dd if=/dev/zero of=$filename bs=1k count=$size > /dev/null 2>&1 && \
   mkfs.ext2 -F -m 0 -i 2000 $filename > /dev/null 2>&1
 }
-
-#
-# Mounts the given unpacked filesystem to the given directory
 #************ make_initrd 
+
 #****f* create-gfs-initrd-lib.sh/mount_initrd
 #  NAME
 #    mount_initrd
 #  SYNOPSIS
 #    function mount_initrd() {
-#  MODIFICATION HISTORY
+#  DESCRIPTION
+#    Mounts the given unpacked filesystem to the given directory
 #  IDEAS
 #  SOURCE
 #
@@ -335,6 +373,9 @@ function cpio_and_zip_initrd() {
 
 ######################
 # $Log: create-gfs-initrd-lib.sh,v $
-# Revision 1.6  2006-05-03 12:46:45  marc
+# Revision 1.7  2006-06-07 09:42:23  marc
+# *** empty log message ***
+#
+# Revision 1.6  2006/05/03 12:46:45  marc
 # added documentation
 #

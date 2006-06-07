@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.12 2006-05-07 12:06:56 marc Exp $
+# $Id: Makefile,v 1.13 2006-06-07 09:42:23 marc Exp $
 #
 # @(#)$file$
 #
@@ -172,7 +172,8 @@ CFG_DIR=$(SYSTEM_CFG_DIR)/$(PACKAGE_NAME)
 #
 CFG_FILES=system-cfg-files/gfs6-es30-files.i686.list \
   system-cfg-files/gfs61-es40-files.i686.list \
-  system-cfg-files/gfs61-es40-files.x86_64.list
+  system-cfg-files/gfs61-es40-files.x86_64.list \
+  system-cfg-files/gfs61-es40-rpms.list
 
 #************ CFG_FILES 
 #****d* Makefile/EMPTY_DIRS
@@ -293,7 +294,10 @@ archive:
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.12  2006-05-07 12:06:56  marc
+# Revision 1.13  2006-06-07 09:42:23  marc
+# *** empty log message ***
+#
+# Revision 1.12  2006/05/07 12:06:56  marc
 # version 1.0 stable
 #
 # Revision 1.11  2006/05/03 12:46:51  marc

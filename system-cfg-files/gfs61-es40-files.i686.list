@@ -4,7 +4,7 @@
 #    $id$
 #  DESCRIPTION
 #*******
-# $Id: gfs61-es40-files.i686.list,v 1.8 2006-05-12 13:04:42 marc Exp $
+# $Id: gfs61-es40-files.i686.list,v 1.9 2006-06-07 09:42:23 marc Exp $
 bash
 nash
 nslookup
@@ -233,7 +233,6 @@ iscsi-umountall
 /etc/sysconfig/network-scripts/init.ipv6-global
 /etc/sysconfig/network-scripts/network-functions
 /etc/sysconfig/network-scripts/ifcfg-eth0
-/etc/sysconfig/init
 /etc/sysconfig/kudzu
 /etc/sysconfig/network
 /etc/sysconfig/clock
@@ -345,7 +344,10 @@ iscsi-umountall
 /lib/libcrypto.so.0.9.7a
 /lib/libcrypto.so.4
 # $Log: gfs61-es40-files.i686.list,v $
-# Revision 1.8  2006-05-12 13:04:42  marc
+# Revision 1.9  2006-06-07 09:42:23  marc
+# *** empty log message ***
+#
+# Revision 1.8  2006/05/12 13:04:42  marc
 # Some new files for Version 1.0.
 #
 # Revision 1.7  2006/05/07 11:37:45  marc

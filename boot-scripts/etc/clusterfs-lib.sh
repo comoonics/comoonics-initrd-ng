@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.2 2006-05-12 13:03:42 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.3 2006-06-07 09:42:23 marc Exp $
 #
 # @(#)$File$
 #
@@ -408,10 +408,10 @@ function copy_relevant_files {
   olddir=$(pwd)
   return_c=1
   echo_local -n "Backing up created config files [$cdsl_local_dir]"
-  if [ -f $newroot/etc/sysconfig/hwconf ]; then
+  if [ ! -L $newroot/etc/sysconfig/hwconf ]; then
     exec_local mv -f $newroot/etc/sysconfig/hwconf $newroot/etc/sysconfig/hwconf.com_back
-  fi
-  return_code_passed
+  fi && /sbin/true
+  return_code_passed $?
 
   return_c=1
   echo_local -n "Creating config dirs if not exist.."
@@ -420,8 +420,8 @@ function copy_relevant_files {
   fi &&
   if [ ! -d $newroot/${cdsl_local_dir}/etc/sysconfig ]; then 
     exec_local mkdir -p $newroot/${cdsl_local_dir}/etc/sysconfig
-  fi
-  return_code_passed
+  fi && /bin/true
+  return_code_passed $?
 
   echo_local -n "Copying the configfiles ${cdsl_local_dir}.."
   cd $newroot/${cdsl_local_dir}/etc
@@ -429,12 +429,18 @@ function copy_relevant_files {
   ([ -n "$cdsl_local_dir" ] && 
    cd $newroot/etc && 
    ln -sf ../${cdsl_local_dir}/$modules_conf $(basename $modules_conf))
+  return_c=$?
+  if [ -f ${new_root}/etc/cluster/cluster.conf ]; then  
+    cp ${new_root}/etc/cluster/cluster.conf /etc/cluster/cluster.conf.bak
+  fi
+  cp /etc/cluster/cluster.conf ${new_root}/etc/cluster/cluster.conf
+  [ return_c -eq 0 ] && return_c=$?
 #   cd sysconfig 
 #   cp -f /etc/sysconfig/hwconf $newroot/${cdsl_local_dir}/etc/sysconfig/
 #    [ ! -f ${newroot}/etc/sysconfig/hwconf ] && 
 #    cd $newroot && 
 #    ln -fs ${cdsl_local_dir}/etc/sysconfig/hwconf etc/sysconfig/hwconf)
-  return_code=$?
+  return_code=$return_c
   echo_local -n ".(hw $return_c)."
 #  cd $newroot
 #  for netdev in $netdevs; do
@@ -451,7 +457,10 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.2  2006-05-12 13:03:42  marc
+# Revision 1.3  2006-06-07 09:42:23  marc
+# *** empty log message ***
+#
+# Revision 1.2  2006/05/12 13:03:42  marc
 # First stable Version for 1.0.
 #
 # Revision 1.1  2006/05/07 11:33:40  marc

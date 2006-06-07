@@ -71,6 +71,7 @@
 /sbin/fence_wti
 /sbin/fence_xcat
 /sbin/fence_drac
+/sbin/fence_rsa
 /usr/lib/libwrap.so.0.7.6
 /usr/lib/libwrap.so.0
 /usr/lib/libssl.so
@@ -97,6 +98,11 @@
 /usr/lib/libkrb5.so.3.2
 /usr/bin/perl
 /usr/lib/perl5
+/usr/bin/python
+/usr/lib/python
+/usr/lib/python2.3
+/usr/lib/libpython2.3.so
+/usr/lib/libpython2.3.so.1.0
 /usr/bin/ssh
 /lib64/libcom_err.so.2
 /lib64/libcom_err.so.2.1
@@ -129,6 +135,9 @@
 /usr/lib64/libkrb5.so.3
 /usr/lib64/libkrb5.so.3.2
 /usr/lib64/perl5
+/usr/lib64/python2.3
+/usr/lib64/libpython2.3.so
+/usr/lib64/libpython2.3.so.1.0
 /lib64/libdl-2.3.4.so
 /lib64/libdl.so.2
 /lib64/libnsl.so.1

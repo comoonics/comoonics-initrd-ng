@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.31 2006-05-12 13:02:41 marc Exp $
+# $Id: boot-lib.sh,v 1.32 2006-06-07 09:42:23 marc Exp $
 #
 # @(#)$File$
 #
@@ -182,7 +182,8 @@ function getBootParm() {
    fi
 }
 #************ getBootParm 
-#****f* boot-lib.sh/getBootParm
+
+#****f* boot-lib.sh/getParm
 #  NAME
 #    getParm
 #  SYNOPSIS
@@ -271,17 +272,17 @@ function getBootParameters() {
 }
 #************ getBootParameters 
 
-#****f* boot-lib.sh/initBootProcess
+#****f* boot-lib.sh/initEnv
 #  NAME
-#    initBootProcess
+#    initEnv
 #  SYNOPSIS
-#    function initBootProcess() {
-#  MODIFICATION HISTORY
+#    function initEnv() {
+#  DESCRIPTION
+#    Initializes basic things
 #  IDEAS
 #  SOURCE
 #
-function initBootProcess() {
-
+function initEnv {
   # copied from redhat /etc/init.d/functions
   TEXTDOMAIN=initscripts
 
@@ -321,9 +322,9 @@ function initBootProcess() {
       BOOTUP=color
       RES_COL=60
       MOVE_TO_COL="echo -en \\033[${RES_COL}G"
-      SETCOLOR_SUCCESS="echo -en \\033[1;32m"
+      SETCOLOR_SUCCESS="echo -en \\033[1;34m"
       SETCOLOR_FAILURE="echo -en \\033[1;31m"
-      SETCOLOR_WARNING="echo -en \\033[1;33m"
+      SETCOLOR_WARNING="echo -en \\033[1;35m"
       SETCOLOR_NORMAL="echo -en \\033[0;39m"
       LOGLEVEL=1
     fi
@@ -342,10 +343,31 @@ function initBootProcess() {
   else
     INITLOG_ARGS=
   fi
+}
+#********** initEnv
+
+#****f* boot-lib.sh/initBootProcess
+#  NAME
+#    initBootProcess
+#  SYNOPSIS
+#    function initBootProcess() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function initBootProcess() {
+  initEnv
   date=`/bin/date`
     
+
   echo_local "***********************************"
-  echo_local "Starting GFS Shared Root for $HOSTNAME"
+  # Print a text banner.
+  release=$(cat /etc/comoonics-release)
+  echo_local -en $"\t\tWelcome to "
+  [ "$BOOTUP" = "color" ] && echo -en "\\033[0;34m"
+  echo_local $release
+  [ "$BOOTUP" = "color" ] && echo -en "\\033[0;39m"
+  echo_local "Starting GFS Shared Root"
   echo_local "Date: $date"
   echo_local "***********************************"
     
@@ -600,7 +622,7 @@ function echo_out() {
 #
 function echo_local() {
    echo ${*:0:$#-1} "${*:$#}"
-#   echo ${*:0:$#-1} "${*:$#}" >&3
+   echo ${*:0:$#-1} "${*:$#}" >&3
 #   echo ${*:0:$#-1} "${*:$#}" >&5
 #   echo ${*:0:$#-1} "${*:$#}" >> $bootlog
 #   [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
@@ -636,7 +658,7 @@ function echo_local_debug() {
 #
 function error_out() {
     echo ${*:0:$#-1} "${*:$#}" >&4
-    echo ${*:0:$#-1} "${*:$#}" >&5
+    echo ${*:0:$#-1} "${*:$#}" >&2
 }
 #************ error_out 
 #****f* boot-lib.sh/error_local
@@ -689,13 +711,14 @@ function error_local_debug() {
 #  SOURCE
 #
 function exec_local() {
-  $*
+  output=$($*)
   return_c=$?
   if [ ! -z "$debug" ]; then 
     echo "cmd: $*" >&3
+    echo "OUTPUT: $output" >&3
   fi
 #  echo "cmd: $*" >> $bootlog
-#  echo "$output" >> $bootlog
+  echo -n "$output"
   return $return_c
 }
 #************ exec_local 
@@ -794,15 +817,15 @@ function return_code_passed() {
 function success {
   [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
   echo -n "[  "
-#  echo -n "[  " >&3
+  echo -n "[  " >&3
 #  echo -n "[  " >&5
   [ "$BOOTUP" = "color" ] && $SETCOLOR_SUCCESS
   echo -n "OK"
-#  echo -n "OK" >&3
+  echo -n "OK" >&3
 #  echo -n "OK" >&5
   [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
   echo "  ]"
-#  echo "  ]" >&3
+  echo "  ]" >&3
 #  echo "  ]" >&5
   echo -ne "\r"
 #  echo -ne "\r" >&3
@@ -821,16 +844,16 @@ function success {
 function failure {
   [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
   echo -n "["
-#  echo -n "[" >&3
+  echo -n "[" >&3
 #  echo -n "[" >&5
   [ "$BOOTUP" = "color" ] && $SETCOLOR_FAILURE
   echo -n "FAILED"
-#  echo -n "FAILED" >&3
+  echo -n "FAILED" >&3
 #  echo -n "FAILED" >&5
   [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
   echo "]"
   echo -ne "\r"
-#  echo "]" >&3
+  echo "]" >&3
 #  echo "]" >&5
 #  echo -ne "\r" >&3
   return 1
@@ -848,16 +871,16 @@ function failure {
 function warning {
   [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
   echo -n "["
-#  echo -n "[" >&3
+  echo -n "[" >&3
 #  echo -n "[" >&5
   [ "$BOOTUP" = "color" ] && $SETCOLOR_WARNING
   echo -n "WARNING"
-#  echo -n "WARNING" >&3
+  echo -n "WARNING" >&3
 #  echo -n "WARNING" >&5
   [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
   echo "]"
   echo -ne "\r"
-#  echo "]" >&3
+  echo "]" >&3
 #  echo "]" >&5
 #  echo -ne "\r" >&3
   return 1
@@ -875,16 +898,16 @@ function warning {
 function passed {
   [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
   echo -n "["
-#  echo -n "[" >&3
+  echo -n "[" >&3
 #  echo -n "[" >&5
   [ "$BOOTUP" = "color" ] && $SETCOLOR_WARNING
   echo -n "PASSED"
-#  echo -n "PASSED" >&3
+  echo -n "PASSED" >&3
 #  echo -n "PASSED" >&5
   [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
   echo "]"
   echo -ne "\r"
-#  echo "]" >&3
+  echo "]" >&3
 #  echo "]" >&5
 #  echo -ne "\r" >&3
   return 1
@@ -892,7 +915,10 @@ function passed {
 #********** passed 
 
 # $Log: boot-lib.sh,v $
-# Revision 1.31  2006-05-12 13:02:41  marc
+# Revision 1.32  2006-06-07 09:42:23  marc
+# *** empty log message ***
+#
+# Revision 1.31  2006/05/12 13:02:41  marc
 # First stable Version for 1.0.
 #
 # Revision 1.30  2006/05/07 11:37:15  marc

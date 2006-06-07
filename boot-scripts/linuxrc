@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc,v 1.6 2006-05-12 13:06:13 marc Exp $
+# $Id: linuxrc,v 1.7 2006-06-07 09:42:23 marc Exp $
 #
 # @(#)$File$
 #
@@ -25,7 +25,7 @@
 #****h* comoonics-bootimage/linuxrc
 #  NAME
 #    linuxrc
-#    $Id: linuxrc,v 1.6 2006-05-12 13:06:13 marc Exp $
+#    $Id: linuxrc,v 1.7 2006-06-07 09:42:23 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -45,35 +45,36 @@ source /etc/boot-lib.sh
 exec 3>/dev/console
 exec 4>/dev/console
 
+initEnv
+
 # Print a text banner.
-echo -en $"\t\tWelcome to "
+echo_local -en $"\t\tWelcome to "
 if LC_ALL=C grep -q "Red Hat" /etc/redhat-release ; then
  [ "$BOOTUP" = "color" ] && echo -en "\\033[0;31m"
- echo -en "Red Hat"
+ echo_local -en "Red Hat"
  [ "$BOOTUP" = "color" ] && echo -en "\\033[0;39m"
  PRODUCT=`sed "s/Red Hat \(.*\) release.*/\1/" /etc/redhat-release`
- echo " $PRODUCT"
+ echo_local " $PRODUCT"
 elif LC_ALL=C grep -q "Fedora" /etc/redhat-release ; then
  [ "$BOOTUP" = "color" ] && echo -en "\\033[0;31m"
- echo -en "Fedora"
+ echo_local -en "Fedora"
  [ "$BOOTUP" = "color" ] && echo -en "\\033[0;39m"
  PRODUCT=`sed "s/Fedora \(.*\) release.*/\1/" /etc/redhat-release`
- echo " $PRODUCT"
+ echo_local " $PRODUCT"
 else
  PRODUCT=`sed "s/ release.*//g" /etc/redhat-release`
- echo "$PRODUCT"
+ echo_local "$PRODUCT"
 fi
 
 if [ -n "$logger" ]; then
-  exec 3>/dev/null 4>/dev/null 5>/dev/null
-  exec 3>$bootlog
+  exec 3>$bootlog 4>$bootlog 5>/dev/null
 #  exec 3>/dev/console 4>/dev/console 
 #  exec 5> $bootlog
-  ./linuxrc.generic.sh 2>&1 | tee -a $bootlog | tee /dev/console | $logger
+  ./linuxrc.generic.sh 2>$bootlog | tee /dev/console | $logger
 else
-  exec 3>/dev/null 4>/dev/null 
+  exec 3>/dev/null 4>$bootlog
   exec 3>$bootlog
-  ./linuxrc.generic.sh 2>&1 | tee -a $bootlog
+  ./linuxrc.generic.sh 2> $bootlog
 fi
 
 error_code=0
@@ -81,6 +82,7 @@ error_code=0
 [ -e $init_cmd_file ] && init_file=( $(cat $init_cmd_file) )
 init_cmd=${init_file[0]}
 new_root=${init_file[1]}
+
 step
 
 echo "Init_cmd: $init_cmd, newroot: $newroot"
@@ -88,9 +90,9 @@ if [ -n "$error_code" ] && [ $error_code -eq 0 ]; then
   if [ -n "$newroot" ] && [ -d $newroot ]; then
     cd $newroot
   fi
-  exec 1>&- 2>&- 3>&- 4>&- 
+  exec 1>&- 2>&- 3>&- 4>&- 5>&-
   exec 1>/dev/console 2>/dev/console
-  exec chroot . $init_cmd </dev/console >/dev/console 2>&1 3>/dev/console 4>/dev/console
+  exec chroot . $init_cmd </dev/console >/dev/console 2>&1
 elif [ -n "$error_code" ] && [ $error_code -eq 2 ]; then
   echo_local "Userquit falling back to bash.."
   exec 1>/dev/console 2>/dev/console /bin/bash
@@ -103,7 +105,10 @@ fi
 
 ################
 # $Log: linuxrc,v $
-# Revision 1.6  2006-05-12 13:06:13  marc
+# Revision 1.7  2006-06-07 09:42:23  marc
+# *** empty log message ***
+#
+# Revision 1.6  2006/05/12 13:06:13  marc
 # New redirections and other fixes.
 #
 # Revision 1.5  2006/05/07 11:35:05  marc

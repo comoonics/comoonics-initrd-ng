@@ -21,7 +21,7 @@
 # with ATIX.
 #/initrd_sr-2.6.9-34.ELsmp.img.gz
 # %define _initrddir /etc/init.d
-# $Id: comoonics-bootimage.spec,v 1.17 2006-05-12 13:01:56 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.18 2006-06-07 09:42:23 marc Exp $
 #
 ##
 # TO DO
@@ -29,7 +29,6 @@
 #  #if [ -z "$fastboot" -a "$READONLY" != "yes" -a "X$ROOTFSTYPE" != "Xnfs" -a "X$ROOTFSTYPE" != "Xnfs4" ]; then
 #  if [ -z "$fastboot" -a "$READONLY" != "yes" -a "X$ROOTFSTYPE" != "Xnfs" -a "X$ROOTFSTYPE" != "Xnfs4" -a "X$ROOTFSTYPE" != "Xgfs" ]; then
 ##
-
 
 %define _user root
 %define         CONFIGDIR       /%{_sysconfdir}/comoonics
@@ -39,7 +38,9 @@
 Name: comoonics-bootimage
 Summary: Comoonics Bootimage. Scripts for creating an initrd in a gfs shared root environment
 Version: 1.0
-Release: 7
+BuildArch: noarch
+Requires: comoonics-cs >= 0.5
+Release: 15
 Vendor: ATIX GmbH
 Packager: Marc Grimme (grimme@atix.de)
 ExclusiveArch: noarch
@@ -65,20 +66,24 @@ make PREFIX=$RPM_BUILD_ROOT install
 echo "postun: Param: $1"
 if [ "$1" -eq 0 ]; then
   echo "Postuninstalling comoonics-bootimage.."
-  rm -f /etc/comoonics/bootimage/files-* &>/dev/null
+  find /etc/comoonics/bootimage -name "files*.list" -o -name "rpms*.list" -type l -exec rm -f {} \; &>/dev/null
   root_fstype=$(mount | grep "/ " | awk '
 BEGIN { exit_c=1; } 
 { if ($5) {  print $5; exit_c=0; } } 
 END{ exit exit_c}')
   if [ "$root_fstype" = "gfs" ]; then
-    /sbin/chkconfig --del bootsr &>/dev/null
-    /sbin/chkconfig bootsr off
-    /sbin/chkconfig --list bootsr
-    /sbin/chkconfig --del fenced-chroot &>/dev/null
-    /sbin/chkconfig fenced-chroot off
-    /sbin/chkconfig --list fenced-chroot
+#    /sbin/chkconfig --del bootsr &>/dev/null
+#    /sbin/chkconfig bootsr off
+#    /sbin/chkconfig --list bootsr
+#    /sbin/chkconfig --del fenced-chroot &>/dev/null
+#    /sbin/chkconfig fenced-chroot off
+#    /sbin/chkconfig --list fenced-chroot
     /sbin/chkconfig --add fenced &>/dev/null
     /sbin/chkconfig --list fenced
+    /sbin/chkconfig --add cman &>/dev/null
+    /sbin/chkconfig --list cman
+    /sbin/chkconfig --add gfs &>/dev/null
+    /sbin/chkconfig --list gfs
   fi
 fi
 
@@ -109,13 +114,14 @@ if [ ! -e /etc/comoonics/bootimage/files-$(uname -r).list ]; then
     ln -s /etc/comoonics/bootimage/gfs6-es30-files.i686.list /etc/comoonics/bootimage/files-$(uname -r).list
   else
     ln -s /etc/comoonics/bootimage/gfs61-es40-files.$(uname -m).list /etc/comoonics/bootimage/files-$(uname -r).list
+    ln -s /etc/comoonics/bootimage/gfs61-es40-rpms.list /etc/comoonics/bootimage/rpms.list
     if [ $? -ne 0 ]; then
        echo "Could not find gfs lists file for your architecture. )"$(uname -m)"). Please check if architecture is supported."
     fi
   fi
 fi
-root_fstype=$(mount | grep "/ " | awk 'BEGIN { exit_c=1; } { if ($5) { print $5; exit_c=0; } } END{ exit exit_c}')
-if [ "$root_fstype" = "gfs" ]; then
+#root_fstype=$(mount | grep "/ " | awk 'BEGIN { exit_c=1; } { if ($5) { print $5; exit_c=0; } } END{ exit exit_c}')
+#if [ "$root_fstype" = "gfs" ]; then
   /sbin/chkconfig --add bootsr &>/dev/null
   /sbin/chkconfig bootsr on
   /sbin/chkconfig --list bootsr
@@ -129,13 +135,15 @@ if [ "$root_fstype" = "gfs" ]; then
   /sbin/chkconfig --list fenced-chroot
   /sbin/chkconfig fenced off
   /sbin/chkconfig --del fenced &>/dev/null
+  /sbin/chkconfig gfs off
+  /sbin/chkconfig --del gfs
   grep "^FENCE_CHROOT=" /etc/sysconfig/cluster &>/dev/null
   [ $? -ne 0 ] && echo "FENCE_CHROOT=/var/lib/fence_tool" >> /etc/sysconfig/cluster
   /bin/true
   grep "^FENCE_CHROOT_SOURCE=" /etc/sysconfig/cluster &>/dev/null
   [ $? -ne 0 ] && echo "FENCE_CHROOT_SOURCE=/var/lib/fence_tool.tmp" >> /etc/sysconfig/cluster
   /bin/true
-fi
+#fi
 #echo "Creating linuxrc link.."
 #cd %{APPDIR}/boot-scripts/ && ln -sf linuxrc.generic.sh linuxrc
 
@@ -201,11 +209,15 @@ fi
 %config(noreplace) %{CONFIGDIR}/bootimage/gfs6-es30-files.i686.list
 %config(noreplace) %{CONFIGDIR}/bootimage/gfs61-es40-files.i686.list
 %config(noreplace) %{CONFIGDIR}/bootimage/gfs61-es40-files.x86_64.list
+%config(noreplace) %{CONFIGDIR}/bootimage/gfs61-es40-rpms.list
 %config(noreplace) %{CONFIGDIR}/comoonics-bootimage.cfg
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.17  2006-05-12 13:01:56  marc
+# Revision 1.18  2006-06-07 09:42:23  marc
+# *** empty log message ***
+#
+# Revision 1.17  2006/05/12 13:01:56  marc
 # First stable 1.0 Version
 #
 # Revision 1.16  2006/05/07 12:06:56  marc

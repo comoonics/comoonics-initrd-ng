@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.22 2006-05-12 13:02:24 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.23 2006-06-07 09:42:23 marc Exp $
 #
 # @(#)$File$
 #
@@ -17,7 +17,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.22 2006-05-12 13:02:24 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.23 2006-06-07 09:42:23 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -68,7 +68,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.22 $ $Date: 2006-05-12 13:02:24 $'
+echo_local 'Internal Version $Revision: 1.23 $ $Date: 2006-06-07 09:42:23 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -158,6 +158,7 @@ _mount_opts=${cfsparams[3]}
 _ipConfig=${cfsparams[@]:4}
 [ -n "$_ipConfig" ] && ipConfig=$_ipConfig
 [ -n "$_mount_opts" ] && mount_opts=$_mount_opts
+[ -z "$root" ] && root=$rootvolume
 clusterfs_auto_hosts $cluster_conf
 
 echo_local_debug "*****************************"
@@ -178,8 +179,10 @@ for ipconfig in $ipConfig; do
   # Special case for bonding
   { echo "$dev"| grep "^bond" && grep -v "alias $dev" $modules_conf; } >/dev/null 2>&1
   if [ $? -eq 0 ]; then
+    # Think about bonding parameters. 
+    # Multi load of bonding driver possible?
     echo_local -n "Patching $modules_conf for bonding "
-    echo "alias bond0 bonding" >> $modules_conf
+    echo "alias $dev bonding" >> $modules_conf
     return_code $?
     depmod -a >/dev/null 2>&1
   fi
@@ -240,14 +243,15 @@ switchRoot $mount_point initrd
 critical=$?
 
 echo_local -n "Copying logfile to $new_root/${bootlog}..."
-cp -f ${pivot_root}/${bootlog} ${new_root}/${bootlog} || cp -f ${pivot_root}/${bootlog} ${new_root}/$(basename $bootlog)
-return_code_warning $?
+exec_local cp -f ${pivot_root}/${bootlog} ${new_root}/${bootlog} || cp -f ${pivot_root}/${bootlog} ${new_root}/$(basename $bootlog)
 if [ -f ${new_root}/$bootlog ]; then 
   bootlog=${new_root}/$bootlog
 else 
   bootlog=${new_root}/$(basename $bootlog)
 fi
-exec 5>> $bootlog
+exec 3>> $bootlog
+exec 4>> $bootlog
+return_code_warning
 step
 
 init_cmd="/sbin/init"
@@ -290,7 +294,10 @@ fi
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.22  2006-05-12 13:02:24  marc
+# Revision 1.23  2006-06-07 09:42:23  marc
+# *** empty log message ***
+#
+# Revision 1.22  2006/05/12 13:02:24  marc
 # Major changes for Version 1.0.
 # Loads of Bugfixes everywhere.
 #
