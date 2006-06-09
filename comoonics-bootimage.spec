@@ -21,7 +21,7 @@
 # with ATIX.
 #/initrd_sr-2.6.9-34.ELsmp.img.gz
 # %define _initrddir /etc/init.d
-# $Id: comoonics-bootimage.spec,v 1.18 2006-06-07 09:42:23 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.19 2006-06-09 14:04:05 marc Exp $
 #
 ##
 # TO DO
@@ -40,7 +40,7 @@ Summary: Comoonics Bootimage. Scripts for creating an initrd in a gfs shared roo
 Version: 1.0
 BuildArch: noarch
 Requires: comoonics-cs >= 0.5
-Release: 15
+Release: 19
 Vendor: ATIX GmbH
 Packager: Marc Grimme (grimme@atix.de)
 ExclusiveArch: noarch
@@ -108,18 +108,18 @@ for cfg_file in $cfg_files; do
     echo "@map %{APPDIR}/boot-scripts /"
   fi
 done
-if [ ! -e /etc/comoonics/bootimage/files-$(uname -r).list ]; then
-  uname -r | grep "^2.4" > /dev/null
-  if [ $? -eq 0 ]; then
-    ln -s /etc/comoonics/bootimage/gfs6-es30-files.i686.list /etc/comoonics/bootimage/files-$(uname -r).list
-  else
-    ln -s /etc/comoonics/bootimage/gfs61-es40-files.$(uname -m).list /etc/comoonics/bootimage/files-$(uname -r).list
-    ln -s /etc/comoonics/bootimage/gfs61-es40-rpms.list /etc/comoonics/bootimage/rpms.list
-    if [ $? -ne 0 ]; then
-       echo "Could not find gfs lists file for your architecture. )"$(uname -m)"). Please check if architecture is supported."
-    fi
-  fi
-fi
+#if [ ! -e /etc/comoonics/bootimage/files-$(uname -r).list ]; then
+#  uname -r | grep "^2.4" > /dev/null
+#  if [ $? -eq 0 ]; then
+#    ln -s /etc/comoonics/bootimage/gfs6-es30-files.i686.list /etc/comoonics/bootimage/files-$(uname -r).list
+#  else
+#    ln -s /etc/comoonics/bootimage/gfs61-es40-files.$(uname -m).list /etc/comoonics/bootimage/files-$(uname -r).list
+#    if [ $? -ne 0 ]; then
+#       echo "Could not find gfs lists file for your architecture. )"$(uname -m)"). Please check if architecture is supported."
+#    fi
+#  fi
+#fi
+[ ! -L /etc/comoonics/bootimage/rpms.list ] && ln -s /etc/comoonics/bootimage/gfs61-es40-rpms.list /etc/comoonics/bootimage/rpms.list
 #root_fstype=$(mount | grep "/ " | awk 'BEGIN { exit_c=1; } { if ($5) { print $5; exit_c=0; } } END{ exit exit_c}')
 #if [ "$root_fstype" = "gfs" ]; then
   /sbin/chkconfig --add bootsr &>/dev/null
@@ -214,7 +214,10 @@ fi
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.18  2006-06-07 09:42:23  marc
+# Revision 1.19  2006-06-09 14:04:05  marc
+# new version.
+#
+# Revision 1.18  2006/06/07 09:42:23  marc
 # *** empty log message ***
 #
 # Revision 1.17  2006/05/12 13:01:56  marc
