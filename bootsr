@@ -26,6 +26,7 @@ CCSD_OPTS=
 [ -f /etc/sysconfig/cluster ] && . /etc/sysconfig/cluster
 
 CCSD_LOCK_FILE="/var/lock/subsys/ccsd"
+DEFAULT_LOCK_COUNT=50000
 
 RETVAL=0
 
@@ -61,6 +62,23 @@ function get_runlevel {
 }
 #************ get_runlevel
 
+#****f* bootsr/get_lockcount
+#  NAME
+#    get_getlockcount
+#  SYNOPSIS
+#    function get_lockcount default_lockcount
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function get_lockcount {
+  DEF_LOCK_COUNT=$1
+  [ -z "$DEF_LOCK_COUNT" ] && DEF_LOCK_COUNT=${DEFAULT_LOCK_COUNT}
+  [ -z "$DEF_LOCK_COUNT" ] && DEF_LOCK_COUNT=50000
+  echo $(cat /proc/meminfo | grep MemTotal | awk '{ print int($2/1024/512*'$DEF_LOCK_COUNT');}')
+}
+#************ get_lockcount
+
 #****f* bootsr/main
 #  NAME
 #    main
@@ -83,7 +101,9 @@ case "$1" in
       sleep 1
       /sbin/swapon -av 2>&1 | tee -a /var/log/bootsr | logger -t com-bootsr
       /bin/mount -at nonfs 2>&1 | tee -a /var/log/bootsr | logger -t com-bootsr
-      success
+      count=$(get_lockcount ${DEFAULT_LOCK_COUNT})
+      echo $count > /proc/cluster/lock_dlm/drop_count && echo -n "($count)" &&
+      success || failure
       echo
 
       if [ -e /initrd/var/run/cluster/ccsd.pid ]; then
