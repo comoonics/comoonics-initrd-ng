@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.3 2006-06-07 09:42:23 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.4 2006-06-09 14:04:27 marc Exp $
 #
 # @(#)$File$
 #
@@ -334,14 +334,13 @@ function clusterfs_mount {
   if [ ! -e $dev ]; then 
     echo_local -n "device not fount error"
     failure
-    return $return_c
+    return $?
   fi
   if [ ! -d $mountpoint ]; then 
     mkdir -p $mountpoint
   fi
   exec_local mount -t $fstype -o $mountopts $dev $mountpoint
   return_code
-  return $return_c
 }
 #***** clusterfs_mount
 
@@ -457,7 +456,10 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.3  2006-06-07 09:42:23  marc
+# Revision 1.4  2006-06-09 14:04:27  marc
+# only error detect in mount
+#
+# Revision 1.3  2006/06/07 09:42:23  marc
 # *** empty log message ***
 #
 # Revision 1.2  2006/05/12 13:03:42  marc
