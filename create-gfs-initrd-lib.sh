@@ -6,7 +6,7 @@
 #    Library for the creating of initrds for sharedroot
 #*******
 #
-# $Id: create-gfs-initrd-lib.sh,v 1.7 2006-06-07 09:42:23 marc Exp $
+# $Id: create-gfs-initrd-lib.sh,v 1.8 2006-06-19 15:55:28 marc Exp $
 #
 # @(#)$File$
 #
@@ -63,6 +63,7 @@ function copy_file() {
 
 # Compile perlfile with perlcc to binary
 #************ copy_file 
+
 #****f* create-gfs-initrd-lib.sh/perlcc_file
 #  NAME
 #    perlcc_file
@@ -194,13 +195,16 @@ function get_dependent_files() {
     ldd $filename > /dev/null 2>&1
     if [ $? = 0 ]; then
 #      local newfiles=`ldd $filename | sed -e "s/^.*=> \(.*\) (.*).*$/\1/" | sed -e "s/^.*statically linked.*$//"`
-	local newfiles=`ldd $filename | sed -e "s/\(.*\) (.*)/\1/" | sed -e "s/.* => //" | sed -e "s/\t*//" | grep -v "statically linked"`
+      local newfiles=$(ldd $filename | awk '
+$3 ~ /^\// { print $3; }
+$1 ~ /^\// && $3 == "" { print $1; }
+')
       for newfile in $newfiles; do
          echo $newfile
          if [ -L $newfile ]; then
-           local _newfile=`ls -l $newfile | sed -e "s/.* -> //"`
+           local _newfile=$(ls -l $newfile | awk '$11 != "" { print $11; }')
            if [ "${_newfile:0:1}" != "/" ]; then
-             echo `dirname $newfile`/$_newfile
+             echo $(dirname $newfile)/$_newfile
            else
              echo $_newfile
            fi
@@ -209,18 +213,17 @@ function get_dependent_files() {
     fi
   fi
 }
-
-#
-# Get all depfiles gets all depfiles from the given file
-# That means if there is a @include tag those files are also returned
 #************ get_dependent_files 
+
 #****f* create-gfs-initrd-lib.sh/get_all_depfiles
 #  NAME
 #    get_all_depfiles
 #  SYNOPSIS
 #    function get_all_depfiles {
-#  MODIFICATION HISTORY
-#  IDEAS
+#  DEPRECATED
+#  DESCRIPTION
+#   Get all depfiles gets all depfiles from the given file
+#   That means if there is a @include tag those files are also returned
 #  SOURCE
 #
 function get_all_depfiles {
@@ -232,23 +235,25 @@ function get_all_depfiles {
     [ -e "$sub_dep_file" ] && get_all_depfiles $sub_dep_file $verbose
   done
 }
-
-#
-# Takes a filename as argument and pipes all files listed in this file to 
-# get_dependent_files.
-#************ get_all_depfiles 
+#************ get_all_depfiles
+ 
 #****f* create-gfs-initrd-lib.sh/get_all_files_dependent
 #  NAME
 #    get_all_files_dependent
 #  SYNOPSIS
 #    function get_all_files_dependent() {
 #  MODIFICATION HISTORY
-#  IDEAS
+#  DOCUMENTATION
+#    Takes a filename as argument and pipes all files listed in this file to 
+#    get_dependent_files.
 #  SOURCE
 #
 function get_all_files_dependent() {
   local filename=$1
   local verbose=$2
+  local line=""
+  local dirname=""
+  local files=""
 
   while read line; do
     if [ ${line:0:1} != '#' ]; then
@@ -277,7 +282,33 @@ function get_all_files_dependent() {
 	  filename=$line
 	fi
 	echo "@map $filename $mapdir"
-	get_dependent_files $filename
+#	get_dependent_files $filename
+      elif [ ! -e "$line" ] && [ "${line:0:8}" = '@include' ]; then
+        declare -a aline
+        aline=( $(echo $line) )
+	include=${aline[@]:1}
+	if [ -d "$include" ]; then
+	  for file in ${include}/*; do
+	    [ -n "$verbose" ] && echo "Including file $file" >&2
+            get_all_files_dependent $file $verbose
+          done
+        elif [ -e "$include" ]; then
+	  get_all_files_dependent $include $verbose
+	else
+          if [ "${include:0:2}" = '$(' ] || [ "${include:0:1}" = '`' ]; then
+	    [ -n "$verbose" ] && echo "Eval $include"  >&2
+	    include=$(echo ${include/#\$\(/})
+	    include=$(echo ${include/#\`/})
+	    include=$(echo ${include/%\)/})
+	    files=$(eval "$include")
+          else
+            files="$include"
+	  fi
+          for file in $files; do
+  	    [ -n "$verbose" ] && echo "Including file $file" >&2
+            get_all_files_dependent $file $verbose
+          done
+        fi
       else
 	local filename=`which $line 2>/dev/null`
 	if [ -z $filename ]; then
@@ -346,7 +377,9 @@ function umount_and_zip_initrd() {
   LODEV=$(echo ${LODEV/%\)/})
   [ -n "$force" ] && [ $force -gt 0 ] && opts="-f"
   (umount $mountpoint && \
-  gzip $opts -9 $filename && losetup -d $LODEV) || (fuser "$mountpoint" && exit 1)
+   losetup -d $LODEV && \
+   mv $filename ${filename}.tmp && \
+   gzip $opts -c -9 ${filename}.tmp > $filename && rm ${filename}.tmp) || (fuser -mv "$mountpoint" && exit 1)
 }
 
 #
@@ -367,13 +400,16 @@ function cpio_and_zip_initrd() {
   local force=$3
   local opts=""
   [ -n "$force" ] && [ $force -gt 0 ] && opts="-f"
-  ((cd $mountpoint; find . | cpio --quiet -c -o) >| $filename && gzip $opts -9 $filename)|| (fuser -mv "$mountpoint" && exit 1)
+  ((cd $mountpoint; find . | cpio --quiet -c -o) >| ${filename}.tmp && gzip $opts -c -9 ${filename}.tmp > $filename && rm ${filename}.tmp)|| (fuser -mv "$mountpoint" && exit 1)
 }
 #************ cpio_and_zip_initrd 
 
 ######################
 # $Log: create-gfs-initrd-lib.sh,v $
-# Revision 1.7  2006-06-07 09:42:23  marc
+# Revision 1.8  2006-06-19 15:55:28  marc
+# rewriten and debuged parts of generating deps. Added @include tag for depfiles.
+#
+# Revision 1.7  2006/06/07 09:42:23  marc
 # *** empty log message ***
 #
 # Revision 1.6  2006/05/03 12:46:45  marc

@@ -6,7 +6,7 @@
 #*******
 #!/bin/bash
 #
-# $Id: create-gfs-initrd-generic.sh,v 1.8 2006-06-07 09:42:23 marc Exp $
+# $Id: create-gfs-initrd-generic.sh,v 1.9 2006-06-19 15:55:28 marc Exp $
 #
 # @(#)$File$
 #
@@ -27,6 +27,8 @@ if [ -e $(dirname $0)/boot-scripts/etc/boot-lib.sh ]; then
 fi
 exec 3>/dev/null
 exec 4>/dev/null 5>/dev/null
+
+PATH=${PATH}:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin
 
 #****f* create-gfs-initrd-generic.sh/usage
 #  NAME
@@ -55,7 +57,7 @@ function getoptions() {
     while getopts UoRFVvhm:fd:s:r:b: option ; do
 	case "$option" in
 	    v) # version
-		echo "$0 Version "'$Revision: 1.8 $'
+		echo "$0 Version "'$Revision: 1.9 $'
 		exit 0
 		;;
 	    h) # help
@@ -291,12 +293,15 @@ if [ -z "$no_remove_tmp" ]; then
   rm -fr $mountpoint
   success
 fi
-ls -lk $initrdname.gz
+ls -lk $initrdname
 #************ main 
 
 ##########################################
 # $Log: create-gfs-initrd-generic.sh,v $
-# Revision 1.8  2006-06-07 09:42:23  marc
+# Revision 1.9  2006-06-19 15:55:28  marc
+# rewriten and debuged parts of generating deps. Added @include tag for depfiles.
+#
+# Revision 1.8  2006/06/07 09:42:23  marc
 # *** empty log message ***
 #
 # Revision 1.7  2006/05/03 12:47:10  marc
