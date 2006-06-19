@@ -4,7 +4,7 @@
 #    $id$
 #  DESCRIPTION
 #*******
-# $Id: gfs61-es40-files.i686.list,v 1.9 2006-06-07 09:42:23 marc Exp $
+# $Id: gfs61-es40-files.i686.list,v 1.10 2006-06-19 15:57:25 marc Exp $
 bash
 nash
 nslookup
@@ -177,47 +177,6 @@ iscsi-umountall
 /sbin/fence_xcat
 /sbin/fence_ilo
 /usr/bin/perl
-/usr/lib/libwrap.so.0.7.6
-/usr/lib/libwrap.so.0
-/usr/lib/perl5/
-/usr/lib/libexpat.so.0
-/lib/libssl.so.0.9.7a
-/usr/lib/libssl.so
-/usr/lib/libz.so
-/usr/lib/libz.so.1
-/usr/lib/libz.so.1.2.1.2
-/usr/lib/libcom_err.so
-#/usr/lib/libcom_err.so.3
-#/usr/lib/libcom_err.so.3.0
-/usr/lib/libdes425.so.3
-/usr/lib/libdes425.so.3.0
-#/usr/lib/libdyn.so.1
-#/usr/lib/libdyn.so.1.0
-/usr/lib/libgssapi_krb5.so.2
-/usr/lib/libgssapi_krb5.so.2.2
-/usr/lib/libgssrpc.so.3
-/usr/lib/libgssrpc.so.3.0
-/usr/lib/libk5crypto.so.3
-/usr/lib/libk5crypto.so.3.0
-/usr/lib/libkadm5clnt.so  
-/usr/lib/libkadm5clnt.so.5  
-/usr/lib/libkadm5clnt.so.5.1
-/usr/lib/libkadm5srv.so  
-/usr/lib/libkadm5srv.so.5  
-/usr/lib/libkadm5srv.so.5.1
-/usr/lib/libkdb5.so  
-/usr/lib/libkdb5.so.4  
-/usr/lib/libkdb5.so.4.0
-/usr/lib/libkrb4.so.2
-/usr/lib/libkrb4.so.2.0
-/usr/lib/libkrb5.so.3
-#/usr/lib/libkrb5.so.3.1
-/usr/lib/libkrbafs.so.0
-/usr/lib/libkrbafs.so.0.0.0
-#/usr/lib/libpty.so.1
-#/usr/lib/libpty.so.1.2
-/lib/libssl.so.0.9.7a  
-/lib/libssl.so.4
 # END special things for lock_gulmd
 # END other stuff
 # START Systemfiles
@@ -270,10 +229,6 @@ iscsi-umountall
 /etc/iscsi.conf
 /etc/initiatorname.iscsi
 /etc/passwd
-# If fence implicitly uses ssh we need that stuff
-/etc/ssh
-/root/.ssh
-/opt/atix/comoonics-fencing/fence_vmware_client
 # Integrated in rpm (can be changed)!!
 /usr/share/hwdata/
 #/usr/share/hwdata/Cards
@@ -283,68 +238,11 @@ iscsi-umountall
 #/usr/share/hwdata/usb.ids
 #/usr/share/hwdata/pcitable
 /usr/lib/locale/en_US/
-/lib/i686/librtkaio-2.3.2.so
-/lib/ld-2.3.4.so
-/lib/ld-linux.so.2
-/lib/libBrokenLocale-2.3.2.so
-/lib/libBrokenLocale.so.1
-/lib/libNoVersion-2.3.2.so
-/lib/libNoVersion.so.1
-/lib/libSegFault.so
-/lib/libanl-2.3.4.so
-/lib/libanl.so.1
-/lib/libc-2.3.4.so
-/lib/libc.so.6
-/lib/libcrypt-2.3.4.so
-/lib/libcrypt.so.1
-/lib/libdl-2.3.4.so
-/lib/libdl.so.2
-/lib/libm-2.3.4.so
-/lib/libm.so.6
-/lib/libnsl-2.3.4.so
-/lib/libnsl.so.1
-/lib/libnss1_compat-2.3.4.so
-/lib/libnss1_compat.so.1
-/lib/libnss1_dns-2.3.4.so
-/lib/libnss1_dns.so.1
-/lib/libnss1_files-2.3.4.so
-/lib/libnss1_files.so.1
-/lib/libnss1_nis-2.3.4.so
-/lib/libnss1_nis.so.1
-/lib/libnss_compat-2.3.4.so
-/lib/libnss_compat.so.1
-/lib/libnss_compat.so.2
-/lib/libnss_dns-2.3.4.so
-/lib/libnss_dns.so.1
-/lib/libnss_dns.so.2
-/lib/libnss_files-2.3.4.so
-/lib/libnss_files.so.1
-/lib/libnss_files.so.2
-/lib/libnss_hesiod-2.3.4.so
-/lib/libnss_hesiod.so.2
-/lib/libnss_nis-2.3.4.so
-/lib/libnss_nis.so.1
-/lib/libnss_nis.so.2
-/lib/libnss_nisplus-2.3.4.so
-/lib/libnss_nisplus.so.2
-/lib/libpthread-0.10.so
-/lib/libpthread.so.0
-/lib/libresolv-2.3.4.so
-/lib/libresolv.so.2
-/lib/librt-2.3.4.so
-/lib/librt.so.1
-/lib/libthread_db-1.0.so
-/lib/libthread_db.so.1
-/lib/libutil-2.3.4.so
-/lib/libutil.so.1
-/lib/libtermcap.so.2
-/lib/libtermcap.so.2.0.8
-/lib/libssl.so.4
-/lib/libssl.so.0.9.7a
-/lib/libcrypto.so.0.9.7a
-/lib/libcrypto.so.4
 # $Log: gfs61-es40-files.i686.list,v $
-# Revision 1.9  2006-06-07 09:42:23  marc
+# Revision 1.10  2006-06-19 15:57:25  marc
+# obsolete
+#
+# Revision 1.9  2006/06/07 09:42:23  marc
 # *** empty log message ***
 #
 # Revision 1.8  2006/05/12 13:04:42  marc
