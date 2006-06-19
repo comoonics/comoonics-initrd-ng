@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.13 2006-06-07 09:42:23 marc Exp $
+# $Id: Makefile,v 1.14 2006-06-19 15:54:34 marc Exp $
 #
 # @(#)$file$
 #
@@ -170,12 +170,22 @@ CFG_DIR=$(SYSTEM_CFG_DIR)/$(PACKAGE_NAME)
 #  IDEAS
 #  SOURCE
 #
-CFG_FILES=system-cfg-files/gfs6-es30-files.i686.list \
-  system-cfg-files/gfs61-es40-files.i686.list \
-  system-cfg-files/gfs61-es40-files.x86_64.list \
-  system-cfg-files/gfs61-es40-rpms.list
-
+CFG_FILES=basefiles.list \
+	rpms.list \
+	files.initrd.d/configs.list \
+	files.initrd.d/scsi.list \
+	files.initrd.d/gfs.list \
+	files.initrd.d/iscsi.list.opt \
+	files.initrd.d/lilo.list.opt \
+	files.initrd.d/hp_tools.list.opt \
+	files.initrd.d/user_edit.list \
+	files.initrd.d/perlcc.list.opt \
+	files.initrd.d/grub.list \
+	files.initrd.d/libs.list.x86_64 \
+	files.initrd.d/libs.list.i686 \
+	files.initrd.d/fence_vmware.list.opt
 #************ CFG_FILES 
+
 #****d* Makefile/EMPTY_DIRS
 #  NAME
 #    EMPTY_DIRS
@@ -248,25 +258,29 @@ install:
 	fi
 	@if [ -n "$(SYSTEM_CFG_FILES)" ]; then \
 	   ((echo -n "Installing system cfg-files..." && \
-	   for cfgfile in $(SYSTEM_CFG_FILES); do \
-             if [ ! -e $(PREFIX)/$(SYSTEM_CFG_DIR) ]; then \
-               install -d  -g $(INSTALL_GRP) -o $(INSTALL_OWN) $(PREFIX)/$(SYSTEM_CFG_DIR); \
-             fi; \
-             install -g $(INSTALL_GRP) -o $(INSTALL_OWN) $$cfgfile $(PREFIX)/$(SYSTEM_CFG_DIR); \
-	   done && \
-	   echo "DONE") || \
-	   echo "FAILED") \
+	     for cfgfile in $(SYSTEM_CFG_FILES); do \
+               if [ ! -e $(PREFIX)/$(SYSTEM_CFG_DIR) ]; then \
+                 install -d -g $(INSTALL_GRP) -o $(INSTALL_OWN) $(PREFIX)/$(SYSTEM_CFG_DIR); \
+               fi; \
+               install -g $(INSTALL_GRP) -o $(INSTALL_OWN) $$cfgfile $(PREFIX)/$(SYSTEM_CFG_DIR); \
+	     done && \
+	     echo "DONE") || \
+	    echo "FAILED") \
 	fi
 	@if [ -n "$(CFG_FILES)" ]; then \
 	   ((echo -n "Installing cfg-files..." && \
-	   for cfgfile in $(CFG_FILES); do \
+             cd system-cfg-files && \
              if [ ! -e $(PREFIX)/$(CFG_DIR) ]; then \
                install -d  -g $(INSTALL_GRP) -o $(INSTALL_OWN) $(PREFIX)/$(CFG_DIR); \
              fi; \
-             install -g $(INSTALL_GRP) -o $(INSTALL_OWN) $$cfgfile $(PREFIX)/$(CFG_DIR); \
-	   done && \
-	   echo "DONE") || \
-	   echo "FAILED") \
+             if [ ! -e $(PREFIX)/$(CFG_DIR)/files.initrd.d/ ]; then \
+               install -d  -g $(INSTALL_GRP) -o $(INSTALL_OWN) $(PREFIX)/$(CFG_DIR)/files.initrd.d/; \
+             fi; \
+	     for cfgfile in $(CFG_FILES); do \
+               install -g $(INSTALL_GRP) -o $(INSTALL_OWN) $$cfgfile $(PREFIX)/$(CFG_DIR)/`dirname $$cfgfile`; \
+	     done && \
+	     echo "DONE") || \
+	     echo "FAILED" && cd ..) \
 	fi
 	@echo -n "Installing empty directories..."
 	@if [ -n "$(EMPTY_DIRS)" ]; then \
@@ -294,7 +308,10 @@ archive:
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.13  2006-06-07 09:42:23  marc
+# Revision 1.14  2006-06-19 15:54:34  marc
+# added new files
+#
+# Revision 1.13  2006/06/07 09:42:23  marc
 # *** empty log message ***
 #
 # Revision 1.12  2006/05/07 12:06:56  marc
