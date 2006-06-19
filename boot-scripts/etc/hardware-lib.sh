@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.2 2006-06-07 09:42:23 marc Exp $
+# $Id: hardware-lib.sh,v 1.3 2006-06-19 15:55:45 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,14 +26,15 @@
 
 #****f* boot-lib.sh/scsi_start
 #  NAME
-#    loadSCSI
+#    scsi_start
 #  SYNOPSIS
-#    function boot-lib.sh/scsi_start() {
+#    function boot-lib.sh/scsi_start(scsifailover)
 #  MODIFICATION HISTORY
 #  IDEAS
 #  SOURCE
 #
 function scsi_start() {
+  local scsifailover=$1
   echo_local "Starting scsi-driver..."
 
   echo_local -n "Loading scsi_disk Module..."
@@ -53,22 +54,83 @@ function scsi_start() {
   fi
   step
 	
-  echo_local "Importing unconfigured scsi-devices..."
-  devs=$(find /proc/scsi -name "[0-9]*" 2> /dev/null)
-  channels=0
-  for dev in $devs; do 
-    for channel in $channels; do
-      id=$(basename $dev)
-      echo_local -n "$dev On id $id and channel $channel"
-      add_scsi_device $id $channel $dev
-      return_code
+  if [ -x "/opt/atix/comoonics_cs/rescan_scsi" ]; then
+    /opt/atix/comoonics_cs/rescan_scsi -a
+  else
+    echo_local -n "Importing unconfigured scsi-devices..."
+    devs=$(find /proc/scsi -name "[0-9]*" 2> /dev/null)
+    channels=0
+    for dev in $devs; do 
+      for channel in $channels; do
+        id=$(basename $dev)
+        echo_local -n "$dev On id $id and channel $channel"
+        add_scsi_device $id $channel $dev
+        return_code
+      done
     done
-  done
+  fi
   echo_local_debug "3.3 Configured SCSI-Devices:"
   exec_local_debug /bin/cat /proc/scsi/scsi
 
 } 
 #************ scsi_start 
+
+#****f* boot-lib.sh/dm_mp_start
+#  NAME
+#    dm_mp_start
+#  SYNOPSIS
+#    function dm_mp_start
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function dm_mp_start() {
+  echo_local -n "Loading dm-mutltipath.ko module"
+  exec_local modprobe dm-multipath
+  return_code
+
+  echo_local -n "Setting up Multipath"
+  exec_local multipath
+  return_code
+
+  exec_local_debug multipath -l
+
+  echo_local -n "Setting up devicemapper partitions"
+  for x in /dev/dm*; do
+    kpartx -va $x
+  done
+  return_code
+}
+#************ dm_mp_start
+
+#****f* boot-lib.sh/dm_start
+#  NAME
+#    dm_start
+#  SYNOPSIS
+#    function dm_start() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function dm_start {
+   # Test because fencing is not working properly
+   #mount -o mode=0755 -t tmpfs none /dev
+   #mknod /dev/console c 5 1
+   #mknod /dev/null c 1 3
+   #mknod /dev/zero c 1 5
+   #mkdir /dev/pts
+   #mkdir /dev/shm
+	
+   echo_local -n "Loading device mapper modules"
+   exec_local modprobe dm_mod >/dev/null 2>&1 &&
+   exec_local modprobe dm-mirror  >/dev/null 2>&1 &&
+   exec_local modprobe dm-mirror >/dev/null 2>&1 &&
+   exec_local modprobe dm-snapshot >/dev/null 2>&1
+   return_code $?
+
+   #/sbin/udevstart
+}
+#************ dm_start
 
 #****f* boot-lib.sh/lvm_start
 #  NAME
@@ -82,18 +144,6 @@ function scsi_start() {
 function lvm_start {
    echo_local -n "Loading LVM"
 
-   # Test because fencing is not working properly
-   #mount -o mode=0755 -t tmpfs none /dev
-   #mknod /dev/console c 5 1
-   #mknod /dev/null c 1 3
-   #mknod /dev/zero c 1 5
-   #mkdir /dev/pts
-   #mkdir /dev/shm
-	
-   modprobe dm_mod >/dev/null 2>&1
-   return_code $?
-
-   #/sbin/udevstart
    echo_local -n Scanning logical volumes
    lvm vgscan >/dev/null 2>&1
    return_code $?
@@ -226,7 +276,10 @@ function add_scsi_device() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.2  2006-06-07 09:42:23  marc
+# Revision 1.3  2006-06-19 15:55:45  marc
+# added device mapper support
+#
+# Revision 1.2  2006/06/07 09:42:23  marc
 # *** empty log message ***
 #
 # Revision 1.1  2006/05/07 11:33:40  marc

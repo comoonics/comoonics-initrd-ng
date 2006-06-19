@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.24 2006-05-12 13:06:41 marc Exp $
+# $Id: gfs-lib.sh,v 1.25 2006-06-19 15:55:45 marc Exp $
 #
 # @(#)$File$
 #
@@ -112,6 +112,30 @@ function gfs_get_mountopts {
    fi
 }
 #************ gfs_get_mountopts
+
+#****f* gfs-lib.sh/gfs_get_scsifailover
+#  NAME
+#    gfs_get_scsifailover
+#  SYNOPSIS
+#    gfs_get_scsifailover(cluster_conf, nodename)
+#  DESCRIPTION
+#    Gets the mountopts for this node
+#  IDEAS
+#  SOURCE
+#
+function gfs_get_scsifailover {
+   local xml_file=$1
+   local nodename=$2
+   [ -z "$nodename" ] && nodename=$(gfs_get_nodename $xml_file)
+   local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query -f $xml_file"    
+   local _scsifailover=$($xml_cmd -q scsifailover $nodename)
+   if [ -z "$_scsifailover" ]; then
+     echo ""
+   else
+     echo $_scsifailover
+   fi
+}
+#************ gfs_get_scsifailover
 
 #****f* gfs-lib.sh/gfs_get_node_hostname
 #  NAME
@@ -563,7 +587,10 @@ function gfs_restart_fenced {
 #************ gfs_restart_fenced
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.24  2006-05-12 13:06:41  marc
+# Revision 1.25  2006-06-19 15:55:45  marc
+# added device mapper support
+#
+# Revision 1.24  2006/05/12 13:06:41  marc
 # First stable Version 1.0 for initrd.
 #
 # Revision 1.23  2006/05/07 11:35:20  marc

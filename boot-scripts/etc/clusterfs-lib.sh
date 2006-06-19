@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.4 2006-06-09 14:04:27 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.5 2006-06-19 15:55:45 marc Exp $
 #
 # @(#)$File$
 #
@@ -130,6 +130,8 @@ function clusterfs_config {
   echo
   cc_get_mountopts ${cluster_conf} $_nodename
   echo
+  cc_get_scsifailover ${cluster_conf} $_nodename
+  echo
   for _dev in $(cc_get_netdevs ${cluster_conf} $_nodename); do
     cc_auto_netconfig ${cluster_conf} $_nodename $_dev
   done
@@ -197,6 +199,22 @@ function cc_get_mountopts {
    local nodename=$2
 
    ${rootfs}_get_mountopts $cluster_conf $nodename
+}
+#******** cc_get_mountopts
+
+#****f* clusterfs-lib.sh/cc_get_scsifailover
+#  NAME
+#    cc_get_scsifailover
+#  SYNOPSIS
+#    function cc_get_scsifailover(cluster_conf, nodename)
+#  DESCRIPTION
+#    gets the nodename of this node referenced by the networkdevice
+#  SOURCE
+function cc_get_scsifailover {
+   local cluster_conf=$1
+   local nodename=$2
+
+   ${rootfs}_get_scsifailover $cluster_conf $nodename
 }
 #******** cc_get_mountopts
 
@@ -409,7 +427,7 @@ function copy_relevant_files {
   echo_local -n "Backing up created config files [$cdsl_local_dir]"
   if [ ! -L $newroot/etc/sysconfig/hwconf ]; then
     exec_local mv -f $newroot/etc/sysconfig/hwconf $newroot/etc/sysconfig/hwconf.com_back
-  fi && /sbin/true
+  fi && /bin/true
   return_code_passed $?
 
   return_c=1
@@ -433,7 +451,7 @@ function copy_relevant_files {
     cp ${new_root}/etc/cluster/cluster.conf /etc/cluster/cluster.conf.bak
   fi
   cp /etc/cluster/cluster.conf ${new_root}/etc/cluster/cluster.conf
-  [ return_c -eq 0 ] && return_c=$?
+  [ $return_c -eq 0 ] && return_c=$?
 #   cd sysconfig 
 #   cp -f /etc/sysconfig/hwconf $newroot/${cdsl_local_dir}/etc/sysconfig/
 #    [ ! -f ${newroot}/etc/sysconfig/hwconf ] && 
@@ -456,7 +474,10 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.4  2006-06-09 14:04:27  marc
+# Revision 1.5  2006-06-19 15:55:45  marc
+# added device mapper support
+#
+# Revision 1.4  2006/06/09 14:04:27  marc
 # only error detect in mount
 #
 # Revision 1.3  2006/06/07 09:42:23  marc

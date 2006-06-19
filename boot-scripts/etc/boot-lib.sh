@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.32 2006-06-07 09:42:23 marc Exp $
+# $Id: boot-lib.sh,v 1.33 2006-06-19 15:55:45 marc Exp $
 #
 # @(#)$File$
 #
@@ -27,7 +27,7 @@ LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/lib/i686:/usr/lib"
 PATH=/bin:/sbin:/usr/bin:/usr/sbin
 export PATH LD_LIBRARY_PATH
 
-step_timeout=5
+step_timeout=10
 bootlog="/var/log/comoonics-boot.log"
 error_code_file="/var/error_code"
 init_cmd_file="/var/init_cmd"
@@ -269,6 +269,8 @@ function getBootParameters() {
     getBootParm mountopt defaults
     echo -n ":"
     getBootParm tmpfix
+    echo -n ":"
+    getBootParm scsifailover driver
 }
 #************ getBootParameters 
 
@@ -915,7 +917,10 @@ function passed {
 #********** passed 
 
 # $Log: boot-lib.sh,v $
-# Revision 1.32  2006-06-07 09:42:23  marc
+# Revision 1.33  2006-06-19 15:55:45  marc
+# added device mapper support
+#
+# Revision 1.32  2006/06/07 09:42:23  marc
 # *** empty log message ***
 #
 # Revision 1.31  2006/05/12 13:02:41  marc
