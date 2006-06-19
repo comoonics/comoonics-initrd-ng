@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.23 2006-06-07 09:42:23 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.24 2006-06-19 15:56:13 marc Exp $
 #
 # @(#)$File$
 #
@@ -17,7 +17,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.23 2006-06-07 09:42:23 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.24 2006-06-19 15:56:13 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -68,7 +68,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.23 $ $Date: 2006-06-07 09:42:23 $'
+echo_local 'Internal Version $Revision: 1.24 $ $Date: 2006-06-19 15:56:13 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -90,6 +90,7 @@ debug=$(getParm ${bootparms} 1)
 stepmode=$(getParm ${bootparms} 2)
 mount_opts=$(getParm ${bootparms} 3)
 tmpfix=$(getParm ${bootparms} 4)
+scsifailover=$(getParm ${bootparms} 5)
 return_code 0
 
 # network parameters
@@ -124,6 +125,7 @@ echo_local_debug "rootsource: $rootsource"
 echo_local_debug "root: $root"
 echo_local_debug "lockmethod: $lockmethod"
 echo_local_debug "sourceserver: $sourceserver"
+echo_local_debug "scsifailover: $scsifailover"
 echo_local_debug "*****************************"
 
 echo_local_debug "*****************************"
@@ -155,20 +157,27 @@ nodeid=${cfsparams[0]}
 nodename=${cfsparams[1]}
 rootvolume=${cfsparams[2]}
 _mount_opts=${cfsparams[3]}
-_ipConfig=${cfsparams[@]:4}
+_scsifailover=${cfsparams[4]}
+_ipConfig=${cfsparams[@]:5}
 [ -n "$_ipConfig" ] && ipConfig=$_ipConfig
 [ -n "$_mount_opts" ] && mount_opts=$_mount_opts
-[ -z "$root" ] && root=$rootvolume
-clusterfs_auto_hosts $cluster_conf
+[ -n "$_scsifailover" ] && scsifailover=$_scsifailover
+[ -z "$root" ] || [ "$root" = "/dev/ram0" ] && root=$rootvolume
+cc_auto_hosts $cluster_conf
 
 echo_local_debug "*****************************"
 echo_local_debug "nodeid: $nodeid"
 echo_local_debug "nodename: $nodename"
 echo_local_debug "rootvolume: $rootvolume"
+echo_local_debug "scsifailover: $scsifailover"
 echo_local_debug "ipConfig: $ipConfig"
 echo_local_debug "*****************************"
 
+dm_start
 scsi_start
+if [ "$scsifailover" = "mapper" ] || [ "$scsifailover" = "devicemapper" ]; then
+  dm_mp_start
+fi
 lvm_start
 
 netdevs=""
@@ -294,7 +303,10 @@ fi
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.23  2006-06-07 09:42:23  marc
+# Revision 1.24  2006-06-19 15:56:13  marc
+# added devicemapper support
+#
+# Revision 1.23  2006/06/07 09:42:23  marc
 # *** empty log message ***
 #
 # Revision 1.22  2006/05/12 13:02:24  marc

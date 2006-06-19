@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc,v 1.7 2006-06-07 09:42:23 marc Exp $
+# $Id: linuxrc,v 1.8 2006-06-19 15:56:13 marc Exp $
 #
 # @(#)$File$
 #
@@ -25,7 +25,7 @@
 #****h* comoonics-bootimage/linuxrc
 #  NAME
 #    linuxrc
-#    $Id: linuxrc,v 1.7 2006-06-07 09:42:23 marc Exp $
+#    $Id: linuxrc,v 1.8 2006-06-19 15:56:13 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -98,14 +98,17 @@ elif [ -n "$error_code" ] && [ $error_code -eq 2 ]; then
   exec 1>/dev/console 2>/dev/console /bin/bash
 else
   echo_local "Error starting init-process falling back to bash."
-  /rescue.sh
+#  /rescue.sh
   exec 1>/dev/console 2>/dev/console /bin/bash
 fi
 #********** main
 
 ################
 # $Log: linuxrc,v $
-# Revision 1.7  2006-06-07 09:42:23  marc
+# Revision 1.8  2006-06-19 15:56:13  marc
+# added devicemapper support
+#
+# Revision 1.7  2006/06/07 09:42:23  marc
 # *** empty log message ***
 #
 # Revision 1.6  2006/05/12 13:06:13  marc

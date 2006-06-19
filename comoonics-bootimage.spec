@@ -21,7 +21,7 @@
 # with ATIX.
 #/initrd_sr-2.6.9-34.ELsmp.img.gz
 # %define _initrddir /etc/init.d
-# $Id: comoonics-bootimage.spec,v 1.19 2006-06-09 14:04:05 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.20 2006-06-19 15:57:40 marc Exp $
 #
 ##
 # TO DO
@@ -40,7 +40,7 @@ Summary: Comoonics Bootimage. Scripts for creating an initrd in a gfs shared roo
 Version: 1.0
 BuildArch: noarch
 Requires: comoonics-cs >= 0.5
-Release: 19
+Release: 23
 Vendor: ATIX GmbH
 Packager: Marc Grimme (grimme@atix.de)
 ExclusiveArch: noarch
@@ -97,17 +97,6 @@ fi
 echo "Creating mkinitrd link..."
 ln -sf %{APPDIR}/create-gfs-initrd-generic.sh %{APPDIR}/mkinitrd
 
-echo "Analysing config files..."
-cfg_files="gfs6-es30-files.i686.list gfs61-es40-files.i686.list gfs61-es40-files.x86_64.list"
-for cfg_file in $cfg_files; do
-  if ! $(grep "%{APPDIR}/boot-scripts" /etc/comoonics/bootimage/$cfg_file >/dev/null 2>&1); then
-    (echo "# START: RPM-post install added "$(date); echo "@map %{APPDIR}/boot-scripts /"; echo "# END:RPM-post install added ") >> /etc/comoonics/bootimage/$cfg_file
-  else
-    echo "File: $cfg_file"
-    echo "Please verify that there is at least a line in your config file /etc/comoonics/bootimage/$cfg_file of the following type:"
-    echo "@map %{APPDIR}/boot-scripts /"
-  fi
-done
 #if [ ! -e /etc/comoonics/bootimage/files-$(uname -r).list ]; then
 #  uname -r | grep "^2.4" > /dev/null
 #  if [ $? -eq 0 ]; then
@@ -119,7 +108,6 @@ done
 #    fi
 #  fi
 #fi
-[ ! -L /etc/comoonics/bootimage/rpms.list ] && ln -s /etc/comoonics/bootimage/gfs61-es40-rpms.list /etc/comoonics/bootimage/rpms.list
 #root_fstype=$(mount | grep "/ " | awk 'BEGIN { exit_c=1; } { if ($5) { print $5; exit_c=0; } } END{ exit exit_c}')
 #if [ "$root_fstype" = "gfs" ]; then
   /sbin/chkconfig --add bootsr &>/dev/null
@@ -206,15 +194,30 @@ done
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/rhel4/network-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/sles8/hardware-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/sles8/network-lib.sh
-%config(noreplace) %{CONFIGDIR}/bootimage/gfs6-es30-files.i686.list
-%config(noreplace) %{CONFIGDIR}/bootimage/gfs61-es40-files.i686.list
-%config(noreplace) %{CONFIGDIR}/bootimage/gfs61-es40-files.x86_64.list
-%config(noreplace) %{CONFIGDIR}/bootimage/gfs61-es40-rpms.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/basefiles.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/configs.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/scsi.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/gfs.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/iscsi.list.opt
+%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/lilo.list.opt
+%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/hp_tools.list.opt
+%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/perlcc.list.opt
+%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/grub.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/libs.list.x86_64
+%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/libs.list.i686
+%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/fence_vmware.list.opt
+
 %config(noreplace) %{CONFIGDIR}/comoonics-bootimage.cfg
+%config(noreplace) %{CONFIGDIR}/bootimage/files.initrd.d/user_edit.list
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.19  2006-06-09 14:04:05  marc
+# Revision 1.20  2006-06-19 15:57:40  marc
+# added devicemapper support
+#
+# Revision 1.19  2006/06/09 14:04:05  marc%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/configs.list
+
 # new version.
 #
 # Revision 1.18  2006/06/07 09:42:23  marc
