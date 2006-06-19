@@ -1,0 +1,14 @@
+#
+# START iscsi part
+# /etc/iscsi.cfg is in template because of emptyness.
+iscsid
+iscsi-iname
+iscsi-mountall
+iscsi-device
+iscsi-ls
+iscsi-umountall
+/etc/rc.d/init.d/iscsi
+/etc/iscsi.conf
+/etc/initiatorname.iscsi
+# END iscsi
+# START other stuff

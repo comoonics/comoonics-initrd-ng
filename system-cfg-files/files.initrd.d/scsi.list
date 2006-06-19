@@ -1,0 +1,5 @@
+scsi_id
+kpartx
+multipath
+/etc/multipath.conf
+/etc/lvm/lvm.conf

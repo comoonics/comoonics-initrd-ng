@@ -1,0 +1,4 @@
+# If fence implicitly uses ssh we need that stuff
+/etc/ssh
+/root/.ssh
+/opt/atix/comoonics-fencing/fence_vmware_client
