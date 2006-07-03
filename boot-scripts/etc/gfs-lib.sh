@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.25 2006-06-19 15:55:45 marc Exp $
+# $Id: gfs-lib.sh,v 1.26 2006-07-03 08:33:05 marc Exp $
 #
 # @(#)$File$
 #
@@ -233,6 +233,7 @@ function gfs_get_netdevs {
 function gfs_auto_hosts {
     local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query"    
     local xmlfile=$1
+    local hostsfile=$2
 
 #    if [ -n "$debug" ]; then set -x; fi
     cp -f $hostsfile $hostsfile.bak
@@ -587,7 +588,10 @@ function gfs_restart_fenced {
 #************ gfs_restart_fenced
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.25  2006-06-19 15:55:45  marc
+# Revision 1.26  2006-07-03 08:33:05  marc
+# bugfix in hostsgeneration
+#
+# Revision 1.25  2006/06/19 15:55:45  marc
 # added device mapper support
 #
 # Revision 1.24  2006/05/12 13:06:41  marc
