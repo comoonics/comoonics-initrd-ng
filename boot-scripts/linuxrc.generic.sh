@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.24 2006-06-19 15:56:13 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.25 2006-07-03 08:32:03 marc Exp $
 #
 # @(#)$File$
 #
@@ -17,7 +17,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.24 2006-06-19 15:56:13 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.25 2006-07-03 08:32:03 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -68,7 +68,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.24 $ $Date: 2006-06-19 15:56:13 $'
+echo_local 'Internal Version $Revision: 1.25 $ $Date: 2006-07-03 08:32:03 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -172,6 +172,8 @@ echo_local_debug "rootvolume: $rootvolume"
 echo_local_debug "scsifailover: $scsifailover"
 echo_local_debug "ipConfig: $ipConfig"
 echo_local_debug "*****************************"
+
+step
 
 dm_start
 scsi_start
@@ -303,7 +305,10 @@ fi
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.24  2006-06-19 15:56:13  marc
+# Revision 1.25  2006-07-03 08:32:03  marc
+# added step
+#
+# Revision 1.24  2006/06/19 15:56:13  marc
 # added devicemapper support
 #
 # Revision 1.23  2006/06/07 09:42:23  marc
