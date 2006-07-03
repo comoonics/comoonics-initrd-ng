@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.5 2006-06-19 15:55:45 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.6 2006-07-03 08:32:27 marc Exp $
 #
 # @(#)$File$
 #
@@ -130,8 +130,9 @@ function clusterfs_config {
   echo
   cc_get_mountopts ${cluster_conf} $_nodename
   echo
-  cc_get_scsifailover ${cluster_conf} $_nodename
-  echo
+  scsifailover=$(cc_get_scsifailover ${cluster_conf} $_nodename)
+  [ -z "$scsifailover" ] && scsifailover="driver"
+  echo $scsifailover
   for _dev in $(cc_get_netdevs ${cluster_conf} $_nodename); do
     cc_auto_netconfig ${cluster_conf} $_nodename $_dev
   done
@@ -262,7 +263,7 @@ function cc_auto_netconfig {
 function cc_auto_hosts {
    local cluster_conf=$1
 
-   ${rootfs}_auto_hosts $cluster_conf >> /etc/hosts
+   ${rootfs}_auto_hosts $cluster_conf /etc/hosts >> /etc/hosts
 }
 #******** cc_auto_netconfig
 
@@ -474,7 +475,10 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.5  2006-06-19 15:55:45  marc
+# Revision 1.6  2006-07-03 08:32:27  marc
+# changed hostgeneration function
+#
+# Revision 1.5  2006/06/19 15:55:45  marc
 # added device mapper support
 #
 # Revision 1.4  2006/06/09 14:04:27  marc
