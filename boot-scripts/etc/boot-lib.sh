@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.33 2006-06-19 15:55:45 marc Exp $
+# $Id: boot-lib.sh,v 1.34 2006-07-13 11:37:02 marc Exp $
 #
 # @(#)$File$
 #
@@ -380,6 +380,10 @@ function initBootProcess() {
 
   echo_local -n "Mounting Sys-FS"
   exec_local /bin/mount -t sysfs none /sys
+  return_code
+
+  echo_local -n "Mounting Dev"
+  exec_local dev_start
   return_code
 
   echo_local_debug "/proc/cmdline"
@@ -917,7 +921,10 @@ function passed {
 #********** passed 
 
 # $Log: boot-lib.sh,v $
-# Revision 1.33  2006-06-19 15:55:45  marc
+# Revision 1.34  2006-07-13 11:37:02  marc
+# added dev mount
+#
+# Revision 1.33  2006/06/19 15:55:45  marc
 # added device mapper support
 #
 # Revision 1.32  2006/06/07 09:42:23  marc
