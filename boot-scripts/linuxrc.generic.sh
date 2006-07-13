@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.25 2006-07-03 08:32:03 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.26 2006-07-13 14:14:57 marc Exp $
 #
 # @(#)$File$
 #
@@ -17,7 +17,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.25 2006-07-03 08:32:03 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.26 2006-07-13 14:14:57 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -68,7 +68,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.25 $ $Date: 2006-07-03 08:32:03 $'
+echo_local 'Internal Version $Revision: 1.26 $ $Date: 2006-07-13 14:14:57 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -177,6 +177,11 @@ step
 
 dm_start
 scsi_start
+
+echo_local -n "Restarting udev "
+exec_local udev_start
+return_code
+
 if [ "$scsifailover" = "mapper" ] || [ "$scsifailover" = "devicemapper" ]; then
   dm_mp_start
 fi
@@ -275,15 +280,16 @@ if [ $critical -eq 0 ]; then
     exec_local createTemp /dev/ram1
   fi
 
-  echo_local "Cleaning up..."
-  exec_local umount ${pivot_root}/proc &&
-  exec_local umount ${pivot_root}/sys
-  return_code
-	
   echo_local -n "Stopping syslogd..."
   exec_local stop_service "syslogd" /${pivot_root} &&
   return_code
 
+  echo_local "Cleaning up..."
+  exec_local umount ${pivot_root}/proc &&
+  exec_local umount ${pivot_root}/dev &&
+  exec_local umount ${pivot_root}/sys
+  return_code
+	
   echo_local -n "Removing files in initrd"
   if [ $restart_error -eq 0 ]; then
     exec_local rm -rf ${pivot_root}/*
@@ -305,7 +311,10 @@ fi
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.25  2006-07-03 08:32:03  marc
+# Revision 1.26  2006-07-13 14:14:57  marc
+# udev_start as function
+#
+# Revision 1.25  2006/07/03 08:32:03  marc
 # added step
 #
 # Revision 1.24  2006/06/19 15:56:13  marc
