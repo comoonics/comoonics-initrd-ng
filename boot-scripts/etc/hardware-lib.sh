@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.3 2006-06-19 15:55:45 marc Exp $
+# $Id: hardware-lib.sh,v 1.4 2006-07-13 11:36:34 marc Exp $
 #
 # @(#)$File$
 #
@@ -23,6 +23,44 @@
 #  DESCRIPTION
 #    Libraryfunctions for general hardware support functions.
 #*******
+
+#****f* boot-lib.sh/udev_start
+#  NAME
+#    udev_start
+#  SYNOPSIS
+#    function boot-lib.sh/udev_start
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function udev_start() {
+    /sbin/udevstart
+}
+#************udev_start
+
+#****f* boot-lib.sh/dev_start
+#  NAME
+#    dev_start
+#  SYNOPSIS
+#    function boot-lib.sh/dev_start
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function dev_start() {
+    echo_local -n "Mounting dev "
+    exec_local mount -o mode=0755 -t tmpfs none /dev
+    return_code
+
+    echo_local -n "Creating devices "
+    exec_local mknod /dev/console c 5 1 &&
+    exec_local mknod /dev/null c 1 3 &&
+    exec_local mknod /dev/zero c 1 5 &&
+    exec_local mkdir /dev/pts &&
+    exec_local mkdir /dev/shm
+    return_code
+}
+#************dev_start
 
 #****f* boot-lib.sh/scsi_start
 #  NAME
@@ -71,9 +109,8 @@ function scsi_start() {
   fi
   echo_local_debug "3.3 Configured SCSI-Devices:"
   exec_local_debug /bin/cat /proc/scsi/scsi
-
 } 
-#************ scsi_start 
+#************ scsi_start
 
 #****f* boot-lib.sh/dm_mp_start
 #  NAME
@@ -276,7 +313,10 @@ function add_scsi_device() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.3  2006-06-19 15:55:45  marc
+# Revision 1.4  2006-07-13 11:36:34  marc
+# added udev_start as function
+#
+# Revision 1.3  2006/06/19 15:55:45  marc
 # added device mapper support
 #
 # Revision 1.2  2006/06/07 09:42:23  marc
