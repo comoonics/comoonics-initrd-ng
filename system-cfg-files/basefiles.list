@@ -4,7 +4,7 @@
 #    $id$
 #  DESCRIPTION
 #*******
-# $Id: basefiles.list,v 1.1 2006-06-19 15:57:14 marc Exp $
+# $Id: basefiles.list,v 1.2 2006-07-13 14:33:25 mark Exp $
 bash
 nash
 nslookup
@@ -112,7 +112,7 @@ udevstart
 # END special things for lock_gulmd
 # END other stuff
 # START Systemfiles
-/dev
+#/dev
 /usr/share/hwdata/
 #/usr/share/hwdata/CardMonitorCombos
 #/usr/share/hwdata/Cards
@@ -130,6 +130,9 @@ udevstart
 @include $(ls -1 /etc/comoonics/bootimage/files.initrd.d/*.list.$(uname -m))
 #####################
 # $Log: basefiles.list,v $
-# Revision 1.1  2006-06-19 15:57:14  marc
+# Revision 1.2  2006-07-13 14:33:25  mark
+# removed /dev
+#
+# Revision 1.1  2006/06/19 15:57:14  marc
 # initial revision
 #
