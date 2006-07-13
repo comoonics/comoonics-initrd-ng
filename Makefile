@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.14 2006-06-19 15:54:34 marc Exp $
+# $Id: Makefile,v 1.15 2006-07-13 14:32:57 mark Exp $
 #
 # @(#)$file$
 #
@@ -198,7 +198,8 @@ EMPTY_DIRS=boot-scripts/mnt \
  boot-scripts/var/log \
  boot-scripts/var/lib/dhcp \
  boot-scripts/var/run/netreport \
- boot-scripts/proc
+ boot-scripts/proc \
+ boot-scripts/dev
 
 #************ EMPTY_DIRS 
 #****d* Makefile/INIT_FILES
@@ -308,7 +309,10 @@ archive:
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.14  2006-06-19 15:54:34  marc
+# Revision 1.15  2006-07-13 14:32:57  mark
+# added /dev
+#
+# Revision 1.14  2006/06/19 15:54:34  marc
 # added new files
 #
 # Revision 1.13  2006/06/07 09:42:23  marc
