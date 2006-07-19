@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.4 2006-07-13 11:36:34 marc Exp $
+# $Id: hardware-lib.sh,v 1.5 2006-07-19 15:12:55 marc Exp $
 #
 # @(#)$File$
 #
@@ -131,6 +131,10 @@ function dm_mp_start() {
   return_code
 
   exec_local_debug multipath -l
+
+  echo_local -n "Restarting udev "
+  exec_local udev_start
+  return_code
 
   echo_local -n "Setting up devicemapper partitions"
   for x in /dev/dm*; do
@@ -313,7 +317,10 @@ function add_scsi_device() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.4  2006-07-13 11:36:34  marc
+# Revision 1.5  2006-07-19 15:12:55  marc
+# added another udev restart
+#
+# Revision 1.4  2006/07/13 11:36:34  marc
 # added udev_start as function
 #
 # Revision 1.3  2006/06/19 15:55:45  marc
