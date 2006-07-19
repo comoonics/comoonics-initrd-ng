@@ -21,7 +21,7 @@
 # with ATIX.
 #/initrd_sr-2.6.9-34.ELsmp.img.gz
 # %define _initrddir /etc/init.d
-# $Id: comoonics-bootimage.spec,v 1.23 2006-07-19 15:11:36 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.24 2006-07-19 15:14:39 marc Exp $
 #
 ##
 # TO DO
@@ -173,9 +173,6 @@ ln -sf %{APPDIR}/create-gfs-initrd-generic.sh %{APPDIR}/mkinitrd
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/lock_gulmd_mv_files.list
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/lock_gulmd_cp_files.list
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/lock_gulmd_dirs.list
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/fence_tool_mv_files.list
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/fence_tool_cp_files.list
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/fence_tool_dirs.list
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/fenced_mv_files.list
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/fenced_cp_files.list
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/fenced_dirs.list
@@ -213,7 +210,10 @@ ln -sf %{APPDIR}/create-gfs-initrd-generic.sh %{APPDIR}/mkinitrd
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.23  2006-07-19 15:11:36  marc
+# Revision 1.24  2006-07-19 15:14:39  marc
+# removed the fence-tool lists for chroot
+#
+# Revision 1.23  2006/07/19 15:11:36  marc
 # fixed fence_bug for x86_64
 #
 # Revision 1.22  2006/07/13 11:35:16  marc
