@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.26 2006-07-13 14:14:57 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.27 2006-07-19 15:12:26 marc Exp $
 #
 # @(#)$File$
 #
@@ -17,7 +17,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.26 2006-07-13 14:14:57 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.27 2006-07-19 15:12:26 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -68,7 +68,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.26 $ $Date: 2006-07-13 14:14:57 $'
+echo_local 'Internal Version $Revision: 1.27 $ $Date: 2006-07-19 15:12:26 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -178,6 +178,10 @@ step
 dm_start
 scsi_start
 
+if [ "$scsifailover" = "mapper" ] || [ "$scsifailover" = "devicemapper" ]; then
+  dm_mp_start
+fi
+
 echo_local -n "Restarting udev "
 exec_local udev_start
 return_code
@@ -185,6 +189,7 @@ return_code
 if [ "$scsifailover" = "mapper" ] || [ "$scsifailover" = "devicemapper" ]; then
   dm_mp_start
 fi
+
 lvm_start
 
 netdevs=""
@@ -284,9 +289,15 @@ if [ $critical -eq 0 ]; then
   exec_local stop_service "syslogd" /${pivot_root} &&
   return_code
 
+  dev_start
+
+  echo_local "Copying the devicesfiles.."
+  exec_local cp -a ${pivot_root}/dev/* /dev
+  return_code
+
   echo_local "Cleaning up..."
-  exec_local umount ${pivot_root}/proc &&
   exec_local umount ${pivot_root}/dev &&
+  exec_local umount ${pivot_root}/proc &&
   exec_local umount ${pivot_root}/sys
   return_code
 	
@@ -311,7 +322,10 @@ fi
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.26  2006-07-13 14:14:57  marc
+# Revision 1.27  2006-07-19 15:12:26  marc
+# mulitpath dmapper bugfix with devices
+#
+# Revision 1.26  2006/07/13 14:14:57  marc
 # udev_start as function
 #
 # Revision 1.25  2006/07/03 08:32:03  marc
