@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.15 2006-07-13 14:32:57 mark Exp $
+# $Id: Makefile,v 1.16 2006-08-02 12:24:59 marc Exp $
 #
 # @(#)$file$
 #
@@ -114,9 +114,6 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/lock_gulmd_mv_files.list \
   boot-scripts/etc/lock_gulmd_cp_files.list \
   boot-scripts/etc/lock_gulmd_dirs.list \
-  boot-scripts/etc/fence_tool_mv_files.list \
-  boot-scripts/etc/fence_tool_cp_files.list \
-  boot-scripts/etc/fence_tool_dirs.list \
   boot-scripts/etc/fenced_mv_files.list \
   boot-scripts/etc/fenced_cp_files.list \
   boot-scripts/etc/fenced_dirs.list \
@@ -309,7 +306,10 @@ archive:
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.15  2006-07-13 14:32:57  mark
+# Revision 1.16  2006-08-02 12:24:59  marc
+# minor change
+#
+# Revision 1.15  2006/07/13 14:32:57  mark
 # added /dev
 #
 # Revision 1.14  2006/06/19 15:54:34  marc
