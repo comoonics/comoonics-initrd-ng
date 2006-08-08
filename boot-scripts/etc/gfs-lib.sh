@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.26 2006-07-03 08:33:05 marc Exp $
+# $Id: gfs-lib.sh,v 1.27 2006-08-08 08:31:52 marc Exp $
 #
 # @(#)$File$
 #
@@ -33,6 +33,7 @@
 
 default_lockmethod="lock_dlm"
 default_mountopts="defaults,noatime,nodiratime"
+ccs_xml_query="/opt/atix/comoonics-cs/ccs_xml_query"
 
 #****f* gfs-lib.sh/getGFSMajorVersion
 #  NAME
@@ -50,7 +51,7 @@ function getGFSMajorVersion {
   print version[1];
 }'
 }
-#************ getGFSMajorVersion 
+#************ getGFSMajorVersion
 
 #****f* gfs-lib.sh/getGFSMinorVersion
 #  NAME
@@ -84,7 +85,7 @@ function gfs_get_rootvolume {
    local xml_file=$1
    local hostname=$2
    [ -z "$hostname" ] && hostname=$(gfs_get_nodename $xml_file)
-    local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query -f $xml_file"    
+   local xml_cmd="${ccs_xml_query} -f $xml_file"
    $xml_cmd -q rootvolume $hostname
 }
 #************ gfs_get_rootvolume
@@ -103,7 +104,7 @@ function gfs_get_mountopts {
    local xml_file=$1
    local hostname=$2
    [ -z "$hostname" ] && hostname=$(gfs_get_nodename $xml_file)
-    local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query -f $xml_file"    
+    local xml_cmd="${ccs_xml_query} -f $xml_file"
    _mount_opts=$($xml_cmd -q mountopts $hostname)
    if [ -z "$_mount_opts" ]; then
      echo $default_mountopts
@@ -127,7 +128,7 @@ function gfs_get_scsifailover {
    local xml_file=$1
    local nodename=$2
    [ -z "$nodename" ] && nodename=$(gfs_get_nodename $xml_file)
-   local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query -f $xml_file"    
+   local xml_cmd="${ccs_xml_query} -f $xml_file"
    local _scsifailover=$($xml_cmd -q scsifailover $nodename)
    if [ -z "$_scsifailover" ]; then
      echo ""
@@ -152,11 +153,11 @@ function gfs_get_node_hostname {
    local xml_file=$1
    local nodename=$2
    [ -z "$nodename" ] && nodename=$(gfs_get_nodename)
-   local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query -f $xml_file"    
+   local xml_cmd="${ccs_xml_query} -f $xml_file"
    $xml_cmd -q hostname $nodename 2>/dev/null
    return $?
 }
-#************ gfs_get_node_hostname 
+#************ gfs_get_node_hostname
 
 #****f* gfs-lib.sh/gfs_get_nodename
 #  NAME
@@ -172,7 +173,7 @@ function gfs_get_nodename {
     local ccs_file=$1
     local mac=$2
 
-    local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query"
+    local xml_cmd="${ccs_xml_query}"
     $xml_cmd -f $ccs_file -q nodename $mac
 }
 #************ gfs_get_nodename
@@ -191,7 +192,7 @@ function gfs_get_nodeid {
     local ccs_file=$1
     local mac=$2
 
-    local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query"
+    local xml_cmd="${ccs_xml_query}"
     $xml_cmd -f $ccs_file -q nodeid $mac
 }
 #************ gfs_get_nodeid
@@ -202,14 +203,14 @@ function gfs_get_nodeid {
 #  SYNOPSIS
 #    function gfs_get_netdevs(cluster_conf, nodename)
 #  DESCRIPTION
-#    returns all configured networkdevices from the cluster.conf xml file 
+#    returns all configured networkdevices from the cluster.conf xml file
 #    seperated by " "
 #  IDEAS
 #  SOURCE
 #
 function gfs_get_netdevs {
 #	if [ -n "$debug" ]; then set -x; fi
-  local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query"
+  local xml_cmd="${ccs_xml_query}"
   local xmlfile=$1
   local nodename=$2
 
@@ -231,7 +232,7 @@ function gfs_get_netdevs {
 #  SOURCE
 #
 function gfs_auto_hosts {
-    local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query"    
+    local xml_cmd="${ccs_xml_query}"
     local xmlfile=$1
     local hostsfile=$2
 
@@ -243,7 +244,7 @@ function gfs_auto_hosts {
 #    if [ -n "$debug" ]; then set +x; fi
     return $ret
 }
-#************ gfs_auto_hosts 
+#************ gfs_auto_hosts
 
 #****f* gfs-lib.sh/gfs_auto_netconfig
 #  NAME
@@ -259,7 +260,7 @@ function gfs_auto_netconfig {
   local xml_file=$1
   local nodename=$2
   local netdev=$3
-  local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query"
+  local xml_cmd="${ccs_xml_query}"
   if [ -z "$netdev" ]; then netdev="eth0"; fi
 
   local ip_addr=$($xml_cmd -f $xml_file -q ip $nodename $netdev 2>/dev/null)
@@ -289,7 +290,7 @@ function gfs_auto_netconfig {
 #
 function gfs_get_syslogserver {
   local xml_file=$1
-  local xml_cmd="/opt/atix/comoonics_cs/ccs_xml_query"
+  local xml_cmd="${ccs_xml_query}"
   local nodename=$2
   $xml_cmd -f $xml_file -q syslog $nodename
 }
@@ -330,7 +331,7 @@ function gfs_load {
 
   echo_local_debug  "Loaded modules:"
   exec_local_debug /sbin/lsmod
-  
+
   return $return_c
 }
 #************ gfs_load
@@ -459,7 +460,7 @@ function gfs_start_fenced {
   mkdir -p /var/lib/fence_tool
   start_service /var/lib/fence_tool /sbin/fenced -c -w
 }
-#************ gfs_start_fenced 
+#************ gfs_start_fenced
 
 #****f* gfs-lib.sh/gfs_start_ccsd
 #  NAME
@@ -482,7 +483,7 @@ function gfs_start_ccsd {
   start_service /sbin/ccsd "no_chroot"
 }
 
-#************ gfs_start_ccsd 
+#************ gfs_start_ccsd
 
 #****f* gfs-lib.sh/gfs_restart_ccsd
 #  NAME
@@ -497,7 +498,7 @@ function gfs_start_ccsd {
 function gfs_restart_ccsd {
    old_root=$1
    new_root=$2
- 
+
 #   set -x
    echo_local -n "Restarting ccsd ($old_root=>$new_root) "$(pwd)
    [ -e ${old_root}/var/run/cluster/ccsd.pid ] &&
@@ -533,7 +534,7 @@ function gfs_restart_ccsd {
 function gfs_restart_clvmd {
    old_root=$1
    new_root=$2
- 
+
 #   set -x
    echo_local -n "Starting clvmd ($new_root) "$(pwd)
    chroot $new_root /usr/sbin/clvmd
@@ -558,7 +559,7 @@ function gfs_restart_clvmd {
 function gfs_restart_fenced {
    old_root=$1
    new_root=$2
- 
+
    echo_local -n "Restarting fenced ($old_root=>$new_root) "
    [ ! -d ${new_root}/cluster/shared/var/lib/fence_tool ] && mkdir -p ${new_root}/cluster/shared/var/lib/fence_tool
    mount -t tmpfs none ${new_root}/cluster/shared/var/lib/fence_tool &&
@@ -588,7 +589,10 @@ function gfs_restart_fenced {
 #************ gfs_restart_fenced
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.26  2006-07-03 08:33:05  marc
+# Revision 1.27  2006-08-08 08:31:52  marc
+# changed path to new version
+#
+# Revision 1.26  2006/07/03 08:33:05  marc
 # bugfix in hostsgeneration
 #
 # Revision 1.25  2006/06/19 15:55:45  marc
