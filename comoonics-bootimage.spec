@@ -21,7 +21,7 @@
 # with ATIX.
 #/initrd_sr-2.6.9-34.ELsmp.img.gz
 # %define _initrddir /etc/init.d
-# $Id: comoonics-bootimage.spec,v 1.24 2006-07-19 15:14:39 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.25 2006-08-14 17:42:41 marc Exp $
 #
 ##
 # TO DO
@@ -31,16 +31,19 @@
 ##
 
 %define _user root
-%define         CONFIGDIR       /%{_sysconfdir}/comoonics
-%define         APPDIR       /opt/atix/comoonics_bootimage
-
+%define CONFIGDIR /%{_sysconfdir}/comoonics
+%define APPDIR    /opt/atix/%{name}
+%define ENVDIR    /etc/profile.d
+%define ENVFILE   %{ENVDIR}/%{name}.sh
+%define INITDIR   /etc/init.d
+%define SYSCONFIGDIR /%{_sysconfdir}/sysconfig
 
 Name: comoonics-bootimage
 Summary: Comoonics Bootimage. Scripts for creating an initrd in a gfs shared root environment
 Version: 1.0
 BuildArch: noarch
-Requires: comoonics-cs >= 0.5
-Release: 30
+Requires: comoonics-cs >= 0.5-17
+Release: 43
 Vendor: ATIX GmbH
 Packager: Marc Grimme (grimme@atix.de)
 ExclusiveArch: noarch
@@ -59,19 +62,18 @@ Comoonics Bootimage. Scripts for creating an initrd in a gfs shared root environ
 %build
 
 %install
-make PREFIX=$RPM_BUILD_ROOT install
+make PREFIX=$RPM_BUILD_ROOT INSTALL_DIR=%{APPDIR} install
 
 %postun
 
-echo "postun: Param: $1"
 if [ "$1" -eq 0 ]; then
   echo "Postuninstalling comoonics-bootimage.."
   find /etc/comoonics/bootimage -name "files*.list" -o -name "rpms*.list" -type l -exec rm -f {} \; &>/dev/null
   root_fstype=$(mount | grep "/ " | awk '
-BEGIN { exit_c=1; } 
-{ if ($5) {  print $5; exit_c=0; } } 
-END{ exit exit_c}')
-  if [ "$root_fstype" = "gfs" ]; then
+BEGIN { exit_c=1; }
+{ if ($5) {  print $5; exit_c=0; } }
+END{ exit exit_c}')/usr/src/redhat/RPMS/noarch/comoonics-bootimage-1.0-41.noarch.rpm
+  if [ "$root_fstype" != "gfs" ]; then
 #    /sbin/chkconfig --del bootsr &>/dev/null
 #    /sbin/chkconfig bootsr off
 #    /sbin/chkconfig --list bootsr
@@ -85,56 +87,55 @@ END{ exit exit_c}')
     /sbin/chkconfig --add gfs &>/dev/null
     /sbin/chkconfig --list gfs
   fi
+  rm %{APPDIR}/mkinitrd
+  rm %{ENVFILE}
 fi
 
 %post
 
 echo "Starting postinstall.."
-if ! $(grep '%{APPDIR}' /etc/profile.d/atix.sh > /dev/null 2>&1); then
+echo "Checking %{ENVFILE}"
+if ! $(grep '%{APPDIR}' %{ENVFILE} > /dev/null 2>&1); then
     echo "Patching path.."
-    echo 'PATH=%{APPDIR}:${PATH}' >> /etc/profile.d/atix.sh
+    echo 'PATH=%{APPDIR}:${PATH}' >> %{ENVFILE}
 fi
 echo "Creating mkinitrd link..."
 ln -sf %{APPDIR}/create-gfs-initrd-generic.sh %{APPDIR}/mkinitrd
 
-#if [ ! -e /etc/comoonics/bootimage/files-$(uname -r).list ]; then
-#  uname -r | grep "^2.4" > /dev/null
-#  if [ $? -eq 0 ]; then
-#    ln -s /etc/comoonics/bootimage/gfs6-es30-files.i686.list /etc/comoonics/bootimage/files-$(uname -r).list
-#  else
-#    ln -s /etc/comoonics/bootimage/gfs61-es40-files.$(uname -m).list /etc/comoonics/bootimage/files-$(uname -r).list
-#    if [ $? -ne 0 ]; then
-#       echo "Could not find gfs lists file for your architecture. )"$(uname -m)"). Please check if architecture is supported."
-#    fi
-#  fi
-#fi
-#root_fstype=$(mount | grep "/ " | awk 'BEGIN { exit_c=1; } { if ($5) { print $5; exit_c=0; } } END{ exit exit_c}')
-#if [ "$root_fstype" = "gfs" ]; then
-  /sbin/chkconfig --add bootsr &>/dev/null
-  /sbin/chkconfig bootsr on
-  /sbin/chkconfig --list bootsr
-  /sbin/chkconfig --add preccsd &>/dev/null
-  /sbin/chkconfig preccsd on
-  /sbin/chkconfig --list preccsd
-  /sbin/chkconfig ccsd on
-  /sbin/chkconfig --list ccsd
-  /sbin/chkconfig --add fenced-chroot &>/dev/null
-  /sbin/chkconfig fenced-chroot on
-  /sbin/chkconfig --list fenced-chroot
-  /sbin/chkconfig fenced off
-  /sbin/chkconfig --del fenced &>/dev/null
-  /sbin/chkconfig gfs off
-  /sbin/chkconfig --del gfs
-  grep "^FENCE_CHROOT=" /etc/sysconfig/cluster &>/dev/null
-  [ $? -ne 0 ] && echo "FENCE_CHROOT=/var/lib/fence_tool" >> /etc/sysconfig/cluster
-  /bin/true
-  grep "^FENCE_CHROOT_SOURCE=" /etc/sysconfig/cluster &>/dev/null
-  [ $? -ne 0 ] && echo "FENCE_CHROOT_SOURCE=/var/lib/fence_tool.tmp" >> /etc/sysconfig/cluster
-  /bin/true
-#fi
-#echo "Creating linuxrc link.."
-#cd %{APPDIR}/boot-scripts/ && ln -sf linuxrc.generic.sh linuxrc
+/sbin/chkconfig --add bootsr &>/dev/null
+/sbin/chkconfig bootsr on
+/sbin/chkconfig --list bootsr
+/sbin/chkconfig --add preccsd &>/dev/null
+/sbin/chkconfig preccsd on
+/sbin/chkconfig --list preccsd
+/sbin/chkconfig ccsd on
+/sbin/chkconfig --list ccsd
+/sbin/chkconfig --add fenced-chroot &>/dev/null
+/sbin/chkconfig fenced-chroot on
+/sbin/chkconfig --list fenced-chroot
+/sbin/chkconfig fenced off
+/sbin/chkconfig --del fenced &>/dev/null
+/sbin/chkconfig gfs off
+/sbin/chkconfig --del gfs
+grep "^FENCE_CHROOT=" %{SYSCONFIGDIR}/cluster &>/dev/null
+[ $? -ne 0 ] && echo "FENCE_CHROOT=/var/lib/fence_tool" >> %{SYSCONFIGDIR}/cluster
+/bin/true
+grep "^FENCE_CHROOT_SOURCE=" %{SYSCONFIGDIR}/cluster &>/dev/null
+[ $? -ne 0 ] && echo "FENCE_CHROOT_SOURCE=/var/lib/fence_tool.tmp" >> %{SYSCONFIGDIR}/cluster
+/bin/true
 
+echo 'Information:
+You can now setup fenced on running on a localfilesystem which is not a cluster filesystem.
+You just need to setup up the %{SYSCONFIGDIR}/cluster configuration file apropriate.
+Example:
+Say /tmp would reside on "ext3" and you would like fenced to be running on /tmp/fence_tool then
+%{SYSCONFIGDIR}/cluster looks as follows:
+FENCE_CHROOT=/tmp/fence_tool
+
+Then fenced will be started on root /tmp/fence_tool
+If you want syslog to log fence messages you should add ${FENCE_CHROOT}/dev/log to the syslog deamon as
+additional logdevice (command switch syslogd -a ${FENCE_CHROOT}/dev/log)
+'
 
 %changelog
 * Fri May 12 2006  <grimme@atix.de> - 1.0-7
@@ -154,9 +155,9 @@ ln -sf %{APPDIR}/create-gfs-initrd-generic.sh %{APPDIR}/mkinitrd
 %dir %{APPDIR}/boot-scripts/var/lib/dhcp
 %dir %{APPDIR}/boot-scripts/var/run/netreport
 %dir %{APPDIR}/boot-scripts/proc
-%attr(750, root, root) /etc/init.d/bootsr
-%attr(750, root, root) /etc/init.d/preccsd
-%attr(750, root, root) /etc/init.d/fenced-chroot
+%attr(750, root, root) %{INITDIR}/bootsr
+%attr(750, root, root) %{INITDIR}/preccsd
+%attr(750, root, root) %{INITDIR}/fenced-chroot
 %attr(750, root, root) %{APPDIR}/create-gfs-initrd-generic.sh
 %attr(750, root, root) %{APPDIR}/boot-scripts/linuxrc.generic.sh
 %attr(750, root, root) %{APPDIR}/boot-scripts/exec_part_from_bash.sh
@@ -164,7 +165,7 @@ ln -sf %{APPDIR}/create-gfs-initrd-generic.sh %{APPDIR}/mkinitrd
 %attr(750, root, root) %{APPDIR}/boot-scripts/rescue.sh
 %attr(750, root, root) %{APPDIR}/boot-scripts/linuxrc
 %attr(750, root, root) %{APPDIR}/boot-scripts/linuxrc.bash
-%attr(640, root, root) %{APPDIR}/create-gfs-initrd-lib.sh 
+%attr(640, root, root) %{APPDIR}/create-gfs-initrd-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/atix.txt
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/boot-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/gfs-lib.sh
@@ -210,7 +211,10 @@ ln -sf %{APPDIR}/create-gfs-initrd-generic.sh %{APPDIR}/mkinitrd
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.24  2006-07-19 15:14:39  marc
+# Revision 1.25  2006-08-14 17:42:41  marc
+# new version with max_drop_count and fenced from local disk
+#
+# Revision 1.24  2006/07/19 15:14:39  marc
 # removed the fence-tool lists for chroot
 #
 # Revision 1.23  2006/07/19 15:11:36  marc
