@@ -128,7 +128,7 @@ start()
 
   rtrn=1
 
-  if [ -e ${FENCE_CHROOT}/var/run/fenced.pid ]; then
+  if [ -e ${FENCE_CHROOT}/var/run/fenced.pid ] && [ -e /proc/$(cat ${FENCE_CHROOT}/var/run/fenced.pid) ]; then
     echo -n "Already running "$(cat ${FENCE_CHROOT}/var/run/fenced.pid)". Stop first"
     passed
     echo
@@ -162,9 +162,26 @@ start()
       #> do
       #>      sleep 1;
       #> done
-
       success "startup"
       echo
+      mount | grep $FENCE_CHROOT_SOURCE &>/dev/null
+      if [ $? -eq 0 ]; then
+      	mountpoint=$FENCE_CHROOT_SOURCE
+      fi
+      mount | grep $FENCE_CHROOT_INITRD &>/dev/null
+      if [ $? -eq 0 ]; then
+      	mountpoint=$FENCE_CHROOT_INITRD
+      fi
+      if [ -n "$mountpoint" ] ; then
+        echo -n "Unmounting \"$mountpoint\" "
+        umount $mountpoint
+        if [ $? -eq 0 ]; then
+          success
+        else
+          failure
+        fi
+        echo
+      fi
   else
       failure "startup"
       echo
@@ -190,11 +207,11 @@ stop()
 
   if pidof fenced &> /dev/null
     then
-    if [ -f $FENCE_CHROOT/var/run/fenced.pid ]; then
+    if [ -f $FENCE_CHROOT/var/run/fenced.pid ] && [ -e /proc/$(cat $FENCE_CHROOT/var/run/fenced.pid) ]; then
     	kill $(cat $FENCE_CHROOT/var/run/fenced.pid)
     else
     	echo -n " started from initrd "
-    	kill $(cat $FENCE_CHROOT_INITRD/var/run/fenced.pid)
+    	kill $(cat $FENCE_CHROOT_INITRD/var/run/fenced.pid) || killproc fenced
     fi
 
     rtrn=$?
@@ -270,7 +287,10 @@ exit $rtrn
 
 #########################
 # $Log: fenced-chroot,v $
-# Revision 1.8  2006-08-02 12:26:23  marc
+# Revision 1.9  2006-08-14 17:43:03  marc
+# bugfixes with FENCE_CHROOT and FENCE_CHROOT_SOURCE
+#
+# Revision 1.8  2006/08/02 12:26:23  marc
 # added support for fenced on a localfs
 #
 # Revision 1.7  2006/05/12 13:05:50  marc
