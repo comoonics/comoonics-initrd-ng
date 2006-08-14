@@ -9,11 +9,11 @@
 #    Mark Hlawatschek
 #
 #*******
-# 
+#
 # chkconfig: 345 19 99
 # description: do the post settings for Comoonics Shared Root
 # Author: hlawatschek@atix.de
-# 
+#
 #
 
 #
@@ -47,7 +47,7 @@ function check_sharedroot {
     return 0
   fi
 }
-#************ check_sharedroot 
+#************ check_sharedroot
 #****f* bootsr/get_runlevel
 #  NAME
 #    get_runlevel
@@ -73,9 +73,18 @@ function get_runlevel {
 #
 function get_lockcount {
   DEF_LOCK_COUNT=$1
+  MAX_LCOK_COUNT=$2
   [ -z "$DEF_LOCK_COUNT" ] && DEF_LOCK_COUNT=${DEFAULT_LOCK_COUNT}
   [ -z "$DEF_LOCK_COUNT" ] && DEF_LOCK_COUNT=50000
-  echo $(cat /proc/meminfo | grep MemTotal | awk '{ print int($2/1024/512*'$DEF_LOCK_COUNT');}')
+  [ -z "$MAX_LOCK_COUNT" ] && MAX_LOCK_COUNT=0
+  cat /proc/meminfo | grep MemTotal | awk -v maxlockcount=$MAX_LOCK_COUNT -v deflockcount=$DEF_LOCK_COUNT '
+  {
+  	lockcount=int($2/1024/512*deflockcount);
+  	if ((lockcount > maxlockcount) && (maxlockcount > 0))
+  	  lockcount=maxlockcount;
+  	print lockcount;
+  }
+'
 }
 #************ get_lockcount
 
@@ -96,12 +105,12 @@ case "$1" in
       runlevel=$(get_runlevel)
       echo -n "Doing the Comoonics Shared Root post settings "
       echo `date` Doing the Comoonics Shared Root post settings | tee -a /var/log/bootsr | logger -t com-bootsr
-      /sbin/lvm vgscan --ignorelockingfailure --mknodes 2>&1 | tee -a /var/log/bootsr | logger 
+      /sbin/lvm vgscan --ignorelockingfailure --mknodes 2>&1 | tee -a /var/log/bootsr | logger
       /sbin/lvm vgchange --ignorelockingfailure -ay 2>&1 | tee -a /var/log/bootsr | logger -t com-bootsr
       sleep 1
       /sbin/swapon -av 2>&1 | tee -a /var/log/bootsr | logger -t com-bootsr
       /bin/mount -at nonfs 2>&1 | tee -a /var/log/bootsr | logger -t com-bootsr
-      count=$(get_lockcount ${DEFAULT_LOCK_COUNT})
+      count=$(get_lockcount ${DEFAULT_LOCK_COUNT} ${MAX_LOCK_COUNT})
       echo $count > /proc/cluster/lock_dlm/drop_count && echo -n "($count)" &&
       success || failure
       echo
@@ -127,7 +136,7 @@ case "$1" in
           failure
         fi
         echo
-      fi   
+      fi
     fi
     ;;
   stop|status|restart|reload)
@@ -154,7 +163,7 @@ case "$1" in
         failure "shutdown"
         echo
         exit 1
-      fi   
+      fi
         ;;
   *)
         echo "Usage: sysstat {start|stop|status|restart|reload}"
