@@ -33,31 +33,21 @@ LOCK_FILE="/var/lock/subsys/ccsd"
 #
 start()
 {
-  echo -n $"Checking for ccsd from initrd:"
-  pids=$(fuser -mv ${INITRD_DIR} | grep ccsd | awk '
-BEGIN{ found=1; }
-NF==5 && $5=="ccsd" {print $3; found=0;} 
-NF==4 && $4="ccsd" {print $2; found=0;}
-END { exit found; }
-')
-  if [ $? -eq 0 ]; then
-    kill $pids 
-    if [ $? -eq 0 ]; then
-      success
-      echo
-      return 0
-    else
-      failure
-      echo
-      return 1
-    fi
+  echo -n $"Killing ccsd:"
+  (killproc ccsd && success) || failure
+  rtrn=$?
+  echo
+  echo -n $"Relinking socket: "
+  if [ $rtrn -eq 0 ]; then
+    (rm -rf /var/run/cluster &&
+     ln -s ${FENCE_CHROOT}/var/run/cluster /var/run/cluster &&
+     success) || failure
   else
     passed
-    echo
-    return 0
   fi
+  echo
 }
-#************ start 
+#************ start
 
 #****f* preccsd/stop
 #  NAME
@@ -114,11 +104,14 @@ case "$1" in
 esac
 
 exit $rtrn
-#************ start 
+#************ start
 
 ##################
 # $Log: preccsd,v $
-# Revision 1.4  2006-06-07 09:42:23  marc
+# Revision 1.5  2006-08-28 16:03:20  marc
+# support for symlink of /var/run/cluster
+#
+# Revision 1.4  2006/06/07 09:42:23  marc
 # *** empty log message ***
 #
 # Revision 1.3  2006/05/12 13:05:07  marc
