@@ -1,0 +1,8 @@
+2006-03-07
+Perlscripts to use fence for vmware.
+fence_vmware_client has to be run on the client that wants to fence a 
+vmware virtual machine and fence_vmware_master has to reside on the vmware
+server itself.
+fence_vmware_client calls fence_vmware_master via ssh.
+On the vmware server the control.tar from the vmware-server has to be 
+installed. See INSTALL.fence_vmware

@@ -1,0 +1,315 @@
+#!/usr/bin/perl
+# $Id$
+
+#
+# The Server module of vmware fencing will be called via ssh from 
+# fence_vmware_client
+# Can reside on any server involved in the fencing structure (vmware_host or 
+# any other wrapper server)
+
+use strict;
+use Getopt::Std;
+
+use VMware::VmPerl;
+use VMware::VmPerl::VM;
+use VMware::VmPerl::ConnectParams;
+
+my $FENCE_RELEASE_NAME='$Id:$';
+my $BUILD_DATE='(built $Date:$)';
+
+open(OUT, ">&STDOUT");
+open(ERR, ">&STDERR");
+
+# Get the program name from $0 and strip directory names
+$_=$0;
+s/.*\///;
+my $pname = $_;
+my $OPTION_STR="hc:u:p:P:H:o:qVvT:";
+
+################################################################################
+sub usage {
+    print <<"EOF";
+Usage
+
+$pname [options]
+
+  Options:
+     -h               usage
+     -c cfgfile       Path to Cfg File on vmware host for vm to be 
+                      fenced
+     -u user          User to login to vmware host to fence vm
+     -p passwd        Password for the given user
+     -P port          Port of the vmware host (optional)
+     -H vmware_host   The vmware host
+     -o (reboot*|on|off|status|suspend|resume)  Action: reboot (default)
+     -q               quiet mode
+     -T (1,2)         poweroff type. 
+                         1 for hard without any scripts
+                         2 for soft with usage of poweroff/poweron script
+     -V               version
+     -v               verbose
+EOF
+    exit 0;
+}
+
+sub fail {
+    my ($msg)=@_;
+    print ERR $msg;
+    exit 1;
+}
+
+sub get_options_stdin {
+  my $opt;
+  my $line = 0;
+  my $in="";
+  my ($hostname,$username,$password,$cfgfile)=undef;
+  my $action="reboot"; my $port=0; my $type=1;
+  while( defined($in = <>) ) {
+    chomp $in;
+
+    # strip leading and trailing whitespace
+    $in=~s/^\s*//;
+    $in=~s/\s*$//;
+
+    # skip comments
+    next if $in =~ /^#/;
+	
+    $line+=1;
+    $opt=$in;
+    print "DEBUG: $opt\n";
+    next unless $opt;
+
+    my ($name,$val)=split /\s*=\s*/, $opt;
+
+    if ( $name eq "" ) {
+      print ERR "parse error: illegal name in option $line\n";
+      exit 2;
+    } elsif ($name eq "action" ) {
+      $action = $val;
+    } # DO NOTHING -- this field is used by fenced or stomithd
+    elsif ($name eq "agent" ) { }
+    # FIXME -- depricated.  use "hostname" instead.
+    elsif ($name eq "fm" ) {
+      (undef,$hostname) = split /\s+/,$val;
+      print ERR "Depricated \"fm\" entry detected.  refer to man page.\n";
+    } elsif ($name eq "hostname" ) {
+      $hostname = $val;
+    } elsif ($name eq "username" ) {
+      $username = $val;
+    } elsif ($name eq "password" ) {
+      $password = $val;
+    } elsif ($name eq "cfgfile" ) {
+      $cfgfile = $val;
+    } elsif ($name eq "type" ) {
+      $type = $val;
+    } elsif (($name eq "verbose") and ($val eq "on")) {
+      open(DEBUG, ">&STDOUT");
+    } elsif ($name eq "port" ) {
+      $port = $val;
+    } elsif ($name eq "action" ) {
+      fail_usage("Unrecognised action \'$action\' for \'-o\' flag")
+	unless $name=~ /^(off|on|reboot|status|suspend|resume)$/;
+      $action = $val;
+    } # FIXME should we do more error checking?
+      # Excess name/vals will be eaten for now
+    else {
+      fail "parse error: unknown option \"$opt\"\n";
+      exit 2;
+    }
+  }
+  return ($hostname,$port,$username,$password,$cfgfile,$action,$type);
+}
+
+sub version {
+  print OUT "$pname $FENCE_RELEASE_NAME $BUILD_DATE\n";
+
+  exit 0;
+}
+
+sub fail_usage {
+    my ($msg)=@_;
+    print ERR $msg if $msg;
+    print ERR "Please use '-h' for usage.\n";
+    exit 1;
+}
+
+sub vmware_connect {
+  my ($hostname, $port, $username, $password, $cfgfile, $type)=@_;
+  
+  print DEBUG "Connecting to VMWare host $hostname with Username $username and password ..";
+  my $connect_params = &VMware::VmPerl::ConnectParams::new($hostname, $port, $username, $password);
+  print DEBUG "(OK)\n";
+  print DEBUG "VMware::VmPerl::VM::new";
+  my $vm = VMware::VmPerl::VM::new();
+  print DEBUG "(OK)\n";
+
+  print DEBUG "vm->connect($cfgfile)";
+  my $err = $vm->connect($connect_params, $cfgfile);
+  if (!defined($err)) {
+    my ($errorNumber, $errorString) = $vm->get_last_error();
+    die "Error connecting to vm: $errorNumber, $errorString.\n";
+  }
+  print DEBUG "(OK)\n";
+  return $vm;
+}
+
+sub vmware_on {
+  my $vm=shift;
+  my $type=1;
+  $type=shift if (defined $_[1]);
+  print DEBUG "Powering on vm..";
+  my $ret = (vmware_isOFF($vm)?$vm->start($type):$vm->get_execution_state());
+  print DEBUG "(OK, $ret)\n";
+  return ($ret eq VM_EXECUTION_STATE_ON) || ($ret eq VM_EXECUTION_STATE_OFF);
+}
+
+sub vmware_off {
+  my $vm=shift;
+  my $type=1;
+  $type=shift if (defined $_[1]);
+  print DEBUG "Stopping vm..";
+  my $ret = (vmware_isON($vm)?$vm->stop($type):$vm->get_execution_state());
+  print DEBUG "(OK, $ret)\n";
+  return ($ret eq VM_EXECUTION_STATE_OFF) || ($ret eq VM_EXECUTION_STATE_ON);
+}
+
+sub vmware_suspend {
+  my $vm=shift;
+  my $type=1;
+  $type=shift if (defined $_[1]);
+  print DEBUG "Suspending vm..";
+  my $ret = (vmware_isON($vm)?$vm->suspend($type):$vm->get_execution_state());
+  print DEBUG "(OK, $ret)\n";
+  return ($ret eq VM_EXECUTION_STATE_SUSPENDED) || ($ret eq VM_EXECUTION_STATE_ON);
+}
+
+sub vmware_resume {
+  my $vm=shift;
+  my $type=1;
+  $type=shift if (defined $_[1]);
+  print DEBUG "Resuming vm..";
+  my $ret = (vmware_isSUSPENDED($vm)?$vm->start($type):$vm->get_execution_state());
+  print DEBUG "(OK, $ret)\n";
+  return ($ret eq VM_EXECUTION_STATE_ON) || ($ret eq VM_EXECUTION_STATE_SUSPENDED);
+}
+
+sub vmware_reboot {
+  my $vm=shift;
+  my $type=1;
+  $type=shift if (defined $_[1]);
+  print DEBUG "Resetting vm..";
+  my $ret = (vmware_isOFF($vm)?vmware_on($vm,$type):$vm->reset($type));
+  print DEBUG "(OK, $ret)\n";
+  return ($ret eq VM_EXECUTION_STATE_ON);
+}
+
+sub vmware_isON {
+  my $vm=shift;
+  print DEBUG "Getting status..";
+  my $state = $vm->get_execution_state();
+  print DEBUG "(OK, $state, ".VM_EXECUTION_STATE_ON.")\n";
+  return ($state eq VM_EXECUTION_STATE_ON);
+}
+
+sub vmware_isSUSPENDED {
+  my $vm=shift;
+  print DEBUG "Getting status..";
+  my $state = $vm->get_execution_state();
+  print DEBUG "(OK, $state, ".VM_EXECUTION_STATE_SUSPENDED.")\n";
+  return ($state eq VM_EXECUTION_STATE_SUSPENDED);
+}
+
+sub vmware_isOFF {
+  my $vm=shift;
+  print DEBUG "Getting status..\n";
+  my $state = $vm->get_execution_state();
+  print DEBUG "(OK, $state, ".VM_EXECUTION_STATE_OFF.")\n";
+  return ($state eq VM_EXECUTION_STATE_OFF);
+}
+
+sub vmware_status {
+  my $vm=shift;
+  if (vmware_isON($vm)) {
+    print OUT "(ON)\n";
+    return 0;
+  } elsif (vmware_isOFF($vm)) {
+    print OUT "(OFF)\n";
+    return 0;
+  } else {
+    print OUT "(UNSUPPORTED)\n";
+    return 1;
+  }
+}
+
+sub vmware_disconnect {
+  my $vm=shift;
+  print DEBUG "Disconnecting from vm..";
+  $vm->disconnect();
+  print DEBUG "(OK)\n";
+}
+
+my ($hostname,$username,$password,$cfgfile)=undef;
+my $action="reboot"; my $port=0; my $type=1;
+if (@ARGV > 0) {
+  my %opts=();
+  getopts($OPTION_STR, \%opts) || fail_usage;
+
+  usage if defined $opts{h};
+  version if defined $opts{V};
+
+  fail_usage "Unkown parameter." if (@ARGV > 0);
+  fail_usage "No '-c' flag specified." unless defined $opts{c};
+  fail_usage "No '-H' flag specified." unless defined $opts{H};
+  fail_usage "No '-u' flag specified." unless defined $opts{c};
+  fail_usage "No '-p' flag specified." unless defined $opts{p};
+
+  $hostname = $opts{H};
+  $username = $opts{u};
+  $password = $opts{p};
+  $cfgfile  = $opts{c};
+  $port     = $opts{P} if defined $opts{P};
+  $type     = $opts{T} if defined $opts{T};
+  $action = $opts{o} if defined $opts{o};
+
+  fail_usage "Unrecognised action '$action' for '-o' flag"
+    unless $action=~ /^(off|on|reboot|status|suspend|resume)$/;
+
+  if (defined $opts{q}) {
+    close(OUT);
+  }
+  if (defined $opts{v}) {
+    open(DEBUG, ">&STDOUT");
+  }
+} else {
+   ($hostname,$port,$username,$password,$cfgfile,$action,$type)=get_options_stdin();
+   fail "no vmware host\n" unless defined $hostname;
+   fail "no vmware user\n" unless defined $username;
+   fail "no vmware password\n" unless defined $password;
+   fail "no vm configfile \n" unless defined $cfgfile;
+}
+
+my $vm=vmware_connect($hostname, $port, $username, $password, $cfgfile) or fail("Could not connect to vmware host: $hostname");
+
+my $agent_status=0;
+my $exec_str='$agent_status=vmware_'.$action.'($vm, '.$type.');';
+print DEBUG "EVAL: $exec_str\n";
+eval $exec_str;
+if ($@) {
+  vmware_disconnect($vm);
+  print DEBUG $@;
+  fail "Could not execution action \"$action\" on vmware_host \"$hostname\"";
+}
+if (!$agent_status) {
+  my ($errorNumber, $errorString) = $vm->get_last_error();
+  if ($errorNumber eq 0) {
+    warn "Warning: Could not change to status $action.\n";
+  } else {
+    warn "Error: $errorNumber, $errorString.\n";
+  }
+}
+vmware_disconnect($vm);
+
+exit ($agent_status?0:1);
+
+##########################################
+# $Log$

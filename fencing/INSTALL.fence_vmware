@@ -1,0 +1,135 @@
+install as follows: 
+1. copy fence_vmware_client on _ALL_ machines that want to 
+fence another virtual vmware machine.
+2. copy fence_vmware_master on the vmware server
+3. Install the control.tar which is part of the vmware server package
+  (to be found under /usr/lib/vmware/perl/control.tar) as follows:
+
+[root@gallien-163 tmp]# tar xvf /usr/lib/vmware/perl/control.tar
+control-only/
+control-only/Changes
+control-only/Control.pm
+control-only/INSTALL
+control-only/MANIFEST
+control-only/Makefile.PL
+control-only/Server.pm
+control-only/VM.pm
+control-only/Keycode.pm
+control-only/test.pl
+control-only/typemap
+control-only/vm_basic_types.h
+control-only/vmcontrol.h
+control-only/vmcontrol_constants.h
+control-only/includeCheck.h
+control-only/VMScript.pm
+control-only/Profiler.pm
+control-only/VmPerl.xs
+control-only/VmPerl/
+control-only/VmPerl/VmPerl.pm
+control-only/VmPerl/Server.pm
+control-only/VmPerl/VM.pm
+control-only/VmPerl/Question.pm
+control-only/VmPerl/ConnectParams.pm
+control-only/vmware-cmd.pl
+control-only/vmcontrol.o
+[root@gallien-163 tmp]# cd control-only/
+[root@gallien-163 control-only]# perl Makefile.PL
+Checking if your kit is complete...
+Looks good
+Writing Makefile for VMware::VmPerl
+[root@gallien-163 control-only]# make
+cp VmPerl/VM.pm blib/lib/VMware/VmPerl/VM.pm
+cp Control.pm blib/lib/VMware/Control.pm
+AutoSplitting blib/lib/VMware/Control.pm (blib/lib/auto/VMware/Control)
+cp Profiler.pm blib/lib/VMware/Control/Profiler.pm
+AutoSplitting blib/lib/VMware/Control/Profiler.pm (blib/lib/auto/VMware/Control/Profiler)
+cp VmPerl/ConnectParams.pm blib/lib/VMware/VmPerl/ConnectParams.pm
+cp Server.pm blib/lib/VMware/Control/Server.pm
+cp Keycode.pm blib/lib/VMware/Control/Keycode.pm
+cp VMScript.pm blib/lib/VMware/Control/VMScript.pm
+cp VmPerl/VmPerl.pm blib/lib/VMware/VmPerl.pm
+AutoSplitting blib/lib/VMware/VmPerl.pm (blib/lib/auto/VMware/VmPerl)
+cp VmPerl/Server.pm blib/lib/VMware/VmPerl/Server.pm
+cp VM.pm blib/lib/VMware/Control/VM.pm
+cp VmPerl/Question.pm blib/lib/VMware/VmPerl/Question.pm
+VmPerl.xs: In function ‘XS_VMware__VmPerl__VM_GetHeartbeat’:
+VmPerl.xs:1379: warning: pointer targets in passing argument 2 of ‘VMControl_VMGetHeartbeat’ differ in signedness
+VmPerl.xs: In function ‘XS_VMware__VmPerl__VM_GetUptime’:
+VmPerl.xs:1395: warning: pointer targets in passing argument 2 of ‘VMControl_VMGetUptime’ differ in signedness
+VmPerl.xs: In function ‘XS_VMware__VmPerl__VM_GetId’:
+VmPerl.xs:1411: warning: pointer targets in passing argument 2 of ‘VMControl_VMGetId’ differ in signedness
+VmPerl.xs: In function ‘XS_VMware__VmPerl__VM_GetPid’:
+VmPerl.xs:1427: warning: pointer targets in passing argument 2 of ‘VMControl_VMGetPid’ differ in signedness
+VmPerl.xs: In function ‘XS_VMware__VmPerl__VM_GetCapabilities’:
+VmPerl.xs:1443: warning: pointer targets in passing argument 2 of ‘VMControl_VMGetCapabilities’ differ in signedness
+VmPerl.xs: In function ‘XS_VMware__VmPerl__VM_GetRemoteConnections’:
+VmPerl.xs:1459: warning: pointer targets in passing argument 2 of ‘VMControl_VMGetRemoteConnections’ differ in signedness
+Running Mkbootstrap for VMware::VmPerl ()
+Manifying blib/man3/VMware::VmPerl::VM.3pm
+Manifying blib/man3/VMware::VmPerl.3pm
+Manifying blib/man3/VMware::VmPerl::Server.3pm
+Manifying blib/man3/VMware::VmPerl::Question.3pm
+Manifying blib/man3/VMware::VmPerl::ConnectParams.3pm
+[root@gallien-163 control-only]# make test
+ok 1
+ok Control.2 (API Version: 1.01)
+ok Control.3 (VMware::Control::Server=SCALAR(0x9839da0))
+ok Control.4 (VM_E error constants)
+ok Control.5 (VM_TIMEOUT constants)
+ok Control.6 (VM_EXECUTION_STATE constants)
+ok Control.7 (VM_POWEROP constants)
+ok Control.8 (VM_PRODUCT constants)
+ok Control.9 (VM_PLATFORM constants)
+ok Control.10 (VM_PRODINFO constants)
+ok VmPerl.2 (API Version: 1.01)
+ok VmPerl.3 (VMware::VmPerl::Server=SCALAR(0x9839d28))
+ok VmPerl.4 (VM_E error constants)
+ok VmPerl.5 (VM_TIMEOUT constants)
+ok VmPerl.6 (VM_EXECUTION_STATE constants)
+ok VmPerl.7 (VM_POWEROP constants)
+ok VmPerl.8 (VM_PRODUCT constants)
+ok VmPerl.9 (VM_PLATFORM constants)
+ok VmPerl.10 (VM_PRODINFO constants)
+[root@gallien-163 control-only]# make install
+Installing /usr/lib/perl5/site_perl/5.8.6/i386-linux-thread-multi/auto/VMware/VmPerl/VmPerl.so
+Files found in blib/arch: installing files in blib/lib into architecture dependent library tree
+Writing /usr/lib/perl5/site_perl/5.8.6/i386-linux-thread-multi/auto/VMware/VmPerl/.packlist
+Appending installation info to /usr/lib/perl5/5.8.6/i386-linux-thread-multi/perllocal.pod
+
+4. Now you can use fence_vmware_master and client.
+4.1 Example for master:
+  Prerequesits:
+   fence_vmware_master resides in /var/lib/vmware
+
+   [root@gallien-163 control-only]# /var/lib/vmware/fence_vmware_master -c /var/lib/vmware/Virtual\ Machines/centos4-2/Red\ Hat\ Enterprise\ Linux\ 4.vmx -u someuser -p verysecret -H localhost -o on
+VMControl: use vnc for unifiedDraw
+   [root@gallien-163 control-only]# /var/lib/vmware/fence_vmware_master -c /var/lib/vmware/Virtual\ Machines/centos4-2/Red\ Hat\ Enterprise\ Linux\ 4.vmx -u someuser -p verysecret -H localhost -o status
+VMControl: use vnc for unifiedDraw
+(ON)
+Warning: Could not change to status status.
+  [root@gallien-163 control-only]# /var/lib/vmware/fence_vmware_master -c /var/lib/vmware/Virtual\ Machines/centos4-2/Red\ Hat\ Enterprise\ Linux\ 4.vmx -u someuser -p verysecret -H localhost -o off
+VMControl: use vnc for unifiedDraw
+  [root@gallien-163 control-only]# /var/lib/vmware/fence_vmware_master -c /var/lib/vmware/Virtual\ Machines/centos4-2/Red\ Hat\ Enterprise\ Linux\ 4.vmx -u someuser -p verysecret -H localhost -o status
+VMControl: use vnc for unifiedDraw
+(OFF)
+Warning: Could not change to status status.
+
+4.2 Example for client:
+  Prerequesits:
+   1. fence_vmware_master resides on vmware server 192.168.200.1 in /var/lib/vmware
+   2. fence_vmware_client resides on vmware machine in /sbin
+   3. there is a ssh_id in .ssh/id_dsa on vmware machine user root
+   3. the .ssh/id_dsa.pub is in .ssh/authorized_keys on vmware server 192.168.200.1
+  
+  [root@gfs-node6 ~]# /sbin/fence_vmware_client  -c /home/marc/vmware/GFS-Node-7/GFS-Node-7.vmx -u someuser -p verysecret -H 192.168.200.1 -o status -i .ssh/id_dsa -f /var/lib/vmware/fence_vmware_master
+VMControl: use vnc for unifiedDraw
+Warning: Could not change to status status.
+(OFF)
+  [root@gfs-node6 ~]# /sbin/fence_vmware_client -v  -c /home/marc/vmware/GFS-Node-7/GFS-Node-7.vmx -u someuser -p verysecret -H 192.168.200.1 -o on -i .ssh/id_dsa -f /var/lib/vmware/fence_vmware_master
+VMControl: use vnc for unifiedDraw
+  [root@gfs-node6 ~]# /sbin/fence_vmware_client -v  -c /home/marc/vmware/GFS-Node-7/GFS-Node-7.vmx -u someuser -p verysecret -H 192.168.200.1 -o status -i .ssh/id_dsa -f /var/lib/vmware/fence_vmware_master
+VMControl: use vnc for unifiedDraw
+Warning: Could not change to status status.
+(ON)
+
+That's it have fun playing with it.

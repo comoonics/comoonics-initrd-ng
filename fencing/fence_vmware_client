@@ -1,0 +1,238 @@
+#!/usr/bin/perl
+# $Id$
+
+#
+# The Server module of vmware fencing will be called via ssh from
+# fence_vmware_client
+# Can reside on any server involved in the fencing structure (vmware_host or
+# any other wrapper server)
+
+use strict;
+use Getopt::Std;
+
+my $FENCE_RELEASE_NAME='$Id:$';
+my $BUILD_DATE='(built $Date:$)';
+
+open(OUT, ">&STDOUT");
+open(ERR, ">&STDERR");
+open(DEBUG, ">>/tmp/fence_vmware_client.out");
+
+# Get the program name from $0 and strip directory names
+$_=$0;
+s/.*\///;
+my $pname = $_;
+my $OPTION_STR="hc:u:p:P:H:o:qVvT:i:U:f:F:";
+
+################################################################################
+sub usage {
+    print <<"EOF";
+Usage
+
+$pname [options]
+
+  Options:
+     -h               usage
+     -c cfgfile       Path to Cfg File on vmware host for vm to be
+                      fenced
+     -u user          User to login to vmware host to fence vm
+     -p passwd        Password for the given user
+     -P port          Port of the vmware host (optional)
+     -H vmware_host   The vmware host
+     -o (reboot*|on|off|status|suspend|resume)  Action: reboot (default)
+     -q               quiet mode
+     -i               identity_file for ssh
+     -U sshuser       the sshuser (default: the same as user)
+     -f fence_vmware_master_cmd the place in the filesystem on the fence_master
+                      where fence_vmware_master can be found
+     -F fence_master  The fence_master server
+     -T (1,2)         poweroff type.
+                         1 for hard without any scripts
+                         2 for soft with usage of poweroff/poweron script
+     -V               version
+     -v               verbose
+EOF
+    exit 0;
+}
+
+sub fail {
+    my ($msg)=@_;
+    print ERR $msg;
+    exit 1;
+}
+
+sub get_options_stdin {
+  my $opt;
+  my $line = 0;
+  my $in="";
+  my ($hostname,$username,$password,$cfgfile,$fence_vmware_master_cmd,$fence_master,$ssh_user,$identity_file)=undef;
+  my $action="reboot"; my $port=0; my $type=1;
+  while( defined($in = <>) ) {
+    chomp $in;
+
+    # strip leading and trailing whitespace
+    $in=~s/^\s*//;
+    $in=~s/\s*$//;
+
+    # skip comments
+    next if $in =~ /^#/;
+
+    $line+=1;
+    $opt=$in;
+    next unless $opt;
+
+    my ($name,$val)=split /\s*=\s*/, $opt;
+    print DEBUG "DEBUG(name, val): $name, $val\n";
+
+    if ( $name eq "" ) {
+      print ERR "parse error: illegal name in option $line\n";
+      exit 2;
+    } elsif ($name eq "action" ) {
+      $action = $val;
+    } # DO NOTHING -- this field is used by fenced or stomithd
+    elsif ($name eq "agent" ) {
+    }
+    # FIXME -- depricated.  use "hostname" instead.
+    elsif ($name eq "fm" ) {
+      (undef,$hostname) = split /\s+/,$val;
+      print ERR "Depricated \"fm\" entry detected.  refer to man page.\n";
+    } elsif ($name eq "hostname" ) {
+      $hostname = $val;
+      $fence_master = $val;
+      print DEBUG "value(hostname): $hostname\n";
+    } elsif ($name eq "username" ) {
+      $username = $val;
+      $ssh_user = $val;
+      print DEBUG "value(username): $username\n";
+    } elsif ($name eq "password" ) {
+      $password = $val;
+      print DEBUG "value(password): $password\n";
+    } elsif ($name eq "cfgfile" ) {
+      $cfgfile = $val;
+      print DEBUG "value(cfgfile): $cfgfile\n";
+    } elsif ($name eq "type" ) {
+      $type = $val;
+      print DEBUG "value(type): $type\n";
+    } elsif ($name eq "port" ) {
+      $port = $val;
+      print DEBUG "value(port): $port\n";
+    } elsif ($name eq "identityfile" ) {
+      $identity_file = $val;
+      print DEBUG "value(identityfile): $identity_file\n";
+    } elsif ($name eq "sshuser" ) {
+      $ssh_user = $val;
+      print DEBUG "value(ssh_user): $ssh_user\n";
+    } elsif ($name eq "fence_vmware_master_cmd" ) {
+      $fence_vmware_master_cmd = $val;
+      print DEBUG "value(fence_vmware_master_cmd): $fence_vmware_master_cmd\n";
+    } elsif ($name eq "fence_master" ) {
+      $fence_master = $val;
+      print DEBUG "value(fence_master): $fence_master\n";
+    } elsif ($name eq "action" ) {
+      fail_usage("Unrecognised action \'$action\' for \'-o\' flag")
+	unless $name=~ /^(off|on|reboot|status|suspend|resume)$/;
+      $action = $val;
+      print DEBUG "value(action): $action\n";
+    } elsif ($name eq "verbose" ) {
+      open(DEBUG, ">>/tmp/fence_vmware_client.out");
+      print DEBUG "value(verbose): on\n";
+    } # FIXME should we do more error checking?
+      # Excess name/vals will be eaten for now
+    else {
+      fail "parse error: unknown option \"$opt\"\n";
+      exit 2;
+    }
+  }
+  return ($hostname,$port,$username,$password,$cfgfile,$action,$type,$fence_vmware_master_cmd,$fence_master,$ssh_user,$identity_file);
+}
+
+sub version {
+  print OUT "$pname $FENCE_RELEASE_NAME $BUILD_DATE\n";
+
+  exit 0;
+}
+
+sub fail_usage {
+    my ($msg)=@_;
+    print ERR $msg if $msg;
+    print ERR "Please use '-h' for usage.\n";
+    exit 1;
+}
+
+sub fence_vmware_master_cmd {
+   my ($FENCE_VMWARE_MASTER_CMD, $hostname, $port, $username, $password, $cfgfile, $action, $type)=@_;
+   return "$FENCE_VMWARE_MASTER_CMD -H $hostname -P $port -u $username -p \"$password\" -c \"$cfgfile\" -o $action -T $type";
+}
+
+sub ssh_cmd {
+  my ($SSH_CMD,$fence_master, $ssh_user, $identity_file)=@_;
+  return "$SSH_CMD ".($identity_file?"-i \"$identity_file\"":"").
+    " -l $ssh_user $fence_master ";
+}
+
+my $SSH_CMD="/usr/bin/ssh";
+my $FENCE_VMWARE_MASTER_CMD="/opt/atix/comoonics-fencing/fence_vmware_master";
+
+my ($hostname,$username,$password,$cfgfile,$fence_master,$ssh_user,$identity_file,$port)=undef;
+my $action="reboot"; my $port=0; my $type=1;
+
+if (@ARGV > 0) {
+  my %opts=();
+  getopts($OPTION_STR, \%opts) || fail_usage;
+
+  usage if defined $opts{h};
+  version if defined $opts{V};
+
+  fail_usage "Unknown parameter (parameter $ARGV[0])." if (@ARGV > 0);
+  fail_usage "No '-c' flag specified." unless defined $opts{c};
+  fail_usage "No '-H' flag specified." unless defined $opts{H};
+  fail_usage "No '-u' flag specified." unless defined $opts{c};
+  fail_usage "No '-p' flag specified." unless defined $opts{p};
+
+  $hostname = $opts{H};
+  $fence_master=$hostname;
+  $username = $opts{u};
+  $password = $opts{p};
+  $cfgfile  = $opts{c};
+  $ssh_user = $username;
+  $fence_master=$hostname;
+  $port     = $opts{P} if defined $opts{P};
+  $type     = $opts{T} if defined $opts{T};
+  $action = $opts{o} if defined $opts{o};
+  $identity_file = $opts{i} if defined $opts{i};
+  $ssh_user = $opts{S} if defined $opts{S};
+  $fence_master = $opts{F} if defined $opts{F};
+  $FENCE_VMWARE_MASTER_CMD = $opts{f} if defined $opts{f};
+
+  fail_usage "Unrecognised action '$action' for '-o' flag"
+    unless $action=~ /^(off|on|reboot|status|suspend|resume)$/;
+
+  if (defined $opts{q}) {
+    close(OUT);
+  }
+  if (defined $opts{v}) {
+    open(DEBUG, ">&STDOUT");
+  }
+} else {
+   ($hostname,$port,$username,$password,$cfgfile,$action,$type,$FENCE_VMWARE_MASTER_CMD,$fence_master,$ssh_user,$identity_file)=get_options_stdin();
+   fail "no vmware host\n" unless defined $hostname;
+   fail "no vmware user\n" unless defined $username;
+   fail "no vmware password\n" unless defined $password;
+   fail "no vm configfile \n" unless defined $cfgfile;
+}
+
+my $ssh_cmd=ssh_cmd($SSH_CMD,$fence_master, $ssh_user, $identity_file);
+print DEBUG "ssh_cmd: $ssh_cmd\n";
+my $fence_cmd=fence_vmware_master_cmd($FENCE_VMWARE_MASTER_CMD, $hostname, $port, $username, $password, $cfgfile, $action, $type);
+print DEBUG "fence_cmd: $fence_cmd\n";
+
+my $output=qx{$ssh_cmd $fence_cmd 2>&1};
+print $output;
+print DEBUG "OUTPUT $output\n";
+if ($? >> 8 ne 0 ) {
+  exit 1;
+} else {
+  exit 0;
+}
+
+##########################################
+# $Log$

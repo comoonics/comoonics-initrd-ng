@@ -1,0 +1,8 @@
+####################
+# Files to include in initrd to get fenceackserver running
+####################
+# $Id$
+PyXML
+pyOpenSSL
+###################
+# $Log$
