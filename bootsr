@@ -10,7 +10,7 @@
 #
 #*******
 #
-# chkconfig: 345 19 99
+# chkconfig: 345 11 99
 # description: do the post settings for Comoonics Shared Root
 # Author: hlawatschek@atix.de
 #
@@ -23,12 +23,15 @@
 CCSD_OPTS=
 
 . /etc/init.d/functions
-[ -f /etc/sysconfig/cluster ] && . /etc/sysconfig/cluster
 
 CCSD_LOCK_FILE="/var/lock/subsys/ccsd"
 DEFAULT_LOCK_COUNT=50000
+FENCE_CHROOT=/var/lib/fence_tool
+FENCE_CHROOT_INITRD=/var/lib/fence_tool
+MKSERVICE_FOR_INITRD="/opt/atix/comoonics-bootimage/mkservice_for_initrd.sh"
 
 RETVAL=0
+[ -f /etc/sysconfig/cluster ] && . /etc/sysconfig/cluster
 
 #****f* bootsr/check_sharedroot
 #  NAME
@@ -88,6 +91,53 @@ function get_lockcount {
 }
 #************ get_lockcount
 
+#******f* bootsr/prebuild_fenced_chroot
+#  NAME
+#    prebuild_fenced_chroot
+#  SYNOPSIS
+#    prebuild_fenced_chroot FENCE_CHROOT FENCE_CHROOT_INITRD FENCE_CHROOT_SOURCE FENCE_CHROOT_ARCHIVE
+#  SOURCE
+#
+function prebuild_fenced_chroot {
+  local FENCE_CHROOT=$1
+  local FENCE_CHROOT_INITRD=$2
+  local FENCE_CHROOT_SOURCE=$3
+  local FENCE_CHROOT_ARCHIVE=$4
+
+  [ ! -d $FENCE_CHROOT ] && mkdir -p ${FENCE_CHROOT}
+  mount | grep "${FENCE_CHROOT}" &>/dev/null || stat -f -c "%T" ${FENCE_CHROOT} | grep -v "^UNKNOWN" &>/dev/null
+  if [ $? -ne 0 ] ; then
+    mount -t tmpfs none $FENCE_CHROOT
+  fi
+#  if [ "${FENCE_CHROOT}" != "${FENCE_CHROOT_INITRD}" ]; then
+#  	files1=$(find ${FENCE_CHROOT} -type f 2>/dev/null | wc -l)
+#  	files2=$(find ${FENCE_CHROOT_INITRD} -type f 2>/dev/null | wc -l)
+#  	if [ $files1 -lt $files2 ]; then
+#  		copy=1
+#  	fi
+#  fi
+#  if [ "${FENCE_CHROOT}" != "${FENCE_CHROOT_SOURCE}" ]; then
+#  	files1=$(find ${FENCE_CHROOT} -type f 2>/dev/null | wc -l)
+#  	files2=$(find ${FENCE_CHROOT_SOURCE} -type f 2>/dev/null | wc -l)
+#  	if [ $files1 -lt $files2 ]; then
+#  		copy=1
+#  	fi
+#  fi
+
+#  if [ -n "$copy" ] && [ $copy -eq 1 ]; then
+	if [ -d ${FENCE_CHROOT_SOURCE} ]; then
+       ${MKSERVICE_FOR_INITRD} $FENCE_CHROOT /sbin/fenced nostart &>/dev/null
+	elif [ -d ${FENCE_CHROOT_INITRD} ] && [ "${FENCE_CHROOT_INITRD}" != "${FENCE_CHROOT}" ]; then
+       ${MKSERVICE_FOR_INITRD} $FENCE_CHROOT /sbin/fenced nostart &>/dev/null
+	elif [ -z ${FENCE_CHROOT_TAR} ] && [ -e ${FENCE_CHROOT_ARCHIVE} ]; then
+		pushd ${FENCE_CHROOT} &>/dev/null
+		tar xvzf ${FENCE_CHROOT_ARCHIVE}
+		popd &>/dev/null
+    fi
+#  fi
+}
+#************* prebuild_fenced_chroot
+
 #****f* bootsr/main
 #  NAME
 #    main
@@ -137,6 +187,14 @@ case "$1" in
         fi
         echo
       fi
+	  echo -n "Prebuilding fenced chroot"
+	  prebuild_fenced_chroot $FENCE_CHROOT $FENCE_CHROOT_INITRD $FENCE_CHROOT_SOURCE $FENCE_CHROOT_ARCHIVE
+      if [ $? -eq 0 ]; then
+        success
+      else
+        failure
+      fi
+      echo
     fi
     ;;
   stop|status|restart|reload)
