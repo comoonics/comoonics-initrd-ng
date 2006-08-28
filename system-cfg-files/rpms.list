@@ -1,16 +1,10 @@
-perl
-perl-libwww-perl
-perl-XML-Encoding
-perl-Filter
-perl-URI
-perl-HTML-Parser
-perl-XML-Parser
-perl-Parse-Yapp
-perl-libxml-enno
-perl-libxml-perl
-perl-Net-Telnet
-perl-Net-SSLeay
-perl-HTML-Tagset
-perl-DateManip
-python
+# $Id: rpms.list,v 1.2 2006-08-28 16:04:26 marc Exp $
 fence
+magma
+magma-plugins
+@include $(ls -1 /etc/comoonics/bootimage/rpms.initrd.d/*.list)
+#########
+# $Log: rpms.list,v $
+# Revision 1.2  2006-08-28 16:04:26  marc
+# added @include
+#
