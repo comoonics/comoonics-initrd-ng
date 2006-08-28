@@ -9,6 +9,7 @@
 /var
 /var/run
 /var/run/sistina
+/var/lock
 /tmp
 /etc/ssh
 /etc/ssh/moduli
@@ -17,3 +18,4 @@
 /lib64/tls
 /lib64/magma
 /usr/lib64
+/var/run/cluster

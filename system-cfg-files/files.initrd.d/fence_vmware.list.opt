@@ -2,3 +2,5 @@
 /etc/ssh
 /root/.ssh
 /opt/atix/comoonics-fencing/fence_vmware_client
+/usr/bin/ssh
+/bin/cat
