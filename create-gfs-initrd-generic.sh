@@ -6,7 +6,7 @@
 #*******
 #!/bin/bash
 #
-# $Id: create-gfs-initrd-generic.sh,v 1.10 2006-07-13 11:35:36 marc Exp $
+# $Id: create-gfs-initrd-generic.sh,v 1.11 2006-08-28 16:01:45 marc Exp $
 #
 # @(#)$File$
 #
@@ -43,7 +43,7 @@ function usage() {
   echo "$0 -d dep_filename [-s initrdsize] [-m mountpoint] [-r rpm-list-file] [-b build-date-file] [-V] [-F] [-R] [-o] [-U] initrdname [kernel-version]"
 }
 
-#************ usage 
+#************ usage
 #****f* create-gfs-initrd-generic.sh/getoptions
 #  NAME
 #    getoptions
@@ -57,7 +57,7 @@ function getoptions() {
     while getopts UoRFVvhm:fd:s:r:b: option ; do
 	case "$option" in
 	    v) # version
-		echo "$0 Version "'$Revision: 1.10 $'
+		echo "$0 Version "'$Revision: 1.11 $'
 		exit 0
 		;;
 	    h) # help
@@ -107,9 +107,9 @@ function getoptions() {
     initrdname=$1
     if [ -n "$2" ]; then kernel=$2; fi
 }
-#************ getoptions 
+#************ getoptions
 
-#************ main 
+#************ main
 #****f* create-gfs-initrd-generic.sh/main
 #  NAME
 #    main
@@ -191,7 +191,7 @@ fi
 # extracting rpms
 if [ -n "$rpm_filename" ] && [ -e "$rpm_filename" ]; then
   echo -n "Extracting rpms..."
-  extract_all_rpms $rpm_filename $mountpoint $rpm_dir || echo "(WARNING)"
+  extract_all_rpms $rpm_filename $mountpoint $rpm_dir $verbose || echo "(WARNING)"
   success
 fi
 
@@ -208,7 +208,7 @@ cd $mountpoint
 i=0
 while [ $i -lt ${#files[@]} ]; do
   file=${files[$i]}
-  if [ -d $file ]; then 
+  if [ -d $file ]; then
 #    echo "Directory $file => ${mountpoint}/$file"
     create_dir ${mountpoint}/$file
     copy_file $file ${mountpoint}/$(dirname $file)
@@ -217,10 +217,10 @@ while [ $i -lt ${#files[@]} ]; do
     file=${files[$i]}
     i=$(( $i+1 ))
     todir=${files[$i]}
-    if [ -d $file ]; then 
+    if [ -d $file ]; then
       [ -n "$verbose" ] && echo "Directory mapping $file => ${mountpoint}/$todir"
       create_dir ${mountpoint}/$todir
-      for file2 in $(ls -1 $file/*); do 
+      for file2 in $(ls -1 $file/*); do
          copy_file $file/\* ${mountpoint}/$todir/
       done
     else
@@ -239,7 +239,7 @@ success
 
 # copying kernel modules
 echo -n "Copying kernelmodules ($kernel)..."
-if [ ! -d ${mountpoint}/lib/modules/$kernel ]; then 
+if [ ! -d ${mountpoint}/lib/modules/$kernel ]; then
   mkdir -p ${mountpoint}/lib/modules/
 fi
 cp -a /lib/modules/$kernel ${mountpoint}/lib/modules/$kernel || (failure && rm $lockfile && exit $?)
@@ -294,11 +294,14 @@ if [ -z "$no_remove_tmp" ]; then
   success
 fi
 ls -lk $initrdname
-#************ main 
+#************ main
 
 ##########################################
 # $Log: create-gfs-initrd-generic.sh,v $
-# Revision 1.10  2006-07-13 11:35:36  marc
+# Revision 1.11  2006-08-28 16:01:45  marc
+# support for rpm-lists and includes of new lists
+#
+# Revision 1.10  2006/07/13 11:35:36  marc
 # new version changing file xtensions
 #
 # Revision 1.9  2006/06/19 15:55:28  marc

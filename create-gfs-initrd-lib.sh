@@ -6,7 +6,7 @@
 #    Library for the creating of initrds for sharedroot
 #*******
 #
-# $Id: create-gfs-initrd-lib.sh,v 1.8 2006-06-19 15:55:28 marc Exp $
+# $Id: create-gfs-initrd-lib.sh,v 1.9 2006-08-28 16:01:57 marc Exp $
 #
 # @(#)$File$
 #
@@ -32,14 +32,14 @@
 #
 function create_dir() {
   local dirname=$1
-  if [ ! -e $dirname ]; then 
-    # echo "creating dir $dirname"; 
-    mkdir -p $dirname; 
+  if [ ! -e $dirname ]; then
+    # echo "creating dir $dirname";
+    mkdir -p $dirname;
   fi
 }
 
 # copy the file like a dump one.
-#************ create_dir 
+#************ create_dir
 #****f* create-gfs-initrd-lib.sh/copy_file
 #  NAME
 #    copy_file
@@ -62,7 +62,7 @@ function copy_file() {
 }
 
 # Compile perlfile with perlcc to binary
-#************ copy_file 
+#************ copy_file
 
 #****f* create-gfs-initrd-lib.sh/perlcc_file
 #  NAME
@@ -85,7 +85,7 @@ function perlcc_file() {
   cd $(dirname $destfile)
   perlcc $filename && mv a.out $destfile
 }
-#************ perlcc_file 
+#************ perlcc_file
 
 #****f* create-gfs-initrd-lib.sh/extract_rpm
 #  NAME
@@ -103,7 +103,7 @@ function extract_rpm() {
 	 (cd $dest &&
 	  rpm2cpio $rpm | cpio -ivdum)
 }
-#************ extract_rpm 
+#************ extract_rpm
 
 #****f* create-gfs-initrd-lib.sh/extract_installed_rpm
 #  NAME
@@ -119,8 +119,9 @@ function extract_rpm() {
 function extract_installed_rpm() {
   local rpm=$1
   local dest=$2
+  local verbose=$3
   rpm -q $rpm >/dev/null 2>&1
-  if [ $? -ne 0 ]; then 
+  if [ $? -ne 0 ]; then
     echo "Cannot find rpm \"$rpm\". Skipping." >&2
     return 1
   fi
@@ -135,7 +136,7 @@ function extract_installed_rpm() {
   done
   popd >/dev/null
 }
-#************ extract_installed_rpm 
+#************ extract_installed_rpm
 
 #****f* create-gfs-initrd-lib.sh/extract_all_rpms
 #  NAME
@@ -143,7 +144,7 @@ function extract_installed_rpm() {
 #  SYNOPSIS
 #    function extract_all_rpms(rpm_listfile, root, rpmdir) {
 #  DESCRIPTION
-#    Calls extract_rpm/extract_installed for all files listed in 
+#    Calls extract_rpm/extract_installed for all files listed in
 #    rpm_listfile
 #  IDEAS
 #  SOURCE
@@ -151,23 +152,76 @@ function extract_installed_rpm() {
 function extract_all_rpms() {
   local rpm_listfile=$1
   local root=$2
+  local verbose=$3
   if [ ! -e "$rpm_listfile" ]; then
     echo "Cannot find rpmlistfile \"$rpm_listfile\". Exiting." >&2
     return 1
   fi
-  rpms=$(cat $rpm_listfile)
+  rpms=$(get_all_rpms_dependent $rpm_listfile $verbose)
 
   for rpm in $rpms; do
     if [ ${rpm:0:1} != '#' ]; then
       if [ -f $rpm ]; then
         extract_rpm $rpm $root
       else
-        extract_installed_rpm $rpm $root
+        extract_installed_rpm $rpm $root $verbose
       fi
     fi
   done
 }
-#************ extract_all_rpms 
+#************ extract_all_rpms
+
+#****f* create-gfs-initrd-lib.sh/get_all_rpms_dependent
+#  NAME
+#    get_all_rpms_dependent
+#  SYNOPSIS
+#    function get_all_rpms_dependent() {
+#  MODIFICATION HISTORY
+#  DOCUMENTATION
+#    Takes a filename as argument and pipes all files listed in this file to
+#    get_dependent_files.
+#  SOURCE
+#
+function get_all_rpms_dependent {
+  local filename=$1
+  local verbose=$2
+  while read line; do
+    if [ -n "$line" ] && [ ${line:0:1} != '#' ]; then
+      if [ ! -e "$line" ] && [ "${line:0:8}" = '@include' ]; then
+        declare -a aline
+        aline=( $(echo $line) )
+	    include=${aline[@]:1}
+	    if [ -d "$include" ]; then
+	      for file in ${include}/*; do
+	        [ -n "$verbose" ] && echo "Including rpm $file" >&2
+            get_all_rpms_dependent $file $verbose
+          done
+        elif [ -e "$include" ]; then
+	      get_all_rpms_dependent $include $verbose
+	    else
+          if [ "${include:0:2}" = '$(' ] || [ "${include:0:1}" = '`' ]; then
+	        [ -n "$verbose" ] && echo "Eval $include"  >&2
+	        include=$(echo ${include/#\$\(/})
+	        include=$(echo ${include/#\`/})
+	        include=$(echo ${include/%\)/})
+	        files=$(eval "$include")
+          else
+            files="$include"
+	      fi
+          for file in $files; do
+  	        [ -n "$verbose" ] && echo "Including rpm $file" >&2
+            get_all_rpms_dependent $file $verbose
+          done
+        fi
+      else
+        [ -n "$verbose" ] && echo "rpm $line" >&2
+        echo $line
+      fi
+    fi
+  done <$filename
+}
+#************get_all_rpms_dependent
+
 
 ##****f* create-gfs-initrd-lib.sh/get_dependent_files
 #  NAME
@@ -213,7 +267,7 @@ $1 ~ /^\// && $3 == "" { print $1; }
     fi
   fi
 }
-#************ get_dependent_files 
+#************ get_dependent_files
 
 #****f* create-gfs-initrd-lib.sh/get_all_depfiles
 #  NAME
@@ -236,7 +290,7 @@ function get_all_depfiles {
   done
 }
 #************ get_all_depfiles
- 
+
 #****f* create-gfs-initrd-lib.sh/get_all_files_dependent
 #  NAME
 #    get_all_files_dependent
@@ -244,7 +298,7 @@ function get_all_depfiles {
 #    function get_all_files_dependent() {
 #  MODIFICATION HISTORY
 #  DOCUMENTATION
-#    Takes a filename as argument and pipes all files listed in this file to 
+#    Takes a filename as argument and pipes all files listed in this file to
 #    get_dependent_files.
 #  SOURCE
 #
@@ -259,68 +313,68 @@ function get_all_files_dependent() {
     if [ ${line:0:1} != '#' ]; then
       if [ ! -e "$line" ] && [ "${line:0:7}" = '@perlcc' ]; then
         # take next as filename and compile
-	echo "Skipping line $todir..." >&2
-	line=${line:8}
-	local filename=`which $line 2>/dev/null`
-	if [ -z $filename ]; then
-	  filename=$line
-	fi
-	#echo $filename
-	[ -n "$verbose" ] && echo "Taking perl file $filename..." >&2
-	dirname=`dirname $filename`
-	create_dir ${mountpoint}$dirname
-	perlcc_file $filename ${mountpoint}$filename
-	get_dependent_files ${mountpoint}$filename
+        echo "Skipping line $todir..." >&2
+	    line=${line:8}
+	    local filename=`which $line 2>/dev/null`
+	    if [ -z $filename ]; then
+	      filename=$line
+	    fi
+	    #echo $filename
+	    [ -n "$verbose" ] && echo "Taking perl file $filename..." >&2
+	    dirname=`dirname $filename`
+	    create_dir ${mountpoint}$dirname
+	    perlcc_file $filename ${mountpoint}$filename
+	    get_dependent_files ${mountpoint}$filename
       elif [ ! -e "$line" ] && [ "${line:0:4}" = '@map' ]; then
         declare -a aline
         aline=( $(echo $line) )
-	mapdir=${aline[2]}
+	    mapdir=${aline[2]}
         line=${aline[1]}
         [ -n "$verbose" ] && echo "Mapping $line to $mapdir" >&2
-	local filename=`which $line 2>/dev/null`
-	if [ -z $filename ]; then
-	  filename=$line
-	fi
-	echo "@map $filename $mapdir"
-#	get_dependent_files $filename
+	    local filename=`which $line 2>/dev/null`
+	    if [ -z $filename ]; then
+	      filename=$line
+	    fi
+	    echo "@map $filename $mapdir"
+        # get_dependent_files $filename
       elif [ ! -e "$line" ] && [ "${line:0:8}" = '@include' ]; then
         declare -a aline
         aline=( $(echo $line) )
-	include=${aline[@]:1}
-	if [ -d "$include" ]; then
-	  for file in ${include}/*; do
-	    [ -n "$verbose" ] && echo "Including file $file" >&2
+	    include=${aline[@]:1}
+	    if [ -d "$include" ]; then
+	      for file in ${include}/*; do
+	        [ -n "$verbose" ] && echo "Including file $file" >&2
             get_all_files_dependent $file $verbose
           done
         elif [ -e "$include" ]; then
-	  get_all_files_dependent $include $verbose
-	else
+	      get_all_files_dependent $include $verbose
+	    else
           if [ "${include:0:2}" = '$(' ] || [ "${include:0:1}" = '`' ]; then
-	    [ -n "$verbose" ] && echo "Eval $include"  >&2
-	    include=$(echo ${include/#\$\(/})
-	    include=$(echo ${include/#\`/})
-	    include=$(echo ${include/%\)/})
-	    files=$(eval "$include")
+	        [ -n "$verbose" ] && echo "Eval $include"  >&2
+	        include=$(echo ${include/#\$\(/})
+	        include=$(echo ${include/#\`/})
+	        include=$(echo ${include/%\)/})
+	        files=$(eval "$include")
           else
             files="$include"
-	  fi
+	      fi
           for file in $files; do
-  	    [ -n "$verbose" ] && echo "Including file $file" >&2
+  	        [ -n "$verbose" ] && echo "Including file $file" >&2
             get_all_files_dependent $file $verbose
           done
         fi
       else
-	local filename=`which $line 2>/dev/null`
-	if [ -z $filename ]; then
-	  filename=$line
-	fi
-	echo $filename
-	get_dependent_files $filename
+	    local filename=`which $line 2>/dev/null`
+	    if [ -z $filename ]; then
+	      filename=$line
+	    fi
+	    echo $filename
+	    get_dependent_files $filename
       fi
     fi
   done <$filename
 }
-#************ get_all_files_dependent 
+#************ get_all_files_dependent
 
 #****f* create-gfs-initrd-lib.sh/make_initrd
 #  NAME
@@ -338,7 +392,7 @@ function make_initrd() {
   dd if=/dev/zero of=$filename bs=1k count=$size > /dev/null 2>&1 && \
   mkfs.ext2 -F -m 0 -i 2000 $filename > /dev/null 2>&1
 }
-#************ make_initrd 
+#************ make_initrd
 
 #****f* create-gfs-initrd-lib.sh/mount_initrd
 #  NAME
@@ -358,7 +412,7 @@ function mount_initrd() {
 
 #
 # Unmounts the given loopback memory filesystem and zips it to the given file
-#************ mount_initrd 
+#************ mount_initrd
 #****f* create-gfs-initrd-lib.sh/umount_and_zip_initrd
 #  NAME
 #    umount_and_zip_initrd
@@ -384,7 +438,7 @@ function umount_and_zip_initrd() {
 
 #
 # Creates an imagefile with cpio and compresses it with zip
-#************ umount_and_zip_initrd 
+#************ umount_and_zip_initrd
 #****f* create-gfs-initrd-lib.sh/cpio_and_zip_initrd
 #  NAME
 #    cpio_and_zip_initrd
@@ -402,11 +456,14 @@ function cpio_and_zip_initrd() {
   [ -n "$force" ] && [ $force -gt 0 ] && opts="-f"
   ((cd $mountpoint; find . | cpio --quiet -c -o) >| ${filename}.tmp && gzip $opts -c -9 ${filename}.tmp > $filename && rm ${filename}.tmp)|| (fuser -mv "$mountpoint" && exit 1)
 }
-#************ cpio_and_zip_initrd 
+#************ cpio_and_zip_initrd
 
 ######################
 # $Log: create-gfs-initrd-lib.sh,v $
-# Revision 1.8  2006-06-19 15:55:28  marc
+# Revision 1.9  2006-08-28 16:01:57  marc
+# support for rpm-lists and includes of new lists
+#
+# Revision 1.8  2006/06/19 15:55:28  marc
 # rewriten and debuged parts of generating deps. Added @include tag for depfiles.
 #
 # Revision 1.7  2006/06/07 09:42:23  marc
