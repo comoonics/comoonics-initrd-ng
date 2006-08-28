@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.6 2006-07-03 08:32:27 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.7 2006-08-28 16:06:45 marc Exp $
 #
 # @(#)$File$
 #
@@ -59,12 +59,12 @@ fi
 #  SYNOPSIS
 #    function getClusterFSParameters() {
 #  DESCRIPTION
-#    sets all clusterfs relevant parameters given by the bootloader 
+#    sets all clusterfs relevant parameters given by the bootloader
 #    via /proc/cmdline as global variables.
 #    The following global variables are set
 #      * root: The rootdevice parameter
 #      * rootsource: The rootdevicesource (scsi|iscsi|gnbd)
-#      * lockmethod: If supported by the clusterfs implementation. 
+#      * lockmethod: If supported by the clusterfs implementation.
 #           Valid modes are (lock_gulm|lock_dlm)
 #      * sourceserver: Root source server if (iscsi|gnbd)
 #  MODIFICATION HISTORY
@@ -106,7 +106,7 @@ function getRootFS {
 #    returns the following parameters got from the cluster configuration
 #      * nodeid: the unique id of this node
 #      * nodename: the name of this node
-#      * rootvolume: the root volume to be mounted by this node (can be 
+#      * rootvolume: the root volume to be mounted by this node (can be
 #          overwritten by the bootparam "root"
 #      * ipConfig: the ipConfiguration used to do locking
 #  SOURCE
@@ -286,7 +286,7 @@ function cc_auto_syslogconfig {
   else
     echo "*.* -/var/log/comoonics_boot.syslog" >> /etc/syslog.conf
   fi
-  
+
   echo "syslog          514/udp" >> /etc/services
   return_code $?
 }
@@ -350,12 +350,12 @@ function clusterfs_mount {
   local mountopts=$4
 
   echo_local -n "Mounting $dev on $mountpoint.."
-  if [ ! -e $dev ]; then 
+  if [ ! -e $dev ]; then
     echo_local -n "device not fount error"
     failure
     return $?
   fi
-  if [ ! -d $mountpoint ]; then 
+  if [ ! -d $mountpoint ]; then
     mkdir -p $mountpoint
   fi
   exec_local mount -t $fstype -o $mountopts $dev $mountpoint
@@ -397,7 +397,7 @@ function clusterfs_mount_cdsl {
   fi
 
   echo_local -n "Mounting $cdsl_dir on ${prefix}/${nodeid}.."
-  if [ ! -d ${mountpoint}/${prefix} ]; then 
+  if [ ! -d ${mountpoint}/${prefix} ]; then
     echo_local "no cdsldir found \"${mountpoint}/${prefix}\""
     warning
   fi
@@ -433,10 +433,10 @@ function copy_relevant_files {
 
   return_c=1
   echo_local -n "Creating config dirs if not exist.."
-  if [ ! -d $newroot/${cdsl_local_dir}/etc ]; then 
+  if [ ! -d $newroot/${cdsl_local_dir}/etc ]; then
     mkdir -p $newroot/${cdsl_local_dir}/etc
   fi &&
-  if [ ! -d $newroot/${cdsl_local_dir}/etc/sysconfig ]; then 
+  if [ ! -d $newroot/${cdsl_local_dir}/etc/sysconfig ]; then
     exec_local mkdir -p $newroot/${cdsl_local_dir}/etc/sysconfig
   fi && /bin/true
   return_code_passed $?
@@ -444,19 +444,19 @@ function copy_relevant_files {
   echo_local -n "Copying the configfiles ${cdsl_local_dir}.."
   cd $newroot/${cdsl_local_dir}/etc
   cp -f $modules_conf $newroot/${cdsl_local_dir}/$modules_conf &&
-  ([ -n "$cdsl_local_dir" ] && 
-   cd $newroot/etc && 
+  ([ -n "$cdsl_local_dir" ] &&
+   cd $newroot/etc &&
    ln -sf ../${cdsl_local_dir}/$modules_conf $(basename $modules_conf))
   return_c=$?
-  if [ -f ${new_root}/etc/cluster/cluster.conf ]; then  
-    cp ${new_root}/etc/cluster/cluster.conf /etc/cluster/cluster.conf.bak
+  if [ -f ${new_root}/${cdsl_local_dir}/etc/cluster/cluster.conf ]; then
+    cp ${new_root}/${cdsl_local_dir}/etc/cluster/cluster.conf ${new_root}/${cdsl_local_dir}/etc/cluster/cluster.conf.bak
   fi
-  cp /etc/cluster/cluster.conf ${new_root}/etc/cluster/cluster.conf
+  cp /etc/cluster/cluster.conf ${new_root}/${cdsl_local_dir}/etc/cluster/cluster.conf
   [ $return_c -eq 0 ] && return_c=$?
-#   cd sysconfig 
+#   cd sysconfig
 #   cp -f /etc/sysconfig/hwconf $newroot/${cdsl_local_dir}/etc/sysconfig/
-#    [ ! -f ${newroot}/etc/sysconfig/hwconf ] && 
-#    cd $newroot && 
+#    [ ! -f ${newroot}/etc/sysconfig/hwconf ] &&
+#    cd $newroot &&
 #    ln -fs ${cdsl_local_dir}/etc/sysconfig/hwconf etc/sysconfig/hwconf)
   return_code=$return_c
   echo_local -n ".(hw $return_c)."
@@ -471,11 +471,15 @@ function copy_relevant_files {
 #  done
   return_code_warning
 }
-#************ copy_relevant_files 
+#************ copy_relevant_files
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.6  2006-07-03 08:32:27  marc
+# Revision 1.7  2006-08-28 16:06:45  marc
+# bugfixes
+# new version of start_service
+#
+# Revision 1.6  2006/07/03 08:32:27  marc
 # changed hostgeneration function
 #
 # Revision 1.5  2006/06/19 15:55:45  marc

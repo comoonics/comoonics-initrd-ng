@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.34 2006-07-13 11:37:02 marc Exp $
+# $Id: boot-lib.sh,v 1.35 2006-08-28 16:06:45 marc Exp $
 #
 # @(#)$File$
 #
@@ -57,7 +57,7 @@ function usage() {
     echo -e "\t-d|D: set debugmode (d) or unset stepmode (D)"
     echo -e "\t-h:   this usage."
 }
-#************ usage 
+#************ usage
 
 #****f* boot-lib.sh/check_cmd_params
 #  NAME
@@ -94,7 +94,7 @@ function check_cmd_params() {
     done
     return $OPTIND;
 }
-#************ check_cmd_params 
+#************ check_cmd_params
 
 #****f* boot-lib.sh/exit_linuxrc
 #  NAME
@@ -107,14 +107,14 @@ function check_cmd_params() {
 #
 function exit_linuxrc() {
     error_code=$1
-    if [ -n "$2" ]; then 
+    if [ -n "$2" ]; then
       init_cmd=$2
     fi
-    if [ -n "$3" ]; then 
+    if [ -n "$3" ]; then
       newroot=$3
     fi
     echo_local_debug "exit_linuxrc($error_code)"
-    if [ -z "$error_code" ]; then 
+    if [ -z "$error_code" ]; then
 	error_code=0
     fi
     echo $error_code > $error_code_file
@@ -129,7 +129,7 @@ function exit_linuxrc() {
 	exit $error_code
     fi
 }
-#************ exit_linuxrc 
+#************ exit_linuxrc
 
 #****f* boot-lib.sh/step
 #  NAME
@@ -155,7 +155,7 @@ function step() {
      return 0
    fi
 }
-#************ step 
+#************ step
 
 #****f* boot-lib.sh/getBootParm
 #  NAME
@@ -181,7 +181,7 @@ function getBootParm() {
        return 0
    fi
 }
-#************ getBootParm 
+#************ getBootParm
 
 #****f* boot-lib.sh/getParm
 #  NAME
@@ -198,7 +198,7 @@ function getParm() {
    parm="$2"
    echo $cmdline | awk -v pos=$parm 'BEGIN { FS=":"; }{ printf "%s", $pos; }'
 }
-#************ getParm 
+#************ getParm
 
 #****f* boot-lib.sh/exec_nondefault_boot_source
 #  NAME
@@ -217,11 +217,11 @@ function exec_nondefault_boot_source() {
     if [ -z "$init" ]; then init=$(getBootParm init); fi
     echo_local "Mounting nfs from \"$boot_source\" to \"$mount_dir\"..."
     exec_local mount -t nfs $boot_source $mount_dir
-    
+
     echo_local "Executing \"$mnt/$init\"..."
     exec_local $mnt/$init
 }
-#************ exec_nondefault_boot_source 
+#************ exec_nondefault_boot_source
 
 #****f* boot-lib.sh/getDistribution
 #  NAME
@@ -250,7 +250,7 @@ function getDistribution {
 #  SYNOPSIS
 #    function getBootParameters() {
 #  DESCRIPTION
-#    sets all clusterfs relevant parameters given by the bootloader 
+#    sets all clusterfs relevant parameters given by the bootloader
 #    via /proc/cmdline as global variables.
 #    The following global variables are set
 #      * debug: debug mode (bootparm com-debug unset)
@@ -272,7 +272,7 @@ function getBootParameters() {
     echo -n ":"
     getBootParm scsifailover driver
 }
-#************ getBootParameters 
+#************ getBootParameters
 
 #****f* boot-lib.sh/initEnv
 #  NAME
@@ -360,7 +360,7 @@ function initEnv {
 function initBootProcess() {
   initEnv
   date=`/bin/date`
-    
+
 
   echo_local "***********************************"
   # Print a text banner.
@@ -372,7 +372,7 @@ function initBootProcess() {
   echo_local "Starting GFS Shared Root"
   echo_local "Date: $date"
   echo_local "***********************************"
-    
+
   echo_local_debug "*****************************"
   echo_local -n "Mounting Proc-FS"
   exec_local /bin/mount -t proc proc /proc
@@ -394,13 +394,13 @@ function initBootProcess() {
   fi
   return $?
 }
-#************ initBootProcess 
+#************ initBootProcess
 
 #****f* boot-lib.sh/start_service
 #  NAME
 #    start_service
 #  SYNOPSIS
-#    function start_service(service, chroot)
+#    function start_service([chrootdir], service, [nostart], [no_chroot/nochroot], [dir=/etc], [onlycopy], [nofailback])
 #  DESCRIPTION
 #    This function starts the given service in a chroot environment per default
 #    If no_chroot is given as param the chroot is skipped
@@ -409,14 +409,29 @@ function initBootProcess() {
 #
 function start_service {
 #  if [ -n "$debug" ]; then set -x; fi
+  nochroot=
+  onlycopy=
+  nofailback=
+  dir=/etc
   [ -d "$1" ] && chroot_dir=$1 && shift
   service=$1
-  service_name=$(basename $service)
   shift
+  aservice=( $service )
+  service_name=$(basename ${aservice[0]})
+  [ -n "$1" ] && [ "$1" = "no_chroot" ] && nochroot=1 && shift
+  [ -n "$1" ] && [ -d $1 ] && dir=$1 && shift
+  [ -n "$1" ] && [ "$1" = "onlycopy" ] && onlycopy=$1 && shift
+  [ -n "$1" ] && [ "$1" = "nofailback" ] && nofailback=$1 && shift
+  [ -n "$1" ] && [ "$1" = "nostart" ] && nostart=1
 
-  service_dirs=$(cat /etc/${service_name}_dirs.list 2>/dev/null)
-  service_mv_files=$(cat /etc/${service_name}_mv_files.list 2>/dev/null)
-  service_cp_files=$(cat /etc/${service_name}_cp_files.list 2>/dev/null)
+  service_dirs=$(cat ${dir}/${service_name}_dirs.list 2>/dev/null)
+  if [ -z "$onlycopy" ]; then
+  	 service_mv_files=$(cat ${dir}/${service_name}_mv_files.list 2>/dev/null)
+     service_cp_files=$(cat ${dir}/${service_name}_cp_files.list 2>/dev/null)
+  else
+     service_cp_files=$(cat ${dir}/${service_name}_cp_files.list ${dir}/${service_name}_mv_files.list 2>/dev/null)
+     service_mv_files=""
+  fi
 #  echo_local_debug "Service($service_name)dirs: "$service_dirs
 #  echo_local_debug "Service($service_name)cp: "$service_cp_files
 #  echo_local_debug "Service($service_name)mv: "$service_mv_files
@@ -426,9 +441,9 @@ function start_service {
     return -1
   fi
   echo_local -n "Starting service $service_name"
-  if [ -n "$1" ] && [ "$1" = "no_chroot" ]; then
-    shift
+  if [ -n "$nochroot" ]; then
     $($service $*)
+    return_code $?
   else
     [ -z "$chroot_dir" ] && chroot_dir="/var/lib/${service_name}"
     echo_local -n "service=$service_name..build chroot ($chroot_dir).."
@@ -439,12 +454,12 @@ function start_service {
     echo_local -n ".(dir)."
     for file in $service_cp_files; do
       [ -d $(dirname $chroot_dir/$file) ] || mkdir -p $(dirname $chroot_dir/$file) 2>/dev/null
-      [ -e $chroot_dir/$file ] || cp -af $file $chroot_dir/$file 2>/dev/null
+      [ -e $chroot_dir/$file ] || /bin/cp -af $file $chroot_dir/$file 2>/dev/null
     done
     echo_local -n ".(cp)."
     for file in $service_mv_files; do
       [ -d $(dirname $chroot_dir/$file) ] || mkdir -p $(dirname $chroot_dir/$file) 2>/dev/null
-      [ -e $chroot_dir/$file ] || mv $file $chroot_dir/$file 2>/dev/null
+      [ -e $chroot_dir/$file ] || /bin/mv $file $chroot_dir/$file 2>/dev/null
       [ -e $file ] || ln -sf $chroot_dir/$file $file 2>/dev/null
     done
     echo_local -n ".(mv)."
@@ -453,14 +468,18 @@ function start_service {
 #      [ -e ${chroot_dir}/usr/lib/$(basename $file) ] || ln -sf $file ${chroot_dir}/usr/lib/$(basename $file) 2>/dev/null
 #    done
 
-    echo_local -n "..$service.."
-    /usr/sbin/chroot $chroot_dir $service $* || 
-    ( echo_local -n "chroot not worked failing back.." && $service $*)
+	if [ -z "$nostart" ]; then
+      echo_local -n "..$service.."
+      /usr/sbin/chroot $chroot_dir $service $*
+      if [ $? -ne 0 ] && [ -z "$nofailback" ]; then
+        echo_local -n "chroot not worked failing back.." && $service $*
+      fi
+	fi
     return_code $?
   fi
 #  if [ -n "$debug" ]; then set +x; fi
 }
-#************ start_service 
+#************ start_service
 
 #****f* boot-lib.sh/switchRoot
 #  NAME
@@ -488,7 +507,7 @@ function switchRoot() {
   critical=$?
   return $critical
 }
-#************ switchRoot 
+#************ switchRoot
 
 #****f* boot-lib.sh/mountDev
 #  NAME
@@ -519,7 +538,7 @@ function mountDev {
 	echo_local "Making device nodes"
 	/sbin/lvm.static vgmknodes
 }
-#************ mountDev 
+#************ mountDev
 
 #****f* boot-lib.sh/createTemp
 #  NAME
@@ -537,7 +556,7 @@ function createTemp {
     chmod -R a+t,a+rwX ./tmp/. ./tmp/*
 }
 
-#************ createTemp 
+#************ createTemp
 #****f* boot-lib.sh/stop_service
 #  NAME
 #    stop_service
@@ -555,7 +574,7 @@ function stop_service {
   fi
 }
 
-#************ stop_service 
+#************ stop_service
 #****f* boot-lib.sh/clean_initrd
 #  NAME
 #    clean_initrd
@@ -576,7 +595,7 @@ function clean_initrd() {
     exec_local /sbin/blockdev --flushbufs /dev/ram0
 }
 
-#************ clean_initrd 
+#************ clean_initrd
 #****f* boot-lib.sh/ipaddress_from_name
 #  NAME
 #    ipaddress_from_name
@@ -589,7 +608,7 @@ function clean_initrd() {
 function ipaddress_from_name() {
    gfsip=`/bin/nslookup ${name} | /bin/grep -A1 Name: | /bin/grep Address: | /bin/sed -e "s/\\W*Address:\\W*//"`
 }
-#************ ipaddress_from_name 
+#************ ipaddress_from_name
 #****f* boot-lib.sh/ipaddress_from_dev
 #  NAME
 #    ipaddress_from_dev
@@ -602,7 +621,7 @@ function ipaddress_from_name() {
 function ipaddress_from_dev() {
    gfsip=`/sbin/ifconfig ${netdev} | /bin/grep "inet addr:" | /bin/sed -e "s/\\W*inet\\Waddr://" | /bin/sed -e "s/\\W*Bcast:.*$//"`
 }
-#************ ipaddress_from_dev 
+#************ ipaddress_from_dev
 #****f* boot-lib.sh/echo_out
 #  NAME
 #    echo_out
@@ -616,7 +635,7 @@ function echo_out() {
     echo ${*:0:$#-1} "${*:$#}" >&3
 }
 
-#************ echo_out 
+#************ echo_out
 #****f* boot-lib.sh/echo_local
 #  NAME
 #    echo_local
@@ -633,7 +652,7 @@ function echo_local() {
 #   echo ${*:0:$#-1} "${*:$#}" >> $bootlog
 #   [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
 }
-#************ echo_local 
+#************ echo_local
 #****f* boot-lib.sh/echo_local_debug
 #  NAME
 #    echo_local_debug
@@ -652,7 +671,7 @@ function echo_local_debug() {
 #     [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
    fi
 }
-#************ echo_local_debug 
+#************ echo_local_debug
 #****f* boot-lib.sh/error_out
 #  NAME
 #    error_out
@@ -666,7 +685,7 @@ function error_out() {
     echo ${*:0:$#-1} "${*:$#}" >&4
     echo ${*:0:$#-1} "${*:$#}" >&2
 }
-#************ error_out 
+#************ error_out
 #****f* boot-lib.sh/error_local
 #  NAME
 #    error_local
@@ -683,7 +702,7 @@ function error_local() {
 #   echo ${*:0:$#-1} "${*:$#}" >> $bootlog
 #   [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
 }
-#************ error_local 
+#************ error_local
 #****f* boot-lib.sh/error_local_debug
 #  NAME
 #    error_local_debug
@@ -703,7 +722,7 @@ function error_local_debug() {
    fi
 }
 
-#************ error_local_debug 
+#************ error_local_debug
 
 #****f* boot-lib.sh/exec_local
 #  NAME
@@ -711,7 +730,7 @@ function error_local_debug() {
 #  SYNOPSIS
 #    function exec_local() {
 #  DESCRIPTION
-#    execs the given parameters in a subshell and returns the 
+#    execs the given parameters in a subshell and returns the
 #    error_code
 #  IDEAS
 #  SOURCE
@@ -719,7 +738,7 @@ function error_local_debug() {
 function exec_local() {
   output=$($*)
   return_c=$?
-  if [ ! -z "$debug" ]; then 
+  if [ ! -z "$debug" ]; then
     echo "cmd: $*" >&3
     echo "OUTPUT: $output" >&3
   fi
@@ -727,7 +746,7 @@ function exec_local() {
   echo -n "$output"
   return $return_c
 }
-#************ exec_local 
+#************ exec_local
 
 #****f* boot-lib.sh/exec_local_debug
 #  NAME
@@ -743,7 +762,7 @@ function exec_local_debug() {
     exec_local $*
   fi
 }
-#************ exec_local_debug 
+#************ exec_local_debug
 
 #****f* boot-lib.sh/return_code
 #  NAME
@@ -766,7 +785,7 @@ function return_code {
   local code=$return_c
   return $code
 }
-#************ return_code 
+#************ return_code
 
 #****f* boot-lib.sh/return_code_warning
 #  NAME
@@ -788,7 +807,7 @@ function return_code_warning() {
     warning
   fi
 }
-#************ return_code_warning 
+#************ return_code_warning
 
 #****f* boot-lib.sh/return_code_passed
 #  NAME
@@ -810,7 +829,7 @@ function return_code_passed() {
     warning
   fi
 }
-#************ return_code_passed 
+#************ return_code_passed
 
 #****f* boot-lib.sh/success
 #  NAME
@@ -837,7 +856,7 @@ function success {
 #  echo -ne "\r" >&3
   return 0
 }
-#********** success 
+#********** success
 
 #****f* boot-lib.sh/failure
 #  NAME
@@ -864,7 +883,7 @@ function failure {
 #  echo -ne "\r" >&3
   return 1
 }
-#********** warning 
+#********** warning
 
 #****f* boot-lib.sh/warning
 #  NAME
@@ -891,7 +910,7 @@ function warning {
 #  echo -ne "\r" >&3
   return 1
 }
-#********** warning 
+#********** warning
 
 #****f* boot-lib.sh/passed
 #  NAME
@@ -918,10 +937,14 @@ function passed {
 #  echo -ne "\r" >&3
   return 1
 }
-#********** passed 
+#********** passed
 
 # $Log: boot-lib.sh,v $
-# Revision 1.34  2006-07-13 11:37:02  marc
+# Revision 1.35  2006-08-28 16:06:45  marc
+# bugfixes
+# new version of start_service
+#
+# Revision 1.34  2006/07/13 11:37:02  marc
 # added dev mount
 #
 # Revision 1.33  2006/06/19 15:55:45  marc

@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.27 2006-08-08 08:31:52 marc Exp $
+# $Id: gfs-lib.sh,v 1.28 2006-08-28 16:06:45 marc Exp $
 #
 # @(#)$File$
 #
@@ -378,7 +378,8 @@ function gfs_services_restart {
   for service in $services; do
     gfs_restart_$service $old_root $new_root
     if [ $? -ne 0 ]; then
-      return $?
+      echo $service > $new_root/${cdsl_local_dir}/FAILURE_$service
+#      return $?
     fi
     step
   done
@@ -458,7 +459,7 @@ function gfs_start_cman {
 #
 function gfs_start_fenced {
   mkdir -p /var/lib/fence_tool
-  start_service /var/lib/fence_tool /sbin/fenced -c -w
+  start_service /var/lib/fence_tool '/sbin/fenced -c -w'
 }
 #************ gfs_start_fenced
 
@@ -504,6 +505,8 @@ function gfs_restart_ccsd {
    [ -e ${old_root}/var/run/cluster/ccsd.pid ] &&
    kill $(cat ${old_root}/var/run/cluster/ccsd.pid) &&
    rm ${old_root}/var/run/cluster/ccsd.pid &&
+   rm -rf ${new_root}/var/run/cluster &&
+   mkdir ${new_root}/var/run/cluster
    echo_local -n ".(kill)."
    if [ $? -ne 0 ]; then
       pids=$(ps ax | grep ccsd | awk '$5!="grep" { print $1; }')
@@ -589,7 +592,11 @@ function gfs_restart_fenced {
 #************ gfs_restart_fenced
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.27  2006-08-08 08:31:52  marc
+# Revision 1.28  2006-08-28 16:06:45  marc
+# bugfixes
+# new version of start_service
+#
+# Revision 1.27  2006/08/08 08:31:52  marc
 # changed path to new version
 #
 # Revision 1.26  2006/07/03 08:33:05  marc
