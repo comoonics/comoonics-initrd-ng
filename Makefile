@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.16 2006-08-02 12:24:59 marc Exp $
+# $Id: Makefile,v 1.17 2006-08-28 16:02:33 marc Exp $
 #
 # @(#)$file$
 #
@@ -89,6 +89,7 @@ INSTALL_DIR=/opt/atix/comoonics_bootimage
 #  SOURCE
 #
 EXEC_FILES=create-gfs-initrd-generic.sh \
+  mkservice_for_initrd.sh \
   boot-scripts/linuxrc \
   boot-scripts/linuxrc.generic.sh \
   boot-scripts/linuxrc.bash \
@@ -106,6 +107,7 @@ EXEC_FILES=create-gfs-initrd-generic.sh \
 #
 LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/inittab \
+  boot-scripts/etc/passwd \
   boot-scripts/etc/atix.txt \
   boot-scripts/etc/boot-lib.sh \
   boot-scripts/etc/gfs-lib.sh \
@@ -180,7 +182,10 @@ CFG_FILES=basefiles.list \
 	files.initrd.d/grub.list \
 	files.initrd.d/libs.list.x86_64 \
 	files.initrd.d/libs.list.i686 \
-	files.initrd.d/fence_vmware.list.opt
+	files.initrd.d/fence_vmware.list.opt \
+	files.initrd.d/debug.list.opt \
+	rpms.initrd.d/perl.list \
+	rpms.initrd.d/python.list
 #************ CFG_FILES 
 
 #****d* Makefile/EMPTY_DIRS
@@ -193,6 +198,7 @@ CFG_FILES=basefiles.list \
 EMPTY_DIRS=boot-scripts/mnt \
  boot-scripts/sys \
  boot-scripts/var/log \
+ boot-scripts/var/lock \
  boot-scripts/var/lib/dhcp \
  boot-scripts/var/run/netreport \
  boot-scripts/proc \
@@ -274,6 +280,9 @@ install:
              if [ ! -e $(PREFIX)/$(CFG_DIR)/files.initrd.d/ ]; then \
                install -d  -g $(INSTALL_GRP) -o $(INSTALL_OWN) $(PREFIX)/$(CFG_DIR)/files.initrd.d/; \
              fi; \
+             if [ ! -e $(PREFIX)/$(CFG_DIR)/rpms.initrd.d/ ]; then \
+               install -d  -g $(INSTALL_GRP) -o $(INSTALL_OWN) $(PREFIX)/$(CFG_DIR)/rpms.initrd.d/; \
+             fi; \
 	     for cfgfile in $(CFG_FILES); do \
                install -g $(INSTALL_GRP) -o $(INSTALL_OWN) $$cfgfile $(PREFIX)/$(CFG_DIR)/`dirname $$cfgfile`; \
 	     done && \
@@ -306,7 +315,10 @@ archive:
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.16  2006-08-02 12:24:59  marc
+# Revision 1.17  2006-08-28 16:02:33  marc
+# very well tested version
+#
+# Revision 1.16  2006/08/02 12:24:59  marc
 # minor change
 #
 # Revision 1.15  2006/07/13 14:32:57  mark
