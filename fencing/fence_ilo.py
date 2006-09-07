@@ -5,6 +5,10 @@ import sys
 import re
 import exceptions
 
+# PID_DIR="/var/run"
+PID_DIR="/var/run"
+PID_EXT="pid"
+
 class Config:
     login=False
     passwd=False
@@ -204,19 +208,54 @@ def getOptionsFromStdin():
             debug("read %s=%s" %(opt, value))
             setattr(Config, opt, value)
 
+def get_pid_filename():
+    import os.path
+    return "%s/%s.%s" %(PID_DIR, os.path.basename(os.path.splitext(sys.argv[0])[0]), PID_EXT)
+
+
+def create_pid_file():
+    import os
+    pidf=open(get_pid_filename(), "w")
+    print >>pidf, os.getpid()
+    pidf.close()
+
+def remove_pid_file():
+    import os
+    os.remove(get_pid_filename())
+
 def main():
     if len(sys.argv) > 1:
         getOptions()
     else:
         getOptionsFromStdin()
 
+    exit_code=0
     try:
+        try:
+            create_pid_file()
+        except:
+            print "Could not create pidfile %s" % get_pid_filename()
         ilo=FenceIlo(Config)
         print ilo.do(Config.action)
         ilo.close()
+        import os.path
+        if os.path.exists(get_pid_filename()):
+            try:
+                remove_pid_file()
+            except:
+                print "Could not remove pidfile %s" % get_pid_filename()
     except:
         import traceback
         traceback.print_exc()
+        import os.path
+        if os.path.exists(get_pid_filename()):
+            try:
+                remove_pid_file()
+            except:
+                print "Could not remove pidfile %s" % get_pid_filename()
+        exit_code=1
+
+    sys.exit(exit_code)
 
 
 if __name__ == '__main__':
@@ -224,6 +263,9 @@ if __name__ == '__main__':
 
 #################
 # $Log: fence_ilo.py,v $
-# Revision 1.1  2006-08-28 16:04:46  marc
+# Revision 1.2  2006-09-07 16:43:50  marc
+# creates pidfile and gives errorcode
+#
+# Revision 1.1  2006/08/28 16:04:46  marc
 # initial revision
 #
