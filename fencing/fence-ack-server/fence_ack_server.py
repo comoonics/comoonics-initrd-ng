@@ -4,11 +4,11 @@ Fence Acknowledge Server via normal an ssl
 """
 
 # here is some internal information
-# $Id: fence_ack_server.py,v 1.1 2006-08-28 16:04:46 marc Exp $
+# $Id: fence_ack_server.py,v 1.2 2006-09-07 16:43:06 marc Exp $
 #
 
 
-__version__ = "$Revision: 1.1 $"
+__version__ = "$Revision: 1.2 $"
 # $Source: /atix/ATIX/CVSROOT/nashead2004/bootimage/fencing/fence-ack-server/fence_ack_server.py,v $
 
 from OpenSSL import SSL
@@ -24,6 +24,8 @@ ComSystem.__EXEC_REALLY_DO=""
 FENCE_MANUAL_FIFO="/tmp/fence_manual.fifo"
 FENCE_MANUAL_LOCKFILE="/var/lock/fence_manual.lock"
 FENCE_ACK_STRING="meatware ok"
+PID_DIR="/var/run"
+FENCE_CLIENT_RE="fence_.*\.pid"
 
 dir = os.path.dirname(sys.argv[0])
 if dir == '':
@@ -280,12 +282,17 @@ def main():
     except:
         import traceback
         traceback.print_exc()
+        sys.exit(1)
 
 if __name__ == '__main__':
     main()
 
 ##################
 # $Log: fence_ack_server.py,v $
-# Revision 1.1  2006-08-28 16:04:46  marc
+# Revision 1.2  2006-09-07 16:43:06  marc
+# support for killing pidfiles
+# support for restarting processes
+#
+# Revision 1.1  2006/08/28 16:04:46  marc
 # initial revision
 #
