@@ -58,31 +58,41 @@ class FenceIlo:
         },
         "on": {
             "xml": XMLS["write"] % '<SET_HOST_POWER HOST_POWER="YES"/>',
+            "wregexp": "MESSAGE=\'((?:Host power is already ON.))\'",
+            "warningtext": "Warning occured during fencing. Message: %s",
             "eregexp": "MESSAGE=\'(((?!No error)(?!Host power is already ON)).[^\']*)\'",
             "exception": CouldNotSetPowerState,
             "errortext": "Could not set powerstate to on. Message: %s"
         },
         "off": {
             "xml": XMLS["write"] % '<SET_HOST_POWER HOST_POWER="No"/>',
+            "wregexp": "MESSAGE=\'((?:Host power is already OFF.))\'",
+            "warningtext": "Warning occured during fencing. Message: %s",
             "eregexp": "MESSAGE=\'(((?!No error)(?!Host power is already OFF)).[^\']*)\'",
             "exception": CouldNotSetPowerState,
             "errortext": "Could not set powerstate to off. Message: %s"
         },
         "hardoff": {
             "xml": XMLS["write"] % '<HOLD_PWR_BTN/>',
+            "wregexp": "MESSAGE=\'((?:Host power is already OFF.))\'",
+            "warningtext": "Warning occured during fencing. Message: %s",
             "eregexp": "MESSAGE=\'(((?!No error)(?!Host power is already OFF)).[^\']*)\'",
             "exception": CouldNotSetPowerState,
             "errortext": "Could not set powerstate to hardoff. Message: %s"
         },
         "coldboot": {
             "xml": XMLS["write"] % '<COLD_BOOT_SERVER/>',
-            "eregexp": "MESSAGE=\'(((?!No error)(?!Server being reset)).[^\']*)\'",
+            "wregexp": "MESSAGE=\'((?:Host power is already OFF.))\'",
+            "warningtext": "Warning occured during fencing. Message: %s",
+            "eregexp": "MESSAGE=\'(((?!No error)(?!Server being reset)(?!Host power is already OFF)).[^\']*)\'",
             "exception": CouldNotSetPowerState,
             "errortext": "Could not set powerstate to coldboot. Message: %s"
         },
         "reset": {
             "xml": XMLS["write"] % '<RESET_SERVER/>',
-            "eregexp": "MESSAGE=\'((?!No error).+)\'",
+            "wregexp": "MESSAGE=\'((?:Host power is already OFF.))\'",
+            "warningtext": "Warning occured during fencing. Message: %s",
+            "eregexp": "MESSAGE=\'(((?!No error)(?!Server being reset)(?!Host power is already OFF)).[^\']*)\'",
             "exception": CouldNotSetPowerState,
             "errortext": "Could not reset server. Message: %s"
         }
@@ -135,12 +145,21 @@ class FenceIlo:
 
     def getErrorREResult(self, reg, buf, exc, errortext):
         result=re.search(reg, buf, re.MULTILINE)
-        debug("getREResult: %s" % result)
-        if not result:
-            return 0
-        else:
+        debug("getErrorREResult: %s" % result)
+        if result:
             debug("Result: %s" % result.group(1))
             raise exc(errortext % result.group(1))
+        else:
+            return ""
+
+    def getWarningREResult(self, reg, buf, warningtext):
+        result=re.search(reg, buf, re.MULTILINE)
+        debug("getWarningREResult: %s" % result)
+        if result:
+            debug("Result: %s" % result.group(1))
+            return warningtext % result.group(1)
+        else:
+            return ""
 
     def sendXMLHeader(self):
         debug("sending header")
@@ -182,17 +201,25 @@ class FenceIlo:
     def do(self, action):
         regexp=None
         eregexp=None
+        wregexp=None
+        warning=None
         xml=self.ACTIONS[action]["xml"]
         if self.ACTIONS[action].__contains__("regexp"):
             regexp=self.ACTIONS[action]["regexp"]
         if self.ACTIONS[action].__contains__("eregexp"):
             eregexp=self.ACTIONS[action]["eregexp"]
+        if self.ACTIONS[action].__contains__("wregexp"):
+            wregexp=self.ACTIONS[action]["wregexp"]
+        if self.ACTIONS[action].__contains__("warningtext"):
+            warning=self.ACTIONS[action]["warningtext"]
         exception=self.ACTIONS[action]["exception"]
         errortext=self.ACTIONS[action]["errortext"]
         if not xml:
             raise RIBOptionNotFound("Could not find option for command %s" % action)
         self.sendXML(xml)
         buf=self.getAnswer()
+        if wregexp and warning:
+            print >> sys.stderr, self.getWarningREResult(wregexp, buf, warning)
         if regexp:
             return self.getREResult(regexp, buf, exception, errortext)
         if eregexp:
@@ -315,7 +342,10 @@ if __name__ == '__main__':
 
 #################
 # $Log: fence_ilo.py,v $
-# Revision 1.3  2006-09-18 10:01:48  marc
+# Revision 1.4  2006-09-18 12:19:05  marc
+# bugfixes for hardoff and coldboot
+#
+# Revision 1.3  2006/09/18 10:01:48  marc
 # - added hardoff and coldboot options.
 # - bugfix with reconnect
 #
