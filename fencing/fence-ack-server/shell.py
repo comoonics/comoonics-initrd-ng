@@ -4,11 +4,11 @@ Fence Acknowledge Server via normal an ssl
 """
 
 # here is some internal information
-# $Id: shell.py,v 1.2 2006-09-07 16:43:14 marc Exp $
+# $Id: shell.py,v 1.3 2006-09-18 12:16:00 marc Exp $
 #
 
 
-__version__ = "$Revision: 1.2 $"
+__version__ = "$Revision: 1.3 $"
 # $Source: /atix/ATIX/CVSROOT/nashead2004/bootimage/fencing/fence-ack-server/shell.py,v $
 import cmd
 import os
@@ -130,7 +130,7 @@ The following fenceclients seem to be pending you can kill them by the command k
         print >>self.stdout, "Prints the version of this service" %(self.shell)
 
     def do_version(self, rest):
-        print >>self.stdout, 'Version $Revision: 1.2 $'
+        print >>self.stdout, 'Version $Revision: 1.3 $'
 
     def help_fence_node(self):
         print >>self.stdout, "Fenced the given node"
@@ -209,9 +209,9 @@ The following fenceclients seem to be pending you can kill them by the command k
                 service_params.append(None)
             self.killService(service_params[0], service_params[1])
         except CouldNotFindFile, cnf:
-            print >>self.stdout, "Could not find file %s" %(pidfile)
+            print >>self.stdout, "Could not find file %s" %(service_params[0])
         except:
-            print >>self.stdout, "Could not kill service %s" %(service_name)
+            print >>self.stdout, "Could not kill service %s" %(rest)
 
     def help_kill(self):
         print >>self.stdout, """Kills a running service (kill pidfile)."""
@@ -258,8 +258,10 @@ The following fenceclients seem to be pending you can kill them by the command k
         from comoonics import ComSystem
         service_name=os.path.basename(cmd.split(" ")[0])
         print >>self.stdout, "Starting service %s" %service_name
-        (rc, out) = ComSystem.execLocalStatusOutput(cmd)
-        print out
+        #rc=os.system(cmd)
+        (rc, out) = ComSystem.execLocalStatusOutput('/bin/sh -c "exec 0>&- 1>&- 2>&- 3>&- 4>&-; %s"' %cmd)
+        if out and out != "":
+            print >>self.stdout, out
         if rc>>8 > 0:
             print >>self.stdout, "Could not start service y command %s." % cmd
         else:
@@ -270,7 +272,10 @@ if __name__ == '__main__':
 
 ##############
 # $Log: shell.py,v $
-# Revision 1.2  2006-09-07 16:43:14  marc
+# Revision 1.3  2006-09-18 12:16:00  marc
+# added restart, kill, start, stop options
+#
+# Revision 1.2  2006/09/07 16:43:14  marc
 # support for killing pidfiles
 # support for restarting processes
 #
