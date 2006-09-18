@@ -58,21 +58,33 @@ class FenceIlo:
         },
         "on": {
             "xml": XMLS["write"] % '<SET_HOST_POWER HOST_POWER="YES"/>',
-            "regexp": "MESSAGE=\'((?!No error).+)\'",
+            "eregexp": "MESSAGE=\'(((?!No error)(?!Host power is already ON)).[^\']*)\'",
             "exception": CouldNotSetPowerState,
-            "errortext": "Could not set powerstate to on."
+            "errortext": "Could not set powerstate to on. Message: %s"
         },
         "off": {
             "xml": XMLS["write"] % '<SET_HOST_POWER HOST_POWER="No"/>',
-            "regexp": "",
+            "eregexp": "MESSAGE=\'(((?!No error)(?!Host power is already OFF)).[^\']*)\'",
             "exception": CouldNotSetPowerState,
-            "errortext": "Could not set powerstate to off."
+            "errortext": "Could not set powerstate to off. Message: %s"
+        },
+        "hardoff": {
+            "xml": XMLS["write"] % '<HOLD_PWR_BTN/>',
+            "eregexp": "MESSAGE=\'(((?!No error)(?!Host power is already OFF)).[^\']*)\'",
+            "exception": CouldNotSetPowerState,
+            "errortext": "Could not set powerstate to hardoff. Message: %s"
+        },
+        "coldboot": {
+            "xml": XMLS["write"] % '<COLD_BOOT_SERVER/>',
+            "eregexp": "MESSAGE=\'(((?!No error)(?!Server being reset)).[^\']*)\'",
+            "exception": CouldNotSetPowerState,
+            "errortext": "Could not set powerstate to coldboot. Message: %s"
         },
         "reset": {
             "xml": XMLS["write"] % '<RESET_SERVER/>',
-            "regexp": "",
+            "eregexp": "MESSAGE=\'((?!No error).+)\'",
             "exception": CouldNotSetPowerState,
-            "errortext": "Could not reset server."
+            "errortext": "Could not reset server. Message: %s"
         }
     }
 
@@ -83,16 +95,26 @@ class FenceIlo:
         self.verbose=Config.verbose
         self.port=Config.port
         self.timeout=Config.timeout
+        try:
+            self.connect()
+            self.ribversion=self.getRIBVersion()
+        except WrongOrNoRIBVersion:
+            print "Could not establish connection to ilo trying a second time"
+            self.socket.close()
+            self.connect()
+            # Sometimes first try goes wrong try another
+            self.ribversion=self.getRIBVersion()
+        if Config.ribcl:
+            self.ribversion=Config.ribcl
+
+    def connect(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # s.settimeout(self.timeout)
+#        s.settimeout(self.timeout)
         ctx = SSL.Context(SSL.SSLv23_METHOD)
+        ctx.set_timeout(self.timeout)
         self.socket = SSL.Connection(ctx,s)
         debug('Python socket client. Connecting to: %s:%s' %(self.address, self.port))
         self.socket.connect((self.address, self.port))
-        if not Config.ribcl:
-            self.ribversion=self.getRIBVersion()
-        else:
-            self.ribversion=Config.ribcl
 
     def getRIBVersion(self):
         debug("getRIBVersion")
@@ -104,15 +126,35 @@ class FenceIlo:
 
     def getREResult(self, reg, buf, exc, errortext):
         result=re.search(reg, buf, re.MULTILINE)
+        debug("getREResult: %s" % result)
         if not result:
             raise exc(errortext)
         else:
             debug("Result: %s" % result.group(1))
             return result.group(1)
 
+    def getErrorREResult(self, reg, buf, exc, errortext):
+        result=re.search(reg, buf, re.MULTILINE)
+        debug("getREResult: %s" % result)
+        if not result:
+            return 0
+        else:
+            debug("Result: %s" % result.group(1))
+            raise exc(errortext % result.group(1))
+
     def sendXMLHeader(self):
         debug("sending header")
+#        try:
         self.socket.send(self.XMLS["header"])
+#        except SSL.WantReadError:
+#            import sys
+#            debug("WantRead Error while writing and WantWrite %s" %sys.exc_info()[0])
+#            try:
+#                self.socket.recv(1024)
+#            except SSL.WantWriteError:
+#                import sys
+#                debug("Caught want write let's go %s" %sys.exec_info()[0])
+#                self.sendXMLHeader()
 
     def sendXML(self, xml):
         tosend=self.XMLS["frame"] %(self.ribversion, self.username, self.password, xml)
@@ -138,8 +180,13 @@ class FenceIlo:
         return buf
 
     def do(self, action):
+        regexp=None
+        eregexp=None
         xml=self.ACTIONS[action]["xml"]
-        regexp=self.ACTIONS[action]["regexp"]
+        if self.ACTIONS[action].__contains__("regexp"):
+            regexp=self.ACTIONS[action]["regexp"]
+        if self.ACTIONS[action].__contains__("eregexp"):
+            eregexp=self.ACTIONS[action]["eregexp"]
         exception=self.ACTIONS[action]["exception"]
         errortext=self.ACTIONS[action]["errortext"]
         if not xml:
@@ -148,6 +195,8 @@ class FenceIlo:
         buf=self.getAnswer()
         if regexp:
             return self.getREResult(regexp, buf, exception, errortext)
+        if eregexp:
+            return self.getErrorREResult(eregexp, buf, exception, errortext)
         return buf
 
     def close(self):
@@ -245,8 +294,11 @@ def main():
             except:
                 print "Could not remove pidfile %s" % get_pid_filename()
     except:
-        import traceback
-        traceback.print_exc()
+        if Config.verbose:
+            import traceback
+            traceback.print_exc()
+        else:
+            print >>sys.stderr, sys.exc_value
         import os.path
         if os.path.exists(get_pid_filename()):
             try:
@@ -263,7 +315,11 @@ if __name__ == '__main__':
 
 #################
 # $Log: fence_ilo.py,v $
-# Revision 1.2  2006-09-07 16:43:50  marc
+# Revision 1.3  2006-09-18 10:01:48  marc
+# - added hardoff and coldboot options.
+# - bugfix with reconnect
+#
+# Revision 1.2  2006/09/07 16:43:50  marc
 # creates pidfile and gives errorcode
 #
 # Revision 1.1  2006/08/28 16:04:46  marc
