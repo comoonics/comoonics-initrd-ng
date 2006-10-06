@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.35 2006-08-28 16:06:45 marc Exp $
+# $Id: boot-lib.sh,v 1.36 2006-10-06 08:34:15 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,6 +26,12 @@
 LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/lib/i686:/usr/lib"
 PATH=/bin:/sbin:/usr/bin:/usr/sbin
 export PATH LD_LIBRARY_PATH
+
+# Binaries
+STAT="/usr/bin/stat"
+COPY="/bin/cp"
+MOVE="/bin/mv"
+MKDIR="/bin/mkdir"
 
 step_timeout=10
 bootlog="/var/log/comoonics-boot.log"
@@ -396,6 +402,65 @@ function initBootProcess() {
 }
 #************ initBootProcess
 
+#****f* boot-lib.sh/is_modified
+#  NAME
+#    is_modified
+#  SYNOPSIS
+#    function is_modified(sourcefile, destfile)
+#  DESCRIPTION
+#    returns 1 if sourcefile is older or equal to destfile. Otherwise it returns 0
+#  IDEAS
+#  SOURCE
+#
+function is_modified {
+  local source=$1
+  local dest=$2
+  if [ -e "$STAT" ]; then
+    local smodified=$($STAT -c%Y $source 2>/dev/null)
+    local dmodified=$($STAT -c%Y $dest 2>/dev/null)
+    if [ -z "$dmodified" ] || [ -z "$smodified" ] || [ $smodified -gt $dmodified ]; then
+      return 0
+    else
+      return 1
+    fi
+  else
+    return 0
+  fi
+}
+#*********** is_modified
+
+#****f* boot-lib.sh/cp_file
+#  NAME
+#    cp_file
+#  SYNOPSIS
+#    function cp_file(sourcefile, destfile)
+#  DESCRIPTION
+#    File copy function to copy a file from sourcefile to destfile. Knows about directory.
+#    When stat is available it only copys if file is modified.
+#  IDEAS
+#  SOURCE
+#
+function cp_file {
+  local source=$1
+  local dest=$2
+  [ -d $(dirname $dest) ] || $MKDIR -p $(dirname $dest) 2>/dev/null
+  if [ -d $source ]; then
+    if [ ! -e $dest ]; then
+      mkdir -p ${dest}
+    fi
+    sfiles=( $(find $source -maxdepth 1) )
+    for sfile in ${sfiles[@]:1}; do
+      cp_file $sfile "${dest}/"$(basename $sfile)
+    done
+  else
+    is_modified $source $dest
+    if [ $? -eq 0 ]; then
+      $COPY -af $source $dest 2>/dev/null
+    fi
+  fi
+}
+#************ cp_file
+
 #****f* boot-lib.sh/start_service
 #  NAME
 #    start_service
@@ -453,13 +518,13 @@ function start_service {
     done
     echo_local -n ".(dir)."
     for file in $service_cp_files; do
-      [ -d $(dirname $chroot_dir/$file) ] || mkdir -p $(dirname $chroot_dir/$file) 2>/dev/null
-      [ -e $chroot_dir/$file ] || /bin/cp -af $file $chroot_dir/$file 2>/dev/null
+      cp_file $file $chroot_dir/$file 2>/dev/null
     done
     echo_local -n ".(cp)."
     for file in $service_mv_files; do
       [ -d $(dirname $chroot_dir/$file) ] || mkdir -p $(dirname $chroot_dir/$file) 2>/dev/null
-      [ -e $chroot_dir/$file ] || /bin/mv $file $chroot_dir/$file 2>/dev/null
+#      [ -e $chroot_dir/$file ] || /bin/mv $file $chroot_dir/$file 2>/dev/null
+      /bin/mv $file $chroot_dir/$file 2>/dev/null
       [ -e $file ] || ln -sf $chroot_dir/$file $file 2>/dev/null
     done
     echo_local -n ".(mv)."
@@ -940,7 +1005,10 @@ function passed {
 #********** passed
 
 # $Log: boot-lib.sh,v $
-# Revision 1.35  2006-08-28 16:06:45  marc
+# Revision 1.36  2006-10-06 08:34:15  marc
+# added some bins as variables
+#
+# Revision 1.35  2006/08/28 16:06:45  marc
 # bugfixes
 # new version of start_service
 #
