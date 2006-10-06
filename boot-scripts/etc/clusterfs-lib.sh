@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.7 2006-08-28 16:06:45 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.8 2006-10-06 08:33:42 marc Exp $
 #
 # @(#)$File$
 #
@@ -79,6 +79,9 @@ function getClusterFSParameters() {
   getBootParm lockmethod $default_lockmethod
   echo -n ":"
   getBootParm sourceserver
+  echo -n ":"
+  getBootParm quorumack
+  echo -n ":"
 }
 #******** getClusterFSParameters
 
@@ -378,6 +381,20 @@ function cluster_restart_cluster_services {
 }
 #******** cluster_restart_cluster_services
 
+#****f* clusterfs-lib.sh/cluster_checkhosts_alive
+#  NAME
+#    cluster_checkhosts_alive
+#  SYNOPSIS
+#    function cluster_checkhosts_alive()
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function cluster_checkhosts_alive {
+   ${rootfs}_checkhosts_alive
+}
+#********* cluster_checkhosts_alive
+
 #****f* clusterfs-lib.sh/clusterfs_mount_cdsl
 #  NAME
 #    clusterfs_mount_cdsl
@@ -448,10 +465,10 @@ function copy_relevant_files {
    cd $newroot/etc &&
    ln -sf ../${cdsl_local_dir}/$modules_conf $(basename $modules_conf))
   return_c=$?
-  if [ -f ${new_root}/${cdsl_local_dir}/etc/cluster/cluster.conf ]; then
-    cp ${new_root}/${cdsl_local_dir}/etc/cluster/cluster.conf ${new_root}/${cdsl_local_dir}/etc/cluster/cluster.conf.bak
+  if [ -f ${newroot}/${cdsl_local_dir}/etc/cluster/cluster.conf ]; then
+    cp ${new_root}/${cdsl_local_dir}/etc/cluster/cluster.conf ${newroot}/${cdsl_local_dir}/etc/cluster/cluster.conf.bak
   fi
-  cp /etc/cluster/cluster.conf ${new_root}/${cdsl_local_dir}/etc/cluster/cluster.conf
+  cp /etc/cluster/cluster.conf ${newroot}/${cdsl_local_dir}/etc/cluster/cluster.conf
   [ $return_c -eq 0 ] && return_c=$?
 #   cd sysconfig
 #   cp -f /etc/sysconfig/hwconf $newroot/${cdsl_local_dir}/etc/sysconfig/
@@ -475,7 +492,10 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.7  2006-08-28 16:06:45  marc
+# Revision 1.8  2006-10-06 08:33:42  marc
+# added bootparam quorumack
+#
+# Revision 1.7  2006/08/28 16:06:45  marc
 # bugfixes
 # new version of start_service
 #
