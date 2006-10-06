@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.28 2006-08-28 16:06:45 marc Exp $
+# $Id: gfs-lib.sh,v 1.29 2006-10-06 08:32:57 marc Exp $
 #
 # @(#)$File$
 #
@@ -34,6 +34,7 @@
 default_lockmethod="lock_dlm"
 default_mountopts="defaults,noatime,nodiratime"
 ccs_xml_query="/opt/atix/comoonics-cs/ccs_xml_query"
+cl_check_nodes="/usr/bin/cl_checknodes"
 
 #****f* gfs-lib.sh/getGFSMajorVersion
 #  NAME
@@ -590,9 +591,31 @@ function gfs_restart_fenced {
    return $error_code
 }
 #************ gfs_restart_fenced
+#****f* clusterfs-lib.sh/gfs_checkhosts_alive
+#  NAME
+#    gfs_checkhosts_alive
+#  SYNOPSIS
+#    function gfs_checkhosts_alive()
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function gfs_checkhosts_alive {
+#   local xml_file=/etc/cluster/cluster.conf
+#   local twonodes=$($ccs_xml_query -f $xml_file -q query_value cluster/cman/@two_node 2>/dev/null) || local twonodes=0
+#   if [ $twonodes -eq 1 ]; then
+    $cl_check_nodes
+#   else
+#      /bin/true
+#   fi
+}
+#********* gfs_checkhosts_alive
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.28  2006-08-28 16:06:45  marc
+# Revision 1.29  2006-10-06 08:32:57  marc
+# added cl_checknodes as variable
+#
+# Revision 1.28  2006/08/28 16:06:45  marc
 # bugfixes
 # new version of start_service
 #
