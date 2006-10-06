@@ -18,6 +18,7 @@ class Config:
     port=443
     ribcl=False
     timeout=10
+    xmlfile=None
 
 def debug(msg):
     if Config.verbose:
@@ -130,9 +131,12 @@ class FenceIlo:
         debug("getRIBVersion")
         self.sendXMLHeader()
 
-        buf=self.getAnswer(1)
-        debug("Got: %s" % buf)
-        return self.getREResult(self.RIBVERSION_RE, buf, WrongOrNoRIBVersion, "Wrong or no RIB version found within initial response")
+        try:
+            buf=self.getAnswer(1)
+            debug("Got: %s" % buf)
+            return self.getREResult(self.RIBVERSION_RE, buf, WrongOrNoRIBVersion, "Wrong or no RIB version found within initial response")
+        except:
+            raise WrongOrNoRIBVersion("Wrong or no RIB version found within initial response. Message: %s" % sys.exc_value)
 
     def getREResult(self, reg, buf, exc, errortext):
         result=re.search(reg, buf, re.MULTILINE)
@@ -176,9 +180,20 @@ class FenceIlo:
 #                self.sendXMLHeader()
 
     def sendXML(self, xml):
-        tosend=self.XMLS["frame"] %(self.ribversion, self.username, self.password, xml)
+        if self.username and self.password:
+            tosend=self.XMLS["frame"] %(self.ribversion, self.username, self.password, xml)
+        else:
+            tosend=xml
         debug("SEND: %s" %tosend)
         self.socket.send(tosend)
+
+    def sendXMLFile(self, filename):
+        infile=open(filename)
+        xml=""
+        for line in infile:
+            xml=xml+line
+        infile.close()
+        self.sendXML(xml)
 
     def getAnswer(self, times=1000, message=4):
         debug("Waiting for answer")
@@ -197,6 +212,18 @@ class FenceIlo:
         debug("READ(%u): %s" % (i,buf))
         debug("Message: %s" % tmessage)
         return buf
+
+    def doxmlfile(self, filename):
+        regexp="MESSAGE=\'((?!No error).[^\']*)"
+
+        self.sendXMLFile(filename)
+        buf=self.getAnswer()
+        result=re.search(regexp, buf, re.MULTILINE)
+        debug("getREResult: %s" % result)
+        if result:
+            return result.group(1)
+        else:
+            return "OK"
 
     def do(self, action):
         regexp=None
@@ -239,7 +266,7 @@ def version():
 def getOptions():
     import getopt
     try:
-        (opts, args_proper)=getopt.getopt(sys.argv[1:], 'hvVqa:l:p:o:', [ 'help', 'verbose', 'port=', 'login=', 'password=', 'option=', 'address=' ])
+        (opts, args_proper)=getopt.getopt(sys.argv[1:], 'hvVqa:l:p:o:x:', [ 'help', 'verbose', 'port=', 'login=', 'password=', 'option=', 'address=', 'xmlfile=' ])
     except getopt.GetoptError, goe:
         print >>sys.stderr, "Error parsing params: %s" % goe
         usage(sys.argv)
@@ -261,6 +288,8 @@ def getOptions():
             Config.passwd=value
         elif opt == "-o" or opt == "--option":
             Config.action=value
+        elif opt == "-x" or opt == "--xmlfile":
+            Config.xmlfile=value
         elif opt == "-V|--version":
             version()
             sys.exit(0)
@@ -312,7 +341,10 @@ def main():
         except:
             print "Could not create pidfile %s" % get_pid_filename()
         ilo=FenceIlo(Config)
-        print ilo.do(Config.action)
+        if Config.xmlfile:
+            print ilo.doxmlfile(Config.xmlfile)
+        else:
+            print ilo.do(Config.action)
         ilo.close()
         import os.path
         if os.path.exists(get_pid_filename()):
@@ -342,7 +374,10 @@ if __name__ == '__main__':
 
 #################
 # $Log: fence_ilo.py,v $
-# Revision 1.4  2006-09-18 12:19:05  marc
+# Revision 1.5  2006-10-06 08:35:50  marc
+# added possibility to execute predefined xml-scripts
+#
+# Revision 1.4  2006/09/18 12:19:05  marc
 # bugfixes for hardoff and coldboot
 #
 # Revision 1.3  2006/09/18 10:01:48  marc
