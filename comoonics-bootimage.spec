@@ -21,7 +21,7 @@
 # with ATIX.
 #/initrd_sr-2.6.9-34.ELsmp.img.gz
 # %define _initrddir /etc/init.d
-# $Id: comoonics-bootimage.spec,v 1.26 2006-08-28 16:00:27 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.27 2006-10-06 08:36:27 marc Exp $
 #
 ##
 # TO DO
@@ -35,7 +35,7 @@
 %define APPDIR    /opt/atix/%{name}
 %define ENVDIR    /etc/profile.d
 %define ENVFILE   %{ENVDIR}/%{name}.sh
-%define INITDIR   /etc/init.d
+%define INITDIR   /etc/rc.d/init.d
 %define SYSCONFIGDIR /%{_sysconfdir}/sysconfig
 
 %define FENCEACKSV_SOURCE fencing/fence-ack-server
@@ -49,8 +49,8 @@ Name: comoonics-bootimage
 Summary: Comoonics Bootimage. Scripts for creating an initrd in a gfs shared root environment
 Version: 1.0
 BuildArch: noarch
-Requires: comoonics-cs >= 0.5-17
-Release: 57
+Requires: comoonics-cs >= 0.5-17, comoonics-cs-py >= 0.1-15
+Release: 66
 Vendor: ATIX GmbH
 Packager: Marc Grimme (grimme@atix.de)
 ExclusiveArch: noarch
@@ -65,7 +65,7 @@ Comoonics Bootimage. Scripts for creating an initrd in a gfs shared root environ
 
 %package fenceacksv
 Version: 0.1
-Release: 7
+Release: 10
 Requires: comoonics-cs-py
 Requires: comoonics-bootimage >= 1.0-47
 Summary: The Fence ackserver is a service running in the fencedchroot and managing manual fenced nodes
@@ -77,7 +77,7 @@ The Fence ackserver is a service running in the fencedchroot and managing manual
 
 %package fenceclient-ilo
 Version: 0.1
-Release: 8
+Release: 16
 Summary: An alternative fence client for ilo cards of HP servers. Written in python.
 Group:   Storage/Management
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
@@ -87,7 +87,7 @@ An alternative fence client for ilo cards of HP servers. Written in python.
 
 %package fenceclient-vmware
 Version: 0.1
-Release: 3
+Release: 4
 Summary: Fencing for vmware
 Group:   Storage/Management
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
@@ -301,6 +301,7 @@ fi
 %attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/libs.list.i686
 %attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/fence_vmware.list.opt
 %attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/debug.list.opt
+%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/comoonics.list
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/python.list
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/perl.list
 
@@ -337,7 +338,10 @@ fi
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.26  2006-08-28 16:00:27  marc
+# Revision 1.27  2006-10-06 08:36:27  marc
+# version with quorumack
+#
+# Revision 1.26  2006/08/28 16:00:27  marc
 # very well tested version
 #
 # Revision 1.25  2006/08/14 17:42:41  marc
