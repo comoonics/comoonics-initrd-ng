@@ -84,6 +84,7 @@ start()
 #      failure
 #    fi
 #  el
+  FENCE_OPTS="${FENCE_OPTS} $*"
   if [ -e ${INITRD_DIR}${FENCE_CHROOT_INITRD}/var/run/fenced.pid ] && [ ! -e /FAILURE_fenced ]; then
     echo -n $"Stopping fenced from initrd"
     kill $(cat ${INITRD_DIR}${FENCE_CHROOT_INITRD}/var/run/fenced.pid) &&
@@ -232,7 +233,8 @@ rtrn=1
 case "$1" in
   start)
     if [ check_sharedroot ]; then
-        start
+    	shift
+        start $*
         rtrn=$?
         [ $rtrn = 0 ] && touch $LOCK_FILE
     fi
@@ -240,15 +242,17 @@ case "$1" in
 
   stop)
     if [ check_sharedroot ]; then
-        stop
+    	shift
+        stop $*
         rtrn=$?
         [ $rtrn = 0 ] && rm -f $LOCK_FILE
     fi
         ;;
 
   restart)
-        $0 stop
-        $0 start
+        shift
+        $0 stop $*
+        $0 start $*
         rtrn=$?
         ;;
 
@@ -267,7 +271,10 @@ exit $rtrn
 
 #########################
 # $Log: fenced-chroot,v $
-# Revision 1.10  2006-08-28 16:02:22  marc
+# Revision 1.11  2006-10-06 08:37:18  marc
+# added possibility to add params for fenced behind start/stop/restart
+#
+# Revision 1.10  2006/08/28 16:02:22  marc
 # moved creation of chroot to bootsr
 #
 # Revision 1.9  2006/08/14 17:43:03  marc
