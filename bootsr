@@ -155,10 +155,10 @@ case "$1" in
       runlevel=$(get_runlevel)
       echo -n "Doing the Comoonics Shared Root post settings "
       echo `date` Doing the Comoonics Shared Root post settings | tee -a /var/log/bootsr | logger -t com-bootsr
-      /sbin/lvm vgscan --ignorelockingfailure --mknodes 2>&1 | tee -a /var/log/bootsr | logger
+      /sbin/lvm vgscan --ignorelockingfailure --mknodes 2>&1 | tee -a /var/log/bootsr | logger -t com-bootsr
       /sbin/lvm vgchange --ignorelockingfailure -ay 2>&1 | tee -a /var/log/bootsr | logger -t com-bootsr
       sleep 1
-      /sbin/swapon -av 2>&1 | tee -a /var/log/bootsr | logger -t com-bootsr
+#      /sbin/swapon -av 2>&1 | tee -a /var/log/bootsr | logger -t com-bootsr
       /bin/mount -at nonfs 2>&1 | tee -a /var/log/bootsr | logger -t com-bootsr
       count=$(get_lockcount ${DEFAULT_LOCK_COUNT} ${MAX_LOCK_COUNT})
       echo $count > /proc/cluster/lock_dlm/drop_count && echo -n "($count)" &&
@@ -188,6 +188,9 @@ case "$1" in
         echo
       fi
 	  echo -n "Prebuilding fenced chroot"
+	  if [ -d ${FENCE_CHROOT} ]; then
+	    mv ${FENCE_CHROOT} ${FENCE_CHROOT}.bak
+      fi
 	  prebuild_fenced_chroot $FENCE_CHROOT $FENCE_CHROOT_INITRD $FENCE_CHROOT_SOURCE $FENCE_CHROOT_ARCHIVE
       if [ $? -eq 0 ]; then
         success
@@ -197,7 +200,7 @@ case "$1" in
       echo
     fi
     ;;
-  stop|status|restart|reload)
+  stop)
       chkconfig --list ccsd | grep "3:on" >/dev/null 2>/dev/null
       if [ $? -eq 1 ]; then
         echo -n "Stopping ccsd:"
@@ -213,7 +216,7 @@ case "$1" in
              sleep 1
           else
              success "shutdown"
-	     rm /var/run/cluster/ccsd.pid
+	         rm /var/run/cluster/ccsd.pid
              echo
              exit 0
           fi
@@ -223,6 +226,20 @@ case "$1" in
         exit 1
       fi
         ;;
+  status)
+      exit 0
+      ;;
+  restart|reload)
+	  echo -n "Rebuilding fenced chroot"
+	  prebuild_fenced_chroot $FENCE_CHROOT $FENCE_CHROOT_INITRD $FENCE_CHROOT_SOURCE $FENCE_CHROOT_ARCHIVE
+      if [ $? -eq 0 ]; then
+        success
+      else
+        failure
+      fi
+      echo
+      exit $?
+      ;;
   *)
         echo "Usage: sysstat {start|stop|status|restart|reload}"
         exit 1

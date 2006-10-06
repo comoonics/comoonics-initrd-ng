@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: mkservice_for_initrd.sh,v 1.1 2006-08-28 16:02:44 marc Exp $
+# $Id: mkservice_for_initrd.sh,v 1.2 2006-10-06 08:39:32 marc Exp $
 # Creates a chroot for the given service and starts the service
 
 exec 3>/dev/null
@@ -27,11 +27,14 @@ fi
 shift
 
 [ -d ${chroot}.bak ] && rm -rf ${chroot}.bak
-[ -d ${chroot} ] && mv -f ${chroot} ${chroot}.bak && mkdir $chroot
+[ -d ${chroot} ] && cp -a ${chroot} ${chroot}.bak && mkdir $chroot
 start_service ${chroot} ${service} ${dir}/boot-scripts/etc/ onlycopy nofailback $*
 
 #######################
 # $Log: mkservice_for_initrd.sh,v $
-# Revision 1.1  2006-08-28 16:02:44  marc
+# Revision 1.2  2006-10-06 08:39:32  marc
+# functionality to reload bootsr and only overwrite changed files
+#
+# Revision 1.1  2006/08/28 16:02:44  marc
 # initial revision
 #
