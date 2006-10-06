@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.17 2006-08-28 16:02:33 marc Exp $
+# $Id: Makefile,v 1.18 2006-10-06 08:37:44 marc Exp $
 #
 # @(#)$file$
 #
@@ -184,6 +184,7 @@ CFG_FILES=basefiles.list \
 	files.initrd.d/libs.list.i686 \
 	files.initrd.d/fence_vmware.list.opt \
 	files.initrd.d/debug.list.opt \
+	rpms.initrd.d/comoonics.list \
 	rpms.initrd.d/perl.list \
 	rpms.initrd.d/python.list
 #************ CFG_FILES 
@@ -301,7 +302,7 @@ install:
 	@echo -n "Installing init files..."
 	@if [ -n "$(INIT_FILES)" ]; then \
 	   (for file in $(INIT_FILES); do \
-               install -D -g $(INSTALL_GRP) -o $(INSTALL_OWN) $$file $(PREFIX)/etc/init.d/$$file; \
+               install -D -g $(INSTALL_GRP) -o $(INSTALL_OWN) $$file $(PREFIX)/etc/rc.d/init.d/$$file; \
 	   done && \
 	   echo "DONE") || echo "(FAILED)"; \
 	fi
@@ -315,7 +316,10 @@ archive:
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.17  2006-08-28 16:02:33  marc
+# Revision 1.18  2006-10-06 08:37:44  marc
+# minor changes
+#
+# Revision 1.17  2006/08/28 16:02:33  marc
 # very well tested version
 #
 # Revision 1.16  2006/08/02 12:24:59  marc
