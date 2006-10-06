@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.27 2006-07-19 15:12:26 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.28 2006-10-06 08:35:15 marc Exp $
 #
 # @(#)$File$
 #
@@ -17,7 +17,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.27 2006-07-19 15:12:26 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.28 2006-10-06 08:35:15 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -68,12 +68,12 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.27 $ $Date: 2006-07-19 15:12:26 $'
+echo_local 'Internal Version $Revision: 1.28 $ $Date: 2006-10-06 08:35:15 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
 
-x=`cat /proc/version`; 
+x=`cat /proc/version`;
 KERNEL_VERSION=`expr "$x" : 'Linux version \([^ ]*\)'`
 echo_local "Kernel-version: ${KERNEL_VERSION}"
 if [ "${KERNEL_VERSION:0:3}" = "2.4" ]; then
@@ -106,6 +106,7 @@ rootsource=$(getParm ${cfsparams} 1)
 root=$(getParm ${cfsparams} 2)
 lockmethod=$(getParm ${cfsparams} 3)
 sourceserver=$(getParm ${cfsparams} 4)
+quorumack=$(getParm ${cfsparams} 5)
 return_code 0
 
 if [ -n "$rootsource" ] && [ "$rootsource" = "iscsi" ]; then
@@ -126,10 +127,11 @@ echo_local_debug "root: $root"
 echo_local_debug "lockmethod: $lockmethod"
 echo_local_debug "sourceserver: $sourceserver"
 echo_local_debug "scsifailover: $scsifailover"
+echo_local_debug "quorumack: $quorumack"
 echo_local_debug "*****************************"
 
 echo_local_debug "*****************************"
-# step 
+# step
 echo_local -en $"\t\tPress 'I' to enter interactive startup."
 echo_local
 
@@ -200,7 +202,7 @@ for ipconfig in $ipConfig; do
   # Special case for bonding
   { echo "$dev"| grep "^bond" && grep -v "alias $dev" $modules_conf; } >/dev/null 2>&1
   if [ $? -eq 0 ]; then
-    # Think about bonding parameters. 
+    # Think about bonding parameters.
     # Multi load of bonding driver possible?
     echo_local -n "Patching $modules_conf for bonding "
     echo "alias $dev bonding" >> $modules_conf
@@ -222,6 +224,23 @@ step
 
 clusterfs_load $lockmethod
 step
+
+if [ -z "$quorumack" ]; then
+  echo_local -n "Checking for all nodes to be available"
+  exec_local cluster_checkhosts_alive
+  return_code
+  if [ $return_c -ne 0 ]; then
+  	echo_local "Could not reach all hosts from the cluster. Waiting to be manually acknowledged by user."
+  	echo_local "Type YES if you are really sure that all othernodes (the other node) is physically powered off"
+  	echo_local "!!!If unsure check first. Otherwise you'll risk split brain with data inconsistency!!!!"
+  	echo_local -n "Waiting for USER INPUT: "
+  	read -n 3 confirm
+  	if [ "$confirm" != "YES" ]; then
+  		echo_local "Cluster not acknowledged falling back to shell"
+  		exit_linuxrc 1
+  	fi
+  fi
+fi
 
 setHWClock
 clusterfs_services_start $lockmethod
@@ -265,9 +284,9 @@ critical=$?
 
 echo_local -n "Copying logfile to $new_root/${bootlog}..."
 exec_local cp -f ${pivot_root}/${bootlog} ${new_root}/${bootlog} || cp -f ${pivot_root}/${bootlog} ${new_root}/$(basename $bootlog)
-if [ -f ${new_root}/$bootlog ]; then 
+if [ -f ${new_root}/$bootlog ]; then
   bootlog=${new_root}/$bootlog
-else 
+else
   bootlog=${new_root}/$(basename $bootlog)
 fi
 exec 3>> $bootlog
@@ -280,7 +299,7 @@ newroot="${new_root}"
 #bootlog="/var/log/comoonics-boot.log"
 
 if [ $critical -eq 0 ]; then
-  if [ -n "$tmpfix" ]; then 
+  if [ -n "$tmpfix" ]; then
     echo_local "Setting up tmp..."
     exec_local createTemp /dev/ram1
   fi
@@ -300,7 +319,7 @@ if [ $critical -eq 0 ]; then
   exec_local umount ${pivot_root}/proc &&
   exec_local umount ${pivot_root}/sys
   return_code
-	
+
   echo_local -n "Removing files in initrd"
   if [ $restart_error -eq 0 ]; then
     exec_local rm -rf ${pivot_root}/*
@@ -322,7 +341,10 @@ fi
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.27  2006-07-19 15:12:26  marc
+# Revision 1.28  2006-10-06 08:35:15  marc
+# added quorumack functionality
+#
+# Revision 1.27  2006/07/19 15:12:26  marc
 # mulitpath dmapper bugfix with devices
 #
 # Revision 1.26  2006/07/13 14:14:57  marc
