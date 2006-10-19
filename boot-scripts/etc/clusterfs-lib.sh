@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.8 2006-10-06 08:33:42 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.9 2006-10-19 10:06:25 marc Exp $
 #
 # @(#)$File$
 #
@@ -465,8 +465,11 @@ function copy_relevant_files {
    cd $newroot/etc &&
    ln -sf ../${cdsl_local_dir}/$modules_conf $(basename $modules_conf))
   return_c=$?
+  if [ -L ${newroot}/${cdsl_local_dir}/etc/cluster ]; then
+    rm -f ${newroot}/${cdsl_local_dir}/etc/cluster && mkdir ${newroot}/${cdsl_local_dir}/etc/cluster
+  fi
   if [ -f ${newroot}/${cdsl_local_dir}/etc/cluster/cluster.conf ]; then
-    cp ${new_root}/${cdsl_local_dir}/etc/cluster/cluster.conf ${newroot}/${cdsl_local_dir}/etc/cluster/cluster.conf.bak
+    cp -f ${new_root}/${cdsl_local_dir}/etc/cluster/cluster.conf ${newroot}/${cdsl_local_dir}/etc/cluster/cluster.conf.bak
   fi
   cp /etc/cluster/cluster.conf ${newroot}/${cdsl_local_dir}/etc/cluster/cluster.conf
   [ $return_c -eq 0 ] && return_c=$?
@@ -492,7 +495,10 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.8  2006-10-06 08:33:42  marc
+# Revision 1.9  2006-10-19 10:06:25  marc
+# clusterconf in chroot on tmp support
+#
+# Revision 1.8  2006/10/06 08:33:42  marc
 # added bootparam quorumack
 #
 # Revision 1.7  2006/08/28 16:06:45  marc
