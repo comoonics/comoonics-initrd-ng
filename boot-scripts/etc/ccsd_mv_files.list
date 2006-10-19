@@ -29,4 +29,38 @@
 /lib/libcrypto.so.2
 /lib/libcrypto.so.4
 /lib/libresolv.so.2
+/usr/lib/libxml2.so.2
+/usr/lib/libxml2.so.2.6.16
+/usr/lib64/libxml2.so.2
+/usr/lib64/libxml2.so.2.6.16
+/lib64/libmagma.so
+/lib64/libmagma.so.1
+/lib64/libmagma.so.1.0.0
+/lib64/libmagma_nt.so
+/lib64/libmagma_nt.so.1
+/lib64/libmagma_nt.so.1.0.0
+/lib64/libmagmamsg.so
+/lib64/libmagmamsg.so.1
+/lib64/libmagmamsg.so.1.0.0
+/sbin/circleping
+/sbin/cluster_cmd
+/sbin/magma_tool
+/lib/libmagma.so
+/lib/libmagma.so.1
+/lib/libmagma.so.1.0.0
+/lib/libmagma_nt.so
+/lib/libmagma_nt.so.1
+/lib/libmagma_nt.so.1.0.0
+/lib/libmagmamsg.so
+/lib/libmagmamsg.so.1
+/lib/libmagmamsg.so.1.0.0
+/lib64/magma/magma_gulm.so
+/lib64/magma/magma_sm.so
+/lib/magma/magma_gulm.so
+/lib/magma/magma_sm.so
 /sbin/ccsd
+###################
+# $Log: ccsd_mv_files.list,v $
+# Revision 1.3  2006-10-19 10:06:47  marc
+# actual for ccsd running in chroot
+#
