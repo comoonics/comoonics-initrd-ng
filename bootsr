@@ -126,8 +126,10 @@ function prebuild_fenced_chroot {
 
 #  if [ -n "$copy" ] && [ $copy -eq 1 ]; then
 	if [ -d ${FENCE_CHROOT_SOURCE} ]; then
+       ${MKSERVICE_FOR_INITRD} $FENCE_CHROOT /sbin/ccsd nostart &>/dev/null
        ${MKSERVICE_FOR_INITRD} $FENCE_CHROOT /sbin/fenced nostart &>/dev/null
 	elif [ -d ${FENCE_CHROOT_INITRD} ] && [ "${FENCE_CHROOT_INITRD}" != "${FENCE_CHROOT}" ]; then
+       ${MKSERVICE_FOR_INITRD} $FENCE_CHROOT /sbin/ccsd nostart &>/dev/null
        ${MKSERVICE_FOR_INITRD} $FENCE_CHROOT /sbin/fenced nostart &>/dev/null
 	elif [ -z ${FENCE_CHROOT_TAR} ] && [ -e ${FENCE_CHROOT_ARCHIVE} ]; then
 		pushd ${FENCE_CHROOT} &>/dev/null
@@ -176,16 +178,9 @@ case "$1" in
         fi
         echo
       fi
-      chkconfig --list ccsd | grep "3:on" >/dev/null 2>/dev/null
+      chkconfig --list ccsd-chroot | grep "3:on" >/dev/null 2>/dev/null
       if [ $? -eq 1 ] && [ ! -e /var/run/cluster/ccsd.pid ]; then
-        echo -n "Starting ccsd"
-        /sbin/ccsd $CCSD_OPTS
-        if [ $? -eq 0 ]; then
-          success
-        else
-          failure
-        fi
-        echo
+         /etc/init.d/ccsd-chroot start
       fi
 	  echo -n "Prebuilding fenced chroot"
 	  if [ -d ${FENCE_CHROOT} ]; then

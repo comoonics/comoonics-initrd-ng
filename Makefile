@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.18 2006-10-06 08:37:44 marc Exp $
+# $Id: Makefile,v 1.19 2006-10-19 10:08:07 marc Exp $
 #
 # @(#)$file$
 #
@@ -215,7 +215,8 @@ EMPTY_DIRS=boot-scripts/mnt \
 #
 INIT_FILES=bootsr \
 preccsd \
-fenced-chroot
+fenced-chroot \
+ccsd-chroot
 
 #************ INIT_FILES 
 #****d* Makefile/ARCHIVE_FILE
@@ -316,7 +317,13 @@ archive:
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.18  2006-10-06 08:37:44  marc
+# Revision 1.19  2006-10-19 10:08:07  marc
+# bootsr: reload add
+# ccsd-chroot: initial revision
+# Makefile: ccsd-chroot added
+# preccsd: support for cluster.conf moval
+#
+# Revision 1.18  2006/10/06 08:37:44  marc
 # minor changes
 #
 # Revision 1.17  2006/08/28 16:02:33  marc

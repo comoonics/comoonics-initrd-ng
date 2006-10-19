@@ -40,8 +40,17 @@ start()
   echo -n $"Relinking socket: "
   if [ $rtrn -eq 0 ]; then
     (rm -rf /var/run/cluster &&
-     ln -s ${FENCE_CHROOT}/var/run/cluster /var/run/cluster &&
+     ln -s ${FENCE_CHROOT}/var/run/cluster /var/run/cluster
      success) || failure
+    echo
+    md5_1=$(md5sum /etc/cluster/cluster.conf | awk '{print $1}')
+    md5_2=$(md5sum ${FENCE_CHROOT}/etc/cluster/cluster.conf | awk '{print $1}')
+    if [ "$md5_1" = "$md5_2" ]; then
+      echo -n $"Moving /etc/cluster/cluster.conf"
+      (cp -a /cdsl.local/etc/cluster/* ${FENCE_CHROOT}/etc/cluster/ &&
+       rm -rf /cdsl.local/etc/cluster &&
+       ln -s ${FENCE_CHROOT}/etc/cluster /cdsl.local/etc/cluster && success) || failure
+    fi
   else
     passed
   fi
@@ -108,7 +117,13 @@ exit $rtrn
 
 ##################
 # $Log: preccsd,v $
-# Revision 1.5  2006-08-28 16:03:20  marc
+# Revision 1.6  2006-10-19 10:08:07  marc
+# bootsr: reload add
+# ccsd-chroot: initial revision
+# Makefile: ccsd-chroot added
+# preccsd: support for cluster.conf moval
+#
+# Revision 1.5  2006/08/28 16:03:20  marc
 # support for symlink of /var/run/cluster
 #
 # Revision 1.4  2006/06/07 09:42:23  marc
