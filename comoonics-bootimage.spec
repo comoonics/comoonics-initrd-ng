@@ -21,7 +21,7 @@
 # with ATIX.
 #/initrd_sr-2.6.9-34.ELsmp.img.gz
 # %define _initrddir /etc/init.d
-# $Id: comoonics-bootimage.spec,v 1.27 2006-10-06 08:36:27 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.28 2006-10-26 16:13:24 mark Exp $
 #
 ##
 # TO DO
@@ -50,7 +50,7 @@ Summary: Comoonics Bootimage. Scripts for creating an initrd in a gfs shared roo
 Version: 1.0
 BuildArch: noarch
 Requires: comoonics-cs >= 0.5-17, comoonics-cs-py >= 0.1-15
-Release: 66
+Release: 72
 Vendor: ATIX GmbH
 Packager: Marc Grimme (grimme@atix.de)
 ExclusiveArch: noarch
@@ -163,6 +163,8 @@ END{ exit exit_c}')/usr/src/redhat/RPMS/noarch/comoonics-bootimage-1.0-41.noarch
     /sbin/chkconfig --list cman
     /sbin/chkconfig --add gfs &>/dev/null
     /sbin/chkconfig --list gfs
+    /sbin/chkconfig --add ccsd &>/dev/null
+    /sbin/chkconfig --list ccsd
   fi
   rm %{APPDIR}/mkinitrd
   rm %{ENVFILE}
@@ -185,7 +187,9 @@ ln -sf %{APPDIR}/create-gfs-initrd-generic.sh %{APPDIR}/mkinitrd
 /sbin/chkconfig --add preccsd &>/dev/null
 /sbin/chkconfig preccsd on
 /sbin/chkconfig --list preccsd
-/sbin/chkconfig ccsd on
+/sbin/chkconfig --add ccsd-chroot &>/dev/null
+/sbin/chkconfig --list ccsd-chroot
+/sbin/chkconfig ccsd off
 /sbin/chkconfig --list ccsd
 /sbin/chkconfig --add fenced-chroot &>/dev/null
 /sbin/chkconfig fenced-chroot on
@@ -251,6 +255,7 @@ fi
 %attr(750, root, root) %{INITDIR}/bootsr
 %attr(750, root, root) %{INITDIR}/preccsd
 %attr(750, root, root) %{INITDIR}/fenced-chroot
+%attr(750, root, root) %{INITDIR}/ccsd-chroot
 %attr(750, root, root) %{APPDIR}/create-gfs-initrd-generic.sh
 %attr(750, root, root) %{APPDIR}/mkservice_for_initrd.sh
 %attr(750, root, root) %{APPDIR}/boot-scripts/linuxrc.generic.sh
@@ -338,7 +343,11 @@ fi
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.27  2006-10-06 08:36:27  marc
+# Revision 1.28  2006-10-26 16:13:24  mark
+# release got from src.rpm
+# added support for ccsd-chroot
+#
+# Revision 1.27  2006/10/06 08:36:27  marc
 # version with quorumack
 #
 # Revision 1.26  2006/08/28 16:00:27  marc
