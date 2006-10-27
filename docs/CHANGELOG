@@ -8,13 +8,19 @@ CHANGES:
 - 2006-10-26; Release: 1.0.72
 	* to be addes
 
+- 2006-10-27; Release: 1.0.73-rc
+	* bootsr: added some comments and FIXMEs
+
 TODO:
 
 
 ########################################
 # CVS-Log
 # $Log: CHANGELOG,v $
-# Revision 1.1  2006-10-26 16:26:35  mark
+# Revision 1.2  2006-10-27 15:58:55  mark
+# added 2006-10-27; Release: 1.0.73-rc
+#
+# Revision 1.1  2006/10/26 16:26:35  mark
 # intital release
 #
 #%
