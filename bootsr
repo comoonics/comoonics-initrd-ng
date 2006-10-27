@@ -105,6 +105,7 @@ function prebuild_fenced_chroot {
   local FENCE_CHROOT_ARCHIVE=$4
 
   [ ! -d $FENCE_CHROOT ] && mkdir -p ${FENCE_CHROOT}
+  # check if $FENCE_CHROOT is mounted or it's located on an no stat "UNKOWN" fstype
   mount | grep "${FENCE_CHROOT}" &>/dev/null || stat -f -c "%T" ${FENCE_CHROOT} | grep -v "^UNKNOWN" &>/dev/null
   if [ $? -ne 0 ] ; then
     mount -t tmpfs none $FENCE_CHROOT
@@ -125,6 +126,8 @@ function prebuild_fenced_chroot {
 #  fi
 
 #  if [ -n "$copy" ] && [ $copy -eq 1 ]; then
+	# Copy all files into FENCE_CHROOT
+	# FIXME: Why do we need FENCE_CHROOT_SOURCE and FENCE_CHROOT_INITRD for this ?
 	if [ -d ${FENCE_CHROOT_SOURCE} ]; then
        ${MKSERVICE_FOR_INITRD} $FENCE_CHROOT /sbin/ccsd nostart &>/dev/null
        ${MKSERVICE_FOR_INITRD} $FENCE_CHROOT /sbin/fenced nostart &>/dev/null
@@ -153,6 +156,14 @@ function prebuild_fenced_chroot {
 # See how we were called.
 case "$1" in
   start)
+  	# will do
+  	# - activate all lvm devices
+  	# - activate swap partitions (currently disabled)
+  	# - mount everything except nfs
+  	#   FIXME: Do we really want to do this ?
+  	# - adjust dlm lock_count
+  	# - prepare chroot environment for cluster services (ccsd, fenced)
+
     if [ check_sharedroot ]; then
       runlevel=$(get_runlevel)
       echo -n "Doing the Comoonics Shared Root post settings "
@@ -178,6 +189,8 @@ case "$1" in
         fi
         echo
       fi
+      # Start ccsd-chroot if it will not be started from init in Runlevel 3
+      # FIXME: There will be propably be no $FENCE_CHROOT this time.
       chkconfig --list ccsd-chroot | grep "3:on" >/dev/null 2>/dev/null
       if [ $? -eq 1 ] && [ ! -e /var/run/cluster/ccsd.pid ]; then
          /etc/init.d/ccsd-chroot start
@@ -236,7 +249,7 @@ case "$1" in
       exit $?
       ;;
   *)
-        echo "Usage: sysstat {start|stop|status|restart|reload}"
+        echo "Usage: bootsr {start|stop|status|restart|reload}"
         exit 1
 esac
 exit $RETVAL
