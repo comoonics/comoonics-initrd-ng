@@ -11,13 +11,26 @@ CHANGES:
 - 2006-10-27; Release: 1.0.73-rc
 	* bootsr: added some comments and FIXMEs
 
+- 2006-10-30; Release: 1.0.73
+	* comoonics-bootimage.spec: added conflics for tmpwatch
+
+- 2006-11-06; Release: 1.0.73
+	* linux.generic.sh: modified quorumack user input
+	* clusterfs-lib.sh: modified clusterfs_mount, added retry option
+	* linux.generic.sh: added retry:3 waittime:5 to clusterfs_mount
+	* gfs-lib.sh: modified gfs_start_fenced, added fence_tool wait, 
+	              removed undefined -w option from fenced 
+
 TODO:
 
 
 ########################################
 # CVS-Log
 # $Log: CHANGELOG,v $
-# Revision 1.2  2006-10-27 15:58:55  mark
+# Revision 1.3  2006-11-10 11:37:39  mark
+# released 1.0.73
+#
+# Revision 1.2  2006/10/27 15:58:55  mark
 # added 2006-10-27; Release: 1.0.73-rc
 #
 # Revision 1.1  2006/10/26 16:26:35  mark
