@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.28 2006-10-06 08:35:15 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.29 2006-11-10 11:37:10 mark Exp $
 #
 # @(#)$File$
 #
@@ -17,7 +17,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.28 2006-10-06 08:35:15 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.29 2006-11-10 11:37:10 mark Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -68,7 +68,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.28 $ $Date: 2006-10-06 08:35:15 $'
+echo_local 'Internal Version $Revision: 1.29 $ $Date: 2006-11-10 11:37:10 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -230,15 +230,30 @@ if [ -z "$quorumack" ]; then
   exec_local cluster_checkhosts_alive
   return_code
   if [ $return_c -ne 0 ]; then
-  	echo_local "Could not reach all hosts from the cluster. Waiting to be manually acknowledged by user."
-  	echo_local "Type YES if you are really sure that all othernodes (the other node) is physically powered off"
-  	echo_local "!!!If unsure check first. Otherwise you'll risk split brain with data inconsistency!!!!"
-  	echo_local -n "Waiting for USER INPUT: "
-  	read -n 3 confirm
-  	if [ "$confirm" != "YES" ]; then
-  		echo_local "Cluster not acknowledged falling back to shell"
-  		exit_linuxrc 1
-  	fi
+  	echo_local ""
+  	echo_local ""
+  	echo_local "I couldn't talk to the required number of cluster nodes."
+	echo_local "To avoid data inconsitency caused by cluster partitioning (split brain) "
+	echo_local "the next step has to be acknowledged manually."
+	echo_local ""
+	echo_local "If you are sure, that the cluster is in a consistent state, please type YES."
+	echo_local ""
+	echo_local ""
+	echo_local "CAUTION: !!! If you are unsure about all other nodes state, check first."
+	echo_local "         Otherwise you'll risk split brain with data inconsistency !!!"
+
+	confirm="XXX"
+	if [ $debug ]; then set -x; fi
+	until [ $confirm == "YES" ] || [ $confirm == "NO" ]; do
+  		echo_local "USER INPUT: (YES|NO): "
+  		read confirm
+  		echo_local_debug "confirm: $confirm"
+  		if [ $confirm == "NO" ]; then
+  			echo_local "Cluster not acknowledged. Falling back to shell"
+  			exit_linuxrc 1
+  		fi
+  	done
+  	if [ $debug ]; then set +x; fi
   fi
 fi
 
@@ -248,10 +263,10 @@ if [ $return_c -ne 0 ]; then
    echo_local "Could not start all cluster services. Exiting"
    exit_linuxrc 1
 fi
-sleep 2
+sleep 5
 step
 
-clusterfs_mount $rootfs $root $mount_point $mount_opts
+clusterfs_mount $rootfs $root $mount_point $mount_opts 3 5
 if [ $return_c -ne 0 ]; then
    echo_local "Could not mount cluster filesystem $rootfs $root to $mount_point. Exiting ($mount_opts)"
    exit_linuxrc 1
@@ -341,7 +356,11 @@ fi
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.28  2006-10-06 08:35:15  marc
+# Revision 1.29  2006-11-10 11:37:10  mark
+# modified quorumack user input
+# added retry:3 waittime:5 to clusterfs_mount
+#
+# Revision 1.28  2006/10/06 08:35:15  marc
 # added quorumack functionality
 #
 # Revision 1.27  2006/07/19 15:12:26  marc
