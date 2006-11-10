@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.9 2006-10-19 10:06:25 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.10 2006-11-10 11:35:24 mark Exp $
 #
 # @(#)$File$
 #
@@ -341,7 +341,7 @@ function clusterfs_services_restart {
 #  NAME
 #    clusterfs_mount
 #  SYNOPSIS
-#    function clusterfs_mount(fstype, dev, mountpoint, mountopts)
+#    function clusterfs_mount(fstype, dev, mountpoint, mountopts, [tries=1], [waittime=5])
 #  MODIFICATION HISTORY
 #  IDEAS
 #  SOURCE
@@ -351,17 +351,28 @@ function clusterfs_mount {
   local dev=$2
   local mountpoint=$3
   local mountopts=$4
+  local tries=1
+  [ -n $5 ] && tries=$5
+  local waittime=5
+  [ -n $6 ] && waittime=$6
+  local i=0
 
   echo_local -n "Mounting $dev on $mountpoint.."
   if [ ! -e $dev ]; then
-    echo_local -n "device not fount error"
+    echo_local -n "device not found error"
     failure
     return $?
   fi
   if [ ! -d $mountpoint ]; then
     mkdir -p $mountpoint
   fi
-  exec_local mount -t $fstype -o $mountopts $dev $mountpoint
+  echo_local_debug "tries: $tries, waittime: $waittime"
+  while [ $i -lt $tries ]; do
+  	echo_local_debug "try: $i"
+  	let i=$i+1
+  	sleep $waittime
+  	exec_local mount -t $fstype -o $mountopts $dev $mountpoint && break
+  done
   return_code
 }
 #***** clusterfs_mount
@@ -495,7 +506,10 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.9  2006-10-19 10:06:25  marc
+# Revision 1.10  2006-11-10 11:35:24  mark
+# modified clusterfs_mount, added retry option
+#
+# Revision 1.9  2006/10/19 10:06:25  marc
 # clusterconf in chroot on tmp support
 #
 # Revision 1.8  2006/10/06 08:33:42  marc
