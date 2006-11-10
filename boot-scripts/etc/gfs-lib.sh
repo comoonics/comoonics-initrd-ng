@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.29 2006-10-06 08:32:57 marc Exp $
+# $Id: gfs-lib.sh,v 1.30 2006-11-10 11:36:26 mark Exp $
 #
 # @(#)$File$
 #
@@ -460,7 +460,10 @@ function gfs_start_cman {
 #
 function gfs_start_fenced {
   mkdir -p /var/lib/fence_tool
-  start_service /var/lib/fence_tool '/sbin/fenced -c -w'
+  start_service /var/lib/fence_tool '/sbin/fenced -c'
+  echo_local "Waiting for fenced to complete join"
+  exec_local fence_tool wait
+  return_code
 }
 #************ gfs_start_fenced
 
@@ -612,7 +615,10 @@ function gfs_checkhosts_alive {
 #********* gfs_checkhosts_alive
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.29  2006-10-06 08:32:57  marc
+# Revision 1.30  2006-11-10 11:36:26  mark
+# - modified gfs_start_fenced: added fence_tool wait, removed undefined -w option from fenced
+#
+# Revision 1.29  2006/10/06 08:32:57  marc
 # added cl_checknodes as variable
 #
 # Revision 1.28  2006/08/28 16:06:45  marc
