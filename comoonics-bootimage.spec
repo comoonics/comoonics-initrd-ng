@@ -21,7 +21,7 @@
 # with ATIX.
 #/initrd_sr-2.6.9-34.ELsmp.img.gz
 # %define _initrddir /etc/init.d
-# $Id: comoonics-bootimage.spec,v 1.28 2006-10-26 16:13:24 mark Exp $
+# $Id: comoonics-bootimage.spec,v 1.29 2006-11-10 11:38:29 mark Exp $
 #
 ##
 # TO DO
@@ -50,7 +50,8 @@ Summary: Comoonics Bootimage. Scripts for creating an initrd in a gfs shared roo
 Version: 1.0
 BuildArch: noarch
 Requires: comoonics-cs >= 0.5-17, comoonics-cs-py >= 0.1-15
-Release: 72
+Conflicts: tmpwatch
+Release: 73
 Vendor: ATIX GmbH
 Packager: Marc Grimme (grimme@atix.de)
 ExclusiveArch: noarch
@@ -216,6 +217,11 @@ FENCE_CHROOT=/tmp/fence_tool
 Then fenced will be started on root /tmp/fence_tool
 If you want syslog to log fence messages you should add ${FENCE_CHROOT}/dev/log to the syslog deamon as
 additional logdevice (command switch syslogd -a ${FENCE_CHROOT}/dev/log)
+
+CONFLICTS:
+- tmpwatch:
+tmpwatch can remove all files in /tmp/fence_chroot. If tmpwatch is installed, you need to modify
+/etc/cron.daily/tmpwatch to fit your needs.
 '
 
 %post fenceacksv
@@ -343,7 +349,11 @@ fi
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.28  2006-10-26 16:13:24  mark
+# Revision 1.29  2006-11-10 11:38:29  mark
+# release 1.0.73
+# added conflicts tmpwatch and tmpwatch warnings
+#
+# Revision 1.28  2006/10/26 16:13:24  mark
 # release got from src.rpm
 # added support for ccsd-chroot
 #
