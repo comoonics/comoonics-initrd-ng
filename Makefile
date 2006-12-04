@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.19 2006-10-19 10:08:07 marc Exp $
+# $Id: Makefile,v 1.20 2006-12-04 17:38:33 marc Exp $
 #
 # @(#)$file$
 #
@@ -113,18 +113,9 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/gfs-lib.sh \
   boot-scripts/etc/comoonics-release \
   boot-scripts/etc/iscsi-lib.sh \
-  boot-scripts/etc/lock_gulmd_mv_files.list \
-  boot-scripts/etc/lock_gulmd_cp_files.list \
-  boot-scripts/etc/lock_gulmd_dirs.list \
   boot-scripts/etc/fenced_mv_files.list \
   boot-scripts/etc/fenced_cp_files.list \
   boot-scripts/etc/fenced_dirs.list \
-  boot-scripts/etc/syslogd_mv_files.list \
-  boot-scripts/etc/syslogd_cp_files.list \
-  boot-scripts/etc/syslogd_dirs.list \
-  boot-scripts/etc/ccsd_mv_files.list \
-  boot-scripts/etc/ccsd_cp_files.list \
-  boot-scripts/etc/ccsd_dirs.list \
   boot-scripts/etc/sysconfig/comoonics \
   boot-scripts/etc/clusterfs-lib.sh \
   boot-scripts/etc/hardware-lib.sh \
@@ -317,7 +308,11 @@ archive:
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.19  2006-10-19 10:08:07  marc
+# Revision 1.20  2006-12-04 17:38:33  marc
+# lockgulm files removed
+# only fence_tool
+#
+# Revision 1.19  2006/10/19 10:08:07  marc
 # bootsr: reload add
 # ccsd-chroot: initial revision
 # Makefile: ccsd-chroot added
