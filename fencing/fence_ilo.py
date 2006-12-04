@@ -1,4 +1,7 @@
 #!/usr/bin/python
+
+# $Id: fence_ilo.py,v 1.6 2006-12-04 10:19:09 marc Exp $
+
 import socket
 from OpenSSL import SSL
 import sys
@@ -374,7 +377,10 @@ if __name__ == '__main__':
 
 #################
 # $Log: fence_ilo.py,v $
-# Revision 1.5  2006-10-06 08:35:50  marc
+# Revision 1.6  2006-12-04 10:19:09  marc
+# added cvs tag
+#
+# Revision 1.5  2006/10/06 08:35:50  marc
 # added possibility to execute predefined xml-scripts
 #
 # Revision 1.4  2006/09/18 12:19:05  marc
