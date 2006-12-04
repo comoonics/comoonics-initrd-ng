@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.36 2006-10-06 08:34:15 marc Exp $
+# $Id: boot-lib.sh,v 1.37 2006-12-04 17:39:23 marc Exp $
 #
 # @(#)$File$
 #
@@ -46,6 +46,9 @@ modules_conf="/etc/modprobe.conf"
 init_cmd="/bin/bash"
 newroot="/"
 mount_point="/mnt/newroot"
+
+# The comoonics buildfile
+build_file="/etc/comoonics-build.txt"
 
 #****f* boot-lib.sh/usage
 #  NAME
@@ -144,16 +147,28 @@ function exit_linuxrc() {
 #    function step() {
 #  MODIFICATION HISTORY
 #  IDEAS
+#    Modify or debug a running skript
+#  DESCRIPTION
+#    If stepmode step asks for input.
 #  SOURCE
 #
 function step() {
    if [ ! -z "$stepmode" ]; then
-     echo -n "Press <RETURN> to continue ..."
+     echo -n "Press <RETURN> to continue (timeout in $step_timeout secs) [quit|break|continue]"
      read -t$step_timeout __the_step
-     [ "$__the_step" = "quit" ] && exit_linuxrc 2
-     if [ "$__the_step" = "continue" ]; then
-       stepmode=
-     fi
+     case "$__the_step" in
+       "quit")
+         exit_linuxrc 2
+         ;;
+       "continue")
+         stepmode=""
+         ;;
+       "break")
+         echo_local "Break detected forking a shell"
+         /bin/sh &>/dev/console
+         echo_local "Back to work.."
+         ;;
+     esac
      if [ -z "$__the_step" ]; then
        echo
      fi
@@ -1005,7 +1020,10 @@ function passed {
 #********** passed
 
 # $Log: boot-lib.sh,v $
-# Revision 1.36  2006-10-06 08:34:15  marc
+# Revision 1.37  2006-12-04 17:39:23  marc
+# enhanced stepmode
+#
+# Revision 1.36  2006/10/06 08:34:15  marc
 # added some bins as variables
 #
 # Revision 1.35  2006/08/28 16:06:45  marc
