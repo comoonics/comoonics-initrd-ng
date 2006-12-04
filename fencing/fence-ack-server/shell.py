@@ -4,11 +4,11 @@ Fence Acknowledge Server via normal an ssl
 """
 
 # here is some internal information
-# $Id: shell.py,v 1.3 2006-09-18 12:16:00 marc Exp $
+# $Id: shell.py,v 1.4 2006-12-04 17:39:04 marc Exp $
 #
 
 
-__version__ = "$Revision: 1.3 $"
+__version__ = "$Revision: 1.4 $"
 # $Source: /atix/ATIX/CVSROOT/nashead2004/bootimage/fencing/fence-ack-server/shell.py,v $
 import cmd
 import os
@@ -74,22 +74,21 @@ class Shell(cmd.Cmd):
             if self.user!=user or self.passwd!=passwd:
                 print >>self.stdout, "Wrong username or password"
                 raise AuthorizationError("Wrong username or password")
-        self.precmd()
+        self.orig_prompt=self.prompt
+        self.postcmd("", "")
 
     def precmd(self, s=""):
+        self.prompt=self.orig_prompt
+        return s
+
+    def postcmd(self, stop, line):
         if self.check_for_fence_manual():
-            if self.oldprompt == "":
-                self.oldprompt=self.prompt
             self.prompt="""Fence manual is in progress. Please make sure the fenced node is powercylcled and
 execute ackmanual here.
-%s""" % self.oldprompt
-        else:
-            if self.oldprompt != "":
-                self.prompt=self.oldprompt
+%s""" % self.orig_prompt
 
         pending=self.check_for_pending_fence_clients()
         if pending and len(pending) > 0:
-            self.oldprompt=self.prompt
             self.prompt="""
 The following fenceclients seem to be pending you can kill them by the command kill pidfile
 """
@@ -97,8 +96,8 @@ The following fenceclients seem to be pending you can kill them by the command k
                 self.prompt=self.prompt+"""
 %s/%s""" % (fence_ack_server.PID_DIR, file)
 
-            self.prompt=self.prompt+"\n"+self.oldprompt
-        return s
+            self.prompt=self.prompt+"\n"+self.orig_prompt
+        return stop
 
     def do_shell(self, rest):
         ComLog.getLogger().debug("starting a shell..")
@@ -130,7 +129,7 @@ The following fenceclients seem to be pending you can kill them by the command k
         print >>self.stdout, "Prints the version of this service" %(self.shell)
 
     def do_version(self, rest):
-        print >>self.stdout, 'Version $Revision: 1.3 $'
+        print >>self.stdout, 'Version $Revision: 1.4 $'
 
     def help_fence_node(self):
         print >>self.stdout, "Fenced the given node"
@@ -152,6 +151,8 @@ The following fenceclients seem to be pending you can kill them by the command k
             fifo=open(fence_ack_server.FENCE_MANUAL_FIFO, "w", 0)
             print >>fifo, fence_ack_server.FENCE_ACK_STRING
             fifo.close()
+            import time
+            time.sleep(1)
         else:
             print >>self.stdout, "Not fence_manual in progress that means that"
             print >>self.stdout, "Either %s not existing or %s not existing." %(fence_ack_server.FENCE_MANUAL_FIFO, fence_ack_server.FENCE_MANUAL_LOCKFILE)
@@ -197,6 +198,7 @@ The following fenceclients seem to be pending you can kill them by the command k
             self.startService(cmd)
         except:
             print >>self.stdout, "Could not restart service %s with cmd %s" %(service_name, cmd)
+        self.lastcmd=""
 
     def help_stop(self):
         print >>self.stdout, """Stops a running services (stop service [pidfile]).
@@ -212,6 +214,7 @@ The following fenceclients seem to be pending you can kill them by the command k
             print >>self.stdout, "Could not find file %s" %(service_params[0])
         except:
             print >>self.stdout, "Could not kill service %s" %(rest)
+        self.lastcmd=""
 
     def help_kill(self):
         print >>self.stdout, """Kills a running service (kill pidfile)."""
@@ -224,6 +227,7 @@ The following fenceclients seem to be pending you can kill them by the command k
             print >>self.stdout, "Could not find file %s" %(rest)
         except:
             print >>self.stdout, "Could not kill pid for %s" %(rest)
+        self.lastcmd=""
 
     def do_exit(self, rest):
         return 1
@@ -253,6 +257,7 @@ The following fenceclients seem to be pending you can kill them by the command k
         os.remove(pidfile)
         print >>self.stdout, "OK"
 
+
     def startService(self, cmd):
         import os.path
         from comoonics import ComSystem
@@ -272,7 +277,10 @@ if __name__ == '__main__':
 
 ##############
 # $Log: shell.py,v $
-# Revision 1.3  2006-09-18 12:16:00  marc
+# Revision 1.4  2006-12-04 17:39:04  marc
+# Bugfix #19
+#
+# Revision 1.3  2006/09/18 12:16:00  marc
 # added restart, kill, start, stop options
 #
 # Revision 1.2  2006/09/07 16:43:14  marc
