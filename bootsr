@@ -2,7 +2,7 @@
 #****h* comoonics-bootimage/bootsr
 #  NAME
 #    bootsr
-#    $id$
+#    $Id: bootsr,v 1.10 2006-12-04 17:37:01 marc Exp $
 #  DESCRIPTION
 #    Comoonics Shared Root post boot settings
 #  AUTHOR
@@ -129,10 +129,10 @@ function prebuild_fenced_chroot {
 	# Copy all files into FENCE_CHROOT
 	# FIXME: Why do we need FENCE_CHROOT_SOURCE and FENCE_CHROOT_INITRD for this ?
 	if [ -d ${FENCE_CHROOT_SOURCE} ]; then
-       ${MKSERVICE_FOR_INITRD} $FENCE_CHROOT /sbin/ccsd nostart &>/dev/null
+#       ${MKSERVICE_FOR_INITRD} $FENCE_CHROOT /sbin/ccsd nostart &>/dev/null
        ${MKSERVICE_FOR_INITRD} $FENCE_CHROOT /sbin/fenced nostart &>/dev/null
 	elif [ -d ${FENCE_CHROOT_INITRD} ] && [ "${FENCE_CHROOT_INITRD}" != "${FENCE_CHROOT}" ]; then
-       ${MKSERVICE_FOR_INITRD} $FENCE_CHROOT /sbin/ccsd nostart &>/dev/null
+#       ${MKSERVICE_FOR_INITRD} $FENCE_CHROOT /sbin/ccsd nostart &>/dev/null
        ${MKSERVICE_FOR_INITRD} $FENCE_CHROOT /sbin/fenced nostart &>/dev/null
 	elif [ -z ${FENCE_CHROOT_TAR} ] && [ -e ${FENCE_CHROOT_ARCHIVE} ]; then
 		pushd ${FENCE_CHROOT} &>/dev/null
@@ -254,3 +254,8 @@ case "$1" in
 esac
 exit $RETVAL
 #************ main
+###############
+# $Log: bootsr,v $
+# Revision 1.10  2006-12-04 17:37:01  marc
+# step enhanced
+#
