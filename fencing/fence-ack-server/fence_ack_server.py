@@ -4,11 +4,11 @@ Fence Acknowledge Server via normal an ssl
 """
 
 # here is some internal information
-# $Id: fence_ack_server.py,v 1.2 2006-09-07 16:43:06 marc Exp $
+# $Id: fence_ack_server.py,v 1.3 2006-12-04 17:38:53 marc Exp $
 #
 
 
-__version__ = "$Revision: 1.2 $"
+__version__ = "$Revision: 1.3 $"
 # $Source: /atix/ATIX/CVSROOT/nashead2004/bootimage/fencing/fence-ack-server/fence_ack_server.py,v $
 
 from OpenSSL import SSL
@@ -18,7 +18,7 @@ import getopt
 import logging
 import warnings
 
-from comoonics import ComSystem, ComLog
+from comoonics import ComSystem, ComLog, GetOpts
 
 ComSystem.__EXEC_REALLY_DO=""
 FENCE_MANUAL_FIFO="/tmp/fence_manual.fifo"
@@ -31,87 +31,121 @@ dir = os.path.dirname(sys.argv[0])
 if dir == '':
     dir = os.curdir
 
-class Defaults:
-    ssl_keyfile=os.path.join(dir, "server.pkey")
-    ssl_certfile=os.path.join(dir, "server.cert")
-    ssl_verifyfile=os.path.join(dir, "CA.cert")
-    ssl=False
-    port=12242
-    Debug=False
-    xml=False
-    xml_validate=True
-    xml_nodepath=None
-    xml_clusterconf=True
-    user=False
-    password=False
-    nodename=False
+class Config(GetOpts.BaseConfig):
+    def __init__(self):
+        GetOpts.BaseConfig.__init__(self, sys.argv[0], "starts the fence_ack_manual server", __version__)
+        self.debug=GetOpts.Option("debug", "toggle debugmode", False, False, "d", self.setDebug)
+        self.port=GetOpts.Option("port", "tcpport to be started on", 12242, False, "p")
+        self.ssl_keyfile=GetOpts.Option("ssl-keyfile", "the keyfile for ssl", os.path.join(dir, "server.pkey"))
+        self.ssl_certfile=GetOpts.Option("ssl-certfile", "the certificate file for ssl", os.path.join(dir, "server.cert"))
+        self.ssl_verifyfile=GetOpts.Option("ssl-verifyfile", "the verifyfile for ssl", os.path.join(dir, "CA.cert"))
+        self.ssl=GetOpts.Option("ssl", "enable ssl", False)
+        self.xml=GetOpts.Option("xml", "We are using an xml configfile. No file for stdin", "")
+        self.xml_validate=GetOpts.Option("xml-validate", "Validate this xmlfile", True)
+        self.xml_novalidate=GetOpts.Option("xml-novalidate", "Validate this xmlfile", False, False, None, self.setNoValidate)
+        self.xml_nodepath=GetOpts.Option("xml-nodepath", "Get the config from this path", "")
+        self.xml_clusterconf=GetOpts.Option("xml-clusterconf", "This is an RHEL4-XML Cluster configuration", True)
+        self.user=GetOpts.Option("user", "The username of the user allowed to login", "")
+        self.password=GetOpts.Option("password", "The password for the user", "")
+        self.nodename=GetOpts.Option("nodename", "Set the nodename from outside", "")
 
-def usage(argv):
-    print """%s [-d|-debug] [-p port|--port port] [--ssl [--ssl-key=keyfile] [--ssl-cert=certfile] [--ssl-verifyfile]]
-    [--xml [xmlfile] [--xml-validate|--xml-novalidate] [--xml-nodepath path] [--xml-clusterconf|--xml-noclusterconf]]""" % argv[0]
-    print '''
-    starts the fence_ack_manual server
-    -h|--help         this helpscreen
-    -d|--debug        be more helpfull
-    -p|--port         to be started on (default: %s)
-    --ssl             use ssl
-    --ssl-key         the keyfile to ssl (default:%s)
-    --ssl-cert        the ssl certfile (default:%s)
-    --ssl-verify      the ssl verify cert file (default:%s)
-    --xml [file]      We are using an xml configfile (default: %s). No file for reading from stdin.
-    --xml-validate    Validate this xmlfile (default:%s)
-    --xml-nodepath    Get the config from this path (default: %s)
-    --xml-clusterconf This is an RHEL4-XML Cluster configuration (default: %s)
-    --nodename nodename Set the nodename from outside
-    ''' %(Defaults.port, Defaults.ssl_keyfile, Defaults.ssl_certfile, Defaults.ssl_verifyfile, Defaults.xml, Defaults.xml_validate, Defaults.xml_nodepath, Defaults.xml_clusterconf)
+    def do(self, args_proper):
+        import os.path
+        if len(args_proper) > 0 and os.path.isfile(args_proper[0]) and self.xml.value:
+            self.xml.value=sys.argv[index+1]
+        elif len(args_proper) > 0:
+            print >>self.__stderr__, "Wrong syntax."
+            self.usage()
+            return 1
+        return 0
 
-def getDefaultsFromXML(xmlfile, xmlvalidate, xmlnodepath, xmlclusterconf, nodename, defaults):
-    import xml.dom
-    # from xml.dom.ext import PrettyPrint
-    from xml.dom.ext.reader import Sax2
-    import os.path
-    # create Reader object
-    if xmlvalidate:
-        reader = Sax2.Reader(validate=1)
-    else:
-        reader = Sax2.Reader(validate=0)
+    def setNoValidate(self, value):
+        self.xml_validate.value=not value
 
-    if xmlfile==True:
-        ComLog.getLogger().debug("Parsing document from stdin")
-        doc = reader.fromStream(sys.stdin)
-    elif os.path.isfile(xmlfile):
-        file=open(xmlfile,"r")
-        ComLog.getLogger().debug("Parsing document %s " % xmlfile)
-        doc = reader.fromStream(file)
+    def setDebug(self, value):
+        ComLog.setLevel(logging.DEBUG)
 
-    if xmlnodepath and xmlnodepath != "":
-        from xml import xpath
-        ComLog.getLogger().debug("Path2Config: %s" %xmlnodepath)
-        node=xpath.Evaluate(xmlnodepath, doc)[0]
-    else:
-        node=doc.documentElement
+    def fromXML(self, xmlfile):
+        import xml.dom
+        # from xml.dom.ext import PrettyPrint
+        from xml.dom.ext.reader import Sax2
+        import os.path
+        # create Reader object
+        if self.xml_validate.value:
+            reader = Sax2.Reader(validate=1)
+        else:
+            reader = Sax2.Reader(validate=0)
 
-    if xmlclusterconf:
-        from comoonics import ComSystem
-        from xml import xpath
-        if not nodename:
-            (rc, nodename)=ComSystem.execLocalStatusOutput("cman_tool status | grep 'Node name:'")
-            nodename=nodename.split(" ")[3]
-        _xmlnodepath='/cluster/clusternodes/clusternode[@name="%s"]/com_info/fenceackserver' %(nodename)
-        ComLog.getLogger().debug("Nodename: %s, path: %s" %(nodename, _xmlnodepath))
-        node=xpath.Evaluate(_xmlnodepath, doc)[0]
+        if self.xml.value==True:
+            ComLog.getLogger().debug("Parsing document from stdin")
+            doc = reader.fromStream(sys.stdin)
+        elif os.path.isfile(self.xml.value):
+            file=open(self.xml.value,"r")
+            ComLog.getLogger().debug("Parsing document %s " % self.xml.value)
+            doc = reader.fromStream(file)
 
-    if node.hasAttribute("port"): defaults.port=node.getAttribute("port")
-    if node.hasAttribute("user"): defaults.user=node.getAttribute("user")
-    if node.hasAttribute("passwd"): defaults.password=node.getAttribute("passwd")
-    sslnodes=node.getElementsByTagName("ssl")
-    if sslnodes:
-        defaults.ssl=True
-        if node.hasAttribute("keyfile"): defaults.ssl_keyfile=node.getAttribute("keyfile")
-        if node.hasAttribute("certfile"): defaults.ssl_certfile=node.getAttribute("certfile")
-        if node.hasAttribute("verifyfile"): defaults.ssl_verifyfile=node.getAttribute("verifyfile")
+        if self.xml_nodepath.value and self.xml_nodepath.value != "":
+            from xml import xpath
+            ComLog.getLogger().debug("Path2Config: %s" %self.xml_nodepath.value)
+            node=xpath.Evaluate(self.xml_nodepath.value, doc)[0]
+        else:
+            node=doc.documentElement
 
-    return (defaults.port, defaults.ssl, defaults.ssl_keyfile, defaults.ssl_certfile, defaults.ssl_verifyfile)
+        if self.xml_clusterconf.value:
+            from comoonics import ComSystem
+            from xml import xpath
+            if not self.nodename.value:
+                (rc, self.nodename.value)=ComSystem.execLocalStatusOutput("cman_tool status | grep 'Node name:'")
+                self.nodename.value=self.nodename.value.split(" ")[3]
+            _xmlnodepath='/cluster/clusternodes/clusternode[@name="%s"]/com_info/fenceackserver' %(self.nodename.value)
+            ComLog.getLogger().debug("Nodename: %s, path: %s" %(self.nodename.value, _xmlnodepath))
+            node=xpath.Evaluate(_xmlnodepath, doc)[0]
+
+        if node.hasAttribute("port"): self.port.value=node.getAttribute("port")
+        if node.hasAttribute("user"): self.user.value=node.getAttribute("user")
+        if node.hasAttribute("passwd"): self.password.value=node.getAttribute("passwd")
+        sslnodes=node.getElementsByTagName("ssl")
+        if sslnodes:
+            self.ssl.value=True
+            if node.hasAttribute("keyfile"): self.ssl_keyfile.value=node.getAttribute("keyfile")
+            if node.hasAttribute("certfile"): self.ssl_certfile.value=node.getAttribute("certfile")
+            if node.hasAttribute("verifyfile"): self.ssl_verifyfile.value=node.getAttribute("verifyfile")
+
+        return
+
+#class Defaults:
+#    ssl_keyfile=os.path.join(dir, "server.pkey")
+#    ssl_certfile=os.path.join(dir, "server.cert")
+#    ssl_verifyfile=os.path.join(dir, "CA.cert")
+#    ssl=False
+#    port=12242
+#    Debug=False
+#    xml=False
+#    xml_validate=True
+#    xml_nodepath=None
+#    xml_clusterconf=True
+#    user=False
+#    password=False
+#    nodename=False
+#
+#def usage(argv):
+#    print """%s [-d|-debug] [-p port|--port port] [--ssl [--ssl-key=keyfile] [--ssl-cert=certfile] [--ssl-verifyfile]]
+#    [--xml [xmlfile] [--xml-validate|--xml-novalidate] [--xml-nodepath path] [--xml-clusterconf|--xml-noclusterconf]]""" % argv[0]
+#    print '''
+#    starts the fence_ack_manual server
+#    -h|--help         this helpscreen
+#    -d|--debug        be more helpfull
+#    -p|--port         to be started on (default: %s)
+#    --ssl             use ssl
+#    --ssl-key         the keyfile to ssl (default:%s)
+#    --ssl-cert        the ssl certfile (default:%s)
+#    --ssl-verify      the ssl verify cert file (default:%s)
+#    --xml [file]      We are using an xml configfile (default: %s). No file for reading from stdin.
+#    --xml-validate    Validate this xmlfile (default:%s)
+#    --xml-nodepath    Get the config from this path (default: %s)
+#    --xml-clusterconf This is an RHEL4-XML Cluster configuration (default: %s)
+#    --nodename nodename Set the nodename from outside
+#    ''' %(Defaults.port, Defaults.ssl_keyfile, Defaults.ssl_certfile, Defaults.ssl_verifyfile, Defaults.xml, Defaults.xml_validate, Defaults.xml_nodepath, Defaults.xml_clusterconf)
 
 class SSLWrapper:
     """
@@ -202,80 +236,84 @@ class FenceHandler(SocketServer.StreamRequestHandler):
         ComLog.getLogger().debug("Disconnected from %s %u" %(self.client_address))
 
 def main():
-    try:
-        (opts, args_proper)=getopt.getopt(sys.argv[1:], 'hdp:', [ 'help', 'port', 'debug', 'user=', 'passwd', 'ssl', 'ssl-key=', 'ssl-cert=', 'ssl-verify=', 'xml', 'xml-validate', 'xml-novalidate', 'xml-nodepath=', 'xml-clusterconf', 'xml-noclusterconf', 'nodename=' ])
-    except getopt.GetoptError, goe:
-        print >>sys.stderr, "Error parsing params: %s" % goe
-        usage(sys.argv)
-        sys.exit(1)
+    config=Config()
+    print "Long options: %s" %(config.getoptLong())
+    print "Short options: %s" %(config.getoptShort())
+    ret=config.getopt(sys.argv[1:])
+    if ret < 0:
+        sys.exit(0)
+    elif ret > 0:
+        sys.exit(ret)
+#    try:
+#        (opts, args_proper)=getopt.getopt(sys.argv[1:], 'hdp:', [ 'help', 'port', 'debug', 'user=', 'passwd', 'ssl', 'ssl-key=', 'ssl-cert=', 'ssl-verify=', 'xml', 'xml-validate', 'xml-novalidate', 'xml-nodepath=', 'xml-clusterconf', 'xml-noclusterconf', 'nodename=' ])
+#    except getopt.GetoptError, goe:
+#        print >>sys.stderr, "Error parsing params: %s" % goe
+#        usage(sys.argv)
+#        sys.exit(1)
 
-    index=0
-    ComLog.setLevel(logging.INFO)
-    for (opt, value) in opts:
-        #    print "Option %s" % opt
-        if opt == "-d" or opt == "--debug":
-            Defaults.DEBUG=True
-            ComLog.setLevel(logging.DEBUG)
-        elif opt == "-p'" or opt == "--port":
-            Defaults.port=value
-            index=index+1
-        elif opt == "--user":
-            Defaults.user=value
-            index=index+1
-        elif opt == "--passwd":
-            import getpass
-            Defaults.password=getpass.getpass("Password for user %s: " % Defaults.user)
-        elif opt == "--ssl":
-            Defaults.ssl=True
-        elif opt == "--ssl-key":
-            Defaults.ssl_keyfile=value
-            index=index+1
-        elif opt == "--ssl-cert":
-            Defaults.ssl_certfile=value
-            index=index+1
-        elif opt == "--ssl-verify":
-            Defaults.ssl_verifyfile=value
-            index=index+1
-        elif opt == "--xml":
-            Defaults.xml=True
-        elif opt == "--xml-validate":
-            Defaults.xml_validate=True
-        elif opt == "--xml-novalidate":
-            Defaults.xml_validate=False
-        elif opt == "--xml-clusterconf":
-            Defaults.xml_clusterconf=True
-        elif opt == "--xml-noclusterconf":
-            Defaults.xml_clusterconf=False
-        elif opt == "--xml-nodepath":
-#            print "xmlnodepath "+ value
-            Defaults.xml_nodepath=value
-            index=index+1
-        elif opt == "--nodename":
-            Defaults.nodename=value
-            index=index+1
-        elif opt == "-h" or opt == "--help":
-            usage(sys.argv)
-            sys.exit(0)
-        else:
-            usage(sys.argv)
-            sys.exit(0)
-        index=index+1
+#    index=0
+#    ComLog.setLevel(logging.INFO)
+#    for (opt, value) in opts:
+#        #    print "Option %s" % opt
+#        if opt == "-d" or opt == "--debug":
+#            Defaults.DEBUG=True
+#            ComLog.setLevel(logging.DEBUG)
+#        elif opt == "-p'" or opt == "--port":
+#            Defaults.port=value
+#            index=index+1
+#        elif opt == "--user":
+#            Defaults.user=value
+#            index=index+1
+#        elif opt == "--passwd":
+#            import getpass
+#            Defaults.password=getpass.getpass("Password for user %s: " % Defaults.user)
+#        elif opt == "--ssl":
+#            Defaults.ssl=True
+#        elif opt == "--ssl-key":
+#            Defaults.ssl_keyfile=value
+#            index=index+1
+#        elif opt == "--ssl-cert":
+#            Defaults.ssl_certfile=value
+#            index=index+1
+#        elif opt == "--ssl-verify":
+#            Defaults.ssl_verifyfile=value
+#            index=index+1
+#        elif opt == "--xml":
+#            Defaults.xml=True
+#        elif opt == "--xml-validate":
+#            Defaults.xml_validate=True
+#        elif opt == "--xml-novalidate":
+#            Defaults.xml_validate=False
+#        elif opt == "--xml-clusterconf":
+#            Defaults.xml_clusterconf=True
+#        elif opt == "--xml-noclusterconf":
+#            Defaults.xml_clusterconf=False
+#        elif opt == "--xml-nodepath":
+##            print "xmlnodepath "+ value
+#            Defaults.xml_nodepath=value
+#            index=index+1
+#        elif opt == "--nodename":
+#            Defaults.nodename=value
+#            index=index+1
+#        elif opt == "-h" or opt == "--help":
+#            usage(sys.argv)
+#            sys.exit(0)
+#        else:
+#            usage(sys.argv)
+#            sys.exit(0)
+#        index=index+1
 
-    import os.path
 #    print "Rest[%u] %u: %s" %(len(sys.argv), index, sys.argv[index])
-    if len(sys.argv) > index+1 and os.path.isfile(sys.argv[index+1]) and Defaults.xml:
-        Defaults.xml=sys.argv[index+1]
+    if config.xml.value:
+        config.fromXML(config.xml.value)
 
-    if Defaults.xml:
-        (Defaults.port, Defaults.ssl, Defaults.ssl_keyfile, Defaults.ssl_certfile, Defaults.ssl_verifyfile) = getDefaultsFromXML(Defaults.xml, Defaults.xml_validate, Defaults.xml_nodepath, Defaults.xml_clusterconf, Defaults.nodename, Defaults)
-
-    if Defaults.ssl:
+    if config.ssl.value:
         ComLog.getLogger().debug("Starting ssl server")
-        srv=SecureTCPServer(('', int(Defaults.port)), FenceHandler, Defaults.ssl_keyfile, Defaults.ssl_certfile, Defaults.ssl_verifyfile, Defaults.user, Defaults.password)
+        srv=SecureTCPServer(('', int(config.port.value)), FenceHandler, config.ssl_keyfile.value, config.ssl_certfile.value, config.ssl_verifyfile.value, config.user.value, config.password.value)
         srv.allow_reuse_address=True
     else:
         ComLog.getLogger().debug("Starting nonssl server")
-        srv=MyTCPServer(('', int(Defaults.port)), FenceHandler, Defaults.user, Defaults.password)
+        srv=MyTCPServer(('', int(config.port.value)), FenceHandler, config.user.value, config.password.value)
 #        srv.allow_reuse_address=True
     try:
         srv.serve_forever()
@@ -289,7 +327,10 @@ if __name__ == '__main__':
 
 ##################
 # $Log: fence_ack_server.py,v $
-# Revision 1.2  2006-09-07 16:43:06  marc
+# Revision 1.3  2006-12-04 17:38:53  marc
+# added GetOpts
+#
+# Revision 1.2  2006/09/07 16:43:06  marc
 # support for killing pidfiles
 # support for restarting processes
 #
