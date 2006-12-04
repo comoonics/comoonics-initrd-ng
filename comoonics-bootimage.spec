@@ -21,7 +21,7 @@
 # with ATIX.
 #/initrd_sr-2.6.9-34.ELsmp.img.gz
 # %define _initrddir /etc/init.d
-# $Id: comoonics-bootimage.spec,v 1.29 2006-11-10 11:38:29 mark Exp $
+# $Id: comoonics-bootimage.spec,v 1.30 2006-12-04 17:37:12 marc Exp $
 #
 ##
 # TO DO
@@ -51,7 +51,7 @@ Version: 1.0
 BuildArch: noarch
 Requires: comoonics-cs >= 0.5-17, comoonics-cs-py >= 0.1-15
 Conflicts: tmpwatch
-Release: 73
+Release: 74
 Vendor: ATIX GmbH
 Packager: Marc Grimme (grimme@atix.de)
 ExclusiveArch: noarch
@@ -66,7 +66,7 @@ Comoonics Bootimage. Scripts for creating an initrd in a gfs shared root environ
 
 %package fenceacksv
 Version: 0.1
-Release: 10
+Release: 11
 Requires: comoonics-cs-py
 Requires: comoonics-bootimage >= 1.0-47
 Summary: The Fence ackserver is a service running in the fencedchroot and managing manual fenced nodes
@@ -277,18 +277,9 @@ fi
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/gfs-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/comoonics-release
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/iscsi-lib.sh
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/lock_gulmd_mv_files.list
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/lock_gulmd_cp_files.list
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/lock_gulmd_dirs.list
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/fenced_mv_files.list
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/fenced_cp_files.list
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/fenced_dirs.list
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/syslogd_mv_files.list
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/syslogd_cp_files.list
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/syslogd_dirs.list
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/ccsd_mv_files.list
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/ccsd_cp_files.list
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/ccsd_dirs.list
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/sysconfig/comoonics
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/inittab
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/clusterfs-lib.sh
@@ -349,7 +340,10 @@ fi
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.29  2006-11-10 11:38:29  mark
+# Revision 1.30  2006-12-04 17:37:12  marc
+# new versions
+#
+# Revision 1.29  2006/11/10 11:38:29  mark
 # release 1.0.73
 # added conflicts tmpwatch and tmpwatch warnings
 #
