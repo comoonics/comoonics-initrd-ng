@@ -4,11 +4,11 @@ Fence Acknowledge Server via normal an ssl
 """
 
 # here is some internal information
-# $Id: fence_ack_server.py,v 1.3 2006-12-04 17:38:53 marc Exp $
+# $Id: fence_ack_server.py,v 1.4 2007-01-04 09:58:05 marc Exp $
 #
 
 
-__version__ = "$Revision: 1.3 $"
+__version__ = "$Revision: 1.4 $"
 # $Source: /atix/ATIX/CVSROOT/nashead2004/bootimage/fencing/fence-ack-server/fence_ack_server.py,v $
 
 from OpenSSL import SSL
@@ -52,7 +52,7 @@ class Config(GetOpts.BaseConfig):
     def do(self, args_proper):
         import os.path
         if len(args_proper) > 0 and os.path.isfile(args_proper[0]) and self.xml.value:
-            self.xml.value=sys.argv[index+1]
+            self.xml.value=args_proper[0]
         elif len(args_proper) > 0:
             print >>self.__stderr__, "Wrong syntax."
             self.usage()
@@ -237,8 +237,8 @@ class FenceHandler(SocketServer.StreamRequestHandler):
 
 def main():
     config=Config()
-    print "Long options: %s" %(config.getoptLong())
-    print "Short options: %s" %(config.getoptShort())
+#    print "Long options: %s" %(config.getoptLong())
+#    print "Short options: %s" %(config.getoptShort())
     ret=config.getopt(sys.argv[1:])
     if ret < 0:
         sys.exit(0)
@@ -327,7 +327,10 @@ if __name__ == '__main__':
 
 ##################
 # $Log: fence_ack_server.py,v $
-# Revision 1.3  2006-12-04 17:38:53  marc
+# Revision 1.4  2007-01-04 09:58:05  marc
+# used right args
+#
+# Revision 1.3  2006/12/04 17:38:53  marc
 # added GetOpts
 #
 # Revision 1.2  2006/09/07 16:43:06  marc
