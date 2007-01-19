@@ -5,6 +5,10 @@ IDEAS:
 	* define process for changelog
 
 CHANGES:
+- 2007-01-19; Release: 1.0.75-rc
+    * added support for vlan devices
+    * added support for kernel cmdline initlevel args fixes bug#21
+    * added dstep-mode kernel parameter -> ask (Y|n|c) with evey exec_local
 - 2006-12-04; Release: 1.0-11 (fenceacksv)
     * BUGFIX #19
 - 2006-12-04; Release: 1.0.74 (bootimage)
@@ -28,7 +32,10 @@ TODO:
 ########################################
 # CVS-Log
 # $Log: CHANGELOG,v $
-# Revision 1.5  2006-12-05 08:48:01  mark
+# Revision 1.6  2007-01-19 13:42:11  mark
+# added changes for bootimage 1.0.75-rc
+#
+# Revision 1.5  2006/12/05 08:48:01  mark
 # changed logformat
 #
 # Revision 1.4  2006/12/04 17:36:47  marc
