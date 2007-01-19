@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc,v 1.9 2006-12-04 17:39:42 marc Exp $
+# $Id: linuxrc,v 1.10 2007-01-19 13:41:27 mark Exp $
 #
 # @(#)$File$
 #
@@ -25,7 +25,7 @@
 #****h* comoonics-bootimage/linuxrc
 #  NAME
 #    linuxrc
-#    $Id: linuxrc,v 1.9 2006-12-04 17:39:42 marc Exp $
+#    $Id: linuxrc,v 1.10 2007-01-19 13:41:27 mark Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -81,15 +81,17 @@ else
   ./linuxrc.generic.sh 2> $bootlog
 fi
 
-error_code=0
-[ -e $error_code_file ] && error_code=$(cat $error_code_file)
-[ -e $init_cmd_file ] && init_file=( $(cat $init_cmd_file) )
-init_cmd=${init_file[0]}
-new_root=${init_file[1]}
-
+echo "Returned from linuxrc.generic.sh."
 step
 
+error_code=0
+[ -e $error_code_file ] && error_code=$(cat $error_code_file)
+[ -e $init_cmd_file ] && init_cmd=$(cat $init_cmd_file)
+[ -e $init_chroot_file ] && new_root=$(cat $init_chroot_file)
+
+
 echo "Init_cmd: $init_cmd, newroot: $newroot"
+step
 if [ -n "$error_code" ] && [ $error_code -eq 0 ]; then
   if [ -n "$newroot" ] && [ -d $newroot ]; then
     cd $newroot
@@ -109,7 +111,11 @@ fi
 
 ################
 # $Log: linuxrc,v $
-# Revision 1.9  2006-12-04 17:39:42  marc
+# Revision 1.10  2007-01-19 13:41:27  mark
+# init_cmd uses full /var/init_cmd_file and /var/init_chroot/file content.
+# Fixes bug #21
+#
+# Revision 1.9  2006/12/04 17:39:42  marc
 # enhanced stepmode
 #
 # Revision 1.8  2006/06/19 15:56:13  marc
