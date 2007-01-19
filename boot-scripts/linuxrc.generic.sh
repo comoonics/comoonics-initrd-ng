@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.29 2006-11-10 11:37:10 mark Exp $
+# $Id: linuxrc.generic.sh,v 1.30 2007-01-19 13:40:20 mark Exp $
 #
 # @(#)$File$
 #
@@ -17,7 +17,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.29 2006-11-10 11:37:10 mark Exp $
+#    $Id: linuxrc.generic.sh,v 1.30 2007-01-19 13:40:20 mark Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -43,6 +43,14 @@
 #    function main()
 #  MODIFICATION HISTORY
 #  IDEAS
+# From kernel 2.6 Documentation:
+#   When switching another root device, initrd would pivot_root and then
+#   umount the ramdisk.  But initramfs is rootfs: you can neither pivot_root
+#   rootfs, nor unmount it.  Instead delete everything out of rootfs to
+#   free up the space (find -xdev / -exec rm '{}' ';'), overmount rootfs
+#   with the new root (cd /newmount; mount --move . /; chroot .), attach
+#   stdin/stdout/stderr to the new /dev/console, and exec the new init.
+#
 #  SOURCE
 #
 # initstuff is done in here
@@ -68,10 +76,14 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.29 $ $Date: 2006-11-10 11:37:10 $'
+echo_local 'Internal Version $Revision: 1.30 $ $Date: 2007-01-19 13:40:20 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
+
+init_cmd="/sbin/init $(cat /proc/cmdline)"
+echo_local_debug "initcmd: $init_cmd"
+step
 
 x=`cat /proc/version`;
 KERNEL_VERSION=`expr "$x" : 'Linux version \([^ ]*\)'`
@@ -91,6 +103,7 @@ stepmode=$(getParm ${bootparms} 2)
 mount_opts=$(getParm ${bootparms} 3)
 tmpfix=$(getParm ${bootparms} 4)
 scsifailover=$(getParm ${bootparms} 5)
+dstepmode=$(getParm ${bootparms} 6)
 return_code 0
 
 # network parameters
@@ -119,6 +132,7 @@ check_cmd_params $*
 echo_local_debug "*****************************"
 echo_local_debug "Debug: $debug"
 echo_local_debug "Stepmode: $stepmode"
+echo_local_debug "Debug-stepmode: $dstepmode"
 echo_local_debug "mount_opts: $mount_opts"
 echo_local_debug "tmpfix: $tmpfix"
 echo_local_debug "ip: $ipConfig"
@@ -309,7 +323,7 @@ exec 4>> $bootlog
 return_code_warning
 step
 
-init_cmd="/sbin/init"
+#init_cmd="/sbin/init $(cat /proc/cmdline)"
 newroot="${new_root}"
 #bootlog="/var/log/comoonics-boot.log"
 
@@ -356,7 +370,11 @@ fi
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.29  2006-11-10 11:37:10  mark
+# Revision 1.30  2007-01-19 13:40:20  mark
+# init_cmd uses full cmdline /proc/cmdline like nash
+# fixes bug #21
+#
+# Revision 1.29  2006/11/10 11:37:10  mark
 # modified quorumack user input
 # added retry:3 waittime:5 to clusterfs_mount
 #
