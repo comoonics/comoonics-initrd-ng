@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.37 2006-12-04 17:39:23 marc Exp $
+# $Id: boot-lib.sh,v 1.38 2007-01-19 13:38:53 mark Exp $
 #
 # @(#)$File$
 #
@@ -37,6 +37,7 @@ step_timeout=10
 bootlog="/var/log/comoonics-boot.log"
 error_code_file="/var/error_code"
 init_cmd_file="/var/init_cmd"
+init_chroot_file="/var/init_chroot_file"
 # the disk where the bootlog should be written to (default /dev/fd0).
 diskdev="/dev/fd0"
 [ -e /usr/bin/logger ] && logger="/usr/bin/logger -t com-bootlog"
@@ -134,7 +135,8 @@ function exit_linuxrc() {
 	exec 1>&5 2>&6
     else
 	echo_local "Writing $init_cmd $newroot => $init_cmd_file"
-	echo "$init_cmd $newroot" > $init_cmd_file
+	echo "$init_cmd" > $init_cmd_file
+	echo "$newroot" > $init_chroot_file
 	exit $error_code
     fi
 }
@@ -292,6 +294,8 @@ function getBootParameters() {
     getBootParm tmpfix
     echo -n ":"
     getBootParm scsifailover driver
+    echo -n ":"
+    getBootParm com-dstep
 }
 #************ getBootParameters
 
@@ -568,6 +572,7 @@ function start_service {
 #    function switchRoot(newroot, initrdroot) {
 #  MODIFICATION HISTORY
 #  IDEAS
+#   We shouldn't use pivot_root with initramfs anymore (kernel2.6 Documentation.txt)
 #  SOURCE
 #
 function switchRoot() {
@@ -804,6 +809,8 @@ function error_local_debug() {
 
 #************ error_local_debug
 
+
+
 #****f* boot-lib.sh/exec_local
 #  NAME
 #    exec_local
@@ -813,10 +820,22 @@ function error_local_debug() {
 #    execs the given parameters in a subshell and returns the
 #    error_code
 #  IDEAS
+#
 #  SOURCE
 #
 function exec_local() {
-  output=$($*)
+  do_exec=1
+  if [ -n "$dstepmode" ]; then
+  	echo -n "$* (Y|n|c)? "
+  	read dstep_ans
+  	[ $dstep_ans == "n" ] && do_exec=0
+  	[ $dstep_ans == "c" ] && dstepmode=""
+  fi
+  if [ $do_exec == 1 ]; then
+  	output=$($*)
+  else
+  	output="skipped"
+  fi
   return_c=$?
   if [ ! -z "$debug" ]; then
     echo "cmd: $*" >&3
@@ -1020,7 +1039,11 @@ function passed {
 #********** passed
 
 # $Log: boot-lib.sh,v $
-# Revision 1.37  2006-12-04 17:39:23  marc
+# Revision 1.38  2007-01-19 13:38:53  mark
+# exec_local used $dstepmode (Y|n|c)
+# exit_linuxrc creates 2 files for init
+#
+# Revision 1.37  2006/12/04 17:39:23  marc
 # enhanced stepmode
 #
 # Revision 1.36  2006/10/06 08:34:15  marc
