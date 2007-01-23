@@ -21,7 +21,7 @@
 # with ATIX.
 #/initrd_sr-2.6.9-34.ELsmp.img.gz
 # %define _initrddir /etc/init.d
-# $Id: comoonics-bootimage.spec,v 1.30 2006-12-04 17:37:12 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.31 2007-01-23 12:57:14 mark Exp $
 #
 ##
 # TO DO
@@ -51,7 +51,7 @@ Version: 1.0
 BuildArch: noarch
 Requires: comoonics-cs >= 0.5-17, comoonics-cs-py >= 0.1-15
 Conflicts: tmpwatch
-Release: 74
+Release: 75
 Vendor: ATIX GmbH
 Packager: Marc Grimme (grimme@atix.de)
 ExclusiveArch: noarch
@@ -292,6 +292,7 @@ fi
 %attr(640, root, root) %{CONFIGDIR}/bootimage/basefiles.list
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.list
 %attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/configs.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/vlan.list
 %attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/scsi.list
 %attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/gfs.list
 %attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/iscsi.list.opt
@@ -338,9 +339,20 @@ fi
 %doc %{FENCECLIENTS_DOC}/INSTALL.fence_vmware
 %doc %{FENCECLIENTS_DOC}/README.fence_vmware
 
+%changelog
+* Mon Jan 22 2007 Mark Hlawatschek <hlawatschek at atix.de> 1.0.73
+- added changelog
+- added support for vlan devices
+- added support for kernel cmdline initlevel
+- added dstep-mode kernel parameter -> ask (Y|n|c) with evey exec_local
+
+
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.30  2006-12-04 17:37:12  marc
+# Revision 1.31  2007-01-23 12:57:14  mark
+# new release 1.0.75
+#
+# Revision 1.30  2006/12/04 17:37:12  marc
 # new versions
 #
 # Revision 1.29  2006/11/10 11:38:29  mark
