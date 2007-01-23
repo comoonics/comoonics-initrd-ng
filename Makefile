@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.20 2006-12-04 17:38:33 marc Exp $
+# $Id: Makefile,v 1.21 2007-01-23 13:05:56 mark Exp $
 #
 # @(#)$file$
 #
@@ -163,6 +163,7 @@ CFG_DIR=$(SYSTEM_CFG_DIR)/$(PACKAGE_NAME)
 CFG_FILES=basefiles.list \
 	rpms.list \
 	files.initrd.d/configs.list \
+	files.initrd.d/vlan.list \
 	files.initrd.d/scsi.list \
 	files.initrd.d/gfs.list \
 	files.initrd.d/iscsi.list.opt \
@@ -308,7 +309,10 @@ archive:
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.20  2006-12-04 17:38:33  marc
+# Revision 1.21  2007-01-23 13:05:56  mark
+# added vlan.list
+#
+# Revision 1.20  2006/12/04 17:38:33  marc
 # lockgulm files removed
 # only fence_tool
 #
