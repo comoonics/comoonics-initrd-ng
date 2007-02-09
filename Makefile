@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.21 2007-01-23 13:05:56 mark Exp $
+# $Id: Makefile,v 1.22 2007-02-09 11:09:44 marc Exp $
 #
 # @(#)$file$
 #
@@ -299,6 +299,11 @@ install:
 	   done && \
 	   echo "DONE") || echo "(FAILED)"; \
 	fi
+	@if [ -f docs/CHANGELOG ]; then \
+	  (echo -n "Installing CHANGELOG..." && \
+	   install -g $(INSTALL_GRP) -o $(INSTALL_OWN) docs/CHANGELOG CHANGELOG && \
+	   echo "DONE") || echo "FAILED"; \
+	fi
 
 archive:
 	@echo -n "Creating Archive .. $(ARCHIVE_FILE)..."
@@ -309,7 +314,10 @@ archive:
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.21  2007-01-23 13:05:56  mark
+# Revision 1.22  2007-02-09 11:09:44  marc
+# added CHANGELOG
+#
+# Revision 1.21  2007/01/23 13:05:56  mark
 # added vlan.list
 #
 # Revision 1.20  2006/12/04 17:38:33  marc
