@@ -7,6 +7,7 @@
 /etc/cluster/cluster.conf
 /etc/passwd
 /etc/protocols
+/etc/nsswitch.conf
 /lib64/ld-2.3.4.so
 /lib64/ld-linux-x86-64.so.2
 /lib64/libacl.so.1
