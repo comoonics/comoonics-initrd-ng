@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.30 2007-01-19 13:40:20 mark Exp $
+# $Id: linuxrc.generic.sh,v 1.31 2007-02-09 11:06:16 marc Exp $
 #
 # @(#)$File$
 #
@@ -17,7 +17,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.30 2007-01-19 13:40:20 mark Exp $
+#    $Id: linuxrc.generic.sh,v 1.31 2007-02-09 11:06:16 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -76,7 +76,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.30 $ $Date: 2007-01-19 13:40:20 $'
+echo_local 'Internal Version $Revision: 1.31 $ $Date: 2007-02-09 11:06:16 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -120,6 +120,8 @@ root=$(getParm ${cfsparams} 2)
 lockmethod=$(getParm ${cfsparams} 3)
 sourceserver=$(getParm ${cfsparams} 4)
 quorumack=$(getParm ${cfsparams} 5)
+nodeid=$(getParm ${cfsparams} 6)
+nodename=$(getParm ${cfsparams} 7)
 return_code 0
 
 if [ -n "$rootsource" ] && [ "$rootsource" = "iscsi" ]; then
@@ -142,6 +144,8 @@ echo_local_debug "lockmethod: $lockmethod"
 echo_local_debug "sourceserver: $sourceserver"
 echo_local_debug "scsifailover: $scsifailover"
 echo_local_debug "quorumack: $quorumack"
+echo_local_debug "nodeid: $nodeid"
+echo_local_debug "nodename: $nodename"
 echo_local_debug "*****************************"
 
 echo_local_debug "*****************************"
@@ -168,7 +172,7 @@ wait
 step
 
 # cluster_conf is set in clusterfs-lib.sh or overwritten in gfs-lib.sh
-cfsparams=( $(clusterfs_config $cluster_conf $ipConfig) )
+cfsparams=( $(clusterfs_config $cluster_conf $ipConfig $nodeid $nodename) )
 nodeid=${cfsparams[0]}
 nodename=${cfsparams[1]}
 rootvolume=${cfsparams[2]}
@@ -370,7 +374,10 @@ fi
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.30  2007-01-19 13:40:20  mark
+# Revision 1.31  2007-02-09 11:06:16  marc
+# added nodeid and nodename
+#
+# Revision 1.30  2007/01/19 13:40:20  mark
 # init_cmd uses full cmdline /proc/cmdline like nash
 # fixes bug #21
 #
