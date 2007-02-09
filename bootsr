@@ -2,7 +2,7 @@
 #****h* comoonics-bootimage/bootsr
 #  NAME
 #    bootsr
-#    $Id: bootsr,v 1.10 2006-12-04 17:37:01 marc Exp $
+#    $Id: bootsr,v 1.11 2007-02-09 11:11:42 marc Exp $
 #  DESCRIPTION
 #    Comoonics Shared Root post boot settings
 #  AUTHOR
@@ -29,6 +29,7 @@ DEFAULT_LOCK_COUNT=50000
 FENCE_CHROOT=/var/lib/fence_tool
 FENCE_CHROOT_INITRD=/var/lib/fence_tool
 MKSERVICE_FOR_INITRD="/opt/atix/comoonics-bootimage/mkservice_for_initrd.sh"
+BUILD_FILE="/etc/comoonics-build.txt"
 
 RETVAL=0
 [ -f /etc/sysconfig/cluster ] && . /etc/sysconfig/cluster
@@ -196,16 +197,19 @@ case "$1" in
          /etc/init.d/ccsd-chroot start
       fi
 	  echo -n "Prebuilding fenced chroot"
-	  if [ -d ${FENCE_CHROOT} ]; then
-	    mv ${FENCE_CHROOT} ${FENCE_CHROOT}.bak
-      fi
-	  prebuild_fenced_chroot $FENCE_CHROOT $FENCE_CHROOT_INITRD $FENCE_CHROOT_SOURCE $FENCE_CHROOT_ARCHIVE
-      if [ $? -eq 0 ]; then
-        success
-      else
-        failure
-      fi
-      echo
+	  #if [ -d ${FENCE_CHROOT} ]; then
+	  #  mv ${FENCE_CHROOT} ${FENCE_CHROOT}.bak
+      #fi
+	  if [ -z "$BUILD_FILE" ] || [ ! -e $FENCE_CHROOT/$BUILD_FILE ] ||
+	     [ ! -e $FENCE_CHROOT_INITRD/$BUILD_FILE ] || [ $FENCE_CHROOT/$BUILD_FILE -ot $FENCE_CHROOT_INITRD/$BUILD_FILE ]; then
+	    prebuild_fenced_chroot $FENCE_CHROOT $FENCE_CHROOT_INITRD $FENCE_CHROOT_SOURCE $FENCE_CHROOT_ARCHIVE
+        if [ $? -eq 0 ]; then
+          success
+        else
+          failure
+        fi
+        echo
+	  fi
     fi
     ;;
   stop)
@@ -241,6 +245,7 @@ case "$1" in
 	  echo -n "Rebuilding fenced chroot"
 	  prebuild_fenced_chroot $FENCE_CHROOT $FENCE_CHROOT_INITRD $FENCE_CHROOT_SOURCE $FENCE_CHROOT_ARCHIVE
       if [ $? -eq 0 ]; then
+        create_builddate_file $FENCE_CHROOT/$BUILD_FILE
         success
       else
         failure
@@ -256,6 +261,9 @@ exit $RETVAL
 #************ main
 ###############
 # $Log: bootsr,v $
-# Revision 1.10  2006-12-04 17:37:01  marc
+# Revision 1.11  2007-02-09 11:11:42  marc
+# added definition for Builddatefile (obsolete???)
+#
+# Revision 1.10  2006/12/04 17:37:01  marc
 # step enhanced
 #
