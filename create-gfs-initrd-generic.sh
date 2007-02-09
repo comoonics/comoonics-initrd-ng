@@ -6,7 +6,7 @@
 #*******
 #!/bin/bash
 #
-# $Id: create-gfs-initrd-generic.sh,v 1.11 2006-08-28 16:01:45 marc Exp $
+# $Id: create-gfs-initrd-generic.sh,v 1.12 2007-02-09 11:08:53 marc Exp $
 #
 # @(#)$File$
 #
@@ -57,7 +57,7 @@ function getoptions() {
     while getopts UoRFVvhm:fd:s:r:b: option ; do
 	case "$option" in
 	    v) # version
-		echo "$0 Version "'$Revision: 1.11 $'
+		echo "$0 Version "'$Revision: 1.12 $'
 		exit 0
 		;;
 	    h) # help
@@ -245,12 +245,7 @@ fi
 cp -a /lib/modules/$kernel ${mountpoint}/lib/modules/$kernel || (failure && rm $lockfile && exit $?)
 success
 
-# patching build file
-if [ -n "$build_file" ]; then
-    echo -n "Patching buildfile \"$build_file\"..."
-    (echo "Build Date: "$(date) >> ${mountpoint}/$build_file && success) || failure
-fi
-
+create_builddate_file $build_file && success || failure
 
 #for module in $FC_MODULE $FC_MODULES $GFS_MODULES; do
 #  dirname=`dirname ${MODULES_DIR}/${module}`
@@ -298,7 +293,10 @@ ls -lk $initrdname
 
 ##########################################
 # $Log: create-gfs-initrd-generic.sh,v $
-# Revision 1.11  2006-08-28 16:01:45  marc
+# Revision 1.12  2007-02-09 11:08:53  marc
+# creating builddate_file with predefined function
+#
+# Revision 1.11  2006/08/28 16:01:45  marc
 # support for rpm-lists and includes of new lists
 #
 # Revision 1.10  2006/07/13 11:35:36  marc
