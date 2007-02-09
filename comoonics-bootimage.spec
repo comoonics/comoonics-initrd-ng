@@ -21,7 +21,7 @@
 # with ATIX.
 #/initrd_sr-2.6.9-34.ELsmp.img.gz
 # %define _initrddir /etc/init.d
-# $Id: comoonics-bootimage.spec,v 1.31 2007-01-23 12:57:14 mark Exp $
+# $Id: comoonics-bootimage.spec,v 1.32 2007-02-09 11:08:17 marc Exp $
 #
 ##
 # TO DO
@@ -51,7 +51,7 @@ Version: 1.0
 BuildArch: noarch
 Requires: comoonics-cs >= 0.5-17, comoonics-cs-py >= 0.1-15
 Conflicts: tmpwatch
-Release: 75
+Release: 81
 Vendor: ATIX GmbH
 Packager: Marc Grimme (grimme@atix.de)
 ExclusiveArch: noarch
@@ -239,17 +239,6 @@ if [ "$1" -eq 0 ]; then
   chkconfig --del fenceacksv
 fi
 
-%changelog
-* Fri May 12 2006  <grimme@atix.de> - 1.0-7
-- First stable 1.0 Version is RPM 1.0-7
-
-* Wed Jan 25 2006  <grimme@atix.de> - 0.3-12
-- First stable 0.3 version
-
-
-* Mon Jan  3 2005 Marc Grimme <grimme@atix.de> - 0.1-16
-- first offical rpm version
-
 %files
 
 %dir %{APPDIR}/boot-scripts/sys
@@ -311,6 +300,8 @@ fi
 %config(noreplace) %{CONFIGDIR}/comoonics-bootimage.cfg
 %config(noreplace) %{CONFIGDIR}/bootimage/files.initrd.d/user_edit.list
 
+%doc CHANGELOG
+
 %files fenceacksv
 %attr(755, root, root) %{FENCEACKSV_DIR}/fence_ack_server.py
 %attr(644, root, root) %{FENCEACKSV_DIR}/shell.py
@@ -323,33 +314,69 @@ fi
 %attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/fenceacksv.list
 %attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fenceacksv.list
 # %config(noreplace)     %{SYSCONFIGDIR}/fenceacksv
+%doc CHANGELOG
 
 %files fenceclient-ilo
 %attr(755, root, root) %{FENCECLIENTS_DIR}/fence_ilo
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fence_ilo.list
+%doc CHANGELOG
 
 %files fenceclient-vmware
 %attr(755, root, root) %{FENCECLIENTS_DIR}/fence_vmware_client
 %doc %{FENCECLIENTS_DOC}/INSTALL.fence_vmware
 %doc %{FENCECLIENTS_DOC}/README.fence_vmware
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fence_vmware_client.list
+%doc CHANGELOG
 
 %files fencemaster-vmware
 %attr(755, root, root) %{FENCECLIENTS_DIR}/fence_vmware_master
 %doc %{FENCECLIENTS_DOC}/INSTALL.fence_vmware
 %doc %{FENCECLIENTS_DOC}/README.fence_vmware
+%doc CHANGELOG
 
 %changelog
+* Fr Feb 09 2007 Marc Grimme <grimme@atix.de> 1.0.81
+- added nodeid parameter at boottime (bonding not clear)
+- bootsr will only rebuild if needed
+- added nsswitch.conf to chroot. Because of ccs_tool update sometime failed.
+- better step continue mode
 * Mon Jan 22 2007 Mark Hlawatschek <hlawatschek at atix.de> 1.0.73
 - added changelog
 - added support for vlan devices
 - added support for kernel cmdline initlevel
 - added dstep-mode kernel parameter -> ask (Y|n|c) with evey exec_local
+* Fri May 12 2006  <grimme@atix.de> - 1.0-7
+- First stable 1.0 Version is RPM 1.0-7
 
+* Wed Jan 25 2006  <grimme@atix.de> - 0.3-12
+- First stable 0.3 version
+
+
+* Mon Jan  3 2005 Marc Grimme <grimme@atix.de> - 0.1-16
+- first offical rpm version
+
+%changelog fenceacksv
+* Wed Feb 07 2007 Marc Grimme <grimme@atix.de - 0.1-11
+- introducted changelog
+
+%changelog fenceclient-ilo
+* Wed Feb 07 2007 Marc Grimme <grimme@atix.de - 0.1-16
+- introducted changelog
+
+%changelog fenceclient-vmware
+* Wed Feb 07 2007 Marc Grimme <grimme@atix.de - 0.1-4
+- introducted changelog
+
+%changelog fencemaster-vmware
+* Wed Feb 07 2007 Marc Grimme <grimme@atix.de - 0.1-1
+- introducted changelog
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.31  2007-01-23 12:57:14  mark
+# Revision 1.32  2007-02-09 11:08:17  marc
+# new version 81
+#
+# Revision 1.31  2007/01/23 12:57:14  mark
 # new release 1.0.75
 #
 # Revision 1.30  2006/12/04 17:37:12  marc
