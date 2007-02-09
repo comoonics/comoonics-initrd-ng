@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.10 2006-11-10 11:35:24 mark Exp $
+# $Id: clusterfs-lib.sh,v 1.11 2007-02-09 11:04:52 marc Exp $
 #
 # @(#)$File$
 #
@@ -82,6 +82,10 @@ function getClusterFSParameters() {
   echo -n ":"
   getBootParm quorumack
   echo -n ":"
+  getBootParm nodeid
+  echo -n ":"
+  getBootParm nodename
+  echo -n ":"
 }
 #******** getClusterFSParameters
 
@@ -118,8 +122,8 @@ function clusterfs_config {
   local ipConfig=$2
 
   # Here we still have a dependency on eth0 should be changed soon!!!
-  local _nodeid=
-  local _nodename=
+  local _nodeid=$3
+  local _nodename=$4
   local _foundmac=
   macs=$(ifconfig -a | grep -i hwaddr | awk '{print $5;};')
   for mac in $macs; do
@@ -141,6 +145,38 @@ function clusterfs_config {
   done
 }
 #******** cluster_config
+
+#****f* clusterfs-lib.sh/cc_get_nodeid
+#  NAME
+#    cc_get_nodeid
+#  SYNOPSIS
+#    function cc_get_nodeid(cluster_conf, netdev)
+#  DESCRIPTION
+#    gets the nodeid of this node referenced by the networkdevice
+#  SOURCE
+function cc_get_nodeid {
+   local cluster_conf=$1
+   local mac=$2
+
+   ${rootfs}_get_nodeid $cluster_conf $mac
+}
+#******* cc_get_nodeid
+
+#****f* clusterfs-lib.sh/cc_get_nodeid
+#  NAME
+#    cc_get_nodeid
+#  SYNOPSIS
+#    function cc_get_nodeid(cluster_conf, netdev)
+#  DESCRIPTION
+#    gets the nodeid of this node referenced by the networkdevice
+#  SOURCE
+function cc_get_nodeid_by_nodename {
+   local cluster_conf=$1
+   local mac=$2
+
+   ${rootfs}_get_nodeid $cluster_conf $mac
+}
+#******* cc_get_nodeid
 
 #****f* clusterfs-lib.sh/cc_get_nodeid
 #  NAME
@@ -506,7 +542,10 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.10  2006-11-10 11:35:24  mark
+# Revision 1.11  2007-02-09 11:04:52  marc
+# added bootparams nodeid and nodename
+#
+# Revision 1.10  2006/11/10 11:35:24  mark
 # modified clusterfs_mount, added retry option
 #
 # Revision 1.9  2006/10/19 10:06:25  marc
