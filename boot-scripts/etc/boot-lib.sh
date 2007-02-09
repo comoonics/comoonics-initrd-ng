@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.38 2007-01-19 13:38:53 mark Exp $
+# $Id: boot-lib.sh,v 1.39 2007-02-09 11:03:59 marc Exp $
 #
 # @(#)$File$
 #
@@ -594,6 +594,28 @@ function switchRoot() {
 }
 #************ switchRoot
 
+#****f* create-gfs-initrd-lib.sh/create_builddate_file
+#  NAME
+#    create_builddate_file
+#  SYNOPSIS
+#    function create_builddate_file() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function create_builddate_file {
+	local bd_file=$1
+	# patching build file
+	if [ -n "$bd_file" ]; then
+		echo_local -n "builddate_file"
+    	echo "Build Date: "$(date) >> $bd_file
+    	return_code $?
+	else
+	    return_code 1
+	fi
+}
+#************ create_bulddate_file
+
 #****f* boot-lib.sh/mountDev
 #  NAME
 #    mountDev
@@ -1039,7 +1061,10 @@ function passed {
 #********** passed
 
 # $Log: boot-lib.sh,v $
-# Revision 1.38  2007-01-19 13:38:53  mark
+# Revision 1.39  2007-02-09 11:03:59  marc
+# added create_builddate_file function
+#
+# Revision 1.38  2007/01/19 13:38:53  mark
 # exec_local used $dstepmode (Y|n|c)
 # exit_linuxrc creates 2 files for init
 #
