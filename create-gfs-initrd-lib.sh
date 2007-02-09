@@ -6,7 +6,7 @@
 #    Library for the creating of initrds for sharedroot
 #*******
 #
-# $Id: create-gfs-initrd-lib.sh,v 1.9 2006-08-28 16:01:57 marc Exp $
+# $Id: create-gfs-initrd-lib.sh,v 1.10 2007-02-09 11:09:31 marc Exp $
 #
 # @(#)$File$
 #
@@ -37,14 +37,16 @@ function create_dir() {
     mkdir -p $dirname;
   fi
 }
-
-# copy the file like a dump one.
+#
 #************ create_dir
+
 #****f* create-gfs-initrd-lib.sh/copy_file
 #  NAME
 #    copy_file
 #  SYNOPSIS
 #    function copy_file() {
+#  DESCRIPTION
+#    copy the file like a dump one.
 #  MODIFICATION HISTORY
 #  IDEAS
 #  SOURCE
@@ -60,8 +62,6 @@ function copy_file() {
     cp -af $filename ${dest}
 #  fi
 }
-
-# Compile perlfile with perlcc to binary
 #************ copy_file
 
 #****f* create-gfs-initrd-lib.sh/perlcc_file
@@ -460,7 +460,10 @@ function cpio_and_zip_initrd() {
 
 ######################
 # $Log: create-gfs-initrd-lib.sh,v $
-# Revision 1.9  2006-08-28 16:01:57  marc
+# Revision 1.10  2007-02-09 11:09:31  marc
+# cosmetic changes.
+#
+# Revision 1.9  2006/08/28 16:01:57  marc
 # support for rpm-lists and includes of new lists
 #
 # Revision 1.8  2006/06/19 15:55:28  marc
