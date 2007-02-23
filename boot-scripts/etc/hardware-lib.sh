@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.5 2006-07-19 15:12:55 marc Exp $
+# $Id: hardware-lib.sh,v 1.6 2007-02-23 16:42:01 mark Exp $
 #
 # @(#)$File$
 #
@@ -91,14 +91,14 @@ function scsi_start() {
     return_code
   fi
   step
-	
+
   if [ -x "/opt/atix/comoonics_cs/rescan_scsi" ]; then
     /opt/atix/comoonics_cs/rescan_scsi -a
   else
     echo_local -n "Importing unconfigured scsi-devices..."
     devs=$(find /proc/scsi -name "[0-9]*" 2> /dev/null)
     channels=0
-    for dev in $devs; do 
+    for dev in $devs; do
       for channel in $channels; do
         id=$(basename $dev)
         echo_local -n "$dev On id $id and channel $channel"
@@ -109,7 +109,7 @@ function scsi_start() {
   fi
   echo_local_debug "3.3 Configured SCSI-Devices:"
   exec_local_debug /bin/cat /proc/scsi/scsi
-} 
+}
 #************ scsi_start
 
 #****f* boot-lib.sh/dm_mp_start
@@ -137,9 +137,10 @@ function dm_mp_start() {
   return_code
 
   echo_local -n "Setting up devicemapper partitions"
-  for x in /dev/dm*; do
-    kpartx -va $x
-  done
+  if [ -x /sbin/kpartx ]; then
+    /sbin/dmsetup ls --target multipath --exec "/sbin/kpartx -a"
+  fi
+
   return_code
 }
 #************ dm_mp_start
@@ -161,7 +162,7 @@ function dm_start {
    #mknod /dev/zero c 1 5
    #mkdir /dev/pts
    #mkdir /dev/shm
-	
+
    echo_local -n "Loading device mapper modules"
    exec_local modprobe dm_mod >/dev/null 2>&1 &&
    exec_local modprobe dm-mirror  >/dev/null 2>&1 &&
@@ -250,12 +251,12 @@ function setHWClock() {
     yes|true)   CLOCKFLAGS="$CLOCKFLAGS --srm"
        CLOCKDEF="$CLOCKDEF (srm)" ;;
   esac
-    
+
   echo_local -n "Setting clock $CLOCKDEF: "$(date)
   exec_local /sbin/hwclock $CLOCKFLAGS
   return_code
 }
-#************ setHWClock 
+#************ setHWClock
 
 #****f* boot-lib.sh/hardware_detect
 #  NAME
@@ -284,7 +285,7 @@ function hardware_detect() {
 
   return $ret_c
 }
-#************ hardware_detect 
+#************ hardware_detect
 
 #****f* boot-lib.sh/add_scsi_device
 #  NAME
@@ -302,9 +303,9 @@ function add_scsi_device() {
   dev=$3
   if [ "$(basename $(dirname $dev))" = "qla2200" -o "$(basename $(dirname $dev))" = "qla2300" ]; then
     out=$(cat $dev | awk -v id=$id -v channel=$channel '
-/\(([0-9 ]+):([0-9 ]+)\): Total reqs [0-9]+, Pending reqs [0-9]+, flags 0x0.+/ { 
-  match($_, /\(\W*([0-9]+):\W*([0-9]+)\)/, res); 
-  print "echo \"scsi add-single-device", id, channel, res[1], res[2],  "\" > /proc/scsi/scsi; sleep 1"; 
+/\(([0-9 ]+):([0-9 ]+)\): Total reqs [0-9]+, Pending reqs [0-9]+, flags 0x0.+/ {
+  match($_, /\(\W*([0-9]+):\W*([0-9]+)\)/, res);
+  print "echo \"scsi add-single-device", id, channel, res[1], res[2],  "\" > /proc/scsi/scsi; sleep 1";
 }')
     eval "$out"
     return $?
@@ -313,11 +314,14 @@ function add_scsi_device() {
     return 0
   fi
 }
-#************ add_scsi_device 
+#************ add_scsi_device
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.5  2006-07-19 15:12:55  marc
+# Revision 1.6  2007-02-23 16:42:01  mark
+# modified dm_mp_start to recognize all partitions
+#
+# Revision 1.5  2006/07/19 15:12:55  marc
 # added another udev restart
 #
 # Revision 1.4  2006/07/13 11:36:34  marc
