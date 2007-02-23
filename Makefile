@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.22 2007-02-09 11:09:44 marc Exp $
+# $Id: Makefile,v 1.23 2007-02-23 16:45:36 mark Exp $
 #
 # @(#)$file$
 #
@@ -178,6 +178,7 @@ CFG_FILES=basefiles.list \
 	files.initrd.d/debug.list.opt \
 	rpms.initrd.d/comoonics.list \
 	rpms.initrd.d/perl.list \
+	rpms.initrd.d/dm_multipath.list \
 	rpms.initrd.d/python.list
 #************ CFG_FILES 
 
@@ -310,11 +311,20 @@ archive:
 	@(cd .. && \
 	tar -c -z --exclude="*~" --exclude="*CVS*" -f $(ARCHIVE_FILE) $(TAR_PATH) && \
 	echo "(OK)") || echo "(FAILED)"
+	
+rpm: archive
+	@echo -n "Creating RPM"
+	cp ../$(ARCHIVE_FILE) /usr/src/redhat/SOURCES/
+	rpmbuild -ba --target=noarch ./comoonics-bootimage.spec
 
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.22  2007-02-09 11:09:44  marc
+# Revision 1.23  2007-02-23 16:45:36  mark
+# added make rpm
+# added rpms.initrd.d/m_multipath.list
+#
+# Revision 1.22  2007/02/09 11:09:44  marc
 # added CHANGELOG
 #
 # Revision 1.21  2007/01/23 13:05:56  mark
