@@ -5,6 +5,9 @@ IDEAS:
 	* define process for changelog
 
 CHANGES:
+- 2007-02-23; Release: 1.0.81
+    * modified multipath partition recognition
+    * added file rpms.initrd.d/dm_multipath.list
 - 2007-02-09; Release: 1.0.80
     * added nodeid parameter at boottime (bonding not clear)
     * bootsr will only rebuild if needed
@@ -36,7 +39,10 @@ TODO:
 ########################################
 # CVS-Log
 # $Log: CHANGELOG,v $
-# Revision 1.7  2007-02-09 11:06:27  marc
+# Revision 1.8  2007-02-23 16:42:42  mark
+# added 1.0.81
+#
+# Revision 1.7  2007/02/09 11:06:27  marc
 # *** empty log message ***
 #
 # Revision 1.6  2007/01/19 13:42:11  mark
