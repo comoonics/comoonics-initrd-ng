@@ -8,6 +8,7 @@ CHANGES:
 - 2007-02-23; Release: 1.0.81
     * modified multipath partition recognition
     * added file rpms.initrd.d/dm_multipath.list
+    * added "make rpm"
 - 2007-02-09; Release: 1.0.80
     * added nodeid parameter at boottime (bonding not clear)
     * bootsr will only rebuild if needed
@@ -39,7 +40,10 @@ TODO:
 ########################################
 # CVS-Log
 # $Log: CHANGELOG,v $
-# Revision 1.8  2007-02-23 16:42:42  mark
+# Revision 1.9  2007-02-23 16:46:23  mark
+# modified 1.0.81
+#
+# Revision 1.8  2007/02/23 16:42:42  mark
 # added 1.0.81
 #
 # Revision 1.7  2007/02/09 11:06:27  marc
