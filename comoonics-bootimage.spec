@@ -21,7 +21,7 @@
 # with ATIX.
 #/initrd_sr-2.6.9-34.ELsmp.img.gz
 # %define _initrddir /etc/init.d
-# $Id: comoonics-bootimage.spec,v 1.32 2007-02-09 11:08:17 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.33 2007-02-23 16:44:50 mark Exp $
 #
 ##
 # TO DO
@@ -296,6 +296,7 @@ fi
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/comoonics.list
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/python.list
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/perl.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/dm_multipath.list
 
 %config(noreplace) %{CONFIGDIR}/comoonics-bootimage.cfg
 %config(noreplace) %{CONFIGDIR}/bootimage/files.initrd.d/user_edit.list
@@ -335,7 +336,9 @@ fi
 %doc CHANGELOG
 
 %changelog
-* Fr Feb 09 2007 Marc Grimme <grimme@atix.de> 1.0.81
+* Fri Feb 09 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.0.81
+- added support for dm_multipath partitions
+* Fri Feb 09 2007 Marc Grimme <grimme@atix.de> 1.0.81-rc
 - added nodeid parameter at boottime (bonding not clear)
 - bootsr will only rebuild if needed
 - added nsswitch.conf to chroot. Because of ccs_tool update sometime failed.
@@ -373,7 +376,10 @@ fi
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.32  2007-02-09 11:08:17  marc
+# Revision 1.33  2007-02-23 16:44:50  mark
+# revision 1.0.81
+#
+# Revision 1.32  2007/02/09 11:08:17  marc
 # new version 81
 #
 # Revision 1.31  2007/01/23 12:57:14  mark
