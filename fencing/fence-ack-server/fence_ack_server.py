@@ -4,11 +4,11 @@ Fence Acknowledge Server via normal an ssl
 """
 
 # here is some internal information
-# $Id: fence_ack_server.py,v 1.4 2007-01-04 09:58:05 marc Exp $
+# $Id: fence_ack_server.py,v 1.5 2007-03-01 10:49:29 marc Exp $
 #
 
 
-__version__ = "$Revision: 1.4 $"
+__version__ = "$Revision: 1.5 $"
 # $Source: /atix/ATIX/CVSROOT/nashead2004/bootimage/fencing/fence-ack-server/fence_ack_server.py,v $
 
 from OpenSSL import SSL
@@ -51,8 +51,8 @@ class Config(GetOpts.BaseConfig):
 
     def do(self, args_proper):
         import os.path
-        if len(args_proper) > 0 and os.path.isfile(args_proper[0]) and self.xml.value:
-            self.xml.value=args_proper[0]
+        if len(args_proper) > 0 and os.path.isfile(args_proper[0]) and self.xml:
+            self.xml=args_proper[0]
         elif len(args_proper) > 0:
             print >>self.__stderr__, "Wrong syntax."
             self.usage()
@@ -60,7 +60,7 @@ class Config(GetOpts.BaseConfig):
         return 0
 
     def setNoValidate(self, value):
-        self.xml_validate.value=not value
+        self.xml_validate=not value
 
     def setDebug(self, value):
         ComLog.setLevel(logging.DEBUG)
@@ -71,45 +71,45 @@ class Config(GetOpts.BaseConfig):
         from xml.dom.ext.reader import Sax2
         import os.path
         # create Reader object
-        if self.xml_validate.value:
+        if self.xml_validate:
             reader = Sax2.Reader(validate=1)
         else:
             reader = Sax2.Reader(validate=0)
 
-        if self.xml.value==True:
+        if self.xml==True:
             ComLog.getLogger().debug("Parsing document from stdin")
             doc = reader.fromStream(sys.stdin)
-        elif os.path.isfile(self.xml.value):
-            file=open(self.xml.value,"r")
-            ComLog.getLogger().debug("Parsing document %s " % self.xml.value)
+        elif os.path.isfile(self.xml):
+            file=open(self.xml,"r")
+            ComLog.getLogger().debug("Parsing document %s " % self.xml)
             doc = reader.fromStream(file)
 
-        if self.xml_nodepath.value and self.xml_nodepath.value != "":
+        if self.xml_nodepath and self.xml_nodepath != "":
             from xml import xpath
-            ComLog.getLogger().debug("Path2Config: %s" %self.xml_nodepath.value)
-            node=xpath.Evaluate(self.xml_nodepath.value, doc)[0]
+            ComLog.getLogger().debug("Path2Config: %s" %self.xml_nodepath)
+            node=xpath.Evaluate(self.xml_nodepath, doc)[0]
         else:
             node=doc.documentElement
 
-        if self.xml_clusterconf.value:
+        if self.xml_clusterconf:
             from comoonics import ComSystem
             from xml import xpath
-            if not self.nodename.value:
-                (rc, self.nodename.value)=ComSystem.execLocalStatusOutput("cman_tool status | grep 'Node name:'")
-                self.nodename.value=self.nodename.value.split(" ")[3]
-            _xmlnodepath='/cluster/clusternodes/clusternode[@name="%s"]/com_info/fenceackserver' %(self.nodename.value)
-            ComLog.getLogger().debug("Nodename: %s, path: %s" %(self.nodename.value, _xmlnodepath))
+            if not self.nodename:
+                (rc, self.nodename)=ComSystem.execLocalStatusOutput("cman_tool status | grep 'Node name:'")
+                self.nodename=self.nodename.split(" ")[3]
+            _xmlnodepath='/cluster/clusternodes/clusternode[@name="%s"]/com_info/fenceackserver' %(self.nodename)
+            ComLog.getLogger().debug("Nodename: %s, path: %s" %(self.nodename, _xmlnodepath))
             node=xpath.Evaluate(_xmlnodepath, doc)[0]
 
-        if node.hasAttribute("port"): self.port.value=node.getAttribute("port")
-        if node.hasAttribute("user"): self.user.value=node.getAttribute("user")
-        if node.hasAttribute("passwd"): self.password.value=node.getAttribute("passwd")
+        if node.hasAttribute("port"): self.port=node.getAttribute("port")
+        if node.hasAttribute("user"): self.user=node.getAttribute("user")
+        if node.hasAttribute("passwd"): self.password=node.getAttribute("passwd")
         sslnodes=node.getElementsByTagName("ssl")
         if sslnodes:
-            self.ssl.value=True
-            if node.hasAttribute("keyfile"): self.ssl_keyfile.value=node.getAttribute("keyfile")
-            if node.hasAttribute("certfile"): self.ssl_certfile.value=node.getAttribute("certfile")
-            if node.hasAttribute("verifyfile"): self.ssl_verifyfile.value=node.getAttribute("verifyfile")
+            self.ssl=True
+            if node.hasAttribute("keyfile"): self.ssl_keyfile=node.getAttribute("keyfile")
+            if node.hasAttribute("certfile"): self.ssl_certfile=node.getAttribute("certfile")
+            if node.hasAttribute("verifyfile"): self.ssl_verifyfile=node.getAttribute("verifyfile")
 
         return
 
@@ -304,16 +304,16 @@ def main():
 #        index=index+1
 
 #    print "Rest[%u] %u: %s" %(len(sys.argv), index, sys.argv[index])
-    if config.xml.value:
-        config.fromXML(config.xml.value)
+    if config.xml:
+        config.fromXML(config.xml)
 
-    if config.ssl.value:
+    if config.ssl:
         ComLog.getLogger().debug("Starting ssl server")
-        srv=SecureTCPServer(('', int(config.port.value)), FenceHandler, config.ssl_keyfile.value, config.ssl_certfile.value, config.ssl_verifyfile.value, config.user.value, config.password.value)
+        srv=SecureTCPServer(('', int(config.port)), FenceHandler, config.ssl_keyfile, config.ssl_certfile, config.ssl_verifyfile, config.user, config.password)
         srv.allow_reuse_address=True
     else:
         ComLog.getLogger().debug("Starting nonssl server")
-        srv=MyTCPServer(('', int(config.port.value)), FenceHandler, config.user.value, config.password.value)
+        srv=MyTCPServer(('', int(config.port)), FenceHandler, config.user, config.password)
 #        srv.allow_reuse_address=True
     try:
         srv.serve_forever()
@@ -327,7 +327,10 @@ if __name__ == '__main__':
 
 ##################
 # $Log: fence_ack_server.py,v $
-# Revision 1.4  2007-01-04 09:58:05  marc
+# Revision 1.5  2007-03-01 10:49:29  marc
+# changed getopts
+#
+# Revision 1.4  2007/01/04 09:58:05  marc
 # used right args
 #
 # Revision 1.3  2006/12/04 17:38:53  marc
