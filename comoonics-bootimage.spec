@@ -21,7 +21,7 @@
 # with ATIX.
 #/initrd_sr-2.6.9-34.ELsmp.img.gz
 # %define _initrddir /etc/init.d
-# $Id: comoonics-bootimage.spec,v 1.33 2007-02-23 16:44:50 mark Exp $
+# $Id: comoonics-bootimage.spec,v 1.34 2007-03-01 10:50:04 marc Exp $
 #
 ##
 # TO DO
@@ -66,8 +66,8 @@ Comoonics Bootimage. Scripts for creating an initrd in a gfs shared root environ
 
 %package fenceacksv
 Version: 0.1
-Release: 11
-Requires: comoonics-cs-py
+Release: 12
+Requires: comoonics-cs-py >= 0.1-23
 Requires: comoonics-bootimage >= 1.0-47
 Summary: The Fence ackserver is a service running in the fencedchroot and managing manual fenced nodes
 Group:   Storage/Management
@@ -376,7 +376,10 @@ fi
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.33  2007-02-23 16:44:50  mark
+# Revision 1.34  2007-03-01 10:50:04  marc
+# changed getopt
+#
+# Revision 1.33  2007/02/23 16:44:50  mark
 # revision 1.0.81
 #
 # Revision 1.32  2007/02/09 11:08:17  marc
