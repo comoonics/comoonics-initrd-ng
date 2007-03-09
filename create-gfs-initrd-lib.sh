@@ -6,7 +6,7 @@
 #    Library for the creating of initrds for sharedroot
 #*******
 #
-# $Id: create-gfs-initrd-lib.sh,v 1.10 2007-02-09 11:09:31 marc Exp $
+# $Id: create-gfs-initrd-lib.sh,v 1.11 2007-03-09 18:04:54 mark Exp $
 #
 # @(#)$File$
 #
@@ -222,7 +222,8 @@ function get_all_rpms_dependent {
 }
 #************get_all_rpms_dependent
 
-
+# moved to boot-lib.sh
+#TODO remove code
 ##****f* create-gfs-initrd-lib.sh/get_dependent_files
 #  NAME
 #    get_dependent_files
@@ -234,39 +235,39 @@ function get_all_rpms_dependent {
 #  IDEAS
 #  SOURCE
 #
-function get_dependent_files() {
-  local filename=$1
-  # file is a symbolic link
-  if [ -L $filename ]; then
-    local newfile=`ls -l $filename | sed -e "s/.* -> //"`
-    if [ "${newfile:0:1}" != "/" ]; then
-       echo `dirname $filename`/$newfile
-    else
-       echo $newfile
-    fi
-  # file is executable and not directory
-  elif [ -x $filename -a ! -d $filename ]; then
-    ldd $filename > /dev/null 2>&1
-    if [ $? = 0 ]; then
-#      local newfiles=`ldd $filename | sed -e "s/^.*=> \(.*\) (.*).*$/\1/" | sed -e "s/^.*statically linked.*$//"`
-      local newfiles=$(ldd $filename | awk '
-$3 ~ /^\// { print $3; }
-$1 ~ /^\// && $3 == "" { print $1; }
-')
-      for newfile in $newfiles; do
-         echo $newfile
-         if [ -L $newfile ]; then
-           local _newfile=$(ls -l $newfile | awk '$11 != "" { print $11; }')
-           if [ "${_newfile:0:1}" != "/" ]; then
-             echo $(dirname $newfile)/$_newfile
-           else
-             echo $_newfile
-           fi
-         fi
-      done
-    fi
-  fi
-}
+#function get_dependent_files() {
+#  local filename=$1
+#  # file is a symbolic link
+#  if [ -L $filename ]; then
+#    local newfile=`ls -l $filename | sed -e "s/.* -> //"`
+#    if [ "${newfile:0:1}" != "/" ]; then
+#       echo `dirname $filename`/$newfile
+#    else
+#       echo $newfile
+#    fi
+#  # file is executable and not directory
+#  elif [ -x $filename -a ! -d $filename ]; then
+#    ldd $filename > /dev/null 2>&1
+#    if [ $? = 0 ]; then
+##      local newfiles=`ldd $filename | sed -e "s/^.*=> \(.*\) (.*).*$/\1/" | sed -e "s/^.*statically linked.*$//"`
+#      local newfiles=$(ldd $filename | awk '
+#$3 ~ /^\// { print $3; }
+#$1 ~ /^\// && $3 == "" { print $1; }
+#')
+#      for newfile in $newfiles; do
+#         echo $newfile
+#         if [ -L $newfile ]; then
+#           local _newfile=$(ls -l $newfile | awk '$11 != "" { print $11; }')
+#           if [ "${_newfile:0:1}" != "/" ]; then
+#             echo $(dirname $newfile)/$_newfile
+#           else
+#             echo $_newfile
+#           fi
+#         fi
+#      done
+#    fi
+#  fi
+#}
 #************ get_dependent_files
 
 #****f* create-gfs-initrd-lib.sh/get_all_depfiles
@@ -460,7 +461,10 @@ function cpio_and_zip_initrd() {
 
 ######################
 # $Log: create-gfs-initrd-lib.sh,v $
-# Revision 1.10  2007-02-09 11:09:31  marc
+# Revision 1.11  2007-03-09 18:04:54  mark
+# moved function to boot-lib.sh
+#
+# Revision 1.10  2007/02/09 11:09:31  marc
 # cosmetic changes.
 #
 # Revision 1.9  2006/08/28 16:01:57  marc
