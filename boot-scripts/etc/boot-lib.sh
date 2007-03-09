@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.39 2007-02-09 11:03:59 marc Exp $
+# $Id: boot-lib.sh,v 1.40 2007-03-09 18:03:11 mark Exp $
 #
 # @(#)$File$
 #
@@ -45,8 +45,10 @@ modules_conf="/etc/modprobe.conf"
 
 # Default init cmd is bash
 init_cmd="/bin/bash"
-newroot="/"
-mount_point="/mnt/newroot"
+
+# TODO: consolidate mount_point , new_root and newroot to newroot
+newroot="/mnt/newroot"
+#mount_point="/mnt/newroot"
 
 # The comoonics buildfile
 build_file="/etc/comoonics-build.txt"
@@ -128,17 +130,18 @@ function exit_linuxrc() {
 	error_code=0
     fi
     echo $error_code > $error_code_file
-    if [ -n "$error_code" ] && [ $error_code -eq 2 ]; then
-        echo_local "Userquit falling back to bash.."
-	exec 5>&1 6>&2 1>/dev/console 2>/dev/console
-        /bin/bash
-	exec 1>&5 2>&6
-    else
-	echo_local "Writing $init_cmd $newroot => $init_cmd_file"
-	echo "$init_cmd" > $init_cmd_file
-	echo "$newroot" > $init_chroot_file
+    # FIXME: remove commented lines
+    #if [ -n "$error_code" ] && [ $error_code -eq 2 ]; then
+    #    echo_local "Userquit falling back to bash.."
+	#exec 5>&1 6>&2 1>/dev/console 2>/dev/console
+    #    /bin/bash
+	#exec 1>&5 2>&6
+    #else
+	#echo_local "Writing $init_cmd $newroot => $init_cmd_file"
+	#echo "$init_cmd" > $init_cmd_file
+	#echo "$newroot" > $init_chroot_file
 	exit $error_code
-    fi
+    #fi
 }
 #************ exit_linuxrc
 
@@ -565,32 +568,107 @@ function start_service {
 }
 #************ start_service
 
+##****f* boot-lib.sh/get_dependent_files
+#  NAME
+#    get_dependent_files
+#  SYNOPSIS
+#    function get_dependent_files(filename) {
+#  DESCRIPTION
+#    checks if the file is executable.
+#    If so it returns all dependent libraries with path as a stringlist.
+#  IDEAS
+#  SOURCE
+#
+function get_dependent_files() {
+  filename=$1
+  # file is a symbolic link
+  if [ -L $filename ]; then
+    local newfile=`ls -l $filename | sed -e "s/.* -> //"`
+    if [ "${newfile:0:1}" != "/" ]; then
+       echo `dirname $filename`/$newfile
+    else
+       echo $newfile
+    fi
+  # file is executable and not directory
+  elif [ -x $filename -a ! -d $filename ]; then
+    ldd $filename > /dev/null 2>&1
+    if [ $? = 0 ]; then
+#      local newfiles=`ldd $filename | sed -e "s/^.*=> \(.*\) (.*).*$/\1/" | sed -e "s/^.*statically linked.*$//"`
+      local newfiles=$(ldd $filename | awk '
+$3 ~ /^\// { print $3; }
+$1 ~ /^\// && $3 == "" { print $1; }
+')
+      for newfile in $newfiles; do
+         echo $newfile
+         if [ -L $newfile ]; then
+           local _newfile=$(ls -l $newfile | awk '$11 != "" { print $11; }')
+           if [ "${_newfile:0:1}" != "/" ]; then
+             echo $(dirname $newfile)/$_newfile
+           else
+             echo $_newfile
+           fi
+         fi
+      done
+    fi
+  fi
+}
+#************ get_dependent_files
+
+
+
 #****f* boot-lib.sh/switchRoot
 #  NAME
-#    switchRoot
+#    switchRoot has to be called from linuxrc at the end of the initrd instructions
 #  SYNOPSIS
 #    function switchRoot(newroot, initrdroot) {
 #  MODIFICATION HISTORY
+#  USAGE
+#  switchRoot
 #  IDEAS
-#   We shouldn't use pivot_root with initramfs anymore (kernel2.6 Documentation.txt)
+#
 #  SOURCE
 #
 function switchRoot() {
-  local new_root=$1
+  local skipfiles="rm mount chroot find"
+  local newroot=$1
   if [ -z "$new_root" ]; then
-     new_root="/mnt/newroot"
+     newroot="/mnt/newroot"
   fi
 
-  echo_local_debug "**********************************************************************"
-  cd ${new_root}
+  echo "**********************************************************************"
+  echo " comoonics generic switchroot"
 
-  pivot_root=initrd
-  echo_local -n "Pivot-Rooting... (pwd: "$(pwd)")"
-  [ ! -d $pivot_root ] && mkdir -p $pivot_root
-  exec_local /sbin/pivot_root . $pivot_root
-  return_code
-  critical=$?
-  return $critical
+  #get init_cmd from /proc
+  init_cmd="/sbin/init $(cat /proc/cmdline)"
+
+  # clean up
+  echo "Cleaning up..."
+  #umount /dev
+  umount /proc
+  umount /sys
+
+
+  #if type -t ${distribution}_switchRoot > /dev/null; then
+  #	echo_local_debug "calling ${distribution}_switchRoot ${new_root}"
+  #	exec ${distribution}_switchRoot ${new_root}
+
+  echo "Now all files in initrd should be removed..."
+  step
+
+  # this returns a comand to delete all unused files.
+  # TODO: directories are not removed. Add functionality to remove empty directories.
+  # CAUTION: Do NOT remove /mnt/newroot ;-)
+  skipfiles=$(for file in $skipfiles; do which $file; done)
+  skipfiles=$(for file in $skipfiles; do get_dependent_files $file; which $file; done | sort -u)
+  skipfiles=$(echo $skipfiles | sort -u | sed 's/ /" -o -regex "/g')
+  cmd=$(echo find / -xdev ! \\\( -regex \"$skipfiles\" \\\) -exec 'rm {}' '\;')
+
+  eval $cmd > /dev/null 2>&1
+
+  cd ${newroot}
+  # TODO
+  /bin/mount --move . /
+  exec chroot . $init_cmd </dev/console >/dev/console 2>&1
 }
 #************ switchRoot
 
@@ -1061,7 +1139,10 @@ function passed {
 #********** passed
 
 # $Log: boot-lib.sh,v $
-# Revision 1.39  2007-02-09 11:03:59  marc
+# Revision 1.40  2007-03-09 18:03:11  mark
+# added nash like switchRoot support
+#
+# Revision 1.39  2007/02/09 11:03:59  marc
 # added create_builddate_file function
 #
 # Revision 1.38  2007/01/19 13:38:53  mark
