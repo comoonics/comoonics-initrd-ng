@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.30 2006-11-10 11:36:26 mark Exp $
+# $Id: gfs-lib.sh,v 1.31 2007-03-09 18:01:44 mark Exp $
 #
 # @(#)$File$
 #
@@ -91,6 +91,34 @@ function gfs_get_rootvolume {
 }
 #************ gfs_get_rootvolume
 
+#****f* gfs-lib.sh/gfs_get_rootfs
+#  NAME
+#    gfs_get_rootfs
+#  SYNOPSIS
+#    gfs_get_rootfs(cluster_conf, nodename, [rootfs])
+#  DESCRIPTION
+#    Gets the root filesystem type for this node
+#    Default is ""
+#  IDEAS
+#  SOURCE
+#
+function gfs_get_rootfs {
+   local xml_file=$1
+   local hostname=$2
+
+   [ -z "$hostname" ] && hostname=$(gfs_get_nodename $xml_file)
+   local xml_cmd="${ccs_xml_query} -f $xml_file"
+
+   local __rootfs=$($xml_cmd -q rootfs $hostname)
+
+   if [ -z "$__rootfs" ]; then
+     echo ""
+   else
+     echo $__rootfs
+   fi
+}
+#************ gfs_get_rootfs
+
 #****f* gfs-lib.sh/gfs_get_mountopts
 #  NAME
 #    gfs_get_mountopts
@@ -105,12 +133,12 @@ function gfs_get_mountopts {
    local xml_file=$1
    local hostname=$2
    [ -z "$hostname" ] && hostname=$(gfs_get_nodename $xml_file)
-    local xml_cmd="${ccs_xml_query} -f $xml_file"
+   local xml_cmd="${ccs_xml_query} -f $xml_file"
    _mount_opts=$($xml_cmd -q mountopts $hostname)
    if [ -z "$_mount_opts" ]; then
      echo $default_mountopts
    else
-     echo $_mountopts
+     echo $_mount_opts
    fi
 }
 #************ gfs_get_mountopts
@@ -615,7 +643,10 @@ function gfs_checkhosts_alive {
 #********* gfs_checkhosts_alive
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.30  2006-11-10 11:36:26  mark
+# Revision 1.31  2007-03-09 18:01:44  mark
+# separated fstype and clutype
+#
+# Revision 1.30  2006/11/10 11:36:26  mark
 # - modified gfs_start_fenced: added fence_tool wait, removed undefined -w option from fenced
 #
 # Revision 1.29  2006/10/06 08:32:57  marc

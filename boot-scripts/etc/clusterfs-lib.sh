@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.11 2007-02-09 11:04:52 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.12 2007-03-09 18:02:02 mark Exp $
 #
 # @(#)$File$
 #
@@ -86,8 +86,27 @@ function getClusterFSParameters() {
   echo -n ":"
   getBootParm nodename
   echo -n ":"
+  getBootParm fstype
+  echo -n ":"
 }
 #******** getClusterFSParameters
+
+#****f* boot-scripts/etc/clusterfs-lib.sh/getCluType
+#  NAME
+#    getCluType
+#  SYNOPSIS
+#    function getCluType()
+#  DESCRIPTTION
+#    returns the type of the cluster. Until now only "gfs"
+#    is returned.
+#  SOURCE
+#
+function getCluType {
+   echo "gfs"
+}
+#******** getCluType
+
+
 
 #****f* boot-scripts/etc/clusterfs-lib.sh/getRootFS
 #  NAME
@@ -140,6 +159,9 @@ function clusterfs_config {
   scsifailover=$(cc_get_scsifailover ${cluster_conf} $_nodename)
   [ -z "$scsifailover" ] && scsifailover="driver"
   echo $scsifailover
+  __rootfs=$(cc_get_rootfs ${cluster_conf} $_nodename)
+  [ -z "$__rootfs" ] && __rootfs=$(getRootFS)
+  echo $__rootfs
   for _dev in $(cc_get_netdevs ${cluster_conf} $_nodename); do
     cc_auto_netconfig ${cluster_conf} $_nodename $_dev
   done
@@ -158,7 +180,7 @@ function cc_get_nodeid {
    local cluster_conf=$1
    local mac=$2
 
-   ${rootfs}_get_nodeid $cluster_conf $mac
+   ${clutype}_get_nodeid $cluster_conf $mac
 }
 #******* cc_get_nodeid
 
@@ -174,7 +196,7 @@ function cc_get_nodeid_by_nodename {
    local cluster_conf=$1
    local mac=$2
 
-   ${rootfs}_get_nodeid $cluster_conf $mac
+   ${clutype}_get_nodeid $cluster_conf $mac
 }
 #******* cc_get_nodeid
 
@@ -190,7 +212,7 @@ function cc_get_nodeid {
    local cluster_conf=$1
    local mac=$2
 
-   ${rootfs}_get_nodeid $cluster_conf $mac
+   ${clutype}_get_nodeid $cluster_conf $mac
 }
 #******* cc_get_nodeid
 
@@ -206,7 +228,7 @@ function cc_get_nodename {
    local cluster_conf=$1
    local mac=$2
 
-   ${rootfs}_get_nodename $cluster_conf $mac
+   ${clutype}_get_nodename $cluster_conf $mac
 }
 #******** cc_get_nodename
 
@@ -222,9 +244,25 @@ function cc_get_rootvolume {
    local cluster_conf=$1
    local nodename=$2
 
-   ${rootfs}_get_rootvolume $cluster_conf $nodename
+   ${clutype}_get_rootvolume $cluster_conf $nodename
 }
 #******** cc_get_rootvolume
+
+#****f* clusterfs-lib.sh/cc_get_rootfs
+#  NAME
+#    cc_get_rootfs
+#  SYNOPSIS
+#    function cc_get_rootfs(cluster_conf, nodename)
+#  DESCRIPTION
+#    gets the rootfs type of this node referenced by the networkdevice
+#  SOURCE
+function cc_get_rootfs {
+   local cluster_conf=$1
+   local nodename=$2
+
+   ${clutype}_get_rootfs $cluster_conf $nodename
+}
+#******** cc_get_rootfs
 
 #****f* clusterfs-lib.sh/cc_get_mountopts
 #  NAME
@@ -238,7 +276,7 @@ function cc_get_mountopts {
    local cluster_conf=$1
    local nodename=$2
 
-   ${rootfs}_get_mountopts $cluster_conf $nodename
+   ${clutype}_get_mountopts $cluster_conf $nodename
 }
 #******** cc_get_mountopts
 
@@ -254,7 +292,7 @@ function cc_get_scsifailover {
    local cluster_conf=$1
    local nodename=$2
 
-   ${rootfs}_get_scsifailover $cluster_conf $nodename
+   ${clutype}_get_scsifailover $cluster_conf $nodename
 }
 #******** cc_get_mountopts
 
@@ -270,7 +308,7 @@ function cc_get_netdevs {
    local cluster_conf=$1
    local nodename=$2
 
-   ${rootfs}_get_netdevs $cluster_conf $nodename
+   ${clutype}_get_netdevs $cluster_conf $nodename
 }
 #******** cc_get_netdevs
 
@@ -287,7 +325,7 @@ function cc_auto_netconfig {
    local nodename=$2
    local netdev=$3
 
-   ${rootfs}_auto_netconfig $cluster_conf $nodename $netdev
+   ${clutype}_auto_netconfig $cluster_conf $nodename $netdev
 }
 #******** cc_auto_netconfig
 
@@ -302,7 +340,7 @@ function cc_auto_netconfig {
 function cc_auto_hosts {
    local cluster_conf=$1
 
-   ${rootfs}_auto_hosts $cluster_conf /etc/hosts >> /etc/hosts
+   ${clutype}_auto_hosts $cluster_conf /etc/hosts >> /etc/hosts
 }
 #******** cc_auto_netconfig
 
@@ -317,7 +355,7 @@ function cc_auto_hosts {
 function cc_auto_syslogconfig {
   local cluster_conf=$1
   local nodename=$2
-  local syslog_server=$(${rootfs}_get_syslogserver $cluster_conf $nodename)
+  local syslog_server=$(${clutype}_get_syslogserver $cluster_conf $nodename)
 
   echo_local -n "Creating syslog config for syslog server: $syslog_server"
   if [ -n "$syslog_server" ]; then
@@ -393,8 +431,9 @@ function clusterfs_mount {
   [ -n $6 ] && waittime=$6
   local i=0
 
+  #TODO: skip device check at least for nfs services
   echo_local -n "Mounting $dev on $mountpoint.."
-  if [ ! -e $dev ]; then
+  if [ ! -e $dev -a $fstype != "nfs" ]; then
     echo_local -n "device not found error"
     failure
     return $?
@@ -542,7 +581,10 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.11  2007-02-09 11:04:52  marc
+# Revision 1.12  2007-03-09 18:02:02  mark
+# separated fstype and clutype
+#
+# Revision 1.11  2007/02/09 11:04:52  marc
 # added bootparams nodeid and nodename
 #
 # Revision 1.10  2006/11/10 11:35:24  mark
