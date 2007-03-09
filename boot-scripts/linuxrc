@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc,v 1.10 2007-01-19 13:41:27 mark Exp $
+# $Id: linuxrc,v 1.11 2007-03-09 17:57:48 mark Exp $
 #
 # @(#)$File$
 #
@@ -25,7 +25,7 @@
 #****h* comoonics-bootimage/linuxrc
 #  NAME
 #    linuxrc
-#    $Id: linuxrc,v 1.10 2007-01-19 13:41:27 mark Exp $
+#    $Id: linuxrc,v 1.11 2007-03-09 17:57:48 mark Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -41,11 +41,18 @@
 #
 # initstuff is done in here
 source /etc/boot-lib.sh
+distribution=$(getDistribution)
+[ -e /etc/${distribution}/boot-lib.sh ] && source /etc/${distribution}/boot-lib.sh
 
 exec 3>/dev/console
 exec 4>/dev/console
 
 initEnv
+
+# boot parameters
+bootparms=$(getBootParameters)
+debug=$(getParm ${bootparms} 1)
+stepmode=$(getParm ${bootparms} 2)
 
 # Print a text banner.
 echo_local -en $"\t\tWelcome to "
@@ -86,32 +93,35 @@ step
 
 error_code=0
 [ -e $error_code_file ] && error_code=$(cat $error_code_file)
-[ -e $init_cmd_file ] && init_cmd=$(cat $init_cmd_file)
-[ -e $init_chroot_file ] && new_root=$(cat $init_chroot_file)
+# TODO remove lines ...
+#[ -e $init_cmd_file ] && init_cmd=$(cat $init_cmd_file)
+#[ -e $init_chroot_file ] && new_root=$(cat $init_chroot_file)
 
 
-echo "Init_cmd: $init_cmd, newroot: $newroot"
+#echo "Init_cmd: $init_cmd, newroot: $newroot"
 step
 if [ -n "$error_code" ] && [ $error_code -eq 0 ]; then
-  if [ -n "$newroot" ] && [ -d $newroot ]; then
-    cd $newroot
-  fi
   exec 1>&- 2>&- 3>&- 4>&- 5>&-
   exec 1>/dev/console 2>/dev/console
-  exec chroot . $init_cmd </dev/console >/dev/console 2>&1
+  switchRoot $newroot
 elif [ -n "$error_code" ] && [ $error_code -eq 2 ]; then
   echo_local "Userquit falling back to bash.."
   exec 1>/dev/console 2>/dev/console /bin/bash
 else
   echo_local "Error starting init-process falling back to bash."
 #  /rescue.sh
-  exec 1>/dev/console 2>/dev/console /bin/bash
+  exec 1>&- 2>&- 3>&- 4>&- 5>&-
+  exec 1>/dev/console 2>/dev/console
+  exec /bin/bash
 fi
 #********** main
 
 ################
 # $Log: linuxrc,v $
-# Revision 1.10  2007-01-19 13:41:27  mark
+# Revision 1.11  2007-03-09 17:57:48  mark
+# added nash like switchRoot support
+#
+# Revision 1.10  2007/01/19 13:41:27  mark
 # init_cmd uses full /var/init_cmd_file and /var/init_chroot/file content.
 # Fixes bug #21
 #
