@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.31 2007-02-09 11:06:16 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.32 2007-03-09 18:01:11 mark Exp $
 #
 # @(#)$File$
 #
@@ -17,7 +17,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.31 2007-02-09 11:06:16 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.32 2007-03-09 18:01:11 mark Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -62,28 +62,24 @@ source /etc/hardware-lib.sh
 source /etc/network-lib.sh
 source /etc/clusterfs-lib.sh
 
-rootfs=$(getRootFS)
-source /etc/${rootfs}-lib.sh
+clutype=$(getCluType)
+source /etc/${clutype}-lib.sh
 
 # including all distribution dependent files
 distribution=$(getDistribution)
 [ -e /etc/${distribution}/hardware-lib.sh ] && source /etc/${distribution}/hardware-lib.sh
 [ -e /etc/${distribution}/network-lib.sh ] && source /etc/${distribution}/network-lib.sh
 [ -e /etc/${distribution}/clusterfs-lib.sh ] && source /etc/${distribution}/clusterfs-lib.sh
-[ -e /etc/${distribution}/${rootfs}-lib.sh ] && source /etc/${distribution}/${rootfs}-lib.sh
+[ -e /etc/${distribution}/${clutype}-lib.sh ] && source /etc/${distribution}/${clutype}-lib.sh
 
 echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.31 $ $Date: 2007-02-09 11:06:16 $'
+echo_local 'Internal Version $Revision: 1.32 $ $Date: 2007-03-09 18:01:11 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
-
-init_cmd="/sbin/init $(cat /proc/cmdline)"
-echo_local_debug "initcmd: $init_cmd"
-step
 
 x=`cat /proc/version`;
 KERNEL_VERSION=`expr "$x" : 'Linux version \([^ ]*\)'`
@@ -122,6 +118,7 @@ sourceserver=$(getParm ${cfsparams} 4)
 quorumack=$(getParm ${cfsparams} 5)
 nodeid=$(getParm ${cfsparams} 6)
 nodename=$(getParm ${cfsparams} 7)
+rootfs=$(getParm ${cfsparams} 8)
 return_code 0
 
 if [ -n "$rootsource" ] && [ "$rootsource" = "iscsi" ]; then
@@ -135,6 +132,7 @@ echo_local_debug "*****************************"
 echo_local_debug "Debug: $debug"
 echo_local_debug "Stepmode: $stepmode"
 echo_local_debug "Debug-stepmode: $dstepmode"
+echo_local_debug "Clutype: $clutype"
 echo_local_debug "mount_opts: $mount_opts"
 echo_local_debug "tmpfix: $tmpfix"
 echo_local_debug "ip: $ipConfig"
@@ -146,6 +144,7 @@ echo_local_debug "scsifailover: $scsifailover"
 echo_local_debug "quorumack: $quorumack"
 echo_local_debug "nodeid: $nodeid"
 echo_local_debug "nodename: $nodename"
+echo_local_debug "rootfs: $rootfs"
 echo_local_debug "*****************************"
 
 echo_local_debug "*****************************"
@@ -172,13 +171,17 @@ wait
 step
 
 # cluster_conf is set in clusterfs-lib.sh or overwritten in gfs-lib.sh
-cfsparams=( $(clusterfs_config $cluster_conf $ipConfig $nodeid $nodename) )
+# FIXME: This overrides boot setting !
+# BUG: bz#31
+
+cfsparams=( $(clusterfs_config $cluster_conf $ipConfig $nodeid $nodename ) )
 nodeid=${cfsparams[0]}
 nodename=${cfsparams[1]}
 rootvolume=${cfsparams[2]}
 _mount_opts=${cfsparams[3]}
 _scsifailover=${cfsparams[4]}
-_ipConfig=${cfsparams[@]:5}
+rootfs=${cfsparams[5]}
+_ipConfig=${cfsparams[@]:6}
 [ -n "$_ipConfig" ] && ipConfig=$_ipConfig
 [ -n "$_mount_opts" ] && mount_opts=$_mount_opts
 [ -n "$_scsifailover" ] && scsifailover=$_scsifailover
@@ -190,10 +193,16 @@ echo_local_debug "nodeid: $nodeid"
 echo_local_debug "nodename: $nodename"
 echo_local_debug "rootvolume: $rootvolume"
 echo_local_debug "scsifailover: $scsifailover"
+echo_local_debug "rootfs: $rootfs"
 echo_local_debug "ipConfig: $ipConfig"
 echo_local_debug "*****************************"
 
 step
+
+if [ "$clutype" != "$rootfs" ]; then
+	source /etc/${rootfs}-lib.sh
+	[ -e /etc/${distribution}/${rootfs}-lib.sh ] && source /etc/${distribution}/${rootfs}-lib.sh
+fi
 
 dm_start
 scsi_start
@@ -284,14 +293,14 @@ fi
 sleep 5
 step
 
-clusterfs_mount $rootfs $root $mount_point $mount_opts 3 5
+clusterfs_mount $rootfs $root $newroot $mount_opts 3 5
 if [ $return_c -ne 0 ]; then
    echo_local "Could not mount cluster filesystem $rootfs $root to $mount_point. Exiting ($mount_opts)"
    exit_linuxrc 1
 fi
 step
 
-clusterfs_mount_cdsl $mount_point $cdsl_local_dir $nodeid $cdsl_prefix
+clusterfs_mount_cdsl $newroot $cdsl_local_dir $nodeid $cdsl_prefix
 if [ $return_c -ne 0 ]; then
    echo_local "Could not mount cdsl $cdsl_local_dir to ${cdsl_prefix}/$nodeid. Exiting"
    exit_linuxrc 1
@@ -299,82 +308,62 @@ fi
 step
 
 #if [ -n "$debug" ]; then set -x; fi
-copy_relevant_files $cdsl_local_dir $mount_point $netdevs
+copy_relevant_files $cdsl_local_dir $newroot $netdevs
 #if [ -n "$debug" ]; then set +x; fi
 step
 
+#FIXME: remove lines
 cd $mount_point
 if [ ! -e initrd ]; then
     /bin/mkdir initrd
 fi
 
-clusterfs_services_restart / $mount_point
+clusterfs_services_restart / $newroot
 restart_error=$?
 step
 
-switchRoot $mount_point initrd
-critical=$?
-
-echo_local -n "Copying logfile to $new_root/${bootlog}..."
-exec_local cp -f ${pivot_root}/${bootlog} ${new_root}/${bootlog} || cp -f ${pivot_root}/${bootlog} ${new_root}/$(basename $bootlog)
-if [ -f ${new_root}/$bootlog ]; then
-  bootlog=${new_root}/$bootlog
+echo_local -n "Copying logfile to $newroot/${bootlog}..."
+exec_local cp -f ${bootlog} ${newroot}/${bootlog} || cp -f ${bootlog} ${newroot}/$(basename $bootlog)
+if [ -f ${newroot}/$bootlog ]; then
+  bootlog=${newroot}/$bootlog
 else
-  bootlog=${new_root}/$(basename $bootlog)
+  bootlog=${newroot}/$(basename $bootlog)
 fi
 exec 3>> $bootlog
 exec 4>> $bootlog
 return_code_warning
 step
 
-#init_cmd="/sbin/init $(cat /proc/cmdline)"
-newroot="${new_root}"
+# FIXME: Remove line
 #bootlog="/var/log/comoonics-boot.log"
 
-if [ $critical -eq 0 ]; then
-  if [ -n "$tmpfix" ]; then
-    echo_local "Setting up tmp..."
-    exec_local createTemp /dev/ram1
-  fi
+echo_local -n "Stopping syslogd..."
+exec_local stop_service "syslogd" / &&
+return_code
 
-  echo_local -n "Stopping syslogd..."
-  exec_local stop_service "syslogd" /${pivot_root} &&
-  return_code
-
-  dev_start
-
-  echo_local "Copying the devicesfiles.."
-  exec_local cp -a ${pivot_root}/dev/* /dev
-  return_code
-
-  echo_local "Cleaning up..."
-  exec_local umount ${pivot_root}/dev &&
-  exec_local umount ${pivot_root}/proc &&
-  exec_local umount ${pivot_root}/sys
-  return_code
-
-  echo_local -n "Removing files in initrd"
-  if [ $restart_error -eq 0 ]; then
-    exec_local rm -rf ${pivot_root}/*
-    return_code
-  else
-    passed
-    # echo_local "(SKIPPED, failed restart clustersvc)"
-  fi
-  step
-  newroot="/"
-
-  echo_local "Starting init-process ($init_cmd)..."
-  exit_linuxrc 0 "$init_cmd" "$newroot"
-else
-  exit_linuxrc 1
+if [ -n "$tmpfix" ]; then
+  echo_local "Setting up tmp..."
+  exec_local createTemp /dev/ram1
 fi
+
+echo_local "Mounting the device file system"
+exec_local mount -t tmpfs --bind /dev $newroot/dev
+return_code
+
+
+step
+
+echo_local "Starting init-process ($init_cmd)..."
+exit_linuxrc 0 "$init_cmd" "$newroot"
 
 #********** main
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.31  2007-02-09 11:06:16  marc
+# Revision 1.32  2007-03-09 18:01:11  mark
+# added support for nash like switchRoot
+#
+# Revision 1.31  2007/02/09 11:06:16  marc
 # added nodeid and nodename
 #
 # Revision 1.30  2007/01/19 13:40:20  mark
