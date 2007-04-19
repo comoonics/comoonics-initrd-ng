@@ -1,0 +1,13 @@
+mount
+umount
+cp
+date
+mkdir
+tar
+basename
+gzip
+grep
+awk
+dmesg
+@map /opt/atix/comoonics-hf-sysreport/comhf-sysreport.sh /bin/
+@map /opt/atix/comoonics-hf-sysreport/comhf-sysreport /bin/
