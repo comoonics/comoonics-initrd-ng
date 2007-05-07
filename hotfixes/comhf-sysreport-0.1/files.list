@@ -10,5 +10,4 @@ grep
 awk
 dmesg
 hostname
-@map /opt/atix/comoonics-hf-sysreport/comhf-sysreport.sh /bin/
 @map /opt/atix/comoonics-hf-sysreport/comhf-sysreport /bin/

@@ -1,5 +1,5 @@
 %define version 0.1
-%define release 02
+%define release 03
 
 %define COM_ROOT /opt/atix/comoonics-hf-sysreport
 
@@ -39,8 +39,8 @@ mkdir -p ${RPM_BUILD_ROOT}%{INIT_PATH}
 mkdir -p ${RPM_BUILD_ROOT}%{COM_CONFIG_PATH}
 
 install -m 744 ./comhf_update_chroot.sh ${RPM_BUILD_ROOT}%{INIT_PATH}/comhf_update_chroot
-install -m 744 ./comhf-sysreport.sh %{COM_INST_ROOT}
-install -m 777 ./comhf-sysreport %{COM_INST_ROOT}
+install -m 744 ./comhf-sysreport.sh %{COM_INST_ROOT}/comhf-sysreport
+#install -m 777 ./comhf-sysreport %{COM_INST_ROOT}
 install -m 744 ./comhf-update_fenced_chroot.sh %{COM_INST_ROOT}
 install -m 644 ./files.list ${RPM_BUILD_ROOT}%{COM_CONFIG_PATH}
 
@@ -61,13 +61,15 @@ chkconfig comhf_update_chroot off
 %dir %{COM_ROOT}
 %dir %{COM_CONFIG_PATH}
 %{INIT_PATH}/comhf_update_chroot
-%{COM_ROOT}/comhf-sysreport.sh
+#%{COM_ROOT}/comhf-sysreport.sh
 %{COM_ROOT}/comhf-sysreport
 %{COM_ROOT}/comhf-update_fenced_chroot.sh
 %{COM_CONFIG_PATH}/files.list
 
 
 %changelog
+* Mon May 07 2007 Mark Hlawatschek <hlawatschek at atix.de> 0.1.03
+- minor changes
 * Thu Apr 26 2007 Mark Hlawatschek <hlawatschek at atix.de> 0.1.02
 - modified output
 * Thu Apr 19 2007 Mark Hlawatschek <hlawatschek at atix.de> 0.1.01
