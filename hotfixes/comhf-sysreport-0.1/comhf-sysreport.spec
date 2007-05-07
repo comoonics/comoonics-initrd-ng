@@ -1,5 +1,5 @@
 %define version 0.1
-%define release 01
+%define release 02
 
 %define COM_ROOT /opt/atix/comoonics-hf-sysreport
 
@@ -68,5 +68,7 @@ chkconfig comhf_update_chroot off
 
 
 %changelog
+* Thu Apr 26 2007 Mark Hlawatschek <hlawatschek at atix.de> 0.1.02
+- modified output
 * Thu Apr 19 2007 Mark Hlawatschek <hlawatschek at atix.de> 0.1.01
 - First RPM version 

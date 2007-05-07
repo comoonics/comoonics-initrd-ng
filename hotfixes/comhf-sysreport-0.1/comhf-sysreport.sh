@@ -7,7 +7,7 @@
 #  DESCRIPTION
 #*******
 #
-# $Id: comhf-sysreport.sh,v 1.1 2007-04-19 15:42:27 mark Exp $
+# $Id: comhf-sysreport.sh,v 1.2 2007-05-07 07:21:03 mark Exp $
 #
 # @(#)$File$
 #
@@ -30,6 +30,8 @@ vardir=/var/com-sysinfo
 mydir=$vardir/$(date +%F-%H%M%S)
 resdir=$mydir/results
 logfile=$mydir/com-sysinfo.log
+repfile=$(hostname)_sysreport_$(date +%F).tgz
+chrootdir="/tmp/fence_tool"
 
 function usage() {
 	echo "`basename $0` [ [-h] | [-v] ]"
@@ -80,7 +82,6 @@ function catifexec() {
     echo -n $STATUS
     echo "$*" >> $resdir/`/bin/basename $1`
     $* >> $resdir/`/bin/basename $1` 2>&1
-    echo -n $STATUS
     echo $(rc2str 0)
     return 1
   fi
@@ -159,7 +160,10 @@ catifexec "/bin/dmesg"
 log "creating tar.gz file"
 
 cd $mydir
-tar czf com-sysinfo.tgz *  
+tar czf $repfile *  
 cd -
 
 do_post
+
+echo "DONE."
+echo "INFO: The sysreport can be found at $chrootdir/$mydir/$repfile"
