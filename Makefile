@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.23 2007-02-23 16:45:36 mark Exp $
+# $Id: Makefile,v 1.24 2007-05-23 15:31:24 mark Exp $
 #
 # @(#)$file$
 #
@@ -40,7 +40,7 @@ PREFIX=/
 #  IDEAS
 #  SOURCE
 #
-VERSION=1.0
+VERSION=1.2
 
 #************ VERSION 
 #****d* Makefile/PACKAGE_NAME
@@ -111,6 +111,8 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/atix.txt \
   boot-scripts/etc/boot-lib.sh \
   boot-scripts/etc/gfs-lib.sh \
+  boot-scripts/etc/ext3-lib.sh \
+  boot-scripts/etc/nfs-lib.sh \
   boot-scripts/etc/comoonics-release \
   boot-scripts/etc/iscsi-lib.sh \
   boot-scripts/etc/fenced_mv_files.list \
@@ -179,6 +181,7 @@ CFG_FILES=basefiles.list \
 	rpms.initrd.d/comoonics.list \
 	rpms.initrd.d/perl.list \
 	rpms.initrd.d/dm_multipath.list \
+	rpms.initrd.d/nfs.list \
 	rpms.initrd.d/python.list
 #************ CFG_FILES 
 
@@ -320,7 +323,12 @@ rpm: archive
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.23  2007-02-23 16:45:36  mark
+# Revision 1.24  2007-05-23 15:31:24  mark
+# set bootimage revision to 1.2
+# added multipath support
+# added support for ext3 and nfs
+#
+# Revision 1.23  2007/02/23 16:45:36  mark
 # added make rpm
 # added rpms.initrd.d/m_multipath.list
 #
