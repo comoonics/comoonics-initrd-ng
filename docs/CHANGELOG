@@ -5,6 +5,13 @@ IDEAS:
 	* define process for changelog
 
 CHANGES:
+- 2007-05-23 Release 1.2.02
+    * added support for RHEL4u5
+- 2007-04-11 Release 1.2.01
+    * modified switchroot to 2.6 style
+    * added nfs rootfs support
+    * added ext3 rootfs supprt
+    * seperated fs and cluster type
 - 2007-02-23; Release: 1.0.81
     * modified multipath partition recognition
     * added file rpms.initrd.d/dm_multipath.list
@@ -40,7 +47,10 @@ TODO:
 ########################################
 # CVS-Log
 # $Log: CHANGELOG,v $
-# Revision 1.9  2007-02-23 16:46:23  mark
+# Revision 1.10  2007-05-23 15:32:01  mark
+# Added entry for bootimage 1.2.02
+#
+# Revision 1.9  2007/02/23 16:46:23  mark
 # modified 1.0.81
 #
 # Revision 1.8  2007/02/23 16:42:42  mark
