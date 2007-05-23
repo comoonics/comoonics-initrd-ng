@@ -21,7 +21,7 @@
 # with ATIX.
 #/initrd_sr-2.6.9-34.ELsmp.img.gz
 # %define _initrddir /etc/init.d
-# $Id: comoonics-bootimage.spec,v 1.34 2007-03-01 10:50:04 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.35 2007-05-23 15:30:00 mark Exp $
 #
 ##
 # TO DO
@@ -47,13 +47,13 @@
 
 Name: comoonics-bootimage
 Summary: Comoonics Bootimage. Scripts for creating an initrd in a gfs shared root environment
-Version: 1.0
+Version: 1.2
 BuildArch: noarch
 Requires: comoonics-cs >= 0.5-17, comoonics-cs-py >= 0.1-15
 Conflicts: tmpwatch
-Release: 81
+Release: 02
 Vendor: ATIX GmbH
-Packager: Marc Grimme (grimme@atix.de)
+Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
 URL:     http://www.atix.de/
 Source:  http://www.atix.de/software/downloads/comoonics/comoonics-bootimage-%{version}.tar.gz
@@ -264,6 +264,8 @@ fi
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/passwd
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/boot-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/gfs-lib.sh
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/ext3-lib.sh
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/nfs-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/comoonics-release
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/iscsi-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/fenced_mv_files.list
@@ -297,6 +299,7 @@ fi
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/python.list
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/perl.list
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/dm_multipath.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/nfs.list
 
 %config(noreplace) %{CONFIGDIR}/comoonics-bootimage.cfg
 %config(noreplace) %{CONFIGDIR}/bootimage/files.initrd.d/user_edit.list
@@ -336,6 +339,13 @@ fi
 %doc CHANGELOG
 
 %changelog
+* Wed May 23 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.2.02
+- added support for RHEL4u5
+* Wed Apr 11 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.2.01
+- modified switchroot to 2.6 style
+- added nfs rootfs support
+- added ext3 rootfs supprt
+- seperated fs and cluster type
 * Fri Feb 09 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.0.81
 - added support for dm_multipath partitions
 * Fri Feb 09 2007 Marc Grimme <grimme@atix.de> 1.0.81-rc
@@ -376,7 +386,10 @@ fi
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.34  2007-03-01 10:50:04  marc
+# Revision 1.35  2007-05-23 15:30:00  mark
+# version 1.2.02
+#
+# Revision 1.34  2007/03/01 10:50:04  marc
 # changed getopt
 #
 # Revision 1.33  2007/02/23 16:44:50  mark
