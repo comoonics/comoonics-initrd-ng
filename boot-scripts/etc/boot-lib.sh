@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.40 2007-03-09 18:03:11 mark Exp $
+# $Id: boot-lib.sh,v 1.41 2007-05-23 09:14:43 mark Exp $
 #
 # @(#)$File$
 #
@@ -149,7 +149,7 @@ function exit_linuxrc() {
 #  NAME
 #    step
 #  SYNOPSIS
-#    function step() {
+#    function step( info ) {
 #  MODIFICATION HISTORY
 #  IDEAS
 #    Modify or debug a running skript
@@ -159,6 +159,7 @@ function exit_linuxrc() {
 #
 function step() {
    if [ ! -z "$stepmode" ]; then
+   	 echo $1
      echo -n "Press <RETURN> to continue (timeout in $step_timeout secs) [quit|break|continue]"
      read -t$step_timeout __the_step
      case "$__the_step" in
@@ -652,9 +653,6 @@ function switchRoot() {
   #	echo_local_debug "calling ${distribution}_switchRoot ${new_root}"
   #	exec ${distribution}_switchRoot ${new_root}
 
-  echo "Now all files in initrd should be removed..."
-  step
-
   # this returns a comand to delete all unused files.
   # TODO: directories are not removed. Add functionality to remove empty directories.
   # CAUTION: Do NOT remove /mnt/newroot ;-)
@@ -1139,7 +1137,10 @@ function passed {
 #********** passed
 
 # $Log: boot-lib.sh,v $
-# Revision 1.40  2007-03-09 18:03:11  mark
+# Revision 1.41  2007-05-23 09:14:43  mark
+# added some fancy output
+#
+# Revision 1.40  2007/03/09 18:03:11  mark
 # added nash like switchRoot support
 #
 # Revision 1.39  2007/02/09 11:03:59  marc
