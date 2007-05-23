@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.32 2007-03-09 18:01:11 mark Exp $
+# $Id: linuxrc.generic.sh,v 1.33 2007-05-23 09:15:35 mark Exp $
 #
 # @(#)$File$
 #
@@ -17,7 +17,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.32 2007-03-09 18:01:11 mark Exp $
+#    $Id: linuxrc.generic.sh,v 1.33 2007-05-23 09:15:35 mark Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -76,7 +76,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.32 $ $Date: 2007-03-09 18:01:11 $'
+echo_local 'Internal Version $Revision: 1.33 $ $Date: 2007-05-23 09:15:35 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -197,7 +197,7 @@ echo_local_debug "rootfs: $rootfs"
 echo_local_debug "ipConfig: $ipConfig"
 echo_local_debug "*****************************"
 
-step
+step "Parameter loaded"
 
 if [ "$clutype" != "$rootfs" ]; then
 	source /etc/${rootfs}-lib.sh
@@ -206,10 +206,9 @@ fi
 
 dm_start
 scsi_start
+clusterfs_load $lockmethod
 
-if [ "$scsifailover" = "mapper" ] || [ "$scsifailover" = "devicemapper" ]; then
-  dm_mp_start
-fi
+step "Hardware detected, modules loaded"
 
 echo_local -n "Restarting udev "
 exec_local udev_start
@@ -217,9 +216,12 @@ return_code
 
 if [ "$scsifailover" = "mapper" ] || [ "$scsifailover" = "devicemapper" ]; then
   dm_mp_start
+  step "device mapper multipath started"  
 fi
 
 lvm_start
+
+step "LVM subsystem started"
 
 netdevs=""
 for ipconfig in $ipConfig; do
@@ -245,12 +247,13 @@ for ipconfig in $ipConfig; do
   netdevs="$netdevs $dev"
 done
 
+step "Network configuration started"
+
 cc_auto_syslogconfig $cluster_conf $nodename
 start_service /sbin/syslogd no_chroot -m 0
-step
 
-clusterfs_load $lockmethod
-step
+step "Syslog service started"
+
 
 if [ -z "$quorumack" ]; then
   echo_local -n "Checking for all nodes to be available"
@@ -291,55 +294,29 @@ if [ $return_c -ne 0 ]; then
    exit_linuxrc 1
 fi
 sleep 5
-step
+
+step "Cluster services started"
 
 clusterfs_mount $rootfs $root $newroot $mount_opts 3 5
 if [ $return_c -ne 0 ]; then
    echo_local "Could not mount cluster filesystem $rootfs $root to $mount_point. Exiting ($mount_opts)"
    exit_linuxrc 1
 fi
-step
+
+step "RootFS mounted"
 
 clusterfs_mount_cdsl $newroot $cdsl_local_dir $nodeid $cdsl_prefix
 if [ $return_c -ne 0 ]; then
    echo_local "Could not mount cdsl $cdsl_local_dir to ${cdsl_prefix}/$nodeid. Exiting"
    exit_linuxrc 1
 fi
-step
+
+step "CDSL tree mounted"
 
 #if [ -n "$debug" ]; then set -x; fi
 copy_relevant_files $cdsl_local_dir $newroot $netdevs
 #if [ -n "$debug" ]; then set +x; fi
 step
-
-#FIXME: remove lines
-cd $mount_point
-if [ ! -e initrd ]; then
-    /bin/mkdir initrd
-fi
-
-clusterfs_services_restart / $newroot
-restart_error=$?
-step
-
-echo_local -n "Copying logfile to $newroot/${bootlog}..."
-exec_local cp -f ${bootlog} ${newroot}/${bootlog} || cp -f ${bootlog} ${newroot}/$(basename $bootlog)
-if [ -f ${newroot}/$bootlog ]; then
-  bootlog=${newroot}/$bootlog
-else
-  bootlog=${newroot}/$(basename $bootlog)
-fi
-exec 3>> $bootlog
-exec 4>> $bootlog
-return_code_warning
-step
-
-# FIXME: Remove line
-#bootlog="/var/log/comoonics-boot.log"
-
-echo_local -n "Stopping syslogd..."
-exec_local stop_service "syslogd" / &&
-return_code
 
 if [ -n "$tmpfix" ]; then
   echo_local "Setting up tmp..."
@@ -351,7 +328,38 @@ exec_local mount -t tmpfs --bind /dev $newroot/dev
 return_code
 
 
-step
+#FIXME: remove lines
+cd $mount_point
+if [ ! -e initrd ]; then
+    /bin/mkdir initrd
+fi
+
+clusterfs_services_restart / $newroot
+restart_error=$?
+
+step "Cluster services restarted"
+
+echo_local -n "Copying logfile to $newroot/${bootlog}..."
+exec_local cp -f ${bootlog} ${newroot}/${bootlog} || cp -f ${bootlog} ${newroot}/$(basename $bootlog)
+if [ -f ${newroot}/$bootlog ]; then
+  bootlog=${newroot}/$bootlog
+else
+  bootlog=${newroot}/$(basename $bootlog)
+fi
+exec 3>> $bootlog
+exec 4>> $bootlog
+return_code_warning
+step "Logfiles copied"
+
+# FIXME: Remove line
+#bootlog="/var/log/comoonics-boot.log"
+
+echo_local -n "Stopping syslogd..."
+exec_local stop_service "syslogd" / &&
+return_code
+
+
+step "Initialization completed."
 
 echo_local "Starting init-process ($init_cmd)..."
 exit_linuxrc 0 "$init_cmd" "$newroot"
@@ -360,7 +368,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.32  2007-03-09 18:01:11  mark
+# Revision 1.33  2007-05-23 09:15:35  mark
+# added support fur RHEL4u5
+#
+# Revision 1.32  2007/03/09 18:01:11  mark
 # added support for nash like switchRoot
 #
 # Revision 1.31  2007/02/09 11:06:16  marc
