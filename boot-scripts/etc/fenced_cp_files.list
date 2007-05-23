@@ -4,6 +4,7 @@
 /dev/ptmx
 /dev/random
 /dev/urandom
+/dev/misc/dlm-control
 /etc/cluster/cluster.conf
 /etc/passwd
 /etc/protocols
