@@ -1,21 +1,21 @@
 %define version 0.1
-%define release 03
+%define release 04
 
 %define COM_ROOT /opt/atix/comoonics-hf-sysreport
 
 #
 # hotfix for com-sysreport spec file
-# 
-Summary: Comoonics hotfix sysreport 
+#
+Summary: Comoonics hotfix sysreport
 Name: comhf-sysreport
 Version: %{version}
 Release: %{release}
 License: GPL
 Group: System Environment/Base
-Source0: %{name}-%{version}.tar.gz 
+Source0: %{name}-%{version}.tar.gz
 Buildroot: %{_tmppath}/%{name}-%{version}-buildroot
 Provides: comhf-sysreport
-BuildPrereq: bash 
+BuildPrereq: bash
 
 ExclusiveArch: noarch
 
@@ -68,9 +68,11 @@ chkconfig comhf_update_chroot off
 
 
 %changelog
+* Wed Jun 06 2007 Marc Grimme <grimme@atix.de> 0.1-04
+  Moved dlm lock generation as last step so that everything else is generated and can be used.
 * Mon May 07 2007 Mark Hlawatschek <hlawatschek at atix.de> 0.1.03
 - minor changes
 * Thu Apr 26 2007 Mark Hlawatschek <hlawatschek at atix.de> 0.1.02
 - modified output
 * Thu Apr 19 2007 Mark Hlawatschek <hlawatschek at atix.de> 0.1.01
-- First RPM version 
+- First RPM version

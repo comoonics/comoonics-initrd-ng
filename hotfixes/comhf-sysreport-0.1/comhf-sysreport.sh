@@ -7,7 +7,7 @@
 #  DESCRIPTION
 #*******
 #
-# $Id: comhf-sysreport.sh,v 1.2 2007-05-07 07:21:03 mark Exp $
+# $Id: comhf-sysreport.sh,v 1.3 2007-06-06 11:29:08 marc Exp $
 #
 # @(#)$File$
 #
@@ -37,7 +37,7 @@ function usage() {
 	echo "`basename $0` [ [-h] | [-v] ]"
 	echo "  -h help "
 	echo "  -v be chatty"
-	echo "  -V show version"	
+	echo "  -V show version"
 }
 
 function log() {
@@ -64,15 +64,15 @@ function do_pre() {
 		log "/proc does not exist I'll create it"
 		mkdir /proc
 	fi
-	mount -t proc none /proc	
-	
+	mount -t proc none /proc
+
 }
 
 function do_post() {
 	log "cleaning up"
 	log " - umounting /proc"
 	umount /proc
-	
+
 }
 
 # borrowed from redhats sysreport
@@ -107,7 +107,7 @@ function catiffile() {
 
   return 0
 }
-		
+
 function get_cluster_dlm_locks() {
 	for service in $(cat /proc/cluster/services | grep "DLM Lock Space" | awk -F '\"' ' {print $2}'); do
 		log "Getting locks for $service"
@@ -115,7 +115,7 @@ function get_cluster_dlm_locks() {
 		cat /proc/cluster/dlm_locks > $resdir/dlm_locks_$service
 	done
 }
-		
+
 while getopts vhV option ; do
 	case "$option" in
 	    V) # version
@@ -146,21 +146,20 @@ log "starting com-sysinfo"
 STATUS="Gathering procfs cluster information (/proc/cluster):"
 catiffile "/proc/cluster"
 
-STATUS="Gathering dlm_locks (/proc/cluster/dlm_locks)"
-echo $STATUS
-log $STATUS
-get_cluster_dlm_locks
-
 STATUS="Gathering slabinfo (/proc/slabinfo)"
 catiffile "/proc/slabinfo"
 
 STATUS="Gathering dmesg output"
 catifexec "/bin/dmesg"
 
-log "creating tar.gz file"
+STATUS="Gathering dlm_locks (/proc/cluster/dlm_locks)"
+echo $STATUS
+log $STATUS
+get_cluster_dlm_locks
 
+log "creating tar.gz file"
 cd $mydir
-tar czf $repfile *  
+tar czf $repfile *
 cd -
 
 do_post
