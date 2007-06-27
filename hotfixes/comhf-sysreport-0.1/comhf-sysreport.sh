@@ -7,7 +7,7 @@
 #  DESCRIPTION
 #*******
 #
-# $Id: comhf-sysreport.sh,v 1.3 2007-06-06 11:29:08 marc Exp $
+# $Id: comhf-sysreport.sh,v 1.4 2007-06-27 13:38:14 marc Exp $
 #
 # @(#)$File$
 #
@@ -143,14 +143,14 @@ do_pre
 log "starting com-sysinfo"
 
 # get all information out of /proc/cluster
-STATUS="Gathering procfs cluster information (/proc/cluster):"
-catiffile "/proc/cluster"
-
 STATUS="Gathering slabinfo (/proc/slabinfo)"
 catiffile "/proc/slabinfo"
 
 STATUS="Gathering dmesg output"
 catifexec "/bin/dmesg"
+
+STATUS="Gathering procfs cluster information (/proc/cluster):"
+catiffile "/proc/cluster"
 
 STATUS="Gathering dlm_locks (/proc/cluster/dlm_locks)"
 echo $STATUS
