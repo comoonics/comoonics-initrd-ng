@@ -21,7 +21,7 @@
 # with ATIX.
 #/initrd_sr-2.6.9-34.ELsmp.img.gz
 # %define _initrddir /etc/init.d
-# $Id: comoonics-bootimage.spec,v 1.35 2007-05-23 15:30:00 mark Exp $
+# $Id: comoonics-bootimage.spec,v 1.36 2007-07-24 17:05:34 mark Exp $
 #
 ##
 # TO DO
@@ -51,7 +51,7 @@ Version: 1.2
 BuildArch: noarch
 Requires: comoonics-cs >= 0.5-17, comoonics-cs-py >= 0.1-15
 Conflicts: tmpwatch
-Release: 02
+Release: 03
 Vendor: ATIX GmbH
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -339,6 +339,8 @@ fi
 %doc CHANGELOG
 
 %changelog
+* Tue Jul 24 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.2.03
+- added support for fence_ipmilan
 * Wed May 23 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.2.02
 - added support for RHEL4u5
 * Wed Apr 11 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.2.01
@@ -386,7 +388,10 @@ fi
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.35  2007-05-23 15:30:00  mark
+# Revision 1.36  2007-07-24 17:05:34  mark
+# added 1.2.03
+#
+# Revision 1.35  2007/05/23 15:30:00  mark
 # version 1.2.02
 #
 # Revision 1.34  2007/03/01 10:50:04  marc
