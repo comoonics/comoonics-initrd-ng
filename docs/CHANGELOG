@@ -5,6 +5,8 @@ IDEAS:
 	* define process for changelog
 
 CHANGES:
+- 2007-07-24 Release 1.2.03
+    * added support for fence_ipmilan
 - 2007-05-23 Release 1.2.02
     * added support for RHEL4u5
 - 2007-04-11 Release 1.2.01
@@ -47,7 +49,10 @@ TODO:
 ########################################
 # CVS-Log
 # $Log: CHANGELOG,v $
-# Revision 1.10  2007-05-23 15:32:01  mark
+# Revision 1.11  2007-07-24 15:06:08  mark
+# added 1.2.03
+#
+# Revision 1.10  2007/05/23 15:32:01  mark
 # Added entry for bootimage 1.2.02
 #
 # Revision 1.9  2007/02/23 16:46:23  mark
