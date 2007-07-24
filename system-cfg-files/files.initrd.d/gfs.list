@@ -20,10 +20,12 @@ ccsd
 cman_tool
 fenced
 fence_tool
+ipmitool
 /etc/cluster/cluster.conf
 /sbin/cluster_cmd
 /sbin/magma_tool
 # START special things for lock_gulmd
+/sbin/fence_ipmilan
 /sbin/fence_apc
 /sbin/fence_rsa
 /sbin/fence_bladecenter
