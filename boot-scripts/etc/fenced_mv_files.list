@@ -68,6 +68,7 @@
 /lib/libmagma.so.1
 /lib/libmagma.so.1.0.0
 /lib/libm.so.6
+/lib/libm.so.6.1
 /lib/libnsl-2.3.2.so
 /lib/libnsl.so.1
 /lib/libnss1_compat-2.3.4.so
@@ -118,7 +119,10 @@
 /lib/magma/magma_gulm.so
 /lib/magma/magma_sm.so
 # $Log: fenced_mv_files.list,v $
-# Revision 1.5  2007-01-04 09:48:04  marc
+# Revision 1.6  2007-07-24 14:59:11  mark
+# added support for fence_ipmi
+#
+# Revision 1.5  2007/01/04 09:48:04  marc
 # new files
 #
 /opt/atix/comoonics-cs/xml/rh-cluster.dtd
@@ -144,6 +148,7 @@
 /sbin/fence_egenera
 /sbin/fence_gnbd
 /sbin/fence_ilo
+/sbin/fence_ipmilan
 /sbin/fence_manual
 /sbin/fence_mcdata
 /sbin/fence_node
@@ -159,6 +164,7 @@
 /usr/bin/python
 /usr/bin/ssh
 /usr/bin/strace
+/usr/bin/ipmitool
 /usr/lib64/libdes425.so.3
 /usr/lib64/libdes425.so.3.0
 /usr/lib64/libgssapi_krb5.so.2
@@ -179,6 +185,10 @@
 /usr/lib64/libkrb5.so.3.2
 /usr/lib64/libpython2.3.so
 /usr/lib64/libpython2.3.so.1.0
+/usr/lib64/libreadline.so.4
+/usr/lib64/libreadline.so.4.3
+/usr/lib64/libncurses.so.5
+/usr/lib64/libncurses.so.5.4
 /usr/lib64/libwrap.so.0
 /usr/lib64/libwrap.so.0.7.6
 /usr/lib64/libxml2.so.2
@@ -207,6 +217,10 @@
 /usr/lib/libkrb5.so.3.2
 /usr/lib/libpython2.3.so
 /usr/lib/libpython2.3.so.1.0
+/usr/lib/libreadline.so.4
+/usr/lib/libreadline.so.4.3
+/usr/lib/libncurses.so.5
+/usr/lib/libncurses.so.5.4
 /usr/lib/libssl.so
 /usr/lib/libwrap.so.0
 /usr/lib/libwrap.so.0.7.6
