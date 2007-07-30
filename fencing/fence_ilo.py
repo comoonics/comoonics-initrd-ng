@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# $Id: fence_ilo.py,v 1.6 2006-12-04 10:19:09 marc Exp $
+# $Id: fence_ilo.py,v 1.7 2007-07-30 06:45:31 marc Exp $
 
 import socket
 from OpenSSL import SSL
@@ -261,6 +261,7 @@ class FenceIlo:
 
 def usage():
     print """%s [-h|--help] [-V|--version] [-q|--quiet] [--port port] [-l|--login login] [-p|--password password] [-a|--address ipaddress] [-o|--option status|on|off|reset]
+       [-x|--xmlfile xmlfile]
        """ % sys.argv[0]
 
 def version():
@@ -377,7 +378,10 @@ if __name__ == '__main__':
 
 #################
 # $Log: fence_ilo.py,v $
-# Revision 1.6  2006-12-04 10:19:09  marc
+# Revision 1.7  2007-07-30 06:45:31  marc
+# added help for -x|--xmlfile (#BZ 39)
+#
+# Revision 1.6  2006/12/04 10:19:09  marc
 # added cvs tag
 #
 # Revision 1.5  2006/10/06 08:35:50  marc

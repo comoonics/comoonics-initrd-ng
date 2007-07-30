@@ -21,7 +21,7 @@
 # with ATIX.
 #/initrd_sr-2.6.9-34.ELsmp.img.gz
 # %define _initrddir /etc/init.d
-# $Id: comoonics-bootimage.spec,v 1.36 2007-07-24 17:05:34 mark Exp $
+# $Id: comoonics-bootimage.spec,v 1.37 2007-07-30 06:47:12 marc Exp $
 #
 ##
 # TO DO
@@ -78,7 +78,7 @@ The Fence ackserver is a service running in the fencedchroot and managing manual
 
 %package fenceclient-ilo
 Version: 0.1
-Release: 16
+Release: 17
 Summary: An alternative fence client for ilo cards of HP servers. Written in python.
 Group:   Storage/Management
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
@@ -375,6 +375,8 @@ fi
 - introducted changelog
 
 %changelog fenceclient-ilo
+* Mon Jul 30 2007 Marc Grimme <grimme@atix.de> - 0.1-17
+- added help for -x|--xmlfile (#BZ 39)
 * Wed Feb 07 2007 Marc Grimme <grimme@atix.de - 0.1-16
 - introducted changelog
 
@@ -388,7 +390,10 @@ fi
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.36  2007-07-24 17:05:34  mark
+# Revision 1.37  2007-07-30 06:47:12  marc
+# added help for -x|--xmlfile (#BZ 39)
+#
+# Revision 1.36  2007/07/24 17:05:34  mark
 # added 1.2.03
 #
 # Revision 1.35  2007/05/23 15:30:00  mark
