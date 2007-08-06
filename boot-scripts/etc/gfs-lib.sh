@@ -1,9 +1,9 @@
 #
-# $Id: gfs-lib.sh,v 1.32 2007-08-06 09:14:48 mark Exp $
+# $Id: gfs-lib.sh,v 1.33 2007-08-06 15:50:11 mark Exp $
 #
 # @(#)$File$
 #
-# Copyright (c) 2001 ATIX GmbH.
+# Copyright (c) 2001-2007 ATIX GmbH.
 # Einsteinstrasse 10, 85716 Unterschleissheim, Germany
 # All rights reserved.
 #
@@ -33,7 +33,8 @@
 
 default_lockmethod="lock_dlm"
 default_mountopts="defaults,noatime,nodiratime"
-ccs_xml_query="/opt/atix/comoonics-cs/ccs_xml_query"
+#ccs_xml_query="/opt/atix/comoonics-cs/ccs_xml_query"
+ccs_xml_query="/usr/bin/com-queryclusterconf"
 cl_check_nodes="/usr/bin/cl_checknodes"
 
 #****f* gfs-lib.sh/getGFSMajorVersion
@@ -143,6 +144,108 @@ function gfs_get_mountopts {
 }
 #************ gfs_get_mountopts
 
+#****f* gfs-lib.sh/gfs_get_chroot_mountpoint
+#  NAME
+#    gfs_get_chroot_mountpoint
+#  SYNOPSIS
+#    gfs_get_chroot_mountpoint(cluster_conf, nodename)
+#  DESCRIPTION
+#    Gets the mountpoint for the chroot environment of this node
+#  IDEAS
+#  SOURCE
+#
+function gfs_get_chroot_mountpoint {
+   local xml_file=$1
+   local hostname=$2
+   [ -z "$hostname" ] && hostname=$(gfs_get_nodename $xml_file)
+   local xpath="/cluster/clusternodes/clusternode[@name=\"$hostname\"]/com_info/chrootenv/@mountpoint"
+   local xml_cmd="${ccs_xml_query} -f $xml_file"
+   $xml_cmd -q query_value $xpath
+}
+#************ gfs_get_chroot_mountpoint
+
+#****f* gfs-lib.sh/gfs_get_chroot_fstype
+#  NAME
+#    gfs_get_chroot_fstype
+#  SYNOPSIS
+#    gfs_get_chroot_fstype(cluster_conf, nodename)
+#  DESCRIPTION
+#    Gets the filesystem type for the chroot environment of this node
+#  IDEAS
+#  SOURCE
+#
+function gfs_get_chroot_fstype {
+   local xml_file=$1
+   local hostname=$2
+   [ -z "$hostname" ] && hostname=$(gfs_get_nodename $xml_file)
+   local xpath="/cluster/clusternodes/clusternode[@name=\"$hostname\"]/com_info/chrootenv/@fstype"
+   local xml_cmd="${ccs_xml_query} -f $xml_file"
+   $xml_cmd -q query_value $xpath
+}
+#************ gfs_get_chroot_fstype
+
+#****f* gfs-lib.sh/gfs_get_chroot_device
+#  NAME
+#    gfs_get_chroot_device
+#  SYNOPSIS
+#    gfs_get_chroot_device(cluster_conf, nodename)
+#  DESCRIPTION
+#    Gets the mountpoint for the chroot environment of this node
+#  IDEAS
+#  SOURCE
+#
+function gfs_get_chroot_device {
+   local xml_file=$1
+   local hostname=$2
+   [ -z "$hostname" ] && hostname=$(gfs_get_nodename $xml_file)
+   local xpath="/cluster/clusternodes/clusternode[@name=\"$hostname\"]/com_info/chrootenv/@device"
+   local xml_cmd="${ccs_xml_query} -f $xml_file"
+   $xml_cmd -q query_value $xpath
+}
+#************ gfs_get_chroot_device
+
+#****f* gfs-lib.sh/gfs_get_chroot_mountopts
+#  NAME
+#    gfs_get_chroot_mountopts
+#  SYNOPSIS
+#    gfs_get_chroot_mountopts(cluster_conf, nodename)
+#  DESCRIPTION
+#    Gets the mount options for the chroot environment of this node
+#  IDEAS
+#  SOURCE
+#
+function gfs_get_chroot_mountopts {
+   local xml_file=$1
+   local hostname=$2
+   [ -z "$hostname" ] && hostname=$(gfs_get_nodename $xml_file)
+   local xpath="/cluster/clusternodes/clusternode[@name=\"$hostname\"]/com_info/chrootenv/@mountoptions"
+   local xml_cmd="${ccs_xml_query} -f $xml_file"
+   $xml_cmd -q query_value $xpath
+}
+#************ gfs_get_chroot_mountopts
+
+#****f* gfs-lib.sh/gfs_get_chroot_dir
+#  NAME
+#    gfs_get_chroot_dir
+#  SYNOPSIS
+#    gfs_get_chroot_dir(cluster_conf, nodename)
+#  DESCRIPTION
+#    Gets the directory for the chroot environment of this node
+#  IDEAS
+#  SOURCE
+#
+function gfs_get_chroot_dir {
+   local xml_file=$1
+   local hostname=$2
+   [ -z "$hostname" ] && hostname=$(gfs_get_nodename $xml_file)
+   local xpath="/cluster/clusternodes/clusternode[@name=\"$hostname\"]/com_info/chrootenv/@chrootdir"
+   local xml_cmd="${ccs_xml_query} -f $xml_file"
+   $xml_cmd -q query_value $xpath
+}
+#************ gfs_get_chroot_dir
+
+
+
 #****f* gfs-lib.sh/gfs_get_scsifailover
 #  NAME
 #    gfs_get_scsifailover
@@ -225,6 +328,21 @@ function gfs_get_nodeid {
     $xml_cmd -f $ccs_file -q nodeid $mac
 }
 #************ gfs_get_nodeid
+
+#****f* gfs-lib.sh/gfs_get_clu_nodename
+#  NAME
+#    gfs_get_clu_nodename
+#  SYNOPSIS
+#    function gfs_get_clu_nodename()
+#  DESCRIPTION
+#    gets the nodename of this node from the cluster infrastructure
+#  SOURCE
+function gfs_get_clu_nodename {
+  cat /proc/cluster/status | grep "Node name:"  | awk  '{print $3}'
+}
+#******* cc_get_clu_nodename
+
+
 
 #****f* gfs-lib.sh/gfs_get_netdevs
 #  NAME
@@ -376,11 +494,12 @@ function gfs_load {
 #  SOURCE
 #
 function gfs_services_start {
-  local lock_method=$1
+  local chroot_path=$1 
+  local lock_method=$2
 
-  services="ccsd $lock_method cman fenced"
+  services="ccsd $lock_method cman qdiskd fenced clvmd"
   for service in $services; do
-    gfs_start_$service
+    gfs_start_$service $chroot_path
     if [ $? -ne 0 ]; then
       return $?
     fi
@@ -427,7 +546,8 @@ function gfs_services_restart {
 #  SOURCE
 #
 function gfs_start_lock_gulm {
-  exec_local start_service /sbin/lock_gulmd
+  local chroot_path=$1
+  start_service_chroot $chroot_path '/sbin/lock_gulmd'
   sts=1
   if [ $? -eq 0 ]; then
     echo_local -n "   check Lockgulmd.."
@@ -488,8 +608,8 @@ function gfs_start_cman {
 #  SOURCE
 #
 function gfs_start_fenced {
-  mkdir -p /var/lib/fence_tool
-  start_service /var/lib/fence_tool '/sbin/fenced -c'
+  local chroot_path=$1
+  start_service_chroot $chroot_path '/sbin/fenced -c'
   echo_local "Waiting for fenced to complete join"
   exec_local fence_tool wait
   return_code
@@ -507,14 +627,8 @@ function gfs_start_fenced {
 #  SOURCE
 #
 function gfs_start_ccsd {
-  #/sbin/chroot_dir=/var/lib/fence_tool
-  #mkdir -p $chroot_dir 2> /dev/null
-  #mkdir -p ${chroot_dir}/dev
-  #for dir in raw rawctl; do
-  #  mv /dev/$dir $chroot_dir/dev/$dir && ln -sf ${chroot_dir}/dev/$dir /dev/$dir
-  #done
-  #exec_local gfs_start_service $chroot_dir /sbin/ccsd $1
-  start_service /sbin/ccsd "no_chroot"
+  local chroot_path=$1
+  start_service_chroot $chroot_path /sbin/ccsd 
 }
 
 #************ gfs_start_ccsd
@@ -556,6 +670,29 @@ function gfs_restart_ccsd {
     return_code $?
 }
 #******gfs_restart_ccsd
+
+#****f* gfs-lib.sh/gfs_tart_clvmd
+#  NAME
+#    gfs_start_clvmd
+#  SYNOPSIS
+#    function gfs_start_clvmd(chroot)
+#  DESCRIPTION
+#    Function starts the clvmd in a chroot environment
+#  IDEAS
+#  SOURCE
+#
+function gfs_start_clvmd {
+   chroot_path=$1
+
+   echo_local -n "Starting clvmd ($chroot_path) "
+   start_service_chroot $chroot_path /usr/sbin/clvmd
+   return_code $?
+   echo_local -n "Activating VGs:"
+   start_service_chroot $chroot_path /sbin/lvm vgscan --mknodes >/dev/null 2>&1
+   start_service_chroot $chroot_path /sbin/lvm vgchange -ay >/dev/null 2>&1
+   return_code $?
+}
+#******gfs_start_clvmd
 
 #****f* gfs-lib.sh/gfs_restart_clvmd
 #  NAME
@@ -623,6 +760,24 @@ function gfs_restart_fenced {
    return $error_code
 }
 #************ gfs_restart_fenced
+
+#****f* gfs-lib.sh/gfs_start_qdiskd
+#  NAME
+#    gfs_start_qdiskd
+#  SYNOPSIS
+#    function gfs_start_qdiskd {
+#  DESCRIPTION
+#    Function starts the qdiskd in chroot environment
+#  IDEAS
+#  SOURCE
+#
+function gfs_start_qdiskd {
+  local chroot_path=$1
+  start_service_chroot $chroot_path /sbin/qdiskd -Q
+}
+#************ gfs_start_qdiskd
+
+
 #****f* clusterfs-lib.sh/gfs_checkhosts_alive
 #  NAME
 #    gfs_checkhosts_alive
@@ -644,7 +799,12 @@ function gfs_checkhosts_alive {
 #********* gfs_checkhosts_alive
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.32  2007-08-06 09:14:48  mark
+# Revision 1.33  2007-08-06 15:50:11  mark
+# reorganized libraries
+# added methods for chroot management
+# fits for bootimage release 1.3
+#
+# Revision 1.32  2007/08/06 09:14:48  mark
 # Fixed BZ #76
 #
 # Revision 1.31  2007/03/09 18:01:44  mark

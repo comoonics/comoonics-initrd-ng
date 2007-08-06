@@ -1,9 +1,9 @@
 #
-# $Id: clusterfs-lib.sh,v 1.12 2007-03-09 18:02:02 mark Exp $
+# $Id: clusterfs-lib.sh,v 1.13 2007-08-06 15:50:11 mark Exp $
 #
 # @(#)$File$
 #
-# Copyright (c) 2001 ATIX GmbH.
+# Copyright (c) 2001-2007 ATIX GmbH.
 # Einsteinstrasse 10, 85716 Unterschleissheim, Germany
 # All rights reserved.
 #
@@ -146,7 +146,7 @@ function clusterfs_config {
   local _foundmac=
   macs=$(ifconfig -a | grep -i hwaddr | awk '{print $5;};')
   for mac in $macs; do
-    [ -z "$_nodeid" ] && _nodeid=$(cc_get_nodeid ${cluster_conf} $mac 2</dev/null)
+    [ -z "$_nodeid" ] && _nodeid=$(cc_get_nodeid ${cluster_conf} $mac 2>/dev/null)
     [ -z "$_nodename" ] && _nodename=$(cc_get_nodename ${cluster_conf} $mac 2>/dev/null)
   done
   echo $_nodeid
@@ -176,22 +176,6 @@ function clusterfs_config {
 #  DESCRIPTION
 #    gets the nodeid of this node referenced by the networkdevice
 #  SOURCE
-function cc_get_nodeid {
-   local cluster_conf=$1
-   local mac=$2
-
-   ${clutype}_get_nodeid $cluster_conf $mac
-}
-#******* cc_get_nodeid
-
-#****f* clusterfs-lib.sh/cc_get_nodeid
-#  NAME
-#    cc_get_nodeid
-#  SYNOPSIS
-#    function cc_get_nodeid(cluster_conf, netdev)
-#  DESCRIPTION
-#    gets the nodeid of this node referenced by the networkdevice
-#  SOURCE
 function cc_get_nodeid_by_nodename {
    local cluster_conf=$1
    local mac=$2
@@ -199,6 +183,20 @@ function cc_get_nodeid_by_nodename {
    ${clutype}_get_nodeid $cluster_conf $mac
 }
 #******* cc_get_nodeid
+
+#****f* clusterfs-lib.sh/cc_get_clu_nodename
+#  NAME
+#    cc_get_clu_nodename
+#  SYNOPSIS
+#    function cc_get_clu_nodename()
+#  DESCRIPTION
+#    gets the cluster nodename of this node from the cluster infrastructure
+#  SOURCE
+function cc_get_clu_nodename {
+  ${clutype}_get_clu_nodename 
+}
+#******* cc_get_clu_nodename
+
 
 #****f* clusterfs-lib.sh/cc_get_nodeid
 #  NAME
@@ -279,6 +277,122 @@ function cc_get_mountopts {
    ${clutype}_get_mountopts $cluster_conf $nodename
 }
 #******** cc_get_mountopts
+
+
+
+#****f* clusterfs-lib.sh/cc_get_chroot_mountpoint
+#  NAME
+#    cc_get_chroot_mountpoint
+#  SYNOPSIS
+#    function cc_get_chrootmountpoint(cluster_conf, nodename)
+#  DESCRIPTION
+#    gets the mountpoint for the chroot environment of this node referenced by the networkdevice
+#    default is /comoonics
+#  SOURCE
+function cc_get_chroot_mountpoint {
+   local cluster_conf=$1
+   local nodename=$2
+
+   local mp=$(${clutype}_get_chroot_mountpoint $cluster_conf $nodename)
+   if [ -n "$mp" ]; then
+      echo $mp
+   else
+      echo $DFLT_CHROOT_MOUNT
+   fi
+}
+#******** cc_get_chroot_mountpoint
+
+
+#****f* clusterfs-lib.sh/cc_get_chroot_fstype
+#  NAME
+#    cc_get_chroot_mountpoint
+#  SYNOPSIS
+#    function cc_get_chrootfstype(cluster_conf, nodename)
+#  DESCRIPTION
+#    gets the filesystem type for the chroot environment of this node referenced by the networkdevice
+#    defaults to tmpfs
+#  SOURCE
+function cc_get_chroot_fstype {
+   local cluster_conf=$1
+   local nodename=$2
+
+   local fs=$(${clutype}_get_chroot_fstype $cluster_conf $nodename)
+   if [ -n "$fs" ]; then
+      echo $fs
+   else
+      echo "tmpfs"
+   fi
+   
+}
+#******** cc_get_chroot_fstype
+
+#****f* clusterfs-lib.sh/cc_get_chroot_device
+#  NAME
+#    cc_get_chroot_device
+#  SYNOPSIS
+#    function cc_get_chrootdevice(cluster_conf, nodename)
+#  DESCRIPTION
+#    gets the device for the chroot environment of this node referenced by the networkdevice
+#    defaults to nobe
+#  SOURCE
+function cc_get_chroot_device {
+   local cluster_conf=$1
+   local nodename=$2
+
+   local dev=$(${clutype}_get_chroot_device $cluster_conf $nodename)
+   if [ -n "$dev" ]; then
+      echo $dev
+   else
+      echo "none"
+   fi
+   
+}
+#******** cc_get_chroot_fstype
+
+#****f* clusterfs-lib.sh/cc_get_chroot_mountopts
+#  NAME
+#    cc_get_chroot_mountopts
+#  SYNOPSIS
+#    function cc_get_chrootmountopts(cluster_conf, nodename)
+#  DESCRIPTION
+#    gets the mount options for the chroot environment of this node referenced by the networkdevice
+#    defaults to defaults
+#  SOURCE
+function cc_get_chroot_mountopts {
+   local cluster_conf=$1
+   local nodename=$2
+
+   local mo=$(${clutype}_get_chroot_mountopts $cluster_conf $nodename)
+   if [ -n "$mo" ]; then
+      echo $mo
+   else
+      echo "defaults"
+   fi
+}
+#******** cc_get_chroot_mountopts
+
+#****f* clusterfs-lib.sh/cc_get_chroot_dir
+#  NAME
+#    cc_get_chroot_dir
+#  SYNOPSIS
+#    function cc_get_chroot_dir(cluster_conf, nodename)
+#  DESCRIPTION
+#    gets the directory (including mounpoint) for the chroot environment of this node referenced by the networkdevice
+#    defaults to cc_get_chroot_mountpoint
+#  SOURCE
+function cc_get_chroot_dir {
+   local cluster_conf=$1
+   local nodename=$2
+
+   local dir=$(${clutype}_get_chroot_dir $cluster_conf $nodename)
+   if [ -n "$dir" ]; then
+      echo $dir
+   else
+      cc_get_chroot_mountpoint $cluster_conf $nodename
+   fi
+}
+#******** cc_get_chroot_dir
+
 
 #****f* clusterfs-lib.sh/cc_get_scsifailover
 #  NAME
@@ -581,7 +695,12 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.12  2007-03-09 18:02:02  mark
+# Revision 1.13  2007-08-06 15:50:11  mark
+# reorganized libraries
+# added methods for chroot management
+# fits for bootimage release 1.3
+#
+# Revision 1.12  2007/03/09 18:02:02  mark
 # separated fstype and clutype
 #
 # Revision 1.11  2007/02/09 11:04:52  marc

@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.41 2007-05-23 09:14:43 mark Exp $
+# $Id: boot-lib.sh,v 1.42 2007-08-06 15:50:11 mark Exp $
 #
 # @(#)$File$
 #
@@ -23,9 +23,10 @@
 #  DESCRIPTION
 #*******
 
-LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/lib/i686:/usr/lib"
+
+#LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/lib/i686:/usr/lib"
 PATH=/bin:/sbin:/usr/bin:/usr/sbin
-export PATH LD_LIBRARY_PATH
+export PATH #LD_LIBRARY_PATH
 
 # Binaries
 STAT="/usr/bin/stat"
@@ -303,79 +304,6 @@ function getBootParameters() {
 }
 #************ getBootParameters
 
-#****f* boot-lib.sh/initEnv
-#  NAME
-#    initEnv
-#  SYNOPSIS
-#    function initEnv() {
-#  DESCRIPTION
-#    Initializes basic things
-#  IDEAS
-#  SOURCE
-#
-function initEnv {
-  # copied from redhat /etc/init.d/functions
-  TEXTDOMAIN=initscripts
-
-  # Make sure umask is sane
-  umask 022
-
-  # Get a sane screen width
-  [ -z "${COLUMNS:-}" ] && COLUMNS=80
-
-  [ -z "${CONSOLETYPE:-}" ] && CONSOLETYPE="`/sbin/consoletype`"
-
-  if [ -f /etc/sysconfig/i18n -a -z "${NOLOCALE:-}" ] ; then
-    . /etc/sysconfig/i18n
-    if [ "$CONSOLETYPE" != "pty" ]; then
-      case "${LANG:-}" in
-        ja_JP*|ko_KR*|zh_CN*|zh_TW*|bn_*|bd_*|pa_*|hi_*|ta_*|gu_*)
-          export LC_MESSAGES=en_US
-          export LANG
-        ;;
-      *)
-        export LANG
-        ;;
-      esac
-    else
-      [ -n "$LC_MESSAGES" ] && export LC_MESSAGES
-      export LANG
-    fi
-  fi
-
-  # Read in our configuration
-  if [ -z "${BOOTUP:-}" ]; then
-    if [ -f /etc/sysconfig/init ]; then
-      . /etc/sysconfig/init
-    else
-      # This all seem confusing? Look in /etc/sysconfig/init,
-      # or in /usr/doc/initscripts-*/sysconfig.txt
-      BOOTUP=color
-      RES_COL=60
-      MOVE_TO_COL="echo -en \\033[${RES_COL}G"
-      SETCOLOR_SUCCESS="echo -en \\033[1;34m"
-      SETCOLOR_FAILURE="echo -en \\033[1;31m"
-      SETCOLOR_WARNING="echo -en \\033[1;35m"
-      SETCOLOR_NORMAL="echo -en \\033[0;39m"
-      LOGLEVEL=1
-    fi
-    if [ "$CONSOLETYPE" = "serial" ]; then
-      BOOTUP=serial
-      MOVE_TO_COL=
-      SETCOLOR_SUCCESS=
-      SETCOLOR_FAILURE=
-      SETCOLOR_WARNING=
-      SETCOLOR_NORMAL=
-    fi
-  fi
-
-  if [ "${BOOTUP:-}" != "verbose" ]; then
-    INITLOG_ARGS="-q"
-  else
-    INITLOG_ARGS=
-  fi
-}
-#********** initEnv
 
 #****f* boot-lib.sh/initBootProcess
 #  NAME
@@ -425,64 +353,27 @@ function initBootProcess() {
 }
 #************ initBootProcess
 
-#****f* boot-lib.sh/is_modified
-#  NAME
-#    is_modified
-#  SYNOPSIS
-#    function is_modified(sourcefile, destfile)
-#  DESCRIPTION
-#    returns 1 if sourcefile is older or equal to destfile. Otherwise it returns 0
-#  IDEAS
-#  SOURCE
-#
-function is_modified {
-  local source=$1
-  local dest=$2
-  if [ -e "$STAT" ]; then
-    local smodified=$($STAT -c%Y $source 2>/dev/null)
-    local dmodified=$($STAT -c%Y $dest 2>/dev/null)
-    if [ -z "$dmodified" ] || [ -z "$smodified" ] || [ $smodified -gt $dmodified ]; then
-      return 0
-    else
-      return 1
-    fi
-  else
-    return 0
-  fi
-}
-#*********** is_modified
 
-#****f* boot-lib.sh/cp_file
+#****f* boot-lib.sh/start_service_chroot
 #  NAME
-#    cp_file
+#    start_service_chroot
 #  SYNOPSIS
-#    function cp_file(sourcefile, destfile)
+#    function start_service_chroot(chrootdir, service)
 #  DESCRIPTION
-#    File copy function to copy a file from sourcefile to destfile. Knows about directory.
-#    When stat is available it only copys if file is modified.
+#    This function starts the given service in a chroot path
 #  IDEAS
+#    This function replaces start_service
 #  SOURCE
 #
-function cp_file {
-  local source=$1
-  local dest=$2
-  [ -d $(dirname $dest) ] || $MKDIR -p $(dirname $dest) 2>/dev/null
-  if [ -d $source ]; then
-    if [ ! -e $dest ]; then
-      mkdir -p ${dest}
-    fi
-    sfiles=( $(find $source -maxdepth 1) )
-    for sfile in ${sfiles[@]:1}; do
-      cp_file $sfile "${dest}/"$(basename $sfile)
-    done
-  else
-    is_modified $source $dest
-    if [ $? -eq 0 ]; then
-      $COPY -af $source $dest 2>/dev/null
-    fi
-  fi
+function start_service_chroot() {
+	chroot_dir=$1
+	shift
+	service_name=$1
+	shift
+	echo_local "Starting service $service_name"
+	exec_local /usr/sbin/chroot $chroot_dir $service_name $*
 }
-#************ cp_file
+#********start_service_chroot
 
 #****f* boot-lib.sh/start_service
 #  NAME
@@ -493,6 +384,7 @@ function cp_file {
 #    This function starts the given service in a chroot environment per default
 #    If no_chroot is given as param the chroot is skipped
 #  IDEAS
+#    deprecated in 1.3
 #  SOURCE
 #
 function start_service {
@@ -569,52 +461,115 @@ function start_service {
 }
 #************ start_service
 
-##****f* boot-lib.sh/get_dependent_files
+#****f* boot-lib.sh/create_chroot
 #  NAME
-#    get_dependent_files
+#    create_chroot build a chroot environment
 #  SYNOPSIS
-#    function get_dependent_files(filename) {
-#  DESCRIPTION
-#    checks if the file is executable.
-#    If so it returns all dependent libraries with path as a stringlist.
+#    function switchRoot($chroot_fstype $chroot_dev $chroot_path $chroot_options $chroot_source) {
+#  MODIFICATION HISTORY
+#  USAGE
+#  switchRoot
 #  IDEAS
+#
 #  SOURCE
 #
-function get_dependent_files() {
-  filename=$1
-  # file is a symbolic link
-  if [ -L $filename ]; then
-    local newfile=`ls -l $filename | sed -e "s/.* -> //"`
-    if [ "${newfile:0:1}" != "/" ]; then
-       echo `dirname $filename`/$newfile
-    else
-       echo $newfile
-    fi
-  # file is executable and not directory
-  elif [ -x $filename -a ! -d $filename ]; then
-    ldd $filename > /dev/null 2>&1
-    if [ $? = 0 ]; then
-#      local newfiles=`ldd $filename | sed -e "s/^.*=> \(.*\) (.*).*$/\1/" | sed -e "s/^.*statically linked.*$//"`
-      local newfiles=$(ldd $filename | awk '
-$3 ~ /^\// { print $3; }
-$1 ~ /^\// && $3 == "" { print $1; }
-')
-      for newfile in $newfiles; do
-         echo $newfile
-         if [ -L $newfile ]; then
-           local _newfile=$(ls -l $newfile | awk '$11 != "" { print $11; }')
-           if [ "${_newfile:0:1}" != "/" ]; then
-             echo $(dirname $newfile)/$_newfile
-           else
-             echo $_newfile
-           fi
-         fi
-      done
-    fi
-  fi
+function create_chroot () {
+  chroot_source=$1
+  chroot_path=$2
+  
+  exec_local cp -ax $chroot_source $chroot_path
+  exec_local mkdir -p $chroot_path/tmp
+  exec_local mount --bind /dev $chroot_path/dev
+  exec_local mount -t devpts none $chroot_path/dev/pts
+  exec_local mount -t proc proc $chroot_path/proc
+  exec_local mount -t sysfs none $chroot_path/sys
 }
-#************ get_dependent_files
+#************ create_chroot
 
+
+#****f* boot-lib.sh/move_chroot
+#  NAME
+#    move chroot environment
+#  SYNOPSIS
+#    function switchRoot(chroot_path, new_chroot_path) {
+#  MODIFICATION HISTORY
+#  USAGE
+#  
+#  IDEAS
+#
+#  SOURCE
+#
+function move_chroot () {
+  chroot_path=$1
+  new_chroot_path=$2
+  
+  exec_local mkdir -p $new_chroot_path
+  exec_local /bin/mount --move $chroot_path $new_chroot_path 
+}
+#************ move_chroot
+
+#****f* boot-lib.sh/build_chroot
+#  NAME
+#    move chroot environment
+#  SYNOPSIS
+#    function build_chroot(clusterconf, nodename) {
+#  MODIFICATION HISTORY
+#  USAGE
+#  
+#  IDEAS
+#
+#  SOURCE
+#
+function build_chroot () {
+	local cluster_conf=$1
+	local nodename=2
+	local chroot_fstype
+	local chroot_dev
+	local chroot_mount
+	local chroot_path
+	local chroot_options
+
+	# method1: read file /etc/sysconfig/comoonics-chroot
+	if [ -e  /etc/sysconfig/comoonics-chroot ]; then
+		. /etc/sysconfig/comoonics-chroot
+	# method2: read all information from cluster.conf
+	# --if not given: uses default values
+	else
+		# Filesystem type for the chroot device
+		chroot_fstype=$(cc_get_chroot_fstype $cluster_conf $nodename)
+		# chroot device name
+		chroot_dev=$(cc_get_chroot_device $cluster_conf $nodename)
+		# Mountpoint for the chroot device
+		chroot_mount=$(cc_get_chroot_mountpoint $cluster_conf $nodename)
+		# Path where the chroot environment should be build
+		chroot_path=$(cc_get_chroot_dir $cluster_conf $nodename)
+		# Mount options for the chroot device
+		chroot_options=$(cc_get_chroot_mountopts $cluster_conf $nodename)
+	fi
+
+	echo_out "Creating chroot environment"
+	exec_local mkdir -p $chroot_mount
+	exec_local /bin/mount -t $chroot_fstype -o $chroot_options $chroot_dev $chroot_mount
+	# method3 fallback to tmpfs
+	if [ $? -ne 0 ]; then
+		echo_out "Mounting chroot failed. Using default values"
+		#Fallback values
+		# Filesystem type for the chroot device
+		chroot_fstype="tmpfs"
+		# chroot device name
+		chroot_dev="none"
+		# Mountpoint for the chroot device
+		chroot_mount=$DFLT_CHROOT_MOUNT
+		# Path where the chroot environment should be build
+		chroot_path=$DFLT_CHROOT_PATH
+		# Mount options for the chroot device
+		chroot_options="defaults"
+		exec_local mkdir $chroot_mount
+		exec_local /bin/mount -t $chroot_fstype -o $chroot_options $chroot_dev $chroot_mount
+	fi
+	create_chroot "/" $chroot_path
+	echo "$chroot_mount $chroot_path"
+}
 
 
 #****f* boot-lib.sh/switchRoot
@@ -658,6 +613,7 @@ function switchRoot() {
   # CAUTION: Do NOT remove /mnt/newroot ;-)
   skipfiles=$(for file in $skipfiles; do which $file; done)
   skipfiles=$(for file in $skipfiles; do get_dependent_files $file; which $file; done | sort -u)
+  skipfiles="$skipfiles /dev/console"
   skipfiles=$(echo $skipfiles | sort -u | sed 's/ /" -o -regex "/g')
   cmd=$(echo find / -xdev ! \\\( -regex \"$skipfiles\" \\\) -exec 'rm {}' '\;')
 
@@ -924,7 +880,7 @@ function error_local_debug() {
 function exec_local() {
   do_exec=1
   if [ -n "$dstepmode" ]; then
-  	echo -n "$* (Y|n|c)? "
+  	echo -n "$* (Y|n|c)? " >&2
   	read dstep_ans
   	[ $dstep_ans == "n" ] && do_exec=0
   	[ $dstep_ans == "c" ] && dstepmode=""
@@ -961,183 +917,14 @@ function exec_local_debug() {
 }
 #************ exec_local_debug
 
-#****f* boot-lib.sh/return_code
-#  NAME
-#    return_code
-#  SYNOPSIS
-#    function return_code() {
-#  DESCRIPTION
-#    Displays the actual return code. Either from $1 if given or from $?
-#  SOURCE
-#
-function return_code {
-  if [ -n "$1" ]; then
-    return_c=$1
-  fi
-  if [ -n "$return_c" ] && [ $return_c -eq 0 ]; then
-    success
-  else
-    failure
-  fi
-  local code=$return_c
-  return $code
-}
-#************ return_code
-
-#****f* boot-lib.sh/return_code_warning
-#  NAME
-#    return_code_warning
-#  SYNOPSIS
-#    function return_code_warning() {
-#  DESCRIPTION
-#    Displays the actual return code. Warning instead of failed.
-#    Either from $1 if given or from $?
-#  SOURCE
-#
-function return_code_warning() {
-  if [ -n "$1" ]; then
-    return_c=$1
-  fi
-  if [ -n "$return_c" ] && [ $return_c -eq 0 ]; then
-    success
-  else
-    warning
-  fi
-}
-#************ return_code_warning
-
-#****f* boot-lib.sh/return_code_passed
-#  NAME
-#    return_code_passed
-#  SYNOPSIS
-#    function return_code_passed() {
-#  DESCRIPTION
-#    Displays the actual return code. Warning instead of failed.
-#    Either from $1 if given or from $?
-#  SOURCE
-#
-function return_code_passed() {
-  if [ -n "$1" ]; then
-    return_c=$1
-  fi
-  if [ -n "$return_c" ] && [ $return_c -eq 0 ]; then
-    success
-  else
-    warning
-  fi
-}
-#************ return_code_passed
-
-#****f* boot-lib.sh/success
-#  NAME
-#    success
-#  SYNOPSIS
-#    function success()
-#  DESCRIPTION
-#    returns formated OK
-#  SOURCE
-function success {
-  [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
-  echo -n "[  "
-  echo -n "[  " >&3
-#  echo -n "[  " >&5
-  [ "$BOOTUP" = "color" ] && $SETCOLOR_SUCCESS
-  echo -n "OK"
-  echo -n "OK" >&3
-#  echo -n "OK" >&5
-  [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
-  echo "  ]"
-  echo "  ]" >&3
-#  echo "  ]" >&5
-  echo -ne "\r"
-#  echo -ne "\r" >&3
-  return 0
-}
-#********** success
-
-#****f* boot-lib.sh/failure
-#  NAME
-#    failure
-#  SYNOPSIS
-#    function failure()
-#  DESCRIPTION
-#    returns formated FAILURE
-#  SOURCE
-function failure {
-  [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
-  echo -n "["
-  echo -n "[" >&3
-#  echo -n "[" >&5
-  [ "$BOOTUP" = "color" ] && $SETCOLOR_FAILURE
-  echo -n "FAILED"
-  echo -n "FAILED" >&3
-#  echo -n "FAILED" >&5
-  [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
-  echo "]"
-  echo -ne "\r"
-  echo "]" >&3
-#  echo "]" >&5
-#  echo -ne "\r" >&3
-  return 1
-}
-#********** warning
-
-#****f* boot-lib.sh/warning
-#  NAME
-#    warning
-#  SYNOPSIS
-#    function warning()
-#  DESCRIPTION
-#    returns formated WARNING
-#  SOURCE
-function warning {
-  [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
-  echo -n "["
-  echo -n "[" >&3
-#  echo -n "[" >&5
-  [ "$BOOTUP" = "color" ] && $SETCOLOR_WARNING
-  echo -n "WARNING"
-  echo -n "WARNING" >&3
-#  echo -n "WARNING" >&5
-  [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
-  echo "]"
-  echo -ne "\r"
-  echo "]" >&3
-#  echo "]" >&5
-#  echo -ne "\r" >&3
-  return 1
-}
-#********** warning
-
-#****f* boot-lib.sh/passed
-#  NAME
-#    passed
-#  SYNOPSIS
-#    function passed()
-#  DESCRIPTION
-#    returns formated PASSED
-#  SOURCE
-function passed {
-  [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
-  echo -n "["
-  echo -n "[" >&3
-#  echo -n "[" >&5
-  [ "$BOOTUP" = "color" ] && $SETCOLOR_WARNING
-  echo -n "PASSED"
-  echo -n "PASSED" >&3
-#  echo -n "PASSED" >&5
-  [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
-  echo "]"
-  echo -ne "\r"
-  echo "]" >&3
-#  echo "]" >&5
-#  echo -ne "\r" >&3
-  return 1
-}
-#********** passed
 
 # $Log: boot-lib.sh,v $
-# Revision 1.41  2007-05-23 09:14:43  mark
+# Revision 1.42  2007-08-06 15:50:11  mark
+# reorganized libraries
+# added methods for chroot management
+# fits for bootimage release 1.3
+#
+# Revision 1.41  2007/05/23 09:14:43  mark
 # added some fancy output
 #
 # Revision 1.40  2007/03/09 18:03:11  mark
