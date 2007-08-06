@@ -16,15 +16,16 @@
 # Provides:
 ### END INIT INFO
 
-INITRD_DIR=/initrd
-FENCE_CHROOT=/var/lib/fence_tool
-FENCE_CHROOT_INITRD=/var/lib/fence_tool
+CHROOT_PATH=$(/opt/atix/comoonics-bootimage/manage_chroot.sh -p) 
+CHROOT_START="/opt/atix/comoonics-bootimage/manage_chroot.sh -a start_service" 
+CHROOT_STATUS_PID="/opt/atix/comoonics-bootimage/manage_chroot.sh -a status_service_pid" 
+CHROOT_STOP_PID="/opt/atix/comoonics-bootimage/manage_chroot.sh -a stop_service_pid" 
 FENCE_OPTS="-c -w"
 
 . /etc/init.d/functions
 [ -f /etc/sysconfig/cluster ] && . /etc/sysconfig/cluster
 
-LOCK_FILE="/var/lock/subsys/fenced"
+LOCK_FILE="/var/lock/subsys/fenced-chroot"
 
 #****f* fenced-chroot/check_sharedroot
 #  NAME
@@ -69,45 +70,10 @@ function get_runlevel {
 #
 start()
 {
-#  pids=$(fuser -mv ${INITRD_DIR} | grep fenced | awk '
-#BEGIN{ found=1; }
-#NF==5 && $5=="fenced" {print $3; found=0;}
-#NF==4 && $4="fenced" {print $2; found=0;}
-#END { exit found; }
-#')
-#  if [ $? -eq 0 ]; then
-#    echo -n $"Stopping fenced from initrd"
-#    kill $pids
-#    if [ $? -eq 0 ]; then
-##      success
-#    else
-#      failure
-#    fi
-#  el
-  FENCE_OPTS="${FENCE_OPTS} $*"
-  if [ -e ${INITRD_DIR}${FENCE_CHROOT_INITRD}/var/run/fenced.pid ] && [ ! -e /FAILURE_fenced ]; then
-    echo -n $"Stopping fenced from initrd"
-    kill $(cat ${INITRD_DIR}${FENCE_CHROOT_INITRD}/var/run/fenced.pid) &&
-    rm -f ${INITRD_DIR}${FENCE_CHROOT_INITRD}/var/run/fenced.pid
-    if [ $? -eq 0 ]; then
-      success
-    else
-      failure
-    fi
-  fi
 
-  if [ -e ${FENCE_CHROOT_INITRD}/var/run/fenced.pid ] && [ ! -e /cdsl.local/FAILURE_fenced ]; then
-    stop
-  fi
+  FENCE_OPTS="${FENCE_OPTS} $*"
 
   echo -n "Starting fence domain (chroot):"
-  if [ -e /cdsl.local/FAILURE_fenced ]; then
-  	passed
-  	echo
-  	echo "Leaving as errors detected before"
-  	rm -f /cdsl.local/FAILURE_fenced
-  	exit 1
-  fi
 
   # If gulm is in ccs, don't start fenced
   if ! [ -r /etc/cluster/cluster.conf ]
@@ -124,17 +90,15 @@ start()
       exit 0
   fi
 
-  rtrn=1
-
-  if [ -e ${FENCE_CHROOT}/var/run/fenced.pid ] && [ -e /proc/$(cat ${FENCE_CHROOT}/var/run/fenced.pid) ]; then
-    echo -n "Already running "$(cat ${FENCE_CHROOT}/var/run/fenced.pid)". Stop first"
-    passed
-    echo
-    return 0
+  if $CHROOT_STATUS_PID /var/run/fenced.pid ; then
+  	success
+  	return 0
+  elif [ -e $CHROOT_PATH//var/run/fenced.pid ]; then
+  	# make sure the pid file is removed
+  	rm -f $CHROOT_PATH/var/run/fenced.pid >& /dev/null
   fi
-  [ -e $FENCE_CHROOT/var/run/fenced.pid ] && rm -r $FENCE_CHROOT/var/run/fenced.pid
-  chroot $FENCE_CHROOT fenced ${FENCE_OPTS} > /dev/null 2>&1
-  rtrn=$?
+  $CHROOT_START fenced $FENCE_OPTS
+  rtrn=$?  
 
   if [ $rtrn -eq 0 ]
     then
@@ -143,28 +107,10 @@ start()
       #> do
       #>      sleep 1;
       #> done
-      success "startup"
+      success 
       echo
-      mount | grep $FENCE_CHROOT_SOURCE &>/dev/null
-      if [ $? -eq 0 ]; then
-      	mountpoint=$FENCE_CHROOT_SOURCE
-      fi
-      mount | grep $FENCE_CHROOT_INITRD &>/dev/null
-      if [ $? -eq 0 ]; then
-      	mountpoint=$FENCE_CHROOT_INITRD
-      fi
-      if [ -n "$mountpoint" ] ; then
-        echo -n "Unmounting \"$mountpoint\" "
-        umount $mountpoint
-        if [ $? -eq 0 ]; then
-          success
-        else
-          failure
-        fi
-        echo
-      fi
   else
-      failure "startup"
+      failure 
       echo
   fi
 
@@ -188,13 +134,7 @@ stop()
 
   if pidof fenced &> /dev/null
     then
-    if [ -f $FENCE_CHROOT/var/run/fenced.pid ] && [ -e /proc/$(cat $FENCE_CHROOT/var/run/fenced.pid) ]; then
-    	kill $(cat $FENCE_CHROOT/var/run/fenced.pid)
-    else
-    	echo -n " started from initrd "
-    	kill $(cat $FENCE_CHROOT_INITRD/var/run/fenced.pid) || killproc fenced
-    fi
-
+    $CHROOT_STOP_PID /var/run/fenced.pid
     rtrn=$?
 
     if [ $rtrn -eq 0 ]
@@ -210,9 +150,7 @@ stop()
     success "shutdown"
     echo
   fi
-
-  rm -f $FENCE_CHROOT/var/run/fenced.pid &> /dev/null
-  rm -f $FENCE_CHROOT_INITRD/var/run/fenced.pid &> /dev/null
+  rm -f ${CHROOT_PATH}/var/run/fenced.pid &> /dev/null
   # need the extra echo to properlly terminate the line
   return $rtrn
 }
@@ -271,7 +209,10 @@ exit $rtrn
 
 #########################
 # $Log: fenced-chroot,v $
-# Revision 1.11  2006-10-06 08:37:18  marc
+# Revision 1.12  2007-08-06 16:01:43  mark
+# adapted to support bootimage 1.3
+#
+# Revision 1.11  2006/10/06 08:37:18  marc
 # added possibility to add params for fenced behind start/stop/restart
 #
 # Revision 1.10  2006/08/28 16:02:22  marc

@@ -18,17 +18,19 @@
 # Provides:
 ### END INIT INFO
 
-INITRD_DIR=/initrd
-FENCE_CHROOT=/var/lib/fence_tool
-FENCE_CHROOT_INITRD=/var/lib/fence_tool
+CHROOT_PATH=$(/opt/atix/comoonics-bootimage/manage_chroot.sh -p) 
+CHROOT_START="/opt/atix/comoonics-bootimage/manage_chroot.sh -a start_service" 
+CHROOT_STATUS_PID="/opt/atix/comoonics-bootimage/manage_chroot.sh -a status_service_pid" 
+CHROOT_STOP_PID="/opt/atix/comoonics-bootimage/manage_chroot.sh -a stop_service_pid" 
+
 CCSD_OPTS=
 
 . /etc/init.d/functions
 [ -f /etc/sysconfig/cluster ] && . /etc/sysconfig/cluster
 
-LOCK_FILE="/var/lock/subsys/ccsd"
+LOCK_FILE="/var/lock/subsys/ccsd-chroot"
 
-#****f* fenced-chroot/check_sharedroot
+#****f* ccsd-chroot/check_sharedroot
 #  NAME
 #    check_sharedroot
 #  SYNOPSIS
@@ -49,25 +51,12 @@ function check_sharedroot {
 
 start()
 {
-
   echo -n "Starting ccsd (chroot):"
-  if [ -e /cdsl.local/FAILURE_ccsdd ]; then
-  	passed
-  	echo
-  	echo "Leaving as errors detected before"
-  	rm -f /cdsl.local/FAILURE_ccsd
-  	exit 1
+  if $CHROOT_STATUS_PID /var/run/cluster/ccsd.pid ; then
+  	success
+  	return 0
   fi
-
-  status ccsd &> /dev/null
-  if [ $? -ne 0 ]
-    then
-      action $"" chroot ${FENCE_CHROOT} /sbin/ccsd $CCSD_OPTS
-      return $?
-  fi
-  success "start"
-  echo
-  return 0
+  action $"" "$CHROOT_START ccsd $CCSD_OPTS"
 }
 
 stop()
@@ -79,9 +68,9 @@ stop()
        then
          # get the pid of ccsd from /var/run/cluster/ccsd.pid
          # and break if the file is not there
-         [ -r ${FENCE_CHROOT}/var/run/cluster/ccsd.pid ] || break
+         [ -r ${CHROOT_PATH}/var/run/cluster/ccsd.pid ] || break
 
-         pid=$(cat ${FENCE_CHROOT}/var/run/cluster/ccsd.pid )
+         pid=$(cat ${CHROOT_PATH}/var/run/cluster/ccsd.pid )
          kill $pid 2> /dev/null || break
 
          sleep 1
