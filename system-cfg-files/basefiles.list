@@ -1,145 +1,17 @@
-#****h* system-cfg-files/gfs61-es40-files.i686.list
+#****h* system-cfg-files/basefiles.list
 #  NAME
-#    gfs61-es40-files.i686.list
+#    basefiles.list
 #    $id$
 #  DESCRIPTION
 #*******
-# $Id: basefiles.list,v 1.4 2006-08-28 16:04:14 marc Exp $
-bash
-nash
-nslookup
-head
-tail
-chmod
-df
-dd
-e2label
-grep
-expr
-sed
-echo
-hostname
-domainname
-cat
-mount
-mv
-umount
-rm
-tee
-ifenslave
-sort
-reboot
-rmmod
-mkdir
-mknod
-chroot
-fuser
-gzip
-gunzip
-ps
-ifconfig
-route
-insmod
-pivot_root
-#startproc
-strace
-/bin/true
-lsmod
-sleep
-killall
-lock_gulmd
-awk
-killall5
-sh
-sfdisk
-init
-kudzu
-gnbd_import
-grubby
-modprobe
-depmod
-ping
-dhclient
-dhclient-script
-ls
-uname
-basename
-consoletype
-ifup
-ifdown
-ip
-mii-tool
-modinfo
-fdisk
-cp
-date
-tar
-lspci
-pidof
-dmesg
-find
-mv
-dirname
-ipcalc
-arping
-mii-tool
-mkfs.ext2
-mbchk
-xargs
-host
-which
-ldd
-/bin/vi
-more
-ethtool
-seq
-ln
-pwd
-wget
-hwclock
-tr
-syslogd
-logger
-lvm
-#vgscan
-#vgchange
-udev
-udevstart
-/etc/modprobe.conf
-/sbin/circleping
-/opt/atix/comoonics-cs/
-/usr/bin/perl
-# END special things for lock_gulmd
-# END other stuff
-# START Systemfiles
-#/dev
-/usr/share/hwdata/
-#/usr/share/hwdata/CardMonitorCombos
-#/usr/share/hwdata/Cards
-#/usr/share/hwdata/MonitorsDB
-#/usr/share/hwdata/pci.ids
-#/usr/share/hwdata/upgradelist
-#/usr/share/hwdata/usb.ids
-#/usr/share/hwdata/pcitable
-/usr/lib/locale/en_US/
-/opt/atix/comoonics-cs/xml/rh-cluster.dtd
+# $Id: basefiles.list,v 1.5 2007-08-06 16:00:16 mark Exp $
 # Map the initrd libs
-@map /opt/atix/comoonics-bootimage/boot-scripts /
+@map&/opt/atix/comoonics-bootimage/boot-scripts&/
 # General Files
 @include $(ls -1 /etc/comoonics/bootimage/files.initrd.d/*.list)
-# Files for this architecture
-@include $(ls -1 /etc/comoonics/bootimage/files.initrd.d/*.list.$(uname -m))
 #####################
 # $Log: basefiles.list,v $
-# Revision 1.4  2006-08-28 16:04:14  marc
-# bugfixes and new file for debug
-#
-# Revision 1.3  2006/08/08 08:31:14  marc
-# patch change to new versions of comoonics-cs comoonics-bootimage
-#
-# Revision 1.2  2006/07/13 14:33:25  mark
-# removed /dev
-#
-# Revision 1.1  2006/06/19 15:57:14  marc
-# initial revision
+# Revision 1.5  2007-08-06 16:00:16  mark
+# reorganized files
+# removed all libraries
 #

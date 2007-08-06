@@ -1,0 +1,12 @@
+# rpms with base libraries
+# lib  			filter
+openssl			\.so
+glibc			^/lib
+libtermcap
+tcp_wrappers	\.so
+expat			\.so
+zlib			\.so
+krb5-libs		\.so
+nss_db			\.so
+nss_ldap		\.so
+libxml2			\.so

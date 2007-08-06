@@ -41,3 +41,5 @@
 /etc/redhat-release
 /etc/resolv.conf
 /etc/hosts
+/etc/modprobe.conf
+/usr/share/hwdata/

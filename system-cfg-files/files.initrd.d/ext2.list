@@ -1,0 +1,4 @@
+# listfile for ext filesystem
+# TODO as we already have an ext2 rpm listfile, we don't need this
+e2label
+mkfs.ext2

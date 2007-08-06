@@ -1,38 +1,3 @@
 # START GFS stuff
-fence_ack_manual
-fence_gnbd
-fence_manual
-fence_node
-fence_drac
-#gfs_conf
-gfs_fsck
-gfs_grow
-gfs_jadd
-gfs_mkfs
-gfs_quota
-gfs_tool
-lock_gulmd
-mkfs.gfs
-gulm_tool
-clvmd
-ccs_tool
-ccsd
-cman_tool
-fenced
-fence_tool
-ipmitool
 /etc/cluster/cluster.conf
-/sbin/cluster_cmd
-/sbin/magma_tool
-# START special things for lock_gulmd
-/sbin/fence_ipmilan
-/sbin/fence_apc
-/sbin/fence_rsa
-/sbin/fence_bladecenter
-/sbin/fence_brocade
-/sbin/fence_egenera
-/sbin/fence_mcdata
-/sbin/fence_vixel
-/sbin/fence_wti
-/sbin/fence_ilo
 # END GFS stuff

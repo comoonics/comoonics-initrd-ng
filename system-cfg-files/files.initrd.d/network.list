@@ -1,0 +1,12 @@
+nslookup
+ifconfig
+route
+dhclient
+dhclient-script
+ifup
+ifdown
+ip
+mii-tool
+ethtool
+udev
+udevstart
