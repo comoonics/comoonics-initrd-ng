@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.31 2007-03-09 18:01:44 mark Exp $
+# $Id: gfs-lib.sh,v 1.32 2007-08-06 09:14:48 mark Exp $
 #
 # @(#)$File$
 #
@@ -471,6 +471,7 @@ function gfs_start_lock_dlm {
 #
 function gfs_start_cman {
   echo_local -n "Joining the cluster manager"
+  sleep 5
   exec_local cman_tool join -w
   return_code
 }
@@ -643,7 +644,10 @@ function gfs_checkhosts_alive {
 #********* gfs_checkhosts_alive
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.31  2007-03-09 18:01:44  mark
+# Revision 1.32  2007-08-06 09:14:48  mark
+# Fixed BZ #76
+#
+# Revision 1.31  2007/03/09 18:01:44  mark
 # separated fstype and clutype
 #
 # Revision 1.30  2006/11/10 11:36:26  mark
