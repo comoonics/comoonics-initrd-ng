@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.33 2007-05-23 09:15:35 mark Exp $
+# $Id: linuxrc.generic.sh,v 1.34 2007-08-06 15:56:14 mark Exp $
 #
 # @(#)$File$
 #
@@ -17,7 +17,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.33 2007-05-23 09:15:35 mark Exp $
+#    $Id: linuxrc.generic.sh,v 1.34 2007-08-06 15:56:14 mark Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -43,27 +43,24 @@
 #    function main()
 #  MODIFICATION HISTORY
 #  IDEAS
-# From kernel 2.6 Documentation:
-#   When switching another root device, initrd would pivot_root and then
-#   umount the ramdisk.  But initramfs is rootfs: you can neither pivot_root
-#   rootfs, nor unmount it.  Instead delete everything out of rootfs to
-#   free up the space (find -xdev / -exec rm '{}' ';'), overmount rootfs
-#   with the new root (cd /newmount; mount --move . /; chroot .), attach
-#   stdin/stdout/stderr to the new /dev/console, and exec the new init.
 #
 #  SOURCE
 #
 # initstuff is done in here
 
-source /etc/sysconfig/comoonics
+. /etc/sysconfig/comoonics
 
-source /etc/boot-lib.sh
-source /etc/hardware-lib.sh
-source /etc/network-lib.sh
-source /etc/clusterfs-lib.sh
+. /etc/chroot-lib.sh
+. /etc/boot-lib.sh
+. /etc/hardware-lib.sh
+. /etc/network-lib.sh
+. /etc/clusterfs-lib.sh
+. /etc/std-lib.sh
+. /etc/stdfs-lib.sh
+. /etc/defaults.sh
 
 clutype=$(getCluType)
-source /etc/${clutype}-lib.sh
+. /etc/${clutype}-lib.sh
 
 # including all distribution dependent files
 distribution=$(getDistribution)
@@ -76,7 +73,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.33 $ $Date: 2007-05-23 09:15:35 $'
+echo_local 'Internal Version $Revision: 1.34 $ $Date: 2007-08-06 15:56:14 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -175,6 +172,7 @@ step
 # BUG: bz#31
 
 cfsparams=( $(clusterfs_config $cluster_conf $ipConfig $nodeid $nodename ) )
+echo "cfsparams: $cfsparams"
 nodeid=${cfsparams[0]}
 nodename=${cfsparams[1]}
 rootvolume=${cfsparams[2]}
@@ -206,6 +204,12 @@ fi
 
 dm_start
 scsi_start
+
+# loads kernel modules for cluster stack
+# TODO: - rename to clusterfs_kernel_load
+#       - add cluster_kernel_load
+#       - move below ?
+# 1.3.+ ?
 clusterfs_load $lockmethod
 
 step "Hardware detected, modules loaded"
@@ -249,6 +253,32 @@ done
 
 step "Network configuration started"
 
+# TODO:
+# - mount chroot from either
+#   - local disk defined in /etc/sysconfig/comoonics-chroot
+#   - cluster.conf
+#   - ramdisk
+# - create chroot environment in /comoonics by
+#   - copy everything from / except /lib/modules
+#   - mount --bind /dev /comoonics/dev
+#   - mount -t proc proc /comoonics/proc ?
+#   - mount -t sysfs none /comoonics/sys
+
+# TODO:
+# Put all things into a library function
+
+echo_local "Building comoonics chroot environment"
+res=( $(build_chroot $cluster_conf $nodename) ) 
+chroot_mount=${res[0]}
+chroot_path=${res[1]}
+return_code
+
+echo_local_debug "res: $res -> chroot_mount=$chroot_mount, chroot_path=$chroot_path"
+
+
+step "chroot environment created"
+
+# TODO: start syslog in /comoonics ?
 cc_auto_syslogconfig $cluster_conf $nodename
 start_service /sbin/syslogd no_chroot -m 0
 
@@ -288,7 +318,8 @@ if [ -z "$quorumack" ]; then
 fi
 
 setHWClock
-clusterfs_services_start $lockmethod
+clusterfs_services_start $chroot_path $lockmethod
+
 if [ $return_c -ne 0 ]; then
    echo_local "Could not start all cluster services. Exiting"
    exit_linuxrc 1
@@ -314,30 +345,36 @@ fi
 step "CDSL tree mounted"
 
 #if [ -n "$debug" ]; then set -x; fi
+#TODO clean up method
 copy_relevant_files $cdsl_local_dir $newroot $netdevs
 #if [ -n "$debug" ]; then set +x; fi
 step
 
+
+# TODO:
+# remove tmpfix as this is replaced with /comoonics
 if [ -n "$tmpfix" ]; then
   echo_local "Setting up tmp..."
   exec_local createTemp /dev/ram1
 fi
 
+
 echo_local "Mounting the device file system"
-exec_local mount -t tmpfs --bind /dev $newroot/dev
+#TODO
+# try an exec_local mount --move /dev $newroot/dev
+exec_local mount --move /dev $newroot/dev
+exec_local cp -a $newroot/dev/console /dev/
+#exec_local mount --bind /dev $newroot/dev
 return_code
 
 
-#FIXME: remove lines
-cd $mount_point
-if [ ! -e initrd ]; then
-    /bin/mkdir initrd
-fi
-
-clusterfs_services_restart / $newroot
-restart_error=$?
+#we don't need to restart services as they will stay in /comoonics chroot
+#FIXME Remove lines
+#clusterfs_services_restart / $newroot
+#restart_error=$?
 
 step "Cluster services restarted"
+
 
 echo_local -n "Copying logfile to $newroot/${bootlog}..."
 exec_local cp -f ${bootlog} ${newroot}/${bootlog} || cp -f ${bootlog} ${newroot}/$(basename $bootlog)
@@ -354,10 +391,19 @@ step "Logfiles copied"
 # FIXME: Remove line
 #bootlog="/var/log/comoonics-boot.log"
 
+#TODO: remove lines as syslog can will stay in /comoonics
 echo_local -n "Stopping syslogd..."
 exec_local stop_service "syslogd" / &&
 return_code
 
+echo_local "Moving chroot environment to $newroot"
+move_chroot $chroot_mount $newroot/$chroot_mount
+return_code
+
+echo_local "Writing information ..."
+exec_local mkdir -p $newroot/var/comoonics
+echo $chroot_path > $newroot/var/comoonics/chrootpath
+return_code
 
 step "Initialization completed."
 
@@ -368,7 +414,11 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.33  2007-05-23 09:15:35  mark
+# Revision 1.34  2007-08-06 15:56:14  mark
+# new chroot environment
+# bootimage release 1.3
+#
+# Revision 1.33  2007/05/23 09:15:35  mark
 # added support fur RHEL4u5
 #
 # Revision 1.32  2007/03/09 18:01:11  mark
