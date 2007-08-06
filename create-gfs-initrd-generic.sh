@@ -6,7 +6,7 @@
 #*******
 #!/bin/bash
 #
-# $Id: create-gfs-initrd-generic.sh,v 1.12 2007-02-09 11:08:53 marc Exp $
+# $Id: create-gfs-initrd-generic.sh,v 1.13 2007-08-06 16:02:17 mark Exp $
 #
 # @(#)$File$
 #
@@ -19,12 +19,32 @@
 # disclose such Confidential Information and shall use it only in
 # accordance with the terms of the license agreement you entered into
 # with ATIX.
-#
-. $(dirname $0)/create-gfs-initrd-lib.sh
-if [ -e $(dirname $0)/boot-scripts/etc/boot-lib.sh ]; then
-  source $(dirname $0)/boot-scripts/etc/boot-lib.sh
-  initEnv
+
+if  ! [ -e $(dirname $0)/boot-scripts/etc/boot-lib.sh ]; then
+  echo "Cannot find $(dirname $0)/boot-scripts/etc/boot-lib.sh"
+  exit 1
 fi
+if ! [ -e $(dirname $0)/boot-scripts/etc/stdfs-lib.sh ]; then
+  echo "Cannot find $(dirname $0)/boot-scripts/etc/stdfs-lib.sh"
+  exit 1
+fi
+if ! [ -e $(dirname $0)/boot-scripts/etc/std-lib.sh ]; then
+  echo "Cannot find $(dirname $0)/boot-scripts/etc/std-lib.sh"
+  exit 1
+fi
+if ! [ -e $(dirname $0)/boot-scripts/etc/chroot-lib.sh ]; then
+  echo "Cannot find $(dirname $0)/boot-scripts/etc/chroot-lib.sh"
+  exit 1
+fi
+
+. $(dirname $0)/create-gfs-initrd-lib.sh
+. $(dirname $0)/boot-scripts/etc/boot-lib.sh
+. $(dirname $0)/boot-scripts/etc/chroot-lib.sh
+. $(dirname $0)/boot-scripts/etc/stdfs-lib.sh
+. $(dirname $0)/boot-scripts/etc/std-lib.sh
+
+initEnv
+
 exec 3>/dev/null
 exec 4>/dev/null 5>/dev/null
 
@@ -57,7 +77,7 @@ function getoptions() {
     while getopts UoRFVvhm:fd:s:r:b: option ; do
 	case "$option" in
 	    v) # version
-		echo "$0 Version "'$Revision: 1.12 $'
+		echo "$0 Version "'$Revision: 1.13 $'
 		exit 0
 		;;
 	    h) # help
@@ -191,15 +211,16 @@ fi
 # extracting rpms
 if [ -n "$rpm_filename" ] && [ -e "$rpm_filename" ]; then
   echo -n "Extracting rpms..."
-  extract_all_rpms $rpm_filename $mountpoint $rpm_dir $verbose || echo "(WARNING)"
+  #extract_all_rpms $rpm_filename $mountpoint $rpm_dir $verbose || echo "(WARNING)"
+  rpmfilelist=$(get_filelist_from_rpms $rpm_filename $verbose)
   success
 fi
 
-echo -n "Retreiving dependent files..."
+echo -n "Retrieving dependent files..."
 # compiling marked perlfiles in this function
 #dep_files=$(get_all_depfiles $dep_filename $verbose)
-
-files=( $(get_all_files_dependent $dep_filename $verbose | sort -u | grep -v "^.$" | grep -v "^..$") )
+filelist=$(get_all_files_dependent $dep_filename $verbose)
+files=( $( ( echo $rpmfilelist; echo $filelist ) | tr ' ' '\n'| sort -u | grep -v "^.$" | grep -v "^..$" | tr '&' '\n') ) 
 echo ${files[@]} | tr ' ' '\n' > ${mountpoint}/file-list.txt
 echo -n "found ${#files[@]}" && success
 
@@ -293,7 +314,11 @@ ls -lk $initrdname
 
 ##########################################
 # $Log: create-gfs-initrd-generic.sh,v $
-# Revision 1.12  2007-02-09 11:08:53  marc
+# Revision 1.13  2007-08-06 16:02:17  mark
+# reorganized files
+# added rpm filter support
+#
+# Revision 1.12  2007/02/09 11:08:53  marc
 # creating builddate_file with predefined function
 #
 # Revision 1.11  2006/08/28 16:01:45  marc
