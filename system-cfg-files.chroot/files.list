@@ -1,0 +1,15 @@
+#****h* system-cfg-files.chroot/files.list
+#  NAME
+#    files.list
+#    $id$
+#  DESCRIPTION
+#*******
+# $Id: files.list,v 1.1 2007-08-07 08:34:07 mark Exp $
+# General Files
+@include $(ls -1 /etc/comoonics/bootimage-chroot/files.initrd.d/*.list)
+#####################
+# $Log: files.list,v $
+# Revision 1.1  2007-08-07 08:34:07  mark
+# initial check in
+#
+#
