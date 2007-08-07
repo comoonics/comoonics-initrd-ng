@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.24 2007-05-23 15:31:24 mark Exp $
+# $Id: Makefile,v 1.25 2007-08-07 12:42:14 mark Exp $
 #
 # @(#)$file$
 #
@@ -40,7 +40,7 @@ PREFIX=/
 #  IDEAS
 #  SOURCE
 #
-VERSION=1.2
+VERSION=1.3
 
 #************ VERSION 
 #****d* Makefile/PACKAGE_NAME
@@ -89,7 +89,7 @@ INSTALL_DIR=/opt/atix/comoonics_bootimage
 #  SOURCE
 #
 EXEC_FILES=create-gfs-initrd-generic.sh \
-  mkservice_for_initrd.sh \
+  manage_chroot.sh \
   boot-scripts/linuxrc \
   boot-scripts/linuxrc.generic.sh \
   boot-scripts/linuxrc.bash \
@@ -110,18 +110,19 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/passwd \
   boot-scripts/etc/atix.txt \
   boot-scripts/etc/boot-lib.sh \
-  boot-scripts/etc/gfs-lib.sh \
-  boot-scripts/etc/ext3-lib.sh \
-  boot-scripts/etc/nfs-lib.sh \
-  boot-scripts/etc/comoonics-release \
-  boot-scripts/etc/iscsi-lib.sh \
-  boot-scripts/etc/fenced_mv_files.list \
-  boot-scripts/etc/fenced_cp_files.list \
-  boot-scripts/etc/fenced_dirs.list \
-  boot-scripts/etc/sysconfig/comoonics \
+  boot-scripts/etc/chroot-lib.sh \
   boot-scripts/etc/clusterfs-lib.sh \
+  boot-scripts/etc/comoonics-release \
+  boot-scripts/etc/defaults.sh \
+  boot-scripts/etc/ext3-lib.sh \
+  boot-scripts/etc/gfs-lib.sh \
   boot-scripts/etc/hardware-lib.sh \
+  boot-scripts/etc/iscsi-lib.sh \
   boot-scripts/etc/network-lib.sh \
+  boot-scripts/etc/nfs-lib.sh \
+  boot-scripts/etc/stdfs-lib.sh \
+  boot-scripts/etc/std-lib.sh \
+  boot-scripts/etc/sysconfig/comoonics \
   boot-scripts/etc/rhel4/hardware-lib.sh \
   boot-scripts/etc/rhel4/network-lib.sh \
   boot-scripts/etc/sles8/hardware-lib.sh \
@@ -164,27 +165,48 @@ CFG_DIR=$(SYSTEM_CFG_DIR)/$(PACKAGE_NAME)
 #
 CFG_FILES=basefiles.list \
 	rpms.list \
+	files.initrd.d/base.list \
+	files.initrd.d/bonding.list \
 	files.initrd.d/configs.list \
-	files.initrd.d/vlan.list \
-	files.initrd.d/scsi.list \
+	files.initrd.d/comoonics.list \
+	files.initrd.d/ext2.list \
 	files.initrd.d/gfs.list \
-	files.initrd.d/iscsi.list.opt \
-	files.initrd.d/lilo.list.opt \
-	files.initrd.d/hp_tools.list.opt \
-	files.initrd.d/user_edit.list \
-	files.initrd.d/perlcc.list.opt \
 	files.initrd.d/grub.list \
-	files.initrd.d/libs.list.x86_64 \
-	files.initrd.d/libs.list.i686 \
-	files.initrd.d/fence_vmware.list.opt \
-	files.initrd.d/debug.list.opt \
+	files.initrd.d/locales.list \
+	files.initrd.d/network.list \
+	files.initrd.d/scsi.list \
+	files.initrd.d/user_edit.list \
+	files.initrd.d/vlan.list \
+	rpms.initrd.d/baselibs.list \
 	rpms.initrd.d/comoonics.list \
-	rpms.initrd.d/perl.list \
 	rpms.initrd.d/dm_multipath.list \
+	rpms.initrd.d/ext2.list \
+	rpms.initrd.d/gfs1.list \
 	rpms.initrd.d/nfs.list \
-	rpms.initrd.d/python.list
+	rpms.initrd.d/python.list \
+	rpms.initrd.d/rhcs4.list
+	
 #************ CFG_FILES 
 
+#****d* Makefile/CFG_DIR_CHROOT
+#  NAME
+#    CFG_DIR_CHROOT
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+CFG_DIR_CHROOT=$(SYSTEM_CFG_DIR)/$(PACKAGE_NAME)-chroot
+#************ CFG_DIR_CHROOT 
+#****d* Makefile/CFG_FILES_CHROOT
+#  NAME
+#    CFG_FILES_CHROOT
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+CFG_FILES_CHROOT=files.list \
+	rpms.list 	
+#************ CFG_FILES 
 #****d* Makefile/EMPTY_DIRS
 #  NAME
 #    EMPTY_DIRS
@@ -210,7 +232,6 @@ EMPTY_DIRS=boot-scripts/mnt \
 #  SOURCE
 #
 INIT_FILES=bootsr \
-preccsd \
 fenced-chroot \
 ccsd-chroot
 
@@ -287,6 +308,24 @@ install:
 	     echo "DONE") || \
 	     echo "FAILED" && cd ..) \
 	fi
+	@if [ -n "$(CFG_FILES_CHROOT)" ]; then \
+	   ((echo -n "Installing cfg-files-chroot..." && \
+             cd system-cfg-files.chroot && \
+             if [ ! -e $(PREFIX)/$(CFG_DIR_CHROOT) ]; then \
+               install -d  -g $(INSTALL_GRP) -o $(INSTALL_OWN) $(PREFIX)/$(CFG_DIR_CHROOT); \
+             fi; \
+             if [ ! -e $(PREFIX)/$(CFG_DIR_CHROOT)/files.initrd.d/ ]; then \
+               install -d  -g $(INSTALL_GRP) -o $(INSTALL_OWN) $(PREFIX)/$(CFG_DIR_CHROOT)/files.initrd.d/; \
+             fi; \
+             if [ ! -e $(PREFIX)/$(CFG_DIR_CHROOT)/rpms.initrd.d/ ]; then \
+               install -d  -g $(INSTALL_GRP) -o $(INSTALL_OWN) $(PREFIX)/$(CFG_DIR_CHROOT)/rpms.initrd.d/; \
+             fi; \
+	     for cfgfile in $(CFG_FILES_CHROOT); do \
+               install -g $(INSTALL_GRP) -o $(INSTALL_OWN) $$cfgfile $(PREFIX)/$(CFG_DIR_CHROOT)/`dirname $$cfgfile`; \
+	     done && \
+	     echo "DONE") || \
+	     echo "FAILED" && cd ..) \
+	fi
 	@echo -n "Installing empty directories..."
 	@if [ -n "$(EMPTY_DIRS)" ]; then \
 	  (for dir in $(EMPTY_DIRS); do \
@@ -323,7 +362,12 @@ rpm: archive
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.24  2007-05-23 15:31:24  mark
+# Revision 1.25  2007-08-07 12:42:14  mark
+# added release 1.3.1
+# added extras-nfs
+# added extras-network
+#
+# Revision 1.24  2007/05/23 15:31:24  mark
 # set bootimage revision to 1.2
 # added multipath support
 # added support for ext3 and nfs

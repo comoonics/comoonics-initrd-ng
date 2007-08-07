@@ -21,7 +21,7 @@
 # with ATIX.
 #/initrd_sr-2.6.9-34.ELsmp.img.gz
 # %define _initrddir /etc/init.d
-# $Id: comoonics-bootimage.spec,v 1.37 2007-07-30 06:47:12 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.38 2007-08-07 12:42:38 mark Exp $
 #
 ##
 # TO DO
@@ -47,11 +47,11 @@
 
 Name: comoonics-bootimage
 Summary: Comoonics Bootimage. Scripts for creating an initrd in a gfs shared root environment
-Version: 1.2
+Version: 1.3
 BuildArch: noarch
-Requires: comoonics-cs >= 0.5-17, comoonics-cs-py >= 0.1-15
+Requires: comoonics-cs >= 0.5-17, comoonics-cs-py >= 0.1-15 comoonics-cluster-py >= 0.1-2
 Conflicts: tmpwatch
-Release: 03
+Release: 1
 Vendor: ATIX GmbH
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -64,11 +64,33 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 %description
 Comoonics Bootimage. Scripts for creating an initrd in a gfs shared root environment
 
-%package fenceacksv
+%package extras-network
 Version: 0.1
-Release: 12
+Release: 1
+Requires: comoonics-bootimage >= 1.3-1
+Summary: listfiles for special network configurations (vlan)
+Group:   Storage/Management
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description extras-network
+Extra listfiles for special network configurations
+
+%package extras-nfs
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage >= 1.3-1
+Summary: listfiles for nfs sharedroot configurations
+Group:   Storage/Management
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description extras-nfs
+Extra listfiles for nfs sharedroot configurations
+
+%package fenceacksv
+Version: 0.2
+Release: 1
 Requires: comoonics-cs-py >= 0.1-23
-Requires: comoonics-bootimage >= 1.0-47
+Requires: comoonics-bootimage >= 1.3-1
 Summary: The Fence ackserver is a service running in the fencedchroot and managing manual fenced nodes
 Group:   Storage/Management
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
@@ -125,8 +147,8 @@ install -m640 %{FENCEACKSV_SOURCE}/CA.pkey $RPM_BUILD_ROOT/%{FENCEACKSV_DIR}/
 install -m640 %{FENCEACKSV_SOURCE}/CA.cert $RPM_BUILD_ROOT/%{FENCEACKSV_DIR}/
 
 install -m755 %{FENCEACKSV_SOURCE}/fenceacksv.sh $RPM_BUILD_ROOT/%{INITDIR}/fenceacksv
-install -m644 %{FENCEACKSV_SOURCE}/files-fenceacksv.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/files.initrd.d/fenceacksv.list
-install -m644 %{FENCEACKSV_SOURCE}/rpms-fenceacksv.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/rpms.initrd.d/fenceacksv.list
+install -m644 %{FENCEACKSV_SOURCE}/files-fenceacksv.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage-chroot/files.initrd.d/fenceacksv.list
+install -m644 %{FENCEACKSV_SOURCE}/rpms-fenceacksv.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage-chroot/rpms.initrd.d/fenceacksv.list
 # install -m640 %{FENCEACKSV_SOURCE}/fenceacksv-config.sh $RPM_BUILD_ROOT/%{SYSCONFIGDIR}/fenceacksv
 
 # Files for fence-clients (ilo)
@@ -185,9 +207,6 @@ ln -sf %{APPDIR}/create-gfs-initrd-generic.sh %{APPDIR}/mkinitrd
 /sbin/chkconfig --add bootsr &>/dev/null
 /sbin/chkconfig bootsr on
 /sbin/chkconfig --list bootsr
-/sbin/chkconfig --add preccsd &>/dev/null
-/sbin/chkconfig preccsd on
-/sbin/chkconfig --list preccsd
 /sbin/chkconfig --add ccsd-chroot &>/dev/null
 /sbin/chkconfig --list ccsd-chroot
 /sbin/chkconfig ccsd off
@@ -199,28 +218,19 @@ ln -sf %{APPDIR}/create-gfs-initrd-generic.sh %{APPDIR}/mkinitrd
 /sbin/chkconfig --del fenced &>/dev/null
 /sbin/chkconfig gfs off
 /sbin/chkconfig --del gfs
-grep "^FENCE_CHROOT=" %{SYSCONFIGDIR}/cluster &>/dev/null
-[ $? -ne 0 ] && echo "FENCE_CHROOT=/var/lib/fence_tool" >> %{SYSCONFIGDIR}/cluster
-/bin/true
-grep "^FENCE_CHROOT_SOURCE=" %{SYSCONFIGDIR}/cluster &>/dev/null
-[ $? -ne 0 ] && echo "FENCE_CHROOT_SOURCE=/var/lib/fence_tool.tmp" >> %{SYSCONFIGDIR}/cluster
 /bin/true
 
 echo 'Information:
-You can now setup fenced on running on a localfilesystem which is not a cluster filesystem.
-You just need to setup up the %{SYSCONFIGDIR}/cluster configuration file apropriate.
-Example:
-Say /tmp would reside on "ext3" and you would like fenced to be running on /tmp/fence_tool then
-%{SYSCONFIGDIR}/cluster looks as follows:
-FENCE_CHROOT=/tmp/fence_tool
-
-Then fenced will be started on root /tmp/fence_tool
-If you want syslog to log fence messages you should add ${FENCE_CHROOT}/dev/log to the syslog deamon as
-additional logdevice (command switch syslogd -a ${FENCE_CHROOT}/dev/log)
+Cluster services will be started in a chroot environment. Check out latest documentation
+on http://www.open-sharedroot.org
+If you want syslog to log fence messages you should add an additional logdevice
+to the syslog configuration 
+(command switch syslogd -a $(cat /var/comoonics/chrootpath)/dev/log)
 
 CONFLICTS:
 - tmpwatch:
-tmpwatch can remove all files in /tmp/fence_chroot. If tmpwatch is installed, you need to modify
+if you use the /tmp filesystem for our chroot environment, 
+and tmpwatch is installed, you need to modify
 /etc/cron.daily/tmpwatch to fit your needs.
 '
 
@@ -248,63 +258,76 @@ fi
 %dir %{APPDIR}/boot-scripts/proc
 %dir %{APPDIR}/boot-scripts/dev
 %attr(750, root, root) %{INITDIR}/bootsr
-%attr(750, root, root) %{INITDIR}/preccsd
 %attr(750, root, root) %{INITDIR}/fenced-chroot
 %attr(750, root, root) %{INITDIR}/ccsd-chroot
 %attr(750, root, root) %{APPDIR}/create-gfs-initrd-generic.sh
-%attr(750, root, root) %{APPDIR}/mkservice_for_initrd.sh
+%attr(640, root, root) %{APPDIR}/create-gfs-initrd-lib.sh
+%attr(750, root, root) %{APPDIR}/manage_chroot.sh
 %attr(750, root, root) %{APPDIR}/boot-scripts/linuxrc.generic.sh
 %attr(750, root, root) %{APPDIR}/boot-scripts/exec_part_from_bash.sh
 %attr(750, root, root) %{APPDIR}/boot-scripts/detectHardware.sh
 %attr(750, root, root) %{APPDIR}/boot-scripts/rescue.sh
 %attr(750, root, root) %{APPDIR}/boot-scripts/linuxrc
 %attr(750, root, root) %{APPDIR}/boot-scripts/linuxrc.bash
-%attr(640, root, root) %{APPDIR}/create-gfs-initrd-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/atix.txt
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/passwd
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/boot-lib.sh
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/gfs-lib.sh
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/ext3-lib.sh
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/nfs-lib.sh
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/comoonics-release
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/iscsi-lib.sh
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/fenced_mv_files.list
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/fenced_cp_files.list
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/fenced_dirs.list
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/sysconfig/comoonics
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/inittab
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/chroot-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/clusterfs-lib.sh
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/comoonics-release
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/defaults.sh
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/ext3-lib.sh
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/gfs-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/hardware-lib.sh
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/inittab
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/iscsi-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/network-lib.sh
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/nfs-lib.sh
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/passwd
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/stdfs-lib.sh
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/std-lib.sh
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/sysconfig/comoonics
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/rhel4/hardware-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/rhel4/network-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/sles8/hardware-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/sles8/network-lib.sh
 %attr(640, root, root) %{CONFIGDIR}/bootimage/basefiles.list
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/base.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/bonding.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/comoonics.list
 %attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/configs.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/vlan.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/scsi.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/ext2.list
 %attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/gfs.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/iscsi.list.opt
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/lilo.list.opt
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/hp_tools.list.opt
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/perlcc.list.opt
 %attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/grub.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/libs.list.x86_64
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/libs.list.i686
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/fence_vmware.list.opt
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/debug.list.opt
+%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/locales.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/network.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/scsi.list
+
+%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/baselibs.list
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/comoonics.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/python.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/perl.list
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/dm_multipath.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/nfs.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/ext2.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/gfs1.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/python.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhcs4.list
+
+%dir %{CONFIGDIR}/bootimage-chroot
+%attr(640, root, root) %{CONFIGDIR}/bootimage-chroot/files.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage-chroot/rpms.list
+%dir %{CONFIGDIR}/bootimage-chroot/files.initrd.d
+%dir %{CONFIGDIR}/bootimage-chroot/rpms.initrd.d
 
 %config(noreplace) %{CONFIGDIR}/comoonics-bootimage.cfg
 %config(noreplace) %{CONFIGDIR}/bootimage/files.initrd.d/user_edit.list
 
 %doc CHANGELOG
+
+%files extras-network
+%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/vlan.list
+
+%files extras-nfs
+%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/nfs.list
+
 
 %files fenceacksv
 %attr(755, root, root) %{FENCEACKSV_DIR}/fence_ack_server.py
@@ -315,8 +338,8 @@ fi
 %attr(640, root, root) %{FENCEACKSV_DIR}/CA.pkey
 %attr(640, root, root) %{FENCEACKSV_DIR}/CA.cert
 %attr(755, root, root) %{INITDIR}/fenceacksv
-%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/fenceacksv.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fenceacksv.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage-chroot/files.initrd.d/fenceacksv.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage-chroot/rpms.initrd.d/fenceacksv.list
 # %config(noreplace)     %{SYSCONFIGDIR}/fenceacksv
 %doc CHANGELOG
 
@@ -339,6 +362,8 @@ fi
 %doc CHANGELOG
 
 %changelog
+* Tue Aug 07 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3.1
+- new major bootimage revision
 * Tue Jul 24 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.2.03
 - added support for fence_ipmilan
 * Wed May 23 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.2.02
@@ -390,7 +415,12 @@ fi
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.37  2007-07-30 06:47:12  marc
+# Revision 1.38  2007-08-07 12:42:38  mark
+# added release 1.3.1
+# added extras-nfs
+# added extras-network
+#
+# Revision 1.37  2007/07/30 06:47:12  marc
 # added help for -x|--xmlfile (#BZ 39)
 #
 # Revision 1.36  2007/07/24 17:05:34  mark
