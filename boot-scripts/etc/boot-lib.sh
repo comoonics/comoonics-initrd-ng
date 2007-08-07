@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.42 2007-08-06 15:50:11 mark Exp $
+# $Id: boot-lib.sh,v 1.43 2007-08-07 16:10:03 mark Exp $
 #
 # @(#)$File$
 #
@@ -500,11 +500,11 @@ function create_chroot () {
 #  SOURCE
 #
 function move_chroot () {
-  chroot_path=$1
-  new_chroot_path=$2
+  local chroot_mount=$1
+  local new_chroot_mount=$2
   
-  exec_local mkdir -p $new_chroot_path
-  exec_local /bin/mount --move $chroot_path $new_chroot_path 
+  exec_local mkdir -p $new_chroot_mount
+  exec_local /bin/mount --move $chroot_mount $new_chroot_mount 
 }
 #************ move_chroot
 
@@ -919,7 +919,10 @@ function exec_local_debug() {
 
 
 # $Log: boot-lib.sh,v $
-# Revision 1.42  2007-08-06 15:50:11  mark
+# Revision 1.43  2007-08-07 16:10:03  mark
+# bug fix in chroot_path environment
+#
+# Revision 1.42  2007/08/06 15:50:11  mark
 # reorganized libraries
 # added methods for chroot management
 # fits for bootimage release 1.3
