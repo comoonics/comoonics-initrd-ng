@@ -5,6 +5,14 @@ IDEAS:
 	* define process for changelog
 
 CHANGES:
+- 2007-08-07 Release 1.3.1
+    * new chroot management to support static cluster services
+    * reorganized libraries
+    * reorganized list files
+    * removed all static library dependencies
+    * added qdisk support in initrd
+    * added clvmd support initrd
+    * removed all perl dependencies
 - 2007-07-24 Release 1.2.03
     * added support for fence_ipmilan
 - 2007-05-23 Release 1.2.02
@@ -49,7 +57,10 @@ TODO:
 ########################################
 # CVS-Log
 # $Log: CHANGELOG,v $
-# Revision 1.11  2007-07-24 15:06:08  mark
+# Revision 1.12  2007-08-07 12:41:31  mark
+# added release 1.3.1
+#
+# Revision 1.11  2007/07/24 15:06:08  mark
 # added 1.2.03
 #
 # Revision 1.10  2007/05/23 15:32:01  mark
