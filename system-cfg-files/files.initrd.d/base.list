@@ -17,6 +17,7 @@ dirname
 dmesg
 domainname
 e2label
+expr
 fdisk
 find
 fuser
