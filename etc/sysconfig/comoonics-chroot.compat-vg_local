@@ -1,0 +1,15 @@
+#Comoonics chroot settings
+# this information is used first
+# to enable hostdependent chroot configurations
+# add the information into your cluster.conf
+
+# Filesystem type for the chroot device
+chroot_fstype="ext3"
+# chroot device name
+chroot_dev="/dev/vg_local/lv_tmp"
+# Mountpoint for the chroot device
+chroot_mount="/tmp"
+# Path where the chroot environment should be build
+chroot_path="/tmp/fence_tool"
+# Mount options for the chroot device
+chroot_options="defaults"
