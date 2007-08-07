@@ -3,6 +3,7 @@
 openssl			\.so
 glibc			^/lib
 libtermcap
+libgcc			\.so
 tcp_wrappers	\.so
 expat			\.so
 zlib			\.so
