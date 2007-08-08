@@ -1,0 +1,10 @@
+# $Id: rpms-fence_ilomp.list,v 1.1 2007-08-08 14:22:53 mark Exp $
+comoonics-bootimage-fenceclient-ilomp
+openssh-clients
+telnet
+pyOpenSSL
+######
+# $Log: rpms-fence_ilomp.list,v $
+# Revision 1.1  2007-08-08 14:22:53  mark
+# initial check in
+#
