@@ -21,7 +21,7 @@
 # with ATIX.
 #/initrd_sr-2.6.9-34.ELsmp.img.gz
 # %define _initrddir /etc/init.d
-# $Id: comoonics-bootimage.spec,v 1.38 2007-08-07 12:42:38 mark Exp $
+# $Id: comoonics-bootimage.spec,v 1.39 2007-08-08 14:25:17 mark Exp $
 #
 ##
 # TO DO
@@ -51,7 +51,7 @@ Version: 1.3
 BuildArch: noarch
 Requires: comoonics-cs >= 0.5-17, comoonics-cs-py >= 0.1-15 comoonics-cluster-py >= 0.1-2
 Conflicts: tmpwatch
-Release: 1
+Release: 4
 Vendor: ATIX GmbH
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -86,6 +86,31 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 %description extras-nfs
 Extra listfiles for nfs sharedroot configurations
 
+%package extras-dm-multipath
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage >= 1.3-1
+Summary: listfiles for device mapper multipath sharedroot configurations
+Group:   Storage/Management
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description extras-dm-multipath
+Extra listfiles for device mapper multipath sharedroot configurations
+
+%package compat
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage >= 1.3-1
+Summary: files needed for compatibility to 1.2 releases
+Group:   Storage/Management
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description compat
+Files needed for the compatibility to 1.2 releases
+installes the file /etc/sysconfig/comoonics-chroot
+This will mount vg_local-lv_tmp on /tmp during initrd 
+process 
+
 %package fenceacksv
 Version: 0.2
 Release: 1
@@ -107,6 +132,16 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description fenceclient-ilo
 An alternative fence client for ilo cards of HP servers. Written in python.
+
+%package fenceclient-ilomp
+Version: 0.1
+Release: 1
+Summary: A fence client for iloMP cards of HP inegrity servers. Written in python.
+Group:   Storage/Management
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description fenceclient-ilomp
+A fence client for iloMP cards of HP inegrity servers. Written in python.
 
 %package fenceclient-vmware
 Version: 0.1
@@ -136,6 +171,11 @@ Fencing for the vmware master server
 %install
 make PREFIX=$RPM_BUILD_ROOT INSTALL_DIR=%{APPDIR} install
 
+# Files for compat
+install -d -m 755 $RPM_BUILD_ROOT/%{SYSCONFIGDIR}
+install -m644 etc/sysconfig/comoonics-chroot.compat-vg_local $RPM_BUILD_ROOT/%{SYSCONFIGDIR}/comoonics-chroot
+
+
 # Files for fenceacksv
 install -d -m 755 $RPM_BUILD_ROOT/%{FENCEACKSV_DIR}
 install -m755 %{FENCEACKSV_SOURCE}/fence_ack_server.py $RPM_BUILD_ROOT/%{FENCEACKSV_DIR}/
@@ -156,6 +196,8 @@ install -d -m 755 $RPM_BUILD_ROOT/%{FENCECLIENTS_DIR}
 install -d -m 755 $RPM_BUILD_ROOT/%{FENCECLIENTS_DOC}
 install -m755 %{FENCECLIENTS_SOURCE}/fence_ilo.py  $RPM_BUILD_ROOT/%{FENCECLIENTS_DIR}/fence_ilo
 install -m755 %{FENCECLIENTS_SOURCE}/rpms-fence_ilo.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/rpms.initrd.d/fence_ilo.list
+install -m755 %{FENCECLIENTS_SOURCE}/fence_ilomp.py  $RPM_BUILD_ROOT/%{FENCECLIENTS_DIR}/fence_ilomp
+install -m755 %{FENCECLIENTS_SOURCE}/rpms-fence_ilomp.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/rpms.initrd.d/fence_ilomp.list
 
 # Files for fence-vmware
 install -m755 %{FENCECLIENTS_SOURCE}/fence_vmware_client  $RPM_BUILD_ROOT/%{FENCECLIENTS_DIR}
@@ -305,7 +347,6 @@ fi
 
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/baselibs.list
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/comoonics.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/dm_multipath.list
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/ext2.list
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/gfs1.list
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/python.list
@@ -322,12 +363,17 @@ fi
 
 %doc CHANGELOG
 
+%files compat
+%attr(640, root, root) %{SYSCONFIGDIR}/comoonics-chroot
+
 %files extras-network
 %attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/vlan.list
 
 %files extras-nfs
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/nfs.list
 
+%files extras-dm-multipath
+%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/dm_multipath.list
 
 %files fenceacksv
 %attr(755, root, root) %{FENCEACKSV_DIR}/fence_ack_server.py
@@ -348,6 +394,11 @@ fi
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fence_ilo.list
 %doc CHANGELOG
 
+%files fenceclient-ilomp
+%attr(755, root, root) %{FENCECLIENTS_DIR}/fence_ilomp
+%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fence_ilomp.list
+%doc CHANGELOG
+
 %files fenceclient-vmware
 %attr(755, root, root) %{FENCECLIENTS_DIR}/fence_vmware_client
 %doc %{FENCECLIENTS_DOC}/INSTALL.fence_vmware
@@ -362,6 +413,12 @@ fi
 %doc CHANGELOG
 
 %changelog
+* Wed Aug 08 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3.4
+- moved dm_multipath listfile into extra rpm
+* Wed Aug 08 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3.3
+- minor bugfixes
+* Tue Aug 07 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3.2
+- minor bugfixes
 * Tue Aug 07 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3.1
 - new major bootimage revision
 * Tue Jul 24 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.2.03
@@ -415,7 +472,10 @@ fi
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.38  2007-08-07 12:42:38  mark
+# Revision 1.39  2007-08-08 14:25:17  mark
+# release 1.3.4
+#
+# Revision 1.38  2007/08/07 12:42:38  mark
 # added release 1.3.1
 # added extras-nfs
 # added extras-network
