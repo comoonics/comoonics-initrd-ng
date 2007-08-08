@@ -9,7 +9,7 @@ fence_ilomp - fencing agent for HP ILO2 MP for integrity
 # About                                                                      {{{
 # Filename:      fence_ilomp.py
 version = "0.0.1"
-# $Id: fence_ilomp.py,v 1.1 2007-07-24 14:57:06 mark Exp $
+# $Id: fence_ilomp.py,v 1.2 2007-08-08 14:22:40 mark Exp $
 # Created:       07 Jul 2007
 # Last Modified: 07 Jan 2007 Mark Hlawatschek <hlawatschek@atix.de>
 # Maintainer:    Mark Hlawatschek (grimme@atix.de)
@@ -59,6 +59,7 @@ class Config:
     mpcl=False
     timeout=10
     proto="ssh"
+    debug=False
 
 def debug(msg):
     if Config.verbose:
@@ -82,7 +83,7 @@ class FenceIlo:
     CMD_POWER_STATUS="ps -nc"
     CMD_POWER_ON="pc -on -nc"
     CMD_POWER_OFF="pc -off -nc"
-    CMD_POWER_RESET="pc -reset -nc"
+    CMD_POWER_RESET="pc -cycle -nc"
     CMD_FIRMWARE_REVS="SYSREV -nc"
     
     RES_POWER_STATUS="System Power state      : "
@@ -125,6 +126,8 @@ class FenceIlo:
         elif self.proto == "telnet":
             from comoonics import pexpect
             s = pexpect.spawn('telnet %s 23' %self.address)
+            if Config.debug:
+                s.logfile = sys.stdout
             s.expect(self.LOGINPROMPT)
             s.sendline(self.username)
             debug("Telnet sending username %s" %self.username)
@@ -154,7 +157,7 @@ class FenceIlo:
         debug("getMPVersion")
         return("NA")
     
-    def getPowerStatus(self):
+    def getPowerState(self):
         debug("getPowerState")
         self.setCommandMode()
         self.session.sendline(self.CMD_POWER_STATUS)
@@ -165,15 +168,21 @@ class FenceIlo:
 
     def setPowerState(self, state):
         self.setCommandMode()
-        if self.getPowerStatus().lower() == state:
+        mystate = self.getPowerState().lower()
+        if  mystate == state:
             debug("Power is already %s" %state)
+            return
         debug("Setting power to %s" %state)
+        self.setCommandMode()
         if state == "on":
             self.session.sendline(self.CMD_POWER_ON)
         elif state == "off":
             self.session.sendline(self.CMD_POWER_OFF)
         elif state == "reset":
-            self.session.sendline(self.CMD_POWER_RESET)
+            if mystate == "off":
+                self.session.sendline(self.CMD_POWER_ON)
+            else:
+                self.session.sendline(self.CMD_POWER_RESET)
         else:
             raise MPOptionNotFound("Power %s" %state)
         res = self.session.expect([self.RES_SUCCESS, self.RES_NOSUCCESS, pexpect.TIMEOUT])
@@ -248,6 +257,8 @@ def getOptions():
         #    print "Option %s" % opt
         if opt == "-v" or opt == "--verbose":
             Config.verbose=True
+        elif opt == "-d" or opt == "--debug":
+            Config.debug=True
         elif opt == "-q" or opt == "--quiet":
             Config.verbose=False
         elif opt == "-a" or opt == "--address":
@@ -341,6 +352,9 @@ if __name__ == '__main__':
 
 #################
 # $Log: fence_ilomp.py,v $
-# Revision 1.1  2007-07-24 14:57:06  mark
+# Revision 1.2  2007-08-08 14:22:40  mark
+# bug fixes
+#
+# Revision 1.1  2007/07/24 14:57:06  mark
 # initial check in
 #
