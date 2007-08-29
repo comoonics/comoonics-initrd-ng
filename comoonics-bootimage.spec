@@ -21,7 +21,7 @@
 # with ATIX.
 #/initrd_sr-2.6.9-34.ELsmp.img.gz
 # %define _initrddir /etc/init.d
-# $Id: comoonics-bootimage.spec,v 1.39 2007-08-08 14:25:17 mark Exp $
+# $Id: comoonics-bootimage.spec,v 1.40 2007-08-29 06:46:13 marc Exp $
 #
 ##
 # TO DO
@@ -159,6 +159,7 @@ Release: 1
 Summary: Fencing for vmware
 Group:   Storage/Management
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+AutoReqProv: no
 
 %description fencemaster-vmware
 Fencing for the vmware master server
@@ -472,7 +473,10 @@ fi
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.39  2007-08-08 14:25:17  mark
+# Revision 1.40  2007-08-29 06:46:13  marc
+# setting AUTOREQ: NO for vmware agent
+#
+# Revision 1.39  2007/08/08 14:25:17  mark
 # release 1.3.4
 #
 # Revision 1.38  2007/08/07 12:42:38  mark
