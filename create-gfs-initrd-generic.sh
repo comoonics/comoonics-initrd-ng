@@ -6,7 +6,7 @@
 #*******
 #!/bin/bash
 #
-# $Id: create-gfs-initrd-generic.sh,v 1.13 2007-08-06 16:02:17 mark Exp $
+# $Id: create-gfs-initrd-generic.sh,v 1.14 2007-09-07 07:57:06 mark Exp $
 #
 # @(#)$File$
 #
@@ -77,7 +77,7 @@ function getoptions() {
     while getopts UoRFVvhm:fd:s:r:b: option ; do
 	case "$option" in
 	    v) # version
-		echo "$0 Version "'$Revision: 1.13 $'
+		echo "$0 Version "'$Revision: 1.14 $'
 		exit 0
 		;;
 	    h) # help
@@ -229,10 +229,10 @@ cd $mountpoint
 i=0
 while [ $i -lt ${#files[@]} ]; do
   file=${files[$i]}
-  if [ -d $file ]; then
+  if [ -d $file ] && [ ! -L $file ]; then
 #    echo "Directory $file => ${mountpoint}/$file"
     create_dir ${mountpoint}/$file
-    copy_file $file ${mountpoint}/$(dirname $file)
+    #copy_file $file ${mountpoint}/$(dirname $file)
   elif [ ! -e "$file" ] && [ "$file" = '@map' ]; then
     i=$(( $i+1 ))
     file=${files[$i]}
@@ -314,7 +314,10 @@ ls -lk $initrdname
 
 ##########################################
 # $Log: create-gfs-initrd-generic.sh,v $
-# Revision 1.13  2007-08-06 16:02:17  mark
+# Revision 1.14  2007-09-07 07:57:06  mark
+# removed bug, that liks to directories where not copied
+#
+# Revision 1.13  2007/08/06 16:02:17  mark
 # reorganized files
 # added rpm filter support
 #
