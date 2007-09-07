@@ -4,21 +4,26 @@ Fence Acknowledge Server via normal an ssl
 """
 
 # here is some internal information
-# $Id: fence_ack_server.py,v 1.5 2007-03-01 10:49:29 marc Exp $
+# $Id: fence_ack_server.py,v 1.6 2007-09-07 14:21:40 marc Exp $
 #
 
 
-__version__ = "$Revision: 1.5 $"
+__version__ = "$Revision: 1.6 $"
 # $Source: /atix/ATIX/CVSROOT/nashead2004/bootimage/fencing/fence-ack-server/fence_ack_server.py,v $
 
-from OpenSSL import SSL
+from exceptions import ImportError
+try:
+    from OpenSSL import SSL
+except ImportError:
+    pass
 import sys, os, select, socket, asyncore, asynchat, SocketServer #, ZeroReturnError
-sys.path.append("../../../management/comoonics-clustersuite/python/lib")
 import getopt
 import logging
 import warnings
 
 from comoonics import ComSystem, ComLog, GetOpts
+
+logger=ComLog.getLogger("comoonics.bootimage.fenceacksv")
 
 ComSystem.__EXEC_REALLY_DO=""
 FENCE_MANUAL_FIFO="/tmp/fence_manual.fifo"
@@ -40,6 +45,7 @@ class Config(GetOpts.BaseConfig):
         self.ssl_certfile=GetOpts.Option("ssl-certfile", "the certificate file for ssl", os.path.join(dir, "server.cert"))
         self.ssl_verifyfile=GetOpts.Option("ssl-verifyfile", "the verifyfile for ssl", os.path.join(dir, "CA.cert"))
         self.ssl=GetOpts.Option("ssl", "enable ssl", False)
+        self.bind=GetOpts.Option("bind", "bind to given ip", '', False, "b")
         self.xml=GetOpts.Option("xml", "We are using an xml configfile. No file for stdin", "")
         self.xml_validate=GetOpts.Option("xml-validate", "Validate this xmlfile", True)
         self.xml_novalidate=GetOpts.Option("xml-novalidate", "Validate this xmlfile", False, False, None, self.setNoValidate)
@@ -77,16 +83,16 @@ class Config(GetOpts.BaseConfig):
             reader = Sax2.Reader(validate=0)
 
         if self.xml==True:
-            ComLog.getLogger().debug("Parsing document from stdin")
+            logger.debug("Parsing document from stdin")
             doc = reader.fromStream(sys.stdin)
         elif os.path.isfile(self.xml):
             file=open(self.xml,"r")
-            ComLog.getLogger().debug("Parsing document %s " % self.xml)
+            logger.debug("Parsing document %s " % self.xml)
             doc = reader.fromStream(file)
 
         if self.xml_nodepath and self.xml_nodepath != "":
             from xml import xpath
-            ComLog.getLogger().debug("Path2Config: %s" %self.xml_nodepath)
+            logger.debug("Path2Config: %s" %self.xml_nodepath)
             node=xpath.Evaluate(self.xml_nodepath, doc)[0]
         else:
             node=doc.documentElement
@@ -98,12 +104,13 @@ class Config(GetOpts.BaseConfig):
                 (rc, self.nodename)=ComSystem.execLocalStatusOutput("cman_tool status | grep 'Node name:'")
                 self.nodename=self.nodename.split(" ")[3]
             _xmlnodepath='/cluster/clusternodes/clusternode[@name="%s"]/com_info/fenceackserver' %(self.nodename)
-            ComLog.getLogger().debug("Nodename: %s, path: %s" %(self.nodename, _xmlnodepath))
+            logger.debug("Nodename: %s, path: %s" %(self.nodename, _xmlnodepath))
             node=xpath.Evaluate(_xmlnodepath, doc)[0]
 
         if node.hasAttribute("port"): self.port=node.getAttribute("port")
         if node.hasAttribute("user"): self.user=node.getAttribute("user")
         if node.hasAttribute("passwd"): self.password=node.getAttribute("passwd")
+        if node.hasAttribute("bind"): self.bind=node.getAttribute("bind")
         sslnodes=node.getElementsByTagName("ssl")
         if sslnodes:
             self.ssl=True
@@ -112,40 +119,6 @@ class Config(GetOpts.BaseConfig):
             if node.hasAttribute("verifyfile"): self.ssl_verifyfile=node.getAttribute("verifyfile")
 
         return
-
-#class Defaults:
-#    ssl_keyfile=os.path.join(dir, "server.pkey")
-#    ssl_certfile=os.path.join(dir, "server.cert")
-#    ssl_verifyfile=os.path.join(dir, "CA.cert")
-#    ssl=False
-#    port=12242
-#    Debug=False
-#    xml=False
-#    xml_validate=True
-#    xml_nodepath=None
-#    xml_clusterconf=True
-#    user=False
-#    password=False
-#    nodename=False
-#
-#def usage(argv):
-#    print """%s [-d|-debug] [-p port|--port port] [--ssl [--ssl-key=keyfile] [--ssl-cert=certfile] [--ssl-verifyfile]]
-#    [--xml [xmlfile] [--xml-validate|--xml-novalidate] [--xml-nodepath path] [--xml-clusterconf|--xml-noclusterconf]]""" % argv[0]
-#    print '''
-#    starts the fence_ack_manual server
-#    -h|--help         this helpscreen
-#    -d|--debug        be more helpfull
-#    -p|--port         to be started on (default: %s)
-#    --ssl             use ssl
-#    --ssl-key         the keyfile to ssl (default:%s)
-#    --ssl-cert        the ssl certfile (default:%s)
-#    --ssl-verify      the ssl verify cert file (default:%s)
-#    --xml [file]      We are using an xml configfile (default: %s). No file for reading from stdin.
-#    --xml-validate    Validate this xmlfile (default:%s)
-#    --xml-nodepath    Get the config from this path (default: %s)
-#    --xml-clusterconf This is an RHEL4-XML Cluster configuration (default: %s)
-#    --nodename nodename Set the nodename from outside
-#    ''' %(Defaults.port, Defaults.ssl_keyfile, Defaults.ssl_certfile, Defaults.ssl_verifyfile, Defaults.xml, Defaults.xml_validate, Defaults.xml_nodepath, Defaults.xml_clusterconf)
 
 class SSLWrapper:
     """
@@ -211,29 +184,29 @@ class SecureTCPServer(SocketServer.TCPServer):
         self.server_activate()
 
 class FenceHandler(SocketServer.StreamRequestHandler):
-    def setup(self):
-        """
-        We need to use socket._fileobject Because SSL.Connection
-        doesn't have a 'dup'. Not exactly sure WHY this is, but
-        this is backed up by comments in socket.py and SSL/connection.c
-        """
-        self.connection = self.request # for doPOST
-        self.rfile = socket._fileobject(self.request, "rb", self.rbufsize)
-        self.wfile = socket._fileobject(self.request, "wb", self.wbufsize)
+    #def setup(self):
+    #    """
+    #    We need to use socket._fileobject Because SSL.Connection
+    #    doesn't have a 'dup'. Not exactly sure WHY this is, but
+    #    this is backed up by comments in socket.py and SSL/connection.c
+    #    """
+    #    self.connection = self.request # for doPOST
+    #    self.rfile = socket._fileobject(self.request, "rb", self.rbufsize)
+    #    self.wfile = socket._fileobject(self.request, "wb", self.wbufsize)
 
     def handle(self):
-        ComLog.getLogger().debug("Connected from %s %u" %(self.client_address))
-        try:
-            exit=False
-            shellmode=False
-            ComLog.getLogger().debug("Starting a shell")
-            from shell import Shell
-            myshell=Shell(self.rfile, self.wfile, self.server.user, self.server.passwd)
-            myshell.cmdloop()
-        except SSL.ZeroReturnError:
-            pass
+        logger.debug("Connected from %s %u" %(self.client_address))
+#        try:
+        exit=False
+        shellmode=False
+        logger.debug("Starting a shell")
+        from shell import Shell
+        myshell=Shell(self.rfile, self.wfile, self.server.user, self.server.passwd)
+        myshell.cmdloop()
+#        except SSL.ZeroReturnError:
+#            pass
         self.request.close()
-        ComLog.getLogger().debug("Disconnected from %s %u" %(self.client_address))
+        logger.debug("Disconnected from %s %u" %(self.client_address))
 
 def main():
     config=Config()
@@ -244,76 +217,16 @@ def main():
         sys.exit(0)
     elif ret > 0:
         sys.exit(ret)
-#    try:
-#        (opts, args_proper)=getopt.getopt(sys.argv[1:], 'hdp:', [ 'help', 'port', 'debug', 'user=', 'passwd', 'ssl', 'ssl-key=', 'ssl-cert=', 'ssl-verify=', 'xml', 'xml-validate', 'xml-novalidate', 'xml-nodepath=', 'xml-clusterconf', 'xml-noclusterconf', 'nodename=' ])
-#    except getopt.GetoptError, goe:
-#        print >>sys.stderr, "Error parsing params: %s" % goe
-#        usage(sys.argv)
-#        sys.exit(1)
-
-#    index=0
-#    ComLog.setLevel(logging.INFO)
-#    for (opt, value) in opts:
-#        #    print "Option %s" % opt
-#        if opt == "-d" or opt == "--debug":
-#            Defaults.DEBUG=True
-#            ComLog.setLevel(logging.DEBUG)
-#        elif opt == "-p'" or opt == "--port":
-#            Defaults.port=value
-#            index=index+1
-#        elif opt == "--user":
-#            Defaults.user=value
-#            index=index+1
-#        elif opt == "--passwd":
-#            import getpass
-#            Defaults.password=getpass.getpass("Password for user %s: " % Defaults.user)
-#        elif opt == "--ssl":
-#            Defaults.ssl=True
-#        elif opt == "--ssl-key":
-#            Defaults.ssl_keyfile=value
-#            index=index+1
-#        elif opt == "--ssl-cert":
-#            Defaults.ssl_certfile=value
-#            index=index+1
-#        elif opt == "--ssl-verify":
-#            Defaults.ssl_verifyfile=value
-#            index=index+1
-#        elif opt == "--xml":
-#            Defaults.xml=True
-#        elif opt == "--xml-validate":
-#            Defaults.xml_validate=True
-#        elif opt == "--xml-novalidate":
-#            Defaults.xml_validate=False
-#        elif opt == "--xml-clusterconf":
-#            Defaults.xml_clusterconf=True
-#        elif opt == "--xml-noclusterconf":
-#            Defaults.xml_clusterconf=False
-#        elif opt == "--xml-nodepath":
-##            print "xmlnodepath "+ value
-#            Defaults.xml_nodepath=value
-#            index=index+1
-#        elif opt == "--nodename":
-#            Defaults.nodename=value
-#            index=index+1
-#        elif opt == "-h" or opt == "--help":
-#            usage(sys.argv)
-#            sys.exit(0)
-#        else:
-#            usage(sys.argv)
-#            sys.exit(0)
-#        index=index+1
-
-#    print "Rest[%u] %u: %s" %(len(sys.argv), index, sys.argv[index])
     if config.xml:
         config.fromXML(config.xml)
 
     if config.ssl:
-        ComLog.getLogger().debug("Starting ssl server")
-        srv=SecureTCPServer(('', int(config.port)), FenceHandler, config.ssl_keyfile, config.ssl_certfile, config.ssl_verifyfile, config.user, config.password)
+        logger.debug("Starting ssl server")
+        srv=SecureTCPServer((config.bind, int(config.port)), FenceHandler, config.ssl_keyfile, config.ssl_certfile, config.ssl_verifyfile, config.user, config.password)
         srv.allow_reuse_address=True
     else:
-        ComLog.getLogger().debug("Starting nonssl server")
-        srv=MyTCPServer(('', int(config.port)), FenceHandler, config.user, config.password)
+        logger.debug("Starting nonssl server")
+        srv=MyTCPServer((config.bind, int(config.port)), FenceHandler, config.user, config.password)
 #        srv.allow_reuse_address=True
     try:
         srv.serve_forever()
@@ -327,7 +240,11 @@ if __name__ == '__main__':
 
 ##################
 # $Log: fence_ack_server.py,v $
-# Revision 1.5  2007-03-01 10:49:29  marc
+# Revision 1.6  2007-09-07 14:21:40  marc
+# - independent from ssl being installed or not
+# - support for binding on ips
+#
+# Revision 1.5  2007/03/01 10:49:29  marc
 # changed getopts
 #
 # Revision 1.4  2007/01/04 09:58:05  marc
