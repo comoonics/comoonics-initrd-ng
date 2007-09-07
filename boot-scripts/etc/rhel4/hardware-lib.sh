@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.3 2006-07-03 08:33:26 marc Exp $
+# $Id: hardware-lib.sh,v 1.4 2007-09-07 07:58:35 mark Exp $
 #
 # @(#)$File$
 #
@@ -55,9 +55,26 @@ function rhel4_hardware_detect() {
 }
 #************ rhel4_hardware_detect 
 
+#****f* hardware-lib.sh/rhel4_udev_start
+#  NAME
+#    udev_start
+#  SYNOPSIS
+#    function boot-lib.sh/rhel4_udev_start
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function rhel4_udev_start() {
+    /sbin/udevstart
+}
+#************rhel4_udev_start
+
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.3  2006-07-03 08:33:26  marc
+# Revision 1.4  2007-09-07 07:58:35  mark
+# added udev_start method
+#
+# Revision 1.3  2006/07/03 08:33:26  marc
 # changed hardwaredetection
 #
 # Revision 1.2  2006/05/12 13:06:41  marc
