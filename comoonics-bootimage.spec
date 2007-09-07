@@ -21,13 +21,9 @@
 # with ATIX.
 #/initrd_sr-2.6.9-34.ELsmp.img.gz
 # %define _initrddir /etc/init.d
-# $Id: comoonics-bootimage.spec,v 1.41 2007-09-07 07:55:42 mark Exp $
+# $Id: comoonics-bootimage.spec,v 1.42 2007-09-07 08:30:25 mark Exp $
 #
 ##
-# TO DO
-# etc/rc.sysinit:
-#  #if [ -z "$fastboot" -a "$READONLY" != "yes" -a "X$ROOTFSTYPE" != "Xnfs" -a "X$ROOTFSTYPE" != "Xnfs4" ]; then
-#  if [ -z "$fastboot" -a "$READONLY" != "yes" -a "X$ROOTFSTYPE" != "Xnfs" -a "X$ROOTFSTYPE" != "Xnfs4" -a "X$ROOTFSTYPE" != "Xgfs" ]; then
 ##
 
 %define _user root
@@ -51,7 +47,7 @@ Version: 1.3
 BuildArch: noarch
 Requires: comoonics-cs-py >= 0.1-43 comoonics-cluster-py >= 0.1-2
 #Conflicts: 
-Release: 4
+Release: 5
 Vendor: ATIX GmbH
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -247,20 +243,25 @@ fi
 echo "Creating mkinitrd link..."
 ln -sf %{APPDIR}/create-gfs-initrd-generic.sh %{APPDIR}/mkinitrd
 
-/sbin/chkconfig --add bootsr &>/dev/null
-/sbin/chkconfig bootsr on
-/sbin/chkconfig --list bootsr
-/sbin/chkconfig --add ccsd-chroot &>/dev/null
-/sbin/chkconfig --list ccsd-chroot
-/sbin/chkconfig ccsd off
-/sbin/chkconfig --list ccsd
-/sbin/chkconfig --add fenced-chroot &>/dev/null
-/sbin/chkconfig fenced-chroot on
-/sbin/chkconfig --list fenced-chroot
-/sbin/chkconfig fenced off
-/sbin/chkconfig --del fenced &>/dev/null
-/sbin/chkconfig gfs off
-/sbin/chkconfig --del gfs
+services="bootsr ccsd-chroot fenced-chroot"
+echo "Resetting services ($services)"
+for service in $services; do
+   /sbin/chkconfig --del $service &>/dev/null
+   /sbin/chkconfig --add $service
+   /sbin/chkconfig $service on
+   /sbin/chkconfig --list $service
+done
+
+if cat /etc/redhat-release | grep -i "release 5" &> /dev/null; then
+	services="cman gfs"
+else
+	services="ccsd fenced cman gfs"
+fi
+
+echo "Disabling services ($services)"
+for service in $services; do
+   /sbin/chkconfig --del $service &> /dev/null
+done
 /bin/true
 
 echo 'Information:
@@ -476,7 +477,10 @@ fi
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.41  2007-09-07 07:55:42  mark
+# Revision 1.42  2007-09-07 08:30:25  mark
+# merged fixes from 1.2
+#
+# Revision 1.41  2007/09/07 07:55:42  mark
 # removed tmpwatch conflict
 # added rhel5 parts
 #
