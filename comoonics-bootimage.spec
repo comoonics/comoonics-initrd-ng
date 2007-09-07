@@ -21,7 +21,7 @@
 # with ATIX.
 #/initrd_sr-2.6.9-34.ELsmp.img.gz
 # %define _initrddir /etc/init.d
-# $Id: comoonics-bootimage.spec,v 1.40 2007-08-29 06:46:13 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.41 2007-09-07 07:55:42 mark Exp $
 #
 ##
 # TO DO
@@ -49,8 +49,8 @@ Name: comoonics-bootimage
 Summary: Comoonics Bootimage. Scripts for creating an initrd in a gfs shared root environment
 Version: 1.3
 BuildArch: noarch
-Requires: comoonics-cs >= 0.5-17, comoonics-cs-py >= 0.1-15 comoonics-cluster-py >= 0.1-2
-Conflicts: tmpwatch
+Requires: comoonics-cs-py >= 0.1-43 comoonics-cluster-py >= 0.1-2
+#Conflicts: 
 Release: 4
 Vendor: ATIX GmbH
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
@@ -270,7 +270,7 @@ If you want syslog to log fence messages you should add an additional logdevice
 to the syslog configuration 
 (command switch syslogd -a $(cat /var/comoonics/chrootpath)/dev/log)
 
-CONFLICTS:
+CAUTION:
 - tmpwatch:
 if you use the /tmp filesystem for our chroot environment, 
 and tmpwatch is installed, you need to modify
@@ -331,6 +331,9 @@ fi
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/sysconfig/comoonics
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/rhel4/hardware-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/rhel4/network-lib.sh
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/rhel5/gfs-lib.sh
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/rhel5/hardware-lib.sh
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/rhel5/network-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/sles8/hardware-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/sles8/network-lib.sh
 %attr(640, root, root) %{CONFIGDIR}/bootimage/basefiles.list
@@ -473,7 +476,11 @@ fi
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.40  2007-08-29 06:46:13  marc
+# Revision 1.41  2007-09-07 07:55:42  mark
+# removed tmpwatch conflict
+# added rhel5 parts
+#
+# Revision 1.40  2007/08/29 06:46:13  marc
 # setting AUTOREQ: NO for vmware agent
 #
 # Revision 1.39  2007/08/08 14:25:17  mark
