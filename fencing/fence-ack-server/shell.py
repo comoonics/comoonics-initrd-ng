@@ -4,19 +4,26 @@ Fence Acknowledge Server via normal an ssl
 """
 
 # here is some internal information
-# $Id: shell.py,v 1.4 2006-12-04 17:39:04 marc Exp $
+# $Id: shell.py,v 1.5 2007-09-07 14:22:34 marc Exp $
 #
 
 
-__version__ = "$Revision: 1.4 $"
+__version__ = "$Revision: 1.5 $"
 # $Source: /atix/ATIX/CVSROOT/nashead2004/bootimage/fencing/fence-ack-server/shell.py,v $
 import cmd
 import os
 import sys
-import pexpect
+import re
+import inspect
 import fence_ack_server
-from comoonics import ComLog
+import logging
+from comoonics import ComLog, ComSystem
 from comoonics import ComExceptions
+from comoonics import pexpect
+from comoonics.ComSystemInformation import SystemInformation
+from comoonics.fenceacksv import plugins
+
+logger=ComLog.getLogger("comoonics.bootimage.fenceacksv.shell")
 
 class AuthorizationError(ComExceptions.ComException): pass
 class CouldNotFindFile(ComExceptions.ComException): pass
@@ -26,22 +33,144 @@ class CouldNotStartService(ComExceptions.ComException): pass
 class ExpectShell(pexpect.spawn):
     def __init__(self, command, stdin=sys.stdin, stdout=sys.stdout):
         pexpect.spawn.__init__(self, command)
-        self.stdin=stdin
-        self.stdout=stdout
-        self.STDIN_FILENO=self.stdin.fileno()
-        self.STDOUT_FILENO=self.stdout.fileno()
-        self.STDERR_FILENO=self.stdout.fileno()
+        #self.stdin=stdin
+        #self.stdout=stdout
+        #self.stderr=stdout
+        #sys.stdin=self.stdin
+        #sys.stdout=self.stdout
+        self.STDIN_FILENO=stdin.fileno()
+        self.STDOUT_FILENO=stdout.fileno()
+        self.STDERR_FILENO=stdout.fileno()
 
 class Shell(cmd.Cmd):
+    """
+    FENCEACKSV-Shell:
+    *****************
+    This shell is a rescue shell to manage a clusternode. Below you'll see all commands and plugins available.
+    """
     def __init__(self, stdin=sys.stdin, stdout=sys.stdout, user=None, passwd=None):
         cmd.Cmd.__init__(self, 'tab', stdin, stdout)
         self.shell="/bin/bash"
         self.fence_cmd="/sbin/fence_node"
         self.prompt_name="Fence Acknowledge Shell"
-        self.use_rawinput=0
+        self.use_rawinput=1
         self.oldprompt=""
         self.user=user
         self.passwd=passwd
+        self.sysinfo=SystemInformation()
+        self.prompt="FENCEACKSV %s<%s>$ " %(self.sysinfo.getName(), self.sysinfo.getType())
+        self.plugins=plugins.getRegistry()
+        self.doc_header=inspect.getdoc(self)
+        logger.debug("Plugins: %s" %self.plugins)
+        sys.stdin=self.stdin
+        sys.stdout=self.stdout
+
+    def do_help(self, arg):
+        if arg:
+            _cmd, _arg, _line = self.parseline(arg)
+            # XXX check arg syntax
+            try:
+                func = getattr(self, 'help_' + _cmd)
+            except AttributeError:
+                try:
+                    doc=getattr(self, 'do_' + _cmd).__doc__
+                    if doc:
+                        self.stdout.write("%s\n"%str(doc))
+                        return
+                except AttributeError:
+                    for _plugin in self.plugins:
+                        if plugins.getPlugin(_plugin).hasCommand(_cmd):
+                            print plugins.getPlugin(_plugin).help(_line)
+                            return
+                self.stdout.write("%s\n"%str(self.nohelp % (_line,)))
+                return
+            func(_arg)
+        else:
+            names = self.get_names()
+            cmds_doc = []
+            cmds_undoc = []
+            help = {}
+            for name in names:
+                if name[:5] == 'help_':
+                    help[name[5:]]=1
+            names.sort()
+            # There can be duplicates if routines overridden
+            prevname = ''
+            for name in names:
+                if name[:3] == 'do_':
+                    if name == prevname:
+                        continue
+                    prevname = name
+                    cmd=name[3:]
+                    if cmd in help:
+                        cmds_doc.append(cmd)
+                        del help[cmd]
+                    elif getattr(self, name).__doc__:
+                        cmds_doc.append(cmd)
+                    else:
+                        cmds_undoc.append(cmd)
+            self.stdout.write("%s\n"%str(self.doc_leader))
+            doc_header=self.doc_header
+            for _pluginname in self.plugins:
+                _plugin=plugins.getPlugin(_pluginname)
+                _plugins_header="%s type \"help plugin %s\" to get more information" %(_plugin.getName(), _plugin.getName())
+                # _plugins_header+=_plugin.help_short()
+                _cmds=_plugin.getCommands()
+                doc_header+="\nPlugin %s:\n %s"%(_plugin.getName(), _plugins_header)
+                cmds_doc+=_cmds
+            self.print_topics(doc_header,   cmds_doc,   15,80)
+            self.print_topics(self.misc_header,  help.keys(),15,80)
+            self.print_topics(self.undoc_header, cmds_undoc, 15,80)
+
+    def help_plugin(self, arg):
+        logger.debug("help_plugin(%s)" %arg)
+        if arg and arg!="":
+            _pluginname=re.split("\s+", arg)[0]
+            _plugin=plugins.getPlugin(_pluginname)
+            print _plugin.help()
+        else:
+            print "Please give a pluginname as option. Valid plugins are: %s" %(", ".join(plugins.getPluginnames()))
+
+    def completenames(self, text, *ignored):
+        _complete=cmd.Cmd.completenames(self, text, *ignored)
+        for _pluginname in self.plugins:
+            _plugin=plugins.getPlugin(_pluginname)
+            for _cmd in _plugin.getCommands():
+                if _cmd.startswith(text):
+                    _complete.append(_cmd)
+        return _complete
+    def complete_default(self, *ignored):
+        logger.debug("complete(ignored: %s" %(ignored))
+
+    def default(self, _line):
+        _cmd, _arg, _line = self.parseline(_line)
+        for _pluginname in self.plugins:
+            _plugin=plugins.getPlugin(_pluginname)
+            if _plugin.hasCommand(_cmd):
+                try:
+                    (_params, _kwds)=self.parseArgs(_arg)
+                    logger.debug("default: calling %s.doCommand(%s, params: %s, kwds: %s)" %(_pluginname, _cmd, _params, _kwds))
+                    return _plugin.doCommand(_cmd, *_params, **_kwds)
+                except Exception, e:
+                    self.stdout.write("Error: %s\n" %e)
+                    ComLog.debugTraceLog(logger)
+                    return
+
+        cmd.Cmd.default(self, _line)
+
+    def parseArgs(self, _line):
+        params=list()
+        keys=dict()
+        if _line and _line != "":
+            _MATCH_KEY=re.compile("(?P<key>[^=]+)=(?P<value>\S+)")
+            _params=re.split("\s+", _line)
+            for _param in _params:
+                _match=_MATCH_KEY.match(_param)
+                if _match:
+                    keys[_match.group("key")]=_match.group("value")
+                else:
+                    params.append(_param)
+        return (params, keys)
 
     def check_for_fence_manual(self):
         import os.path
@@ -54,12 +183,12 @@ class Shell(cmd.Cmd):
         pending=list()
         for file in os.listdir(fence_ack_server.PID_DIR):
             if regexp.match(file):
-                ComLog.getLogger().debug("check_for_pending_fence_clients match: %s" % file)
+                logger.debug("check_for_pending_fence_clients match: %s" % file)
                 pending.append(file)
         return pending
 
     def preloop(self):
-        ComLog.getLogger().debug("User: %s, Password: %s" %(self.user, "***"))
+        logger.debug("User: %s, Password: %s" %(self.user, "***"))
 
         if self.user and self.passwd:
             self.stdout.write("Username: ")
@@ -70,12 +199,15 @@ class Shell(cmd.Cmd):
             self.stdout.flush()
             passwd=self.stdin.readline()
             passwd=passwd.splitlines()[0]
-            ComLog.getLogger().debug("User: %s, Password: %s" %(user, "***"))
+            logger.debug("User: %s, Password: %s" %(user, "***"))
             if self.user!=user or self.passwd!=passwd:
                 print >>self.stdout, "Wrong username or password"
                 raise AuthorizationError("Wrong username or password")
         self.orig_prompt=self.prompt
         self.postcmd("", "")
+        self.stdout.write("Fenceacksv")
+        self.do_version("")
+        print >>self.stdout, self.sysinfo
 
     def precmd(self, s=""):
         self.prompt=self.orig_prompt
@@ -99,28 +231,84 @@ The following fenceclients seem to be pending you can kill them by the command k
             self.prompt=self.prompt+"\n"+self.orig_prompt
         return stop
 
+    def do_debug(self, rest):
+        """
+        Set debugmode on
+        """
+        ComLog.setLevel(logging.DEBUG)
+
+    def do_info(self, rest):
+        """
+        Set info level
+        """
+        ComLog.setLevel(logging.INFO)
+
+    def do_ask(self, rest):
+        """
+        Toggle askmode
+        """
+        if ComSystem.getExecMode()==ComSystem.ASK:
+            logger.debug("Setting execmode to none")
+            ComSystem.setExecMode("")
+        else:
+            logger.debug("Setting execmode to ask")
+            ComSystem.setExecMode(ComSystem.ASK)
+        print >>self.stdout, "Askmode is now: \"%s\"" %ComSystem.getExecMode()
+
     def do_shell(self, rest):
-        ComLog.getLogger().debug("starting a shell..")
-        child=ExpectShell(self.shell, self.stdin, self.stdout)
-        child.setecho(False)
-        COMMAND_PROMPT = "<%s> " % (self.prompt_name)
-        child.sendline ("PS1='<"+self.prompt_name+"> [\u@\h \W]\$ '") # In case of sh-style
-        i = child.expect ([pexpect.TIMEOUT, COMMAND_PROMPT], timeout=10)
+        _shell=self.shell
+        if rest and rest != "":
+            _shell=self.shell+" -c '%s'" %rest
+        logger.debug("starting a shell.. %s" %_shell)
+        self.child=ExpectShell(_shell, self.stdin, self.stdout)
+        self.child.setecho(False)
+        COMMAND_PROMPT = re.compile(".+$")
+        self.child.sendline ("PS1='SHELL %s'" %self.prompt) # In case of sh-style
+        i = self.child.expect ([pexpect.TIMEOUT, COMMAND_PROMPT], timeout=10)
         if i == 0:
             print >>self.stdout, "# Couldn't set sh-style prompt -- trying csh-style."
-            child.sendline ("set prompt='[PEXPECT]\$ '")
-            i = child.expect ([pexpect.TIMEOUT, COMMAND_PROMPT], timeout=10)
+            self.child.sendline ("set prompt='[PEXPECT]\$ '")
+            i = self.child.expect ([pexpect.TIMEOUT, COMMAND_PROMPT], timeout=10)
             if i == 0:
                 print >>self.stdout, "Failed to set command prompt using sh or csh style."
                 print >>self.stdout, "Response was:"
-                print >>self.stdout, child.before
+                print >>self.stdout, self.child.before
                 exit=True
         try:
-            child.interact()
-        except:
-            pass
-        sys.stdin=sys.__stdin__
-        sys.stderr=sys.__stderr__
+            if rest and rest != "":
+                print >> self.stdout, self.child.after
+                #self.child.sendeof()
+            else:
+                #self.child.sendline("")
+                self.child.interact(chr(29), None, self.shell_output_filter)
+        except Exception, e:
+            logger.error("Error: %s" %e)
+            print >>self.stdout, "Error: %s" %e
+            ComLog.debugTraceLog(logger)
+            self.child.close()
+            self.child=None
+            self.stdin.flush()
+            self.stdout.flush()
+            self.do_exit("")
+        self.lastcmd=""
+        #sys.stdin=sys.__stdin__
+        #sys.stderr=sys.__stderr__
+
+    def shell_output_filter(self, _output):
+        logger.debug("output: %s" %_output)
+        return _output
+
+    def shell_input_filter(self, _input):
+        #import struct
+        #_break=struct.pack("ccccc", '\xff', '\xf4', '\xff', '\xfd', '\x06')
+        #_return=struct.pack("cc", '\n', '\r')
+        #i=_input.rfind(_break)
+        #logger.debug("i: %u" %i)
+        #if i >= 0:
+        #    logger.debug("sending breaksignal to child")
+        #    raise pexpect.EOF, "Break was send"
+        logger.debug("Input: %s" %_input)
+        return _input
 
     def help_shell(self):
         print >>self.stdout, "Starts a normal shell (%s)" %(self.shell)
@@ -129,7 +317,7 @@ The following fenceclients seem to be pending you can kill them by the command k
         print >>self.stdout, "Prints the version of this service" %(self.shell)
 
     def do_version(self, rest):
-        print >>self.stdout, 'Version $Revision: 1.4 $'
+        print >>self.stdout, 'Version $Revision: 1.5 $'
 
     def help_fence_node(self):
         print >>self.stdout, "Fenced the given node"
@@ -149,12 +337,15 @@ The following fenceclients seem to be pending you can kill them by the command k
         import os
         if self.check_for_fence_manual():
             fifo=open(fence_ack_server.FENCE_MANUAL_FIFO, "w", 0)
+            logger.debug("Writing %s to fifo")
             print >>fifo, fence_ack_server.FENCE_ACK_STRING
+            logger.debug("closing fifo")
             fifo.close()
             import time
+            logger.debug("waiting one second")
             time.sleep(1)
         else:
-            print >>self.stdout, "Not fence_manual in progress that means that"
+            print >>self.stdout, "No fence_manual in progress that means that"
             print >>self.stdout, "Either %s not existing or %s not existing." %(fence_ack_server.FENCE_MANUAL_FIFO, fence_ack_server.FENCE_MANUAL_LOCKFILE)
         self.lastcmd=""
 
@@ -183,12 +374,12 @@ The following fenceclients seem to be pending you can kill them by the command k
     def do_restart(self, rest):
         service_params=rest.split(" ")
         import os.path
-        #ComLog.getLogger().debug("rest %s =>%s" %(service_params[-1], os.path.splitext(service_params[-1])[1]))
+        #logger.debug("rest %s =>%s" %(service_params[-1], os.path.splitext(service_params[-1])[1]))
         if not os.path.exists(service_params[-1]) or os.path.splitext(service_params[-1])[1] != ".pid":
             cmd=" ".join(service_params)
             service_name=os.path.basename(cmd.split(" ")[0])
             pidfile="%s/%s.pid" %(fence_ack_server.PID_DIR, service_name)
-            #ComLog.getLogger().debug("cmd: %s, service_name: %s, pidfile: %s" %(cmd, service_name, pidfile))
+            #logger.debug("cmd: %s, service_name: %s, pidfile: %s" %(cmd, service_name, pidfile))
         else:
             cmd=" ".join(service_params[:-1])
             service_name=os.path.basename(cmd.split(" ")[0])
@@ -246,12 +437,12 @@ The following fenceclients seem to be pending you can kill them by the command k
             raise CouldNotFindFile(pidfile)
 
     def killService(self, service_name, pidfile=None, signal=9):
-        ComLog.getLogger().debug("Killing service %s.." % service_name)
+        logger.debug("Killing service %s.." % service_name)
         if not pidfile:
             pidfile="%s/%s.pid" %(fence_ack_server.PID_DIR, service_name)
-        ComLog.getLogger().debug("Killing service %s/%s.." % (service_name, pidfile))
+        logger.debug("Killing service %s/%s.." % (service_name, pidfile))
         pid=self.getPid(pidfile)
-        ComLog.getLogger().debug("Killing service %s/%s/%u.." % (service_name, pidfile, pid))
+        logger.debug("Killing service %s/%s/%u.." % (service_name, pidfile, pid))
         print >>self.stdout, "Killing pid for %s:%u" %(service_name, pid)
         os.kill(pid, signal)
         os.remove(pidfile)
@@ -273,11 +464,19 @@ The following fenceclients seem to be pending you can kill them by the command k
             print >>self.stdout, "OK"
 
 if __name__ == '__main__':
+    from comoonics.fenceacksv.plugins.ComSysreportPlugin import SysreportPlugin
+    import comoonics.fenceacksv.plugins
+    comoonics.fenceacksv.plugins.addPlugin(SysreportPlugin("../../../../comoonics-clustersuite/python/sysreport"))
     Shell().cmdloop()
 
 ##############
 # $Log: shell.py,v $
-# Revision 1.4  2006-12-04 17:39:04  marc
+# Revision 1.5  2007-09-07 14:22:34  marc
+# - support for plugins (see comoonics.fenceacksv.plugins)
+#   e.g sysrq and sysreport
+# - rewritten documentation and being more helpful
+#
+# Revision 1.4  2006/12/04 17:39:04  marc
 # Bugfix #19
 #
 # Revision 1.3  2006/09/18 12:16:00  marc
