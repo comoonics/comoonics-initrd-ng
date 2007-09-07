@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.6 2007-02-23 16:42:01 mark Exp $
+# $Id: hardware-lib.sh,v 1.7 2007-09-07 08:02:30 mark Exp $
 #
 # @(#)$File$
 #
@@ -24,7 +24,23 @@
 #    Libraryfunctions for general hardware support functions.
 #*******
 
-#****f* boot-lib.sh/udev_start
+#****f* hardware-lib.sh/hardware_start_services
+#  NAME
+#    udev_start
+#  SYNOPSIS
+#    function boot-lib.sh/udev_start
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function hardware_start_services() {
+	${distribution}_hardware_start_services
+    return_code
+}
+#************hardware_start_services
+
+
+#****f* hardware-lib.sh/udev_start
 #  NAME
 #    udev_start
 #  SYNOPSIS
@@ -34,11 +50,13 @@
 #  SOURCE
 #
 function udev_start() {
-    /sbin/udevstart
+	echo_local -n "Starting udev ..."
+	${distribution}_udev_start
+    return_code
 }
 #************udev_start
 
-#****f* boot-lib.sh/dev_start
+#****f* hardware-lib.sh/dev_start
 #  NAME
 #    dev_start
 #  SYNOPSIS
@@ -277,7 +295,7 @@ function hardware_detect() {
   return_code
 
   echo_local -n "Starting udev"
-  exec_local /sbin/udevstart
+  udev_start 
   return_code
 
   echo_local_debug "File $modules_conf ***"
@@ -318,7 +336,10 @@ function add_scsi_device() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.6  2007-02-23 16:42:01  mark
+# Revision 1.7  2007-09-07 08:02:30  mark
+# made udev_start distro dependend
+#
+# Revision 1.6  2007/02/23 16:42:01  mark
 # modified dm_mp_start to recognize all partitions
 #
 # Revision 1.5  2006/07/19 15:12:55  marc
