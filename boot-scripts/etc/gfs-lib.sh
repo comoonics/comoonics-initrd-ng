@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.33 2007-08-06 15:50:11 mark Exp $
+# $Id: gfs-lib.sh,v 1.34 2007-09-07 08:01:12 mark Exp $
 #
 # @(#)$File$
 #
@@ -592,7 +592,7 @@ function gfs_start_lock_dlm {
 function gfs_start_cman {
   echo_local -n "Joining the cluster manager"
   sleep 5
-  exec_local cman_tool join -w
+  start_service_chroot $chroot_path cman_tool join -w
   return_code
 }
 #************ gfs_start_cman
@@ -609,9 +609,10 @@ function gfs_start_cman {
 #
 function gfs_start_fenced {
   local chroot_path=$1
-  start_service_chroot $chroot_path '/sbin/fenced -c'
-  echo_local "Waiting for fenced to complete join"
-  exec_local fence_tool wait
+  start_service_chroot $chroot_path 'fenced -c'
+  start_service_chroot $chroot_path '/sbin/fence_tool -c -w join'
+  #echo_local "Waiting for fenced to complete join"
+  #exec_local fence_tool wait
   return_code
 }
 #************ gfs_start_fenced
@@ -671,7 +672,7 @@ function gfs_restart_ccsd {
 }
 #******gfs_restart_ccsd
 
-#****f* gfs-lib.sh/gfs_tart_clvmd
+#****f* gfs-lib.sh/gfs_start_clvmd
 #  NAME
 #    gfs_start_clvmd
 #  SYNOPSIS
@@ -717,7 +718,7 @@ function gfs_restart_clvmd {
    chroot $new_root /sbin/vgchange -ayl >/dev/null 2>&1
    return_code $?
 }
-#******gfs_restart_ccsd
+#******gfs_restart_clvmd
 
 #****f* gfs-lib.sh/gfs_restart_fenced
 #  NAME
@@ -777,6 +778,57 @@ function gfs_start_qdiskd {
 }
 #************ gfs_start_qdiskd
 
+#****f* gfs-lib.sh/gfs_start_groupd
+#  NAME
+#    gfs_start_groupd
+#  SYNOPSIS
+#    function gfs_start_groupd {
+#  DESCRIPTION
+#    Function starts the groupd in chroot environment
+#  IDEAS
+#  SOURCE
+#
+function gfs_start_groupd {
+  local chroot_path=$1
+  start_service_chroot $chroot_path  /sbin/groupd
+}
+#************ gfs_start_groupd
+
+#****f* gfs-lib.sh/gfs_start_dlm_controld
+#  NAME
+#    gfs_start_dlm_controld
+#  SYNOPSIS
+#    function gfs_start_dlm_controld {
+# 
+#  DESCRIPTION
+#    Function starts the dlm_controld in chroot environment
+#  IDEAS
+#  SOURCE
+#
+function gfs_start_dlm_controld {
+  local chroot_path=$1
+  start_service_chroot $chroot_path /sbin/dlm_controld
+}
+#************ gfs_start_dlm_controld
+
+#****f* gfs-lib.sh/gfs_start_gfs_controld
+#  NAME
+#    gfs_start_gfs_controld
+#  SYNOPSIS
+#    function gfs_start_gfs_controld {
+# 
+#  DESCRIPTION
+#    Function starts the gfs_controld in chroot environment
+#  IDEAS
+#  SOURCE
+#
+function gfs_start_gfs_controld {
+  local chroot_path=$1
+  start_service_chroot $chroot_path /sbin/gfs_controld
+}
+#************ gfs_start_gfs_controld
+
+
 
 #****f* clusterfs-lib.sh/gfs_checkhosts_alive
 #  NAME
@@ -799,7 +851,11 @@ function gfs_checkhosts_alive {
 #********* gfs_checkhosts_alive
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.33  2007-08-06 15:50:11  mark
+# Revision 1.34  2007-09-07 08:01:12  mark
+# bug fixes
+# added some start methods
+#
+# Revision 1.33  2007/08/06 15:50:11  mark
 # reorganized libraries
 # added methods for chroot management
 # fits for bootimage release 1.3
