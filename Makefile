@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.25 2007-08-07 12:42:14 mark Exp $
+# $Id: Makefile,v 1.26 2007-09-07 07:57:29 mark Exp $
 #
 # @(#)$file$
 #
@@ -125,6 +125,9 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/sysconfig/comoonics \
   boot-scripts/etc/rhel4/hardware-lib.sh \
   boot-scripts/etc/rhel4/network-lib.sh \
+  boot-scripts/etc/rhel5/hardware-lib.sh \
+  boot-scripts/etc/rhel5/gfs-lib.sh \
+  boot-scripts/etc/rhel5/network-lib.sh \
   boot-scripts/etc/sles8/hardware-lib.sh \
   boot-scripts/etc/sles8/network-lib.sh
 #************ LIB_FILES 
@@ -362,7 +365,10 @@ rpm: archive
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.25  2007-08-07 12:42:14  mark
+# Revision 1.26  2007-09-07 07:57:29  mark
+# added rhel5 libs
+#
+# Revision 1.25  2007/08/07 12:42:14  mark
 # added release 1.3.1
 # added extras-nfs
 # added extras-network
