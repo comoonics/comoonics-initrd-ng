@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.43 2007-08-07 16:10:03 mark Exp $
+# $Id: boot-lib.sh,v 1.44 2007-09-07 07:59:45 mark Exp $
 #
 # @(#)$File$
 #
@@ -261,14 +261,16 @@ function exec_nondefault_boot_source() {
 #    works. Else an undefined value is returned.
 #  SOURCE
 function getDistribution {
-#   if [ -e /etc/redhat-release ]; then
-#     cat /etc/redhat-release | grep -i "Red Hat Enterprise Linux ES release 4" > /dev/null 2>&1
-#     if [ $? -eq 0 ]; then
-       echo "rhel4"
-#     fi
-#   else
-#     return 2
-#   fi
+	if [ -e /etc/redhat-release ]; then
+    	if cat /etc/redhat-release | grep -i "release 4" &> /dev/null; then
+     		echo "rhel4"
+   	 	elif cat /etc/redhat-release | grep -i "release 5" &> /dev/null; then
+   	 		echo "rhel5"
+    	fi
+	else
+		echo "unknown"
+    	return 2
+   	fi
 }
 #**** getDistribution
 
@@ -724,14 +726,10 @@ function stop_service {
 #  SOURCE
 #
 function clean_initrd() {
-    echo_local_debug "**********************************************************************"
-    echo_local "6.2 Cleaning up initrd ."
-    echo_local -n "6.2.1 Umounting procfs"
-    exec_local /bin/umount /i/proc
-    echo_local -n "6.2.2 Umounting /initrd"
-    exec_local /bin/umount /mnt/oldroot
-    echo_local -n "6.2.3 Freeing memory"
-    exec_local /sbin/blockdev --flushbufs /dev/ram0
+	echo_local_debug "Sending process the KILL signal  "
+	fuser -k -KILL -m /
+	echo_local_debug "Sending processes the TERM signal "
+	fuser -k -TERM -m /
 }
 
 #************ clean_initrd
@@ -919,7 +917,11 @@ function exec_local_debug() {
 
 
 # $Log: boot-lib.sh,v $
-# Revision 1.43  2007-08-07 16:10:03  mark
+# Revision 1.44  2007-09-07 07:59:45  mark
+# added rhel5 distro detection
+# replaced clean_initrd
+#
+# Revision 1.43  2007/08/07 16:10:03  mark
 # bug fix in chroot_path environment
 #
 # Revision 1.42  2007/08/06 15:50:11  mark
