@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.34 2007-08-06 15:56:14 mark Exp $
+# $Id: linuxrc.generic.sh,v 1.35 2007-09-07 08:04:18 mark Exp $
 #
 # @(#)$File$
 #
@@ -17,7 +17,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.34 2007-08-06 15:56:14 mark Exp $
+#    $Id: linuxrc.generic.sh,v 1.35 2007-09-07 08:04:18 mark Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -73,7 +73,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.34 $ $Date: 2007-08-06 15:56:14 $'
+echo_local 'Internal Version $Revision: 1.35 $ $Date: 2007-09-07 08:04:18 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -405,6 +405,10 @@ exec_local mkdir -p $newroot/var/comoonics
 echo $chroot_path > $newroot/var/comoonics/chrootpath
 return_code
 
+echo_local "cleaning up initrd ..."
+exec_local clean_initrd
+success
+
 step "Initialization completed."
 
 echo_local "Starting init-process ($init_cmd)..."
@@ -414,7 +418,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.34  2007-08-06 15:56:14  mark
+# Revision 1.35  2007-09-07 08:04:18  mark
+# added cleanup_initrd
+#
+# Revision 1.34  2007/08/06 15:56:14  mark
 # new chroot environment
 # bootimage release 1.3
 #
