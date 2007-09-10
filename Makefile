@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.26 2007-09-07 07:57:29 mark Exp $
+# $Id: Makefile,v 1.27 2007-09-10 14:55:48 marc Exp $
 #
 # @(#)$file$
 #
@@ -50,7 +50,7 @@ VERSION=1.3
 #  IDEAS
 #  SOURCE
 #
-PACKAGE_NAME=bootimage
+PACKAGE_NAME=comoonics-bootimage
 
 #************ PACKAGE_NAME 
 #****d* Makefile/INSTALL_GRP
@@ -147,7 +147,7 @@ SYSTEM_CFG_DIR=/etc/comoonics
 #  IDEAS
 #  SOURCE
 #
-SYSTEM_CFG_FILES=comoonics-$(PACKAGE_NAME).cfg
+SYSTEM_CFG_FILES=$(PACKAGE_NAME).cfg
 # subdirs are all in root
 #************ SYSTEM_CFG_FILES 
 #****d* Makefile/CFG_DIR
@@ -157,7 +157,7 @@ SYSTEM_CFG_FILES=comoonics-$(PACKAGE_NAME).cfg
 #  IDEAS
 #  SOURCE
 #
-CFG_DIR=$(SYSTEM_CFG_DIR)/$(PACKAGE_NAME)
+CFG_DIR=$(SYSTEM_CFG_DIR)/bootimage
 #************ CFG_DIR 
 #****d* Makefile/CFG_FILES
 #  NAME
@@ -198,7 +198,7 @@ CFG_FILES=basefiles.list \
 #  IDEAS
 #  SOURCE
 #
-CFG_DIR_CHROOT=$(SYSTEM_CFG_DIR)/$(PACKAGE_NAME)-chroot
+CFG_DIR_CHROOT=$(SYSTEM_CFG_DIR)/bootimage-chroot
 #************ CFG_DIR_CHROOT 
 #****d* Makefile/CFG_FILES_CHROOT
 #  NAME
@@ -246,7 +246,7 @@ ccsd-chroot
 #  IDEAS
 #  SOURCE
 #
-ARCHIVE_FILE=./comoonics-$(PACKAGE_NAME)-$(VERSION).tar.gz
+ARCHIVE_FILE=./$(PACKAGE_NAME)-$(VERSION).tar.gz
 #************ ARCHIVE_FILE 
 #****d* Makefile/TAR_PATH
 #  NAME
@@ -255,8 +255,11 @@ ARCHIVE_FILE=./comoonics-$(PACKAGE_NAME)-$(VERSION).tar.gz
 #  IDEAS
 #  SOURCE
 #
-TAR_PATH=comoonics-$(PACKAGE_NAME)-$(VERSION)/*
+TAR_PATH=$(PACKAGE_NAME)-$(VERSION)/*
 #************ TAR_PATH 
+
+RPM_PACKAGE_BIN_DIR=/usr/src/redhat/RPMS/*
+RPM_PACKAGE_SRC_DIR=/usr/src/redhat/SRPMS
 
 .PHONY: install
 install:
@@ -357,15 +360,26 @@ archive:
 	tar -c -z --exclude="*~" --exclude="*CVS*" -f $(ARCHIVE_FILE) $(TAR_PATH) && \
 	echo "(OK)") || echo "(FAILED)"
 	
-rpm: archive
+rpmbuild: archive
 	@echo -n "Creating RPM"
 	cp ../$(ARCHIVE_FILE) /usr/src/redhat/SOURCES/
 	rpmbuild -ba --target=noarch ./comoonics-bootimage.spec
 
+.PHONY:rpmsign
+rpmsign:
+	@echo "Signing packages"
+	rpm --resign $(RPM_PACKAGE_BIN_DIR)/$(PACKAGE_NAME)-*.rpm $(RPM_PACKAGE_SRC_DIR)/$(PACKAGE_NAME)-*.src.rpm
+
+.PHONY:rpm	
+rpm: rpmbuild rpmsign
+
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.26  2007-09-07 07:57:29  mark
+# Revision 1.27  2007-09-10 14:55:48  marc
+# added rpmsign to rpm as in comoonics-cs
+#
+# Revision 1.26  2007/09/07 07:57:29  mark
 # added rhel5 libs
 #
 # Revision 1.25  2007/08/07 12:42:14  mark
