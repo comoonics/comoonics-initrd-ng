@@ -4,11 +4,11 @@ Fence Acknowledge Server via normal an ssl
 """
 
 # here is some internal information
-# $Id: fence_ack_server.py,v 1.6 2007-09-07 14:21:40 marc Exp $
+# $Id: fence_ack_server.py,v 1.7 2007-09-10 15:01:00 marc Exp $
 #
 
 
-__version__ = "$Revision: 1.6 $"
+__version__ = "$Revision: 1.7 $"
 # $Source: /atix/ATIX/CVSROOT/nashead2004/bootimage/fencing/fence-ack-server/fence_ack_server.py,v $
 
 from exceptions import ImportError
@@ -202,7 +202,10 @@ class FenceHandler(SocketServer.StreamRequestHandler):
         logger.debug("Starting a shell")
         from shell import Shell
         myshell=Shell(self.rfile, self.wfile, self.server.user, self.server.passwd)
-        myshell.cmdloop()
+        try:
+            myshell.cmdloop()
+        except:
+            ComLog.errorTraceLog(logger)
 #        except SSL.ZeroReturnError:
 #            pass
         self.request.close()
@@ -240,7 +243,10 @@ if __name__ == '__main__':
 
 ##################
 # $Log: fence_ack_server.py,v $
-# Revision 1.6  2007-09-07 14:21:40  marc
+# Revision 1.7  2007-09-10 15:01:00  marc
+# - BZ #108, fixed problems with not installed plugins
+#
+# Revision 1.6  2007/09/07 14:21:40  marc
 # - independent from ssl being installed or not
 # - support for binding on ips
 #

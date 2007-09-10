@@ -4,11 +4,11 @@ Fence Acknowledge Server via normal an ssl
 """
 
 # here is some internal information
-# $Id: shell.py,v 1.6 2007-09-10 08:14:44 marc Exp $
+# $Id: shell.py,v 1.7 2007-09-10 15:01:00 marc Exp $
 #
 
 
-__version__ = "$Revision: 1.6 $"
+__version__ = "$Revision: 1.7 $"
 # $Source: /atix/ATIX/CVSROOT/nashead2004/bootimage/fencing/fence-ack-server/shell.py,v $
 import cmd
 import os
@@ -21,9 +21,12 @@ from comoonics import ComLog, ComSystem
 from comoonics import ComExceptions
 from comoonics import pexpect
 from comoonics.ComSystemInformation import SystemInformation
-from comoonics.fenceacksv import plugins
-
 logger=ComLog.getLogger("comoonics.bootimage.fenceacksv.shell")
+
+try:
+    from comoonics.fenceacksv import plugins
+except ImportError:
+    logger.warn("Could not import fenceacksv plugins. Limited functionality available.")
 
 class AuthorizationError(ComExceptions.ComException): pass
 class CouldNotFindFile(ComExceptions.ComException): pass
@@ -59,9 +62,12 @@ class Shell(cmd.Cmd):
         self.passwd=passwd
         self.sysinfo=SystemInformation()
         self.prompt="FENCEACKSV %s<%s>$ " %(self.sysinfo.getName(), self.sysinfo.getType())
-        self.plugins=plugins.getRegistry()
+        try:
+            self.plugins=plugins.getRegistry()
+            logger.debug("Plugins: %s" %self.plugins)
+        except:
+            self.plugins=None
         self.doc_header=inspect.getdoc(self)
-        logger.debug("Plugins: %s" %self.plugins)
         sys.stdin=self.stdin
         sys.stdout=self.stdout
 
@@ -78,10 +84,11 @@ class Shell(cmd.Cmd):
                         self.stdout.write("%s\n"%str(doc))
                         return
                 except AttributeError:
-                    for _plugin in self.plugins:
-                        if plugins.getPlugin(_plugin).hasCommand(_cmd):
-                            print plugins.getPlugin(_plugin).help(_line)
-                            return
+                    if self.plugins:
+                        for _plugin in self.plugins:
+                            if plugins.getPlugin(_plugin).hasCommand(_cmd):
+                                print plugins.getPlugin(_plugin).help(_line)
+                                return
                 self.stdout.write("%s\n"%str(self.nohelp % (_line,)))
                 return
             func(_arg)
@@ -111,50 +118,56 @@ class Shell(cmd.Cmd):
                         cmds_undoc.append(cmd)
             self.stdout.write("%s\n"%str(self.doc_leader))
             doc_header=self.doc_header
-            for _pluginname in self.plugins:
-                _plugin=plugins.getPlugin(_pluginname)
-                _plugins_header="%s type \"help plugin %s\" to get more information" %(_plugin.getName(), _plugin.getName())
-                # _plugins_header+=_plugin.help_short()
-                _cmds=_plugin.getCommands()
-                doc_header+="\nPlugin %s:\n %s"%(_plugin.getName(), _plugins_header)
-                cmds_doc+=_cmds
+            if self.plugins:
+                for _pluginname in self.plugins:
+                    _plugin=plugins.getPlugin(_pluginname)
+                    _plugins_header="%s type \"help plugin %s\" to get more information" %(_plugin.getName(), _plugin.getName())
+                    # _plugins_header+=_plugin.help_short()
+                    _cmds=_plugin.getCommands()
+                    doc_header+="\nPlugin %s:\n %s"%(_plugin.getName(), _plugins_header)
+                    cmds_doc+=_cmds
             self.print_topics(doc_header,   cmds_doc,   15,80)
             self.print_topics(self.misc_header,  help.keys(),15,80)
             self.print_topics(self.undoc_header, cmds_undoc, 15,80)
 
     def help_plugin(self, arg):
         logger.debug("help_plugin(%s)" %arg)
-        if arg and arg!="":
-            _pluginname=re.split("\s+", arg)[0]
-            _plugin=plugins.getPlugin(_pluginname)
-            print _plugin.help()
-        else:
-            print "Please give a pluginname as option. Valid plugins are: %s" %(", ".join(plugins.getPluginnames()))
+        try:
+            if arg and arg!="":
+                _pluginname=re.split("\s+", arg)[0]
+                _plugin=plugins.getPlugin(_pluginname)
+                print >>self.stdout, _plugin.help()
+            else:
+                print >>self.stdout, "Please give a pluginname as option. Valid plugins are: %s" %(", ".join(plugins.getPluginnames()))
+        except NameError:
+            print >>self.stdout, "No plugins found"
 
     def completenames(self, text, *ignored):
         _complete=cmd.Cmd.completenames(self, text, *ignored)
-        for _pluginname in self.plugins:
-            _plugin=plugins.getPlugin(_pluginname)
-            for _cmd in _plugin.getCommands():
-                if _cmd.startswith(text):
-                    _complete.append(_cmd)
+        if self.plugins:
+            for _pluginname in self.plugins:
+                _plugin=plugins.getPlugin(_pluginname)
+                for _cmd in _plugin.getCommands():
+                    if _cmd.startswith(text):
+                        _complete.append(_cmd)
         return _complete
     def complete_default(self, *ignored):
         logger.debug("complete(ignored: %s" %(ignored))
 
     def default(self, _line):
         _cmd, _arg, _line = self.parseline(_line)
-        for _pluginname in self.plugins:
-            _plugin=plugins.getPlugin(_pluginname)
-            if _plugin.hasCommand(_cmd):
-                try:
-                    (_params, _kwds)=self.parseArgs(_arg)
-                    logger.debug("default: calling %s.doCommand(%s, params: %s, kwds: %s)" %(_pluginname, _cmd, _params, _kwds))
-                    return _plugin.doCommand(_cmd, *_params, **_kwds)
-                except Exception, e:
-                    self.stdout.write("Error: %s\n" %e)
-                    ComLog.debugTraceLog(logger)
-                    return
+        if self.plugins:
+            for _pluginname in self.plugins:
+                _plugin=plugins.getPlugin(_pluginname)
+                if _plugin.hasCommand(_cmd):
+                    try:
+                        (_params, _kwds)=self.parseArgs(_arg)
+                        logger.debug("default: calling %s.doCommand(%s, params: %s, kwds: %s)" %(_pluginname, _cmd, _params, _kwds))
+                        return _plugin.doCommand(_cmd, *_params, **_kwds)
+                    except Exception, e:
+                        self.stdout.write("Error: %s\n" %e)
+                        ComLog.debugTraceLog(logger)
+                        return
 
         cmd.Cmd.default(self, _line)
 
@@ -188,6 +201,7 @@ class Shell(cmd.Cmd):
         return pending
 
     def preloop(self):
+        cmd.Cmd.preloop(self)
         logger.debug("User: %s, Password: %s" %(self.user, "***"))
 
         if self.user and self.passwd:
@@ -322,7 +336,7 @@ The following fenceclients seem to be pending you can kill them by the command k
         print >>self.stdout, "Prints the version of this service" %(self.shell)
 
     def do_version(self, rest):
-        print >>self.stdout, 'Version $Revision: 1.6 $'
+        print >>self.stdout, 'Version $Revision: 1.7 $'
 
     def help_fence_node(self):
         print >>self.stdout, "Fenced the given node"
@@ -465,14 +479,20 @@ The following fenceclients seem to be pending you can kill them by the command k
             print >>self.stdout, "OK"
 
 if __name__ == '__main__':
-    from comoonics.fenceacksv.plugins.ComSysreportPlugin import SysreportPlugin
-    import comoonics.fenceacksv.plugins
-    comoonics.fenceacksv.plugins.addPlugin(SysreportPlugin("../../../../comoonics-clustersuite/python/sysreport"))
+    try:
+        from comoonics.fenceacksv.plugins.ComSysreportPlugin import SysreportPlugin
+        import comoonics.fenceacksv.plugins
+        comoonics.fenceacksv.plugins.addPlugin(SysreportPlugin("../../../../comoonics-clustersuite/python/sysreport"))
+    except:
+        pass
     Shell().cmdloop()
 
 ##############
 # $Log: shell.py,v $
-# Revision 1.6  2007-09-10 08:14:44  marc
+# Revision 1.7  2007-09-10 15:01:00  marc
+# - BZ #108, fixed problems with not installed plugins
+#
+# Revision 1.6  2007/09/10 08:14:44  marc
 # - fixed output of ackmanual being before executing it BZ#19
 #
 # Revision 1.5  2007/09/07 14:22:34  marc
