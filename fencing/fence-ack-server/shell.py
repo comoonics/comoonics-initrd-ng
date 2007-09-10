@@ -4,11 +4,11 @@ Fence Acknowledge Server via normal an ssl
 """
 
 # here is some internal information
-# $Id: shell.py,v 1.5 2007-09-07 14:22:34 marc Exp $
+# $Id: shell.py,v 1.6 2007-09-10 08:14:44 marc Exp $
 #
 
 
-__version__ = "$Revision: 1.5 $"
+__version__ = "$Revision: 1.6 $"
 # $Source: /atix/ATIX/CVSROOT/nashead2004/bootimage/fencing/fence-ack-server/shell.py,v $
 import cmd
 import os
@@ -215,6 +215,11 @@ class Shell(cmd.Cmd):
 
     def postcmd(self, stop, line):
         if self.check_for_fence_manual():
+            print >>self.stdout, """Warning:  If the node has not been manually fenced
+                (i.e. power cycled or disconnected from shared storage devices)
+                the GFS file system may become corrupted and all its data
+                unrecoverable!  Please verify that the node shown above has
+                been reset or disconnected from storage."""
             self.prompt="""Fence manual is in progress. Please make sure the fenced node is powercylcled and
 execute ackmanual here.
 %s""" % self.orig_prompt
@@ -317,7 +322,7 @@ The following fenceclients seem to be pending you can kill them by the command k
         print >>self.stdout, "Prints the version of this service" %(self.shell)
 
     def do_version(self, rest):
-        print >>self.stdout, 'Version $Revision: 1.5 $'
+        print >>self.stdout, 'Version $Revision: 1.6 $'
 
     def help_fence_node(self):
         print >>self.stdout, "Fenced the given node"
@@ -329,11 +334,7 @@ The following fenceclients seem to be pending you can kill them by the command k
         self.lastcmd=""
 
     def do_ackmanual(self, rest):
-        print >>self.stdout, """Warning:  If the node has not been manually fenced
-            (i.e. power cycled or disconnected from shared storage devices)
-            the GFS file system may become corrupted and all its data
-            unrecoverable!  Please verify that the node shown above has
-            been reset or disconnected from storage."""
+        print >>self.stdout, "Acknowleding fencing..."
         import os
         if self.check_for_fence_manual():
             fifo=open(fence_ack_server.FENCE_MANUAL_FIFO, "w", 0)
@@ -471,7 +472,10 @@ if __name__ == '__main__':
 
 ##############
 # $Log: shell.py,v $
-# Revision 1.5  2007-09-07 14:22:34  marc
+# Revision 1.6  2007-09-10 08:14:44  marc
+# - fixed output of ackmanual being before executing it BZ#19
+#
+# Revision 1.5  2007/09/07 14:22:34  marc
 # - support for plugins (see comoonics.fenceacksv.plugins)
 #   e.g sysrq and sysreport
 # - rewritten documentation and being more helpful
