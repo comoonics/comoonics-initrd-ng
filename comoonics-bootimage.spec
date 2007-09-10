@@ -21,7 +21,7 @@
 # with ATIX.
 #/initrd_sr-2.6.9-34.ELsmp.img.gz
 # %define _initrddir /etc/init.d
-# $Id: comoonics-bootimage.spec,v 1.43 2007-09-10 09:24:01 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.44 2007-09-10 15:03:18 marc Exp $
 #
 ##
 ##
@@ -177,7 +177,7 @@ install -m644 etc/sysconfig/comoonics-chroot.compat-vg_local $RPM_BUILD_ROOT/%{S
 install -d -m 755 $RPM_BUILD_ROOT/%{FENCEACKSV_DIR}
 install -m755 %{FENCEACKSV_SOURCE}/fence_ack_server.py $RPM_BUILD_ROOT/%{FENCEACKSV_DIR}/
 install -m644 %{FENCEACKSV_SOURCE}/shell.py $RPM_BUILD_ROOT/%{FENCEACKSV_DIR}/
-install -m644 %{FENCEACKSV_SOURCE}/pexpect.py $RPM_BUILD_ROOT/%{FENCEACKSV_DIR}/
+#install -m644 %{FENCEACKSV_SOURCE}/pexpect.py $RPM_BUILD_ROOT/%{FENCEACKSV_DIR}/
 install -m640 %{FENCEACKSV_SOURCE}/server.pkey $RPM_BUILD_ROOT/%{FENCEACKSV_DIR}/
 install -m640 %{FENCEACKSV_SOURCE}/server.cert $RPM_BUILD_ROOT/%{FENCEACKSV_DIR}/
 install -m640 %{FENCEACKSV_SOURCE}/CA.pkey $RPM_BUILD_ROOT/%{FENCEACKSV_DIR}/
@@ -458,6 +458,7 @@ fi
 
 %changelog fenceacksv
 * Mon Sep 10 2007 Marc Grimme <grimme@atix.de> - 0.3-1
+  - Fixed Bug BZ#107, fixed problems with not installed plugins
   - Fixed Bug BZ#29, output of ackmanual
   - Rewritten
   - Support for plugins (available: sysrq, sysreport)
@@ -482,7 +483,10 @@ fi
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.43  2007-09-10 09:24:01  marc
+# Revision 1.44  2007-09-10 15:03:18  marc
+# - new version of fenceacksv 0.3-1
+#
+# Revision 1.43  2007/09/10 09:24:01  marc
 # -new version of fenceacksv 0.3-1
 #
 # Revision 1.42  2007/09/07 08:30:25  mark
