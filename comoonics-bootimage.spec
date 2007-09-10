@@ -21,7 +21,7 @@
 # with ATIX.
 #/initrd_sr-2.6.9-34.ELsmp.img.gz
 # %define _initrddir /etc/init.d
-# $Id: comoonics-bootimage.spec,v 1.42 2007-09-07 08:30:25 mark Exp $
+# $Id: comoonics-bootimage.spec,v 1.43 2007-09-10 09:24:01 marc Exp $
 #
 ##
 ##
@@ -46,7 +46,7 @@ Summary: Comoonics Bootimage. Scripts for creating an initrd in a gfs shared roo
 Version: 1.3
 BuildArch: noarch
 Requires: comoonics-cs-py >= 0.1-43 comoonics-cluster-py >= 0.1-2
-#Conflicts: 
+#Conflicts:
 Release: 5
 Vendor: ATIX GmbH
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
@@ -104,13 +104,13 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 %description compat
 Files needed for the compatibility to 1.2 releases
 installes the file /etc/sysconfig/comoonics-chroot
-This will mount vg_local-lv_tmp on /tmp during initrd 
-process 
+This will mount vg_local-lv_tmp on /tmp during initrd
+process
 
 %package fenceacksv
-Version: 0.2
+Version: 0.3
 Release: 1
-Requires: comoonics-cs-py >= 0.1-23
+Requires: comoonics-cs-py >= 0.1-43
 Requires: comoonics-bootimage >= 1.3-1
 Summary: The Fence ackserver is a service running in the fencedchroot and managing manual fenced nodes
 Group:   Storage/Management
@@ -268,12 +268,12 @@ echo 'Information:
 Cluster services will be started in a chroot environment. Check out latest documentation
 on http://www.open-sharedroot.org
 If you want syslog to log fence messages you should add an additional logdevice
-to the syslog configuration 
+to the syslog configuration
 (command switch syslogd -a $(cat /var/comoonics/chrootpath)/dev/log)
 
 CAUTION:
 - tmpwatch:
-if you use the /tmp filesystem for our chroot environment, 
+if you use the /tmp filesystem for our chroot environment,
 and tmpwatch is installed, you need to modify
 /etc/cron.daily/tmpwatch to fit your needs.
 '
@@ -383,7 +383,6 @@ fi
 %files fenceacksv
 %attr(755, root, root) %{FENCEACKSV_DIR}/fence_ack_server.py
 %attr(644, root, root) %{FENCEACKSV_DIR}/shell.py
-%attr(644, root, root) %{FENCEACKSV_DIR}/pexpect.py
 %attr(640, root, root) %{FENCEACKSV_DIR}/server.pkey
 %attr(640, root, root) %{FENCEACKSV_DIR}/server.cert
 %attr(640, root, root) %{FENCEACKSV_DIR}/CA.pkey
@@ -458,7 +457,13 @@ fi
 - first offical rpm version
 
 %changelog fenceacksv
-* Wed Feb 07 2007 Marc Grimme <grimme@atix.de - 0.1-11
+* Mon Sep 10 2007 Marc Grimme <grimme@atix.de> - 0.3-1
+  - Fixed Bug BZ#29, output of ackmanual
+  - Rewritten
+  - Support for plugins (available: sysrq, sysreport)
+* Mon Sep 10 2007 Mark Hlawatschek <hlawatschek@atix.de> - 0.2-1
+  - first release for 1.3 bootimage
+* Wed Feb 07 2007 Marc Grimme <grimme@atix.de> - 0.1-11
 - introducted changelog
 
 %changelog fenceclient-ilo
@@ -477,7 +482,10 @@ fi
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.42  2007-09-07 08:30:25  mark
+# Revision 1.43  2007-09-10 09:24:01  marc
+# -new version of fenceacksv 0.3-1
+#
+# Revision 1.42  2007/09/07 08:30:25  mark
 # merged fixes from 1.2
 #
 # Revision 1.41  2007/09/07 07:55:42  mark
