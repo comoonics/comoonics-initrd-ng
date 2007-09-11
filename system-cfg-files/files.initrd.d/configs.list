@@ -1,13 +1,3 @@
-/etc/sysconfig/network-scripts/ifdown-aliases
-/etc/sysconfig/network-scripts/ifcfg-lo
-/etc/sysconfig/network-scripts/ifdown
-/etc/sysconfig/network-scripts/ifup-aliases
-/etc/sysconfig/network-scripts/ifdown-post
-/etc/sysconfig/network-scripts/ifup
-/etc/sysconfig/network-scripts/ifup-post
-/etc/sysconfig/network-scripts/ifup-routes
-/etc/sysconfig/network-scripts/init.ipv6-global
-/etc/sysconfig/network-scripts/network-functions
 /etc/sysconfig/kudzu
 /etc/sysconfig/network
 /etc/sysconfig/clock
