@@ -7,7 +7,7 @@
 #  DESCRIPTION
 #*******
 #
-# $Id: manage_chroot.sh,v 1.1 2007-08-06 16:02:29 mark Exp $
+# $Id: manage_chroot.sh,v 1.2 2007-09-11 15:45:36 mark Exp $
 #
 # @(#)$File$
 #
@@ -201,7 +201,6 @@ if ! [ -e /var/comoonics/chrootpath ]; then
 	exit 1
 fi
 
-nodename=$(cc_get_clu_nodename)
 chrootdir=$(cat /var/comoonics/chrootpath)
 
 # Test for chrootdir
