@@ -8,5 +8,4 @@ ifdown
 ip
 mii-tool
 ethtool
-udev
-udevstart
+
