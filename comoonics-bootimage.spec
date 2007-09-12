@@ -19,9 +19,7 @@
 # disclose such Confidential Information and shall use it only in
 # accordance with the terms of the license agreement you entered into
 # with ATIX.
-#/initrd_sr-2.6.9-34.ELsmp.img.gz
-# %define _initrddir /etc/init.d
-# $Id: comoonics-bootimage.spec,v 1.44 2007-09-10 15:03:18 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.45 2007-09-12 13:48:05 mark Exp $
 #
 ##
 ##
@@ -45,10 +43,10 @@ Name: comoonics-bootimage
 Summary: Comoonics Bootimage. Scripts for creating an initrd in a gfs shared root environment
 Version: 1.3
 BuildArch: noarch
-Requires: comoonics-cs-py >= 0.1-43 comoonics-cluster-py >= 0.1-2
-#Conflicts:
-Release: 5
-Vendor: ATIX GmbH
+Requires: comoonics-cs-py >= 0.1-43 comoonics-cluster-py >= 0.1-2 comoonics-bootimage-initscripts >= 1.3
+#Conflicts: 
+Release: 7
+Vendor: ATIX AG
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
 URL:     http://www.atix.de/
@@ -59,6 +57,27 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description
 Comoonics Bootimage. Scripts for creating an initrd in a gfs shared root environment
+
+%package listfiles-el4
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage >= 1.3-1
+Summary: listfiles for redhat el4 
+Group:   Storage/Management
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+%description listfiles-el4
+Listfiles for Red Hat EL 4 
+
+%package listfiles-el5
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage >= 1.3-1
+Summary: listfiles for redhat el5 
+Group:   Storage/Management
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+%description listfiles-el5
+Listfiles for Red Hat EL 5 
+
 
 %package extras-network
 Version: 0.1
@@ -211,22 +230,12 @@ if [ "$1" -eq 0 ]; then
   root_fstype=$(mount | grep "/ " | awk '
 BEGIN { exit_c=1; }
 { if ($5) {  print $5; exit_c=0; } }
-END{ exit exit_c}')/usr/src/redhat/RPMS/noarch/comoonics-bootimage-1.0-41.noarch.rpm
+END{ exit exit_c}')
   if [ "$root_fstype" != "gfs" ]; then
-#    /sbin/chkconfig --del bootsr &>/dev/null
-#    /sbin/chkconfig bootsr off
-#    /sbin/chkconfig --list bootsr
-#    /sbin/chkconfig --del fenced-chroot &>/dev/null
-#    /sbin/chkconfig fenced-chroot off
-#    /sbin/chkconfig --list fenced-chroot
-    /sbin/chkconfig --add fenced &>/dev/null
-    /sbin/chkconfig --list fenced
     /sbin/chkconfig --add cman &>/dev/null
     /sbin/chkconfig --list cman
     /sbin/chkconfig --add gfs &>/dev/null
     /sbin/chkconfig --list gfs
-    /sbin/chkconfig --add ccsd &>/dev/null
-    /sbin/chkconfig --list ccsd
   fi
   rm %{APPDIR}/mkinitrd
   rm %{ENVFILE}
@@ -243,19 +252,10 @@ fi
 echo "Creating mkinitrd link..."
 ln -sf %{APPDIR}/create-gfs-initrd-generic.sh %{APPDIR}/mkinitrd
 
-services="bootsr ccsd-chroot fenced-chroot"
-echo "Resetting services ($services)"
-for service in $services; do
-   /sbin/chkconfig --del $service &>/dev/null
-   /sbin/chkconfig --add $service
-   /sbin/chkconfig $service on
-   /sbin/chkconfig --list $service
-done
-
 if cat /etc/redhat-release | grep -i "release 5" &> /dev/null; then
 	services="cman gfs"
 else
-	services="ccsd fenced cman gfs"
+	services="cman gfs"
 fi
 
 echo "Disabling services ($services)"
@@ -337,6 +337,19 @@ fi
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/rhel5/network-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/sles8/hardware-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/sles8/network-lib.sh
+
+%dir %{CONFIGDIR}/bootimage-chroot
+%attr(640, root, root) %{CONFIGDIR}/bootimage-chroot/files.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage-chroot/rpms.list
+%dir %{CONFIGDIR}/bootimage-chroot/files.initrd.d
+%dir %{CONFIGDIR}/bootimage-chroot/rpms.initrd.d
+
+%config(noreplace) %{CONFIGDIR}/comoonics-bootimage.cfg
+%config(noreplace) %{CONFIGDIR}/bootimage/files.initrd.d/user_edit.list
+
+%doc CHANGELOG
+
+%files listfiles-el4
 %attr(640, root, root) %{CONFIGDIR}/bootimage/basefiles.list
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.list
 %attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/base.list
@@ -349,24 +362,35 @@ fi
 %attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/locales.list
 %attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/network.list
 %attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/scsi.list
-
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/baselibs.list
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/comoonics.list
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/ext2.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/gfs1.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/gfs1-el4.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/hardware.list
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/python.list
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhcs4.list
 
-%dir %{CONFIGDIR}/bootimage-chroot
-%attr(640, root, root) %{CONFIGDIR}/bootimage-chroot/files.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage-chroot/rpms.list
-%dir %{CONFIGDIR}/bootimage-chroot/files.initrd.d
-%dir %{CONFIGDIR}/bootimage-chroot/rpms.initrd.d
+%files listfiles-el5
+%attr(640, root, root) %{CONFIGDIR}/bootimage/basefiles.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/base.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/bonding.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/comoonics.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/configs.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/ext2.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/gfs.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/grub.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/locales.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/network.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/scsi.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/baselibs.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/comoonics.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/ext2.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/gfs1-el5.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/hardware.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/python.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhcs5.list
 
-%config(noreplace) %{CONFIGDIR}/comoonics-bootimage.cfg
-%config(noreplace) %{CONFIGDIR}/bootimage/files.initrd.d/user_edit.list
-
-%doc CHANGELOG
 
 %files compat
 %attr(640, root, root) %{SYSCONFIGDIR}/comoonics-chroot
@@ -483,7 +507,10 @@ fi
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.44  2007-09-10 15:03:18  marc
+# Revision 1.45  2007-09-12 13:48:05  mark
+# moved initscripts into another specfile
+#
+# Revision 1.44  2007/09/10 15:03:18  marc
 # - new version of fenceacksv 0.3-1
 #
 # Revision 1.43  2007/09/10 09:24:01  marc
