@@ -19,7 +19,7 @@
 # disclose such Confidential Information and shall use it only in
 # accordance with the terms of the license agreement you entered into
 # with ATIX.
-# $Id: comoonics-bootimage.spec,v 1.45 2007-09-12 13:48:05 mark Exp $
+# $Id: comoonics-bootimage.spec,v 1.46 2007-09-13 09:06:44 mark Exp $
 #
 ##
 ##
@@ -301,9 +301,6 @@ fi
 %dir %{APPDIR}/boot-scripts/var/run/netreport
 %dir %{APPDIR}/boot-scripts/proc
 %dir %{APPDIR}/boot-scripts/dev
-%attr(750, root, root) %{INITDIR}/bootsr
-%attr(750, root, root) %{INITDIR}/fenced-chroot
-%attr(750, root, root) %{INITDIR}/ccsd-chroot
 %attr(750, root, root) %{APPDIR}/create-gfs-initrd-generic.sh
 %attr(640, root, root) %{APPDIR}/create-gfs-initrd-lib.sh
 %attr(750, root, root) %{APPDIR}/manage_chroot.sh
@@ -414,7 +411,7 @@ fi
 %attr(755, root, root) %{INITDIR}/fenceacksv
 %attr(644, root, root) %{CONFIGDIR}/bootimage-chroot/files.initrd.d/fenceacksv.list
 %attr(644, root, root) %{CONFIGDIR}/bootimage-chroot/rpms.initrd.d/fenceacksv.list
-# %config(noreplace)     %{SYSCONFIGDIR}/fenceacksv
+#%config(noreplace)     %{SYSCONFIGDIR}/fenceacksv
 %doc CHANGELOG
 
 %files fenceclient-ilo
@@ -507,7 +504,10 @@ fi
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.45  2007-09-12 13:48:05  mark
+# Revision 1.46  2007-09-13 09:06:44  mark
+# merged changes
+#
+# Revision 1.45  2007/09/12 13:48:05  mark
 # moved initscripts into another specfile
 #
 # Revision 1.44  2007/09/10 15:03:18  marc
