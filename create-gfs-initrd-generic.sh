@@ -6,7 +6,7 @@
 #*******
 #!/bin/bash
 #
-# $Id: create-gfs-initrd-generic.sh,v 1.14 2007-09-07 07:57:06 mark Exp $
+# $Id: create-gfs-initrd-generic.sh,v 1.15 2007-09-13 08:36:08 mark Exp $
 #
 # @(#)$File$
 #
@@ -77,7 +77,7 @@ function getoptions() {
     while getopts UoRFVvhm:fd:s:r:b: option ; do
 	case "$option" in
 	    v) # version
-		echo "$0 Version "'$Revision: 1.14 $'
+		echo "$0 Version "'$Revision: 1.15 $'
 		exit 0
 		;;
 	    h) # help
@@ -193,6 +193,7 @@ fi
 
 if [ -z "$dep_filename" ] || [ ! -e "$dep_filename" ]; then
   echo "No depfile given. A dep_file is required."
+  echo "Hint: Is the package comoonics-bootimage-listfiles-<distro> installed ?"
   usage
   rm $lockfile
   exit 1
@@ -314,7 +315,10 @@ ls -lk $initrdname
 
 ##########################################
 # $Log: create-gfs-initrd-generic.sh,v $
-# Revision 1.14  2007-09-07 07:57:06  mark
+# Revision 1.15  2007-09-13 08:36:08  mark
+# added fancy error help message
+#
+# Revision 1.14  2007/09/07 07:57:06  mark
 # removed bug, that liks to directories where not copied
 #
 # Revision 1.13  2007/08/06 16:02:17  mark
