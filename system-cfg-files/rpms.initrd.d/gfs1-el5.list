@@ -1,2 +1,3 @@
 #rpm list for gfs1
 kmod-gfs
+gfs-utils
