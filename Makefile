@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.27 2007-09-10 14:55:48 marc Exp $
+# $Id: Makefile,v 1.28 2007-09-13 09:07:07 mark Exp $
 #
 # @(#)$file$
 #
@@ -184,10 +184,13 @@ CFG_FILES=basefiles.list \
 	rpms.initrd.d/comoonics.list \
 	rpms.initrd.d/dm_multipath.list \
 	rpms.initrd.d/ext2.list \
-	rpms.initrd.d/gfs1.list \
+	rpms.initrd.d/gfs1-el4.list \
+	rpms.initrd.d/gfs1-el5.list \
+	rpms.initrd.d/hardware.list \
 	rpms.initrd.d/nfs.list \
 	rpms.initrd.d/python.list \
-	rpms.initrd.d/rhcs4.list
+	rpms.initrd.d/rhcs4.list \
+	rpms.initrd.d/rhcs5.list
 	
 #************ CFG_FILES 
 
@@ -364,19 +367,27 @@ rpmbuild: archive
 	@echo -n "Creating RPM"
 	cp ../$(ARCHIVE_FILE) /usr/src/redhat/SOURCES/
 	rpmbuild -ba --target=noarch ./comoonics-bootimage.spec
-
+	
+	
+rpmbuild-initscripts-el4: archive
+	cp ../$(ARCHIVE_FILE) /usr/src/redhat/SOURCES/
+	rpmbuild -ba --sign --target=noarch ./comoonics-bootimage-initscripts-el4.spec
+	
 .PHONY:rpmsign
 rpmsign:
 	@echo "Signing packages"
 	rpm --resign $(RPM_PACKAGE_BIN_DIR)/$(PACKAGE_NAME)-*.rpm $(RPM_PACKAGE_SRC_DIR)/$(PACKAGE_NAME)-*.src.rpm
 
 .PHONY:rpm	
-rpm: rpmbuild rpmsign
+rpm: rpmbuild rpmsign rpmbuild-initscripts-el4
 
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.27  2007-09-10 14:55:48  marc
+# Revision 1.28  2007-09-13 09:07:07  mark
+# added rule for rpmbuild-initscripts-el4
+#
+# Revision 1.27  2007/09/10 14:55:48  marc
 # added rpmsign to rpm as in comoonics-cs
 #
 # Revision 1.26  2007/09/07 07:57:29  mark
