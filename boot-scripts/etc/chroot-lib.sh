@@ -1,5 +1,5 @@
 #
-# $Id: chroot-lib.sh,v 1.1 2007-08-06 15:50:11 mark Exp $
+# $Id: chroot-lib.sh,v 1.2 2007-09-13 08:32:30 mark Exp $
 #
 # @(#)$File$
 #
@@ -327,7 +327,7 @@ function get_all_files_dependent() {
   local files=""
 
   while read line; do
-    if [ ${line:0:1} != '#' ]; then
+    if [ "${line:0:1}" != '#' ]; then
       if [ ! -e "$line" ] && [ "${line:0:7}" = '@perlcc' ]; then
         # take next as filename and compile
         echo "Skipping line $todir..." >&2
