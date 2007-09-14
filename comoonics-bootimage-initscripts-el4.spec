@@ -19,7 +19,7 @@
 # disclose such Confidential Information and shall use it only in
 # accordance with the terms of the license agreement you entered into
 # with ATIX.
-# $Id: comoonics-bootimage-initscripts-el4.spec,v 1.1 2007-09-13 08:35:22 mark Exp $
+# $Id: comoonics-bootimage-initscripts-el4.spec,v 1.2 2007-09-14 13:36:05 marc Exp $
 #
 ##
 ##
@@ -37,7 +37,7 @@ Summary: Comoonics Bootimage initscripts. Initscripts used by the comoonics shar
 Version: 1.3
 BuildArch: noarch
 Requires: comoonics-bootimage >= 1.3-1
-#Conflicts: 
+#Conflicts:
 Release: 1.el4
 Vendor: ATIX AG
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
@@ -50,7 +50,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description
 Comoonics Bootimage initscripts. Initscripts used by the comoonics shared root cluster environment.
- 
+
 
 %prep
 %setup -n comoonics-bootimage-%{version}
@@ -64,6 +64,8 @@ install -m755 initscripts/rhel4/bootsr $RPM_BUILD_ROOT/%{INITDIR}/bootsr
 install -m755 initscripts/rhel4/ccsd-chroot $RPM_BUILD_ROOT/%{INITDIR}/ccsd-chroot
 install -m755 initscripts/rhel4/fenced-chroot $RPM_BUILD_ROOT/%{INITDIR}/fenced-chroot
 
+%clean
+rm -rf %{buildroot}
 
 %postun
 
@@ -114,6 +116,9 @@ done
 - first revision
 # ------
 # $Log: comoonics-bootimage-initscripts-el4.spec,v $
-# Revision 1.1  2007-09-13 08:35:22  mark
+# Revision 1.2  2007-09-14 13:36:05  marc
+# fixed cleaning up
+#
+# Revision 1.1  2007/09/13 08:35:22  mark
 # initital check in
 #
