@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.35 2007-09-07 08:04:18 mark Exp $
+# $Id: linuxrc.generic.sh,v 1.36 2007-09-14 13:28:54 marc Exp $
 #
 # @(#)$File$
 #
@@ -17,7 +17,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.35 2007-09-07 08:04:18 mark Exp $
+#    $Id: linuxrc.generic.sh,v 1.36 2007-09-14 13:28:54 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -73,7 +73,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.35 $ $Date: 2007-09-07 08:04:18 $'
+echo_local 'Internal Version $Revision: 1.36 $ $Date: 2007-09-14 13:28:54 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -180,9 +180,9 @@ _mount_opts=${cfsparams[3]}
 _scsifailover=${cfsparams[4]}
 rootfs=${cfsparams[5]}
 _ipConfig=${cfsparams[@]:6}
-[ -n "$_ipConfig" ] && ipConfig=$_ipConfig
-[ -n "$_mount_opts" ] && mount_opts=$_mount_opts
-[ -n "$_scsifailover" ] && scsifailover=$_scsifailover
+[ -n "$_ipConfig" ] && ( [ -z "$ipConfig" ] || [ "$ipConfig" = "cluster" ] ) && ipConfig=$_ipConfig
+[ -n "$_mount_opts" ] && [ -z "$mount_opts" ] && mount_opts=$_mount_opts
+[ -n "$_scsifailover" ] && [ -z "$scsifailover" ] && scsifailover=$_scsifailover
 [ -z "$root" ] || [ "$root" = "/dev/ram0" ] && root=$rootvolume
 cc_auto_hosts $cluster_conf
 
@@ -203,7 +203,7 @@ if [ "$clutype" != "$rootfs" ]; then
 fi
 
 dm_start
-scsi_start
+scsi_start $scsifailover
 
 # loads kernel modules for cluster stack
 # TODO: - rename to clusterfs_kernel_load
@@ -220,7 +220,7 @@ return_code
 
 if [ "$scsifailover" = "mapper" ] || [ "$scsifailover" = "devicemapper" ]; then
   dm_mp_start
-  step "device mapper multipath started"  
+  step "device mapper multipath started"
 fi
 
 lvm_start
@@ -268,7 +268,7 @@ step "Network configuration started"
 # Put all things into a library function
 
 echo_local "Building comoonics chroot environment"
-res=( $(build_chroot $cluster_conf $nodename) ) 
+res=( $(build_chroot $cluster_conf $nodename) )
 chroot_mount=${res[0]}
 chroot_path=${res[1]}
 return_code
@@ -418,7 +418,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.35  2007-09-07 08:04:18  mark
+# Revision 1.36  2007-09-14 13:28:54  marc
+# - Fixed Bug BZ#31
+#
+# Revision 1.35  2007/09/07 08:04:18  mark
 # added cleanup_initrd
 #
 # Revision 1.34  2007/08/06 15:56:14  mark
