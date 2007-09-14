@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.29 2007-09-14 08:32:40 mark Exp $
+# $Id: Makefile,v 1.30 2007-09-14 13:35:28 marc Exp $
 #
 # @(#)$file$
 #
@@ -177,6 +177,7 @@ CFG_FILES=basefiles.list \
 	files.initrd.d/grub.list \
 	files.initrd.d/locales.list \
 	files.initrd.d/network.list \
+	files.initrd.d/rdac_multipath.list \
 	files.initrd.d/scsi.list \
 	files.initrd.d/user_edit.list \
 	files.initrd.d/vlan.list \
@@ -383,12 +384,15 @@ rpmsign:
 	rpm --resign $(RPM_PACKAGE_BIN_DIR)/$(PACKAGE_NAME)-*.rpm $(RPM_PACKAGE_SRC_DIR)/$(PACKAGE_NAME)-*.src.rpm
 
 .PHONY:rpm	
-rpm: rpmbuild rpmsign rpmbuild-initscripts-el4 rpmbuild-initscripts-el5
+rpm: rpmbuild rpmbuild-initscripts-el4 rpmbuild-initscripts-el5 rpmsign
 
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.29  2007-09-14 08:32:40  mark
+# Revision 1.30  2007-09-14 13:35:28  marc
+# added rdac-files
+#
+# Revision 1.29  2007/09/14 08:32:40  mark
 # added initscripts-el5
 #
 # Revision 1.28  2007/09/13 09:07:07  mark
