@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.2 2006-05-12 13:06:41 marc Exp $
+# $Id: network-lib.sh,v 1.3 2007-09-14 13:28:31 marc Exp $
 #
 # @(#)$File$
 #
@@ -43,9 +43,9 @@
 #  SOURCE
 #
 function getNetParameters() {
-   getBootParm ip cluster
+   getBootParm ip "cluster"
 }
-#************ getNetParameters 
+#************ getNetParameters
 
 #****f* boot-lib.sh/nicConfig
 #  NAME
@@ -74,7 +74,7 @@ function nicConfig {
     echo_local "Creating network configuration for $dev"
     exec_local ip2Config $ipconfig
 #    exec_local ip2Config $(getPosFromIPString 1, $ipconfig):$(getPosFromIPString 2, $ipconfig):$(getPosFromIPString 3, $ipconfig):$(getPosFromIPString 4, $ipconfig):$(hostname):$dev
-  fi  
+  fi
 }
 #******** nicConfig
 
@@ -92,7 +92,7 @@ function nicUp() {
    /sbin/ifup $dev
    return $?
 }
-#************ ifup 
+#************ ifup
 
 #****f* boot-lib.sh/ip2Config
 #  NAME
@@ -136,7 +136,7 @@ function ip2Config() {
   fi
   return_code $?
 }
-#************ ip2Config 
+#************ ip2Config
 
 #****f* boot-lib.sh/auto_netconfig
 #  NAME
@@ -170,11 +170,14 @@ function getPosFromIPString() {
   str=$2
   echo $str | awk -v pos=$pos 'BEGIN { FS=":"; }{ print $pos; }'
 }
-#************ getPosFromIPString 
+#************ getPosFromIPString
 
 #############
 # $Log: network-lib.sh,v $
-# Revision 1.2  2006-05-12 13:06:41  marc
+# Revision 1.3  2007-09-14 13:28:31  marc
+# no changes
+#
+# Revision 1.2  2006/05/12 13:06:41  marc
 # First stable Version 1.0 for initrd.
 #
 # Revision 1.1  2006/05/07 11:33:40  marc
