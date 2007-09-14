@@ -1,0 +1,49 @@
+Major Tasks (1.3)
+
+  - bootimage library changes fertigstellen / testen [OK/test]
+  - ccsd-chroot init script [OK]
+  - fenced-chroot init script [OK]
+  - clvmd-chroot init script [open/later]
+  - qdisk-chroot init script [open/later]
+  - preccsd verifizieren -> evtl $chrootdir/var/run/cluster -> /var/run/cluster [OK]
+    -> in bootsr oder ccsd-chroot [open/later]
+    -> preccsd wird nicht mehr gebraucht.
+  - qdisk einbinden [OK]
+  - Kontrolle der service-chroot initscripts durch /var/lock/subsys/service-chroot [OK] 
+    -> initscript <service>-chroot macht beim start lockfile selber. 
+  - linuxrc /proc usw... [open/later]
+  - fenced timeouts [open/later]
+    -> evtl restart fenced in fenced-chroot start
+    -> evtl Flag in cluster.conf
+    -> oder Lösung durch qdisk
+  - clean up file and rpm lists [in progress]
+  - chroot_path in /var/comoonics/chroot-path [OK]
+  - remove all perl stuff [OK]
+  - add fsck option to chroot mount [open/later]
+  - create fsck option for sharedroot [open/later] 
+  - enable udevd 
+     -> RHEL5 hardware-lib.sh is unclean in start_udev
+  
+  - create rpms
+  
+  - RHEL5
+  - RHEL5 gfs1
+  - gfs2
+  
+RHEL5 Tasks
+
+  - reorganize yum repository 
+    /preview/redhat/el4
+    /preview/redhat/el5  
+  - rebuild python related rpms
+  - add RHEL5 parts to comoonics bootimage
+  - killall5 initscript -> udevd
+  
+  
+Minor Tasks
+
+  - mount --move /dev/ /mnt/newroot/dev [OK]
+  - modifizieren von Kernel parametern im initrd -> bugzilla Eintrag
+  - leerzeilen in filelists machen Probleme
+  - cleanup /tmp/mnt.initrd...
+  - mkinitrd Fehlerausgabe in eine .skip Datei
