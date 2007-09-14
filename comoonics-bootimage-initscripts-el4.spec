@@ -19,7 +19,7 @@
 # disclose such Confidential Information and shall use it only in
 # accordance with the terms of the license agreement you entered into
 # with ATIX.
-# $Id: comoonics-bootimage-initscripts-el4.spec,v 1.2 2007-09-14 13:36:05 marc Exp $
+# $Id: comoonics-bootimage-initscripts-el4.spec,v 1.3 2007-09-14 15:07:18 mark Exp $
 #
 ##
 ##
@@ -58,7 +58,6 @@ Comoonics Bootimage initscripts. Initscripts used by the comoonics shared root c
 %build
 
 %install
-# Files for compat
 install -d -m 755 $RPM_BUILD_ROOT/%{INITDIR}
 install -m755 initscripts/rhel4/bootsr $RPM_BUILD_ROOT/%{INITDIR}/bootsr
 install -m755 initscripts/rhel4/ccsd-chroot $RPM_BUILD_ROOT/%{INITDIR}/ccsd-chroot
@@ -116,7 +115,10 @@ done
 - first revision
 # ------
 # $Log: comoonics-bootimage-initscripts-el4.spec,v $
-# Revision 1.2  2007-09-14 13:36:05  marc
+# Revision 1.3  2007-09-14 15:07:18  mark
+# removed sensless comment
+#
+# Revision 1.2  2007/09/14 13:36:05  marc
 # fixed cleaning up
 #
 # Revision 1.1  2007/09/13 08:35:22  mark
