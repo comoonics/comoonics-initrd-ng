@@ -1,5 +1,5 @@
 #
-# $Id: chroot-lib.sh,v 1.2 2007-09-13 08:32:30 mark Exp $
+# $Id: chroot-lib.sh,v 1.3 2007-09-14 13:27:04 marc Exp $
 #
 # @(#)$File$
 #
@@ -63,7 +63,7 @@ function extract_installed_rpm() {
     echo "Cannot find rpm \"$rpm\". Skipping." >&2
     return 1
   fi
-  
+
   if [ -n "$filter" ]; then
   	qopt="-a"
   fi
@@ -102,7 +102,7 @@ function get_filelist_from_installed_rpm() {
     echo "Cannot find rpm \"$rpm\". Skipping." >&2
     return 1
   fi
-  
+
   if [ -n "$filter" ]; then
   	qopt="-a"
   fi
@@ -137,7 +137,7 @@ function extract_all_rpms() {
     echo "Cannot find rpmlistfile \"$rpm_listfile\". Exiting." >&2
     return 1
   fi
-  
+
   get_all_rpms_dependent $rpm_listfile $verbose | while read line; do
   	rpmdef=( $line )
   	rpm=${rpmdef[0]}
@@ -174,7 +174,7 @@ function get_filelist_from_rpms() {
     echo "Cannot find rpmlistfile \"$rpm_listfile\". Exiting." >&2
     return 1
   fi
-  
+
   get_all_rpms_dependent $rpm_listfile $verbose | while read line; do
   	rpmdef=( $line )
   	rpm=${rpmdef[0]}
@@ -327,7 +327,10 @@ function get_all_files_dependent() {
   local files=""
 
   while read line; do
-    if [ "${line:0:1}" != '#' ]; then
+	# FIXME:
+	#   if [ "${line:0:1}" != '#' ]; then does not work. Don't know WHY the shit!!
+	#
+    if [ ${line:0:1} != '#' ]; then
       if [ ! -e "$line" ] && [ "${line:0:7}" = '@perlcc' ]; then
         # take next as filename and compile
         echo "Skipping line $todir..." >&2
