@@ -1,0 +1,6 @@
+# $Id$
+# Only file needed by rdac driver
+/etc/mpp.conf
+/usr/sbin/hot_add
+#############
+# $Log$
