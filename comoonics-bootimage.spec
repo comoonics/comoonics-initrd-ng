@@ -19,7 +19,7 @@
 # disclose such Confidential Information and shall use it only in
 # accordance with the terms of the license agreement you entered into
 # with ATIX.
-# $Id: comoonics-bootimage.spec,v 1.46 2007-09-13 09:06:44 mark Exp $
+# $Id: comoonics-bootimage.spec,v 1.47 2007-09-14 13:35:52 marc Exp $
 #
 ##
 ##
@@ -44,8 +44,8 @@ Summary: Comoonics Bootimage. Scripts for creating an initrd in a gfs shared roo
 Version: 1.3
 BuildArch: noarch
 Requires: comoonics-cs-py >= 0.1-43 comoonics-cluster-py >= 0.1-2 comoonics-bootimage-initscripts >= 1.3
-#Conflicts: 
-Release: 7
+#Conflicts:
+Release: 8
 Vendor: ATIX AG
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -62,21 +62,21 @@ Comoonics Bootimage. Scripts for creating an initrd in a gfs shared root environ
 Version: 0.1
 Release: 1
 Requires: comoonics-bootimage >= 1.3-1
-Summary: listfiles for redhat el4 
+Summary: listfiles for redhat el4
 Group:   Storage/Management
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 %description listfiles-el4
-Listfiles for Red Hat EL 4 
+Listfiles for Red Hat EL 4
 
 %package listfiles-el5
 Version: 0.1
 Release: 1
 Requires: comoonics-bootimage >= 1.3-1
-Summary: listfiles for redhat el5 
+Summary: listfiles for redhat el5
 Group:   Storage/Management
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 %description listfiles-el5
-Listfiles for Red Hat EL 5 
+Listfiles for Red Hat EL 5
 
 
 %package extras-network
@@ -111,6 +111,17 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description extras-dm-multipath
 Extra listfiles for device mapper multipath sharedroot configurations
+
+%package extras-rdac-multipath
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage >= 1.3-8
+Summary: listfiles for rdac multipath sharedroot configurations
+Group:   Storage/Management
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description extras-rdac-multipath
+Extra listfiles for rdac multipath sharedroot configurations
 
 %package compat
 Version: 0.1
@@ -401,6 +412,9 @@ fi
 %files extras-dm-multipath
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/dm_multipath.list
 
+%files extras-rdac-multipath
+%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rdac_multipath.list
+
 %files fenceacksv
 %attr(755, root, root) %{FENCEACKSV_DIR}/fence_ack_server.py
 %attr(644, root, root) %{FENCEACKSV_DIR}/shell.py
@@ -438,6 +452,8 @@ fi
 %doc CHANGELOG
 
 %changelog
+* Fri Sep 14 2007 Marc Grimme <grimme@atix.de> - 1.3-8
+- added support for rdac multipath
 * Wed Aug 08 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3.4
 - moved dm_multipath listfile into extra rpm
 * Wed Aug 08 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3.3
@@ -477,6 +493,10 @@ fi
 * Mon Jan  3 2005 Marc Grimme <grimme@atix.de> - 0.1-16
 - first offical rpm version
 
+%changelog extras-rdac-multipath
+* Fri Sep 14 2007 Marc Grimme <grimme@atix.de> - 0.1-1
+- first release
+
 %changelog fenceacksv
 * Mon Sep 10 2007 Marc Grimme <grimme@atix.de> - 0.3-1
   - Fixed Bug BZ#107, fixed problems with not installed plugins
@@ -504,7 +524,10 @@ fi
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.46  2007-09-13 09:06:44  mark
+# Revision 1.47  2007-09-14 13:35:52  marc
+# added rdac-rpm and comments
+#
+# Revision 1.46  2007/09/13 09:06:44  mark
 # merged changes
 #
 # Revision 1.45  2007/09/12 13:48:05  mark
