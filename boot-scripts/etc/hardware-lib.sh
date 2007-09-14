@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.7 2007-09-07 08:02:30 mark Exp $
+# $Id: hardware-lib.sh,v 1.8 2007-09-14 13:27:38 marc Exp $
 #
 # @(#)$File$
 #
@@ -97,6 +97,17 @@ function scsi_start() {
   exec_local /sbin/modprobe sd_mod
   return_code
 
+  echo_local -n "Loading sg.ko module"
+  exec_local /sbin/modprobe sg
+  return_code
+
+  if [ -n "$scsifailover" ] && [ "$scsifailover" = "rdac" ]; then
+    echo_local "RDAC Detected ($scsifailover)"
+    echo_local -n "Loading mppUpper module"
+    exec_local modprobe mppUpper
+    return_code
+  fi
+
   if [ -n "${FC_MODULES}" ]; then
     echo_local -n "Loading $FC_MODULES"
     exec_local /sbin/modprobe ${FC_MODULES}
@@ -110,9 +121,18 @@ function scsi_start() {
   fi
   step
 
+  if [ -n "$scsifailover" ] && [ "$scsifailover" = "rdac" ]; then
+    echo_local "Loading mppVhba module"
+    exec_local /sbin/modprobe mppVhba
+    return_code
+    echo_local -n "Starting mpp hotadd script"
+    exec_local /usr/sbin/hot_add
+    return_code
+  fi
+
   if [ -x "/opt/atix/comoonics_cs/rescan_scsi" ]; then
     /opt/atix/comoonics_cs/rescan_scsi -a
-  else
+  elif [ -z "$scsifailover" ] || [ "$scsifailover" != "rdac" ]; then
     echo_local -n "Importing unconfigured scsi-devices..."
     devs=$(find /proc/scsi -name "[0-9]*" 2> /dev/null)
     channels=0
@@ -295,7 +315,7 @@ function hardware_detect() {
   return_code
 
   echo_local -n "Starting udev"
-  udev_start 
+  udev_start
   return_code
 
   echo_local_debug "File $modules_conf ***"
@@ -336,7 +356,10 @@ function add_scsi_device() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.7  2007-09-07 08:02:30  mark
+# Revision 1.8  2007-09-14 13:27:38  marc
+# - Feature add rdac support (scsifailover=rdac)
+#
+# Revision 1.7  2007/09/07 08:02:30  mark
 # made udev_start distro dependend
 #
 # Revision 1.6  2007/02/23 16:42:01  mark
