@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.28 2007-09-13 09:07:07 mark Exp $
+# $Id: Makefile,v 1.29 2007-09-14 08:32:40 mark Exp $
 #
 # @(#)$file$
 #
@@ -371,7 +371,11 @@ rpmbuild: archive
 	
 rpmbuild-initscripts-el4: archive
 	cp ../$(ARCHIVE_FILE) /usr/src/redhat/SOURCES/
-	rpmbuild -ba --sign --target=noarch ./comoonics-bootimage-initscripts-el4.spec
+	rpmbuild -ba  --target=noarch ./comoonics-bootimage-initscripts-el4.spec
+
+rpmbuild-initscripts-el5: archive
+	cp ../$(ARCHIVE_FILE) /usr/src/redhat/SOURCES/
+	rpmbuild -ba  --target=noarch ./comoonics-bootimage-initscripts-el5.spec
 	
 .PHONY:rpmsign
 rpmsign:
@@ -379,12 +383,15 @@ rpmsign:
 	rpm --resign $(RPM_PACKAGE_BIN_DIR)/$(PACKAGE_NAME)-*.rpm $(RPM_PACKAGE_SRC_DIR)/$(PACKAGE_NAME)-*.src.rpm
 
 .PHONY:rpm	
-rpm: rpmbuild rpmsign rpmbuild-initscripts-el4
+rpm: rpmbuild rpmsign rpmbuild-initscripts-el4 rpmbuild-initscripts-el5
 
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.28  2007-09-13 09:07:07  mark
+# Revision 1.29  2007-09-14 08:32:40  mark
+# added initscripts-el5
+#
+# Revision 1.28  2007/09/13 09:07:07  mark
 # added rule for rpmbuild-initscripts-el4
 #
 # Revision 1.27  2007/09/10 14:55:48  marc
