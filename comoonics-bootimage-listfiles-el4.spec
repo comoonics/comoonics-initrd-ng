@@ -19,7 +19,7 @@
 # disclose such Confidential Information and shall use it only in
 # accordance with the terms of the license agreement you entered into
 # with ATIX.
-# $Id: comoonics-bootimage-listfiles-el4.spec,v 1.1 2007-09-15 14:49:38 mark Exp $
+# $Id: comoonics-bootimage-listfiles-el4.spec,v 1.2 2007-09-15 15:47:40 mark Exp $
 #
 ##
 ##
@@ -75,10 +75,10 @@ install -m644 system-cfg-files/files.initrd.d/scsi.list $RPM_BUILD_ROOT/%{CONFIG
 install -m644 system-cfg-files/rpms.initrd.d/baselibs.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/rpms.initrd.d/baselibs.list
 install -m644 system-cfg-files/rpms.initrd.d/comoonics.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/rpms.initrd.d/comoonics.list
 install -m644 system-cfg-files/rpms.initrd.d/ext2.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/rpms.initrd.d/ext2.list
-install -m644 system-cfg-files/rpms.initrd.d/gfs1-el5.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/rpms.initrd.d/gfs1-el4.list
+install -m644 system-cfg-files/rpms.initrd.d/gfs1-el4.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/rpms.initrd.d/gfs1-el4.list
 install -m644 system-cfg-files/rpms.initrd.d/hardware.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/rpms.initrd.d/hardware.list
 install -m644 system-cfg-files/rpms.initrd.d/hardware.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/rpms.initrd.d/python.list
-install -m644 system-cfg-files/rpms.initrd.d/rhcs5.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/rpms.initrd.d/rhcs4.list
+install -m644 system-cfg-files/rpms.initrd.d/rhcs4.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/rpms.initrd.d/rhcs4.list
 
 %postun
 
@@ -113,6 +113,9 @@ rm -rf %{buildroot}
 - first revision
 # ------
 # $Log: comoonics-bootimage-listfiles-el4.spec,v $
-# Revision 1.1  2007-09-15 14:49:38  mark
+# Revision 1.2  2007-09-15 15:47:40  mark
+# fixed typo
+#
+# Revision 1.1  2007/09/15 14:49:38  mark
 # moved listfiles into extra rpms
 #
