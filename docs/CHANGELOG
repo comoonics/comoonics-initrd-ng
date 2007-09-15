@@ -5,6 +5,10 @@ IDEAS:
 	* define process for changelog
 
 CHANGES:
+
+comoonics-bootimage:
+- 2007-09-15 Release 1.3.9
+    * moved listfiles into extra rpm 
 - 2007-09-14 Release 1.3.8
     * rdac multipath support
     * Bug BZ#31 fixed bootoptions did not overwrite cluster.conf options
@@ -62,13 +66,69 @@ CHANGES:
 - 2006-10-26; Release: 1.0.72
 	* to be addes
 
+comoonics-bootimage-compat:
+- 2007-09-15 Release 0.1.1
+    * initial release
+
+comoonics-bootimage-extras-dm-multipath:
+- 2007-09-15 Release 0.1.1
+    * initial release 
+
+comoonics-bootimage-extras-network:
+- 2007-09-15 Release 0.1.1
+    * initial release 
+
+comoonics-bootimage-extras-nfs:
+- 2007-09-15 Release 0.1.1
+    * initial release 
+
+comoonics-bootimage-extras-rdac-multipath:
+- 2007-09-15 Release 0.1.1
+    * initial release 
+
+comoonics-bootimage-fenceclient-ilo:
+- 2007-09-15 Release 0.1.17
+    * new release
+    
+comoonics-bootimage-fenceacksv:
+- 2007-09-15 Release 0.3.1
+    * new release
+    
+comoonics-bootimage-fenceclient-ilomp:
+- 2007-09-15 Release 0.1.1
+    * initial release 
+
+comoonics-bootimage-fenceclient-vmware:
+- 2007-09-15 Release 0.1.4
+    * initial release 
+
+comoonics-bootimage-fencemaster-vmware:
+- 2007-09-15 Release 0.1.1
+    * initial release 
+
+comoonics-bootimage-initscripts:
+- 2007-09-15 Release 1.3.1-el5
+    * initial release for el5
+- 2007-09-15 Release 1.3.1-el4
+    * initial release for el4
+
+comoonics-bootimage-listfiles:
+- 2007-09-15 Release 1.3.1-el5
+    * initial release for el5
+- 2007-09-15 Release 1.3.1-el4
+    * initial release for el4
+
+
 TODO:
 
 
 ########################################
 # CVS-Log
 # $Log: CHANGELOG,v $
-# Revision 1.16  2007-09-14 15:19:59  mark
+# Revision 1.17  2007-09-15 14:49:03  mark
+# added missing rpms
+#
+# Revision 1.16  2007/09/14 15:19:59  mark
 # merged changes
 #
 # Revision 1.15  2007/09/14 13:31:37  marc
