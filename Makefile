@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.30 2007-09-14 13:35:28 marc Exp $
+# $Id: Makefile,v 1.31 2007-09-15 14:49:38 mark Exp $
 #
 # @(#)$file$
 #
@@ -166,32 +166,11 @@ CFG_DIR=$(SYSTEM_CFG_DIR)/bootimage
 #  IDEAS
 #  SOURCE
 #
-CFG_FILES=basefiles.list \
-	rpms.list \
-	files.initrd.d/base.list \
-	files.initrd.d/bonding.list \
-	files.initrd.d/configs.list \
-	files.initrd.d/comoonics.list \
-	files.initrd.d/ext2.list \
-	files.initrd.d/gfs.list \
-	files.initrd.d/grub.list \
-	files.initrd.d/locales.list \
-	files.initrd.d/network.list \
-	files.initrd.d/rdac_multipath.list \
-	files.initrd.d/scsi.list \
+CFG_FILES=files.initrd.d/rdac_multipath.list \
 	files.initrd.d/user_edit.list \
 	files.initrd.d/vlan.list \
-	rpms.initrd.d/baselibs.list \
-	rpms.initrd.d/comoonics.list \
 	rpms.initrd.d/dm_multipath.list \
-	rpms.initrd.d/ext2.list \
-	rpms.initrd.d/gfs1-el4.list \
-	rpms.initrd.d/gfs1-el5.list \
-	rpms.initrd.d/hardware.list \
 	rpms.initrd.d/nfs.list \
-	rpms.initrd.d/python.list \
-	rpms.initrd.d/rhcs4.list \
-	rpms.initrd.d/rhcs5.list
 	
 #************ CFG_FILES 
 
@@ -238,9 +217,7 @@ EMPTY_DIRS=boot-scripts/mnt \
 #  IDEAS
 #  SOURCE
 #
-INIT_FILES=bootsr \
-fenced-chroot \
-ccsd-chroot
+INIT_FILES=
 
 #************ INIT_FILES 
 #****d* Makefile/ARCHIVE_FILE
@@ -370,6 +347,14 @@ rpmbuild: archive
 	rpmbuild -ba --target=noarch ./comoonics-bootimage.spec
 	
 	
+rpmbuild-listfiles-el4: archive
+	cp ../$(ARCHIVE_FILE) /usr/src/redhat/SOURCES/
+	rpmbuild -ba  --target=noarch ./comoonics-bootimage-listfiles-el4.spec
+
+rpmbuild-listfiles-el5: archive
+	cp ../$(ARCHIVE_FILE) /usr/src/redhat/SOURCES/
+	rpmbuild -ba  --target=noarch ./comoonics-bootimage-listfiles-el5.spec
+
 rpmbuild-initscripts-el4: archive
 	cp ../$(ARCHIVE_FILE) /usr/src/redhat/SOURCES/
 	rpmbuild -ba  --target=noarch ./comoonics-bootimage-initscripts-el4.spec
@@ -384,12 +369,17 @@ rpmsign:
 	rpm --resign $(RPM_PACKAGE_BIN_DIR)/$(PACKAGE_NAME)-*.rpm $(RPM_PACKAGE_SRC_DIR)/$(PACKAGE_NAME)-*.src.rpm
 
 .PHONY:rpm	
-rpm: rpmbuild rpmbuild-initscripts-el4 rpmbuild-initscripts-el5 rpmsign
+rpm: rpmbuild rpmbuild-initscripts-el4 rpmbuild-initscripts-el5 \
+rpmbuild-listfiles-el4 rpmbuild-listfiles-el5 \
+rpmsign
 
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.30  2007-09-14 13:35:28  marc
+# Revision 1.31  2007-09-15 14:49:38  mark
+# moved listfiles into extra rpms
+#
+# Revision 1.30  2007/09/14 13:35:28  marc
 # added rdac-files
 #
 # Revision 1.29  2007/09/14 08:32:40  mark

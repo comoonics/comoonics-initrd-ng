@@ -19,7 +19,7 @@
 # disclose such Confidential Information and shall use it only in
 # accordance with the terms of the license agreement you entered into
 # with ATIX.
-# $Id: comoonics-bootimage.spec,v 1.47 2007-09-14 13:35:52 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.48 2007-09-15 14:49:38 mark Exp $
 #
 ##
 ##
@@ -43,9 +43,9 @@ Name: comoonics-bootimage
 Summary: Comoonics Bootimage. Scripts for creating an initrd in a gfs shared root environment
 Version: 1.3
 BuildArch: noarch
-Requires: comoonics-cs-py >= 0.1-43 comoonics-cluster-py >= 0.1-2 comoonics-bootimage-initscripts >= 1.3
+Requires: comoonics-cs-py >= 0.1-43 comoonics-cluster-py >= 0.1-2 comoonics-bootimage-initscripts >= 1.3 comoonics-bootimage-listfiles >= 1.3
 #Conflicts:
-Release: 8
+Release: 9
 Vendor: ATIX AG
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -57,27 +57,6 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description
 Comoonics Bootimage. Scripts for creating an initrd in a gfs shared root environment
-
-%package listfiles-el4
-Version: 0.1
-Release: 1
-Requires: comoonics-bootimage >= 1.3-1
-Summary: listfiles for redhat el4
-Group:   Storage/Management
-BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
-%description listfiles-el4
-Listfiles for Red Hat EL 4
-
-%package listfiles-el5
-Version: 0.1
-Release: 1
-Requires: comoonics-bootimage >= 1.3-1
-Summary: listfiles for redhat el5
-Group:   Storage/Management
-BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
-%description listfiles-el5
-Listfiles for Red Hat EL 5
-
 
 %package extras-network
 Version: 0.1
@@ -213,7 +192,9 @@ install -m640 %{FENCEACKSV_SOURCE}/server.cert $RPM_BUILD_ROOT/%{FENCEACKSV_DIR}
 install -m640 %{FENCEACKSV_SOURCE}/CA.pkey $RPM_BUILD_ROOT/%{FENCEACKSV_DIR}/
 install -m640 %{FENCEACKSV_SOURCE}/CA.cert $RPM_BUILD_ROOT/%{FENCEACKSV_DIR}/
 
+install -d -m 755 $RPM_BUILD_ROOT/%{INITDIR}
 install -m755 %{FENCEACKSV_SOURCE}/fenceacksv.sh $RPM_BUILD_ROOT/%{INITDIR}/fenceacksv
+install -d -m 755 $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage-chroot
 install -m644 %{FENCEACKSV_SOURCE}/files-fenceacksv.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage-chroot/files.initrd.d/fenceacksv.list
 install -m644 %{FENCEACKSV_SOURCE}/rpms-fenceacksv.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage-chroot/rpms.initrd.d/fenceacksv.list
 # install -m640 %{FENCEACKSV_SOURCE}/fenceacksv-config.sh $RPM_BUILD_ROOT/%{SYSCONFIGDIR}/fenceacksv
@@ -222,6 +203,7 @@ install -m644 %{FENCEACKSV_SOURCE}/rpms-fenceacksv.list $RPM_BUILD_ROOT/%{CONFIG
 install -d -m 755 $RPM_BUILD_ROOT/%{FENCECLIENTS_DIR}
 install -d -m 755 $RPM_BUILD_ROOT/%{FENCECLIENTS_DOC}
 install -m755 %{FENCECLIENTS_SOURCE}/fence_ilo.py  $RPM_BUILD_ROOT/%{FENCECLIENTS_DIR}/fence_ilo
+install -d -m 755 $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/rpms.initrd.d
 install -m755 %{FENCECLIENTS_SOURCE}/rpms-fence_ilo.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/rpms.initrd.d/fence_ilo.list
 install -m755 %{FENCECLIENTS_SOURCE}/fence_ilomp.py  $RPM_BUILD_ROOT/%{FENCECLIENTS_DIR}/fence_ilomp
 install -m755 %{FENCECLIENTS_SOURCE}/rpms-fence_ilomp.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/rpms.initrd.d/fence_ilomp.list
@@ -357,49 +339,6 @@ fi
 
 %doc CHANGELOG
 
-%files listfiles-el4
-%attr(640, root, root) %{CONFIGDIR}/bootimage/basefiles.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/base.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/bonding.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/comoonics.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/configs.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/ext2.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/gfs.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/grub.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/locales.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/network.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/scsi.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/baselibs.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/comoonics.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/ext2.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/gfs1-el4.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/hardware.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/python.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhcs4.list
-
-%files listfiles-el5
-%attr(640, root, root) %{CONFIGDIR}/bootimage/basefiles.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/base.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/bonding.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/comoonics.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/configs.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/ext2.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/gfs.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/grub.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/locales.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/network.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/scsi.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/baselibs.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/comoonics.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/ext2.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/gfs1-el5.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/hardware.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/python.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhcs5.list
-
-
 %files compat
 %attr(640, root, root) %{SYSCONFIGDIR}/comoonics-chroot
 
@@ -450,6 +389,10 @@ fi
 %doc %{FENCECLIENTS_DOC}/INSTALL.fence_vmware
 %doc %{FENCECLIENTS_DOC}/README.fence_vmware
 %doc CHANGELOG
+
+%clean
+rm -rf %{buildroot}
+
 
 %changelog
 * Fri Sep 14 2007 Marc Grimme <grimme@atix.de> - 1.3-8
@@ -524,7 +467,10 @@ fi
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.47  2007-09-14 13:35:52  marc
+# Revision 1.48  2007-09-15 14:49:38  mark
+# moved listfiles into extra rpms
+#
+# Revision 1.47  2007/09/14 13:35:52  marc
 # added rdac-rpm and comments
 #
 # Revision 1.46  2007/09/13 09:06:44  mark
