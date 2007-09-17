@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.8 2007-09-14 13:27:38 marc Exp $
+# $Id: hardware-lib.sh,v 1.9 2007-09-17 09:27:01 marc Exp $
 #
 # @(#)$File$
 #
@@ -102,6 +102,7 @@ function scsi_start() {
   return_code
 
   if [ -n "$scsifailover" ] && [ "$scsifailover" = "rdac" ]; then
+    mkdir /tmp &>/dev/null
     echo_local "RDAC Detected ($scsifailover)"
     echo_local -n "Loading mppUpper module"
     exec_local modprobe mppUpper
@@ -356,7 +357,10 @@ function add_scsi_device() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.8  2007-09-14 13:27:38  marc
+# Revision 1.9  2007-09-17 09:27:01  marc
+# - added another dep needed with #116
+#
+# Revision 1.8  2007/09/14 13:27:38  marc
 # - Feature add rdac support (scsifailover=rdac)
 #
 # Revision 1.7  2007/09/07 08:02:30  mark
