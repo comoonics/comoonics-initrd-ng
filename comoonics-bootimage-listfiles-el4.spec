@@ -19,7 +19,7 @@
 # disclose such Confidential Information and shall use it only in
 # accordance with the terms of the license agreement you entered into
 # with ATIX.
-# $Id: comoonics-bootimage-listfiles-el4.spec,v 1.3 2007-09-17 09:36:20 mark Exp $
+# $Id: comoonics-bootimage-listfiles-el4.spec,v 1.4 2007-09-17 09:37:40 mark Exp $
 #
 ##
 ##
@@ -38,7 +38,7 @@ Version: 1.3
 BuildArch: noarch
 Requires: comoonics-bootimage >= 1.3-1
 #Conflicts: 
-Release: 1.el4
+Release: 2.el4
 Vendor: ATIX AG
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -113,7 +113,10 @@ rm -rf %{buildroot}
 - first revision
 # ------
 # $Log: comoonics-bootimage-listfiles-el4.spec,v $
-# Revision 1.3  2007-09-17 09:36:20  mark
+# Revision 1.4  2007-09-17 09:37:40  mark
+# new release
+#
+# Revision 1.3  2007/09/17 09:36:20  mark
 # fixed typo that prevented pyhton to be installed
 #
 # Revision 1.2  2007/09/15 15:47:40  mark
