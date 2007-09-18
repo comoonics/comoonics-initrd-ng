@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc,v 1.13 2007-09-07 08:03:46 mark Exp $
+# $Id: linuxrc,v 1.14 2007-09-18 10:06:00 mark Exp $
 #
 # @(#)$File$
 #
@@ -25,7 +25,7 @@
 #****h* comoonics-bootimage/linuxrc
 #  NAME
 #    linuxrc
-#    $Id: linuxrc,v 1.13 2007-09-07 08:03:46 mark Exp $
+#    $Id: linuxrc,v 1.14 2007-09-18 10:06:00 mark Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -46,6 +46,14 @@
 source /etc/boot-lib.sh
 source /etc/chroot-lib.sh
 source /etc/std-lib.sh
+
+mkdir -p /proc
+mount -t proc proc /proc
+if cat /proc/cmdline | grep com-expert; then
+	export PS1="comoonics \! > "
+	/bin/bash
+fi
+umount /proc
 
 distribution=$(getDistribution)
 [ -e /etc/${distribution}/boot-lib.sh ] && source /etc/${distribution}/boot-lib.sh
@@ -123,7 +131,10 @@ fi
 
 ################
 # $Log: linuxrc,v $
-# Revision 1.13  2007-09-07 08:03:46  mark
+# Revision 1.14  2007-09-18 10:06:00  mark
+# added com-expert option -> start bash before linuxrc.generic.sh
+#
+# Revision 1.13  2007/09/07 08:03:46  mark
 # bug fixes
 #
 # Revision 1.12  2007/08/06 15:56:14  mark
