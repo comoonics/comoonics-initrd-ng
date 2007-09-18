@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.44 2007-09-07 07:59:45 mark Exp $
+# $Id: boot-lib.sh,v 1.45 2007-09-18 10:10:05 mark Exp $
 #
 # @(#)$File$
 #
@@ -467,10 +467,10 @@ function start_service {
 #  NAME
 #    create_chroot build a chroot environment
 #  SYNOPSIS
-#    function switchRoot($chroot_fstype $chroot_dev $chroot_path $chroot_options $chroot_source) {
+#    function create_chroot($chroot_source $chroot_path) {
 #  MODIFICATION HISTORY
 #  USAGE
-#  switchRoot
+#  create_chroot
 #  IDEAS
 #
 #  SOURCE
@@ -726,10 +726,17 @@ function stop_service {
 #  SOURCE
 #
 function clean_initrd() {
-	echo_local_debug "Sending process the KILL signal  "
-	fuser -k -KILL -m /
+	local procs="udevd"
+	echo_local_debug "Sending processes the KILL signal  "
+	for p in $procs; do
+		kill $p &> /dev/null
+	done
+	sleep 3
 	echo_local_debug "Sending processes the TERM signal "
-	fuser -k -TERM -m /
+	for p in $procs; do
+		kill -9 $p &> /dev/null
+	done
+	
 }
 
 #************ clean_initrd
@@ -917,7 +924,10 @@ function exec_local_debug() {
 
 
 # $Log: boot-lib.sh,v $
-# Revision 1.44  2007-09-07 07:59:45  mark
+# Revision 1.45  2007-09-18 10:10:05  mark
+# modified clean_initrd as it was too aggressive
+#
+# Revision 1.44  2007/09/07 07:59:45  mark
 # added rhel5 distro detection
 # replaced clean_initrd
 #
