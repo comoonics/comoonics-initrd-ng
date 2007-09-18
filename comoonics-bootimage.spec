@@ -19,7 +19,7 @@
 # disclose such Confidential Information and shall use it only in
 # accordance with the terms of the license agreement you entered into
 # with ATIX.
-# $Id: comoonics-bootimage.spec,v 1.48 2007-09-15 14:49:38 mark Exp $
+# $Id: comoonics-bootimage.spec,v 1.49 2007-09-18 11:21:15 mark Exp $
 #
 ##
 ##
@@ -45,7 +45,7 @@ Version: 1.3
 BuildArch: noarch
 Requires: comoonics-cs-py >= 0.1-43 comoonics-cluster-py >= 0.1-2 comoonics-bootimage-initscripts >= 1.3 comoonics-bootimage-listfiles >= 1.3
 #Conflicts:
-Release: 9
+Release: 10
 Vendor: ATIX AG
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -246,9 +246,9 @@ echo "Creating mkinitrd link..."
 ln -sf %{APPDIR}/create-gfs-initrd-generic.sh %{APPDIR}/mkinitrd
 
 if cat /etc/redhat-release | grep -i "release 5" &> /dev/null; then
-	services="cman gfs"
+	services="cman gfs clvmd qdiskd"
 else
-	services="cman gfs"
+	services="cman gfs clvmd qdiskd"
 fi
 
 echo "Disabling services ($services)"
@@ -395,6 +395,8 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Tue Sep 18 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3.4
+- bugfixes
 * Fri Sep 14 2007 Marc Grimme <grimme@atix.de> - 1.3-8
 - added support for rdac multipath
 * Wed Aug 08 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3.4
@@ -467,7 +469,10 @@ rm -rf %{buildroot}
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.48  2007-09-15 14:49:38  mark
+# Revision 1.49  2007-09-18 11:21:15  mark
+# bootimage-1.3.10
+#
+# Revision 1.48  2007/09/15 14:49:38  mark
 # moved listfiles into extra rpms
 #
 # Revision 1.47  2007/09/14 13:35:52  marc
