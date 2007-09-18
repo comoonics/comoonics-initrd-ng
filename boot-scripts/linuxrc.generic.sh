@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.36 2007-09-14 13:28:54 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.37 2007-09-18 10:06:36 mark Exp $
 #
 # @(#)$File$
 #
@@ -17,7 +17,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.36 2007-09-14 13:28:54 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.37 2007-09-18 10:06:36 mark Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -73,7 +73,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.36 $ $Date: 2007-09-14 13:28:54 $'
+echo_local 'Internal Version $Revision: 1.37 $ $Date: 2007-09-18 10:06:36 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -367,15 +367,6 @@ exec_local cp -a $newroot/dev/console /dev/
 #exec_local mount --bind /dev $newroot/dev
 return_code
 
-
-#we don't need to restart services as they will stay in /comoonics chroot
-#FIXME Remove lines
-#clusterfs_services_restart / $newroot
-#restart_error=$?
-
-step "Cluster services restarted"
-
-
 echo_local -n "Copying logfile to $newroot/${bootlog}..."
 exec_local cp -f ${bootlog} ${newroot}/${bootlog} || cp -f ${bootlog} ${newroot}/$(basename $bootlog)
 if [ -f ${newroot}/$bootlog ]; then
@@ -418,7 +409,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.36  2007-09-14 13:28:54  marc
+# Revision 1.37  2007-09-18 10:06:36  mark
+# removed unneeded code
+#
+# Revision 1.36  2007/09/14 13:28:54  marc
 # - Fixed Bug BZ#31
 #
 # Revision 1.35  2007/09/07 08:04:18  mark
