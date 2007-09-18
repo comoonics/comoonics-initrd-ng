@@ -7,6 +7,8 @@ IDEAS:
 CHANGES:
 
 comoonics-bootimage:
+- 2007-09-18 Release 1.3.10
+    * bugfixes 
 - 2007-09-15 Release 1.3.9
     * moved listfiles into extra rpm 
 - 2007-09-14 Release 1.3.8
@@ -129,7 +131,10 @@ TODO:
 ########################################
 # CVS-Log
 # $Log: CHANGELOG,v $
-# Revision 1.18  2007-09-17 09:45:32  mark
+# Revision 1.19  2007-09-18 11:27:23  mark
+# comoonics-bootimage 1.3.10
+#
+# Revision 1.18  2007/09/17 09:45:32  mark
 # new release for comoonics-bootimage-listfiles
 #
 # Revision 1.17  2007/09/15 14:49:03  mark
