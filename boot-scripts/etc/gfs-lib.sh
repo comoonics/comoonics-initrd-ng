@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.34 2007-09-07 08:01:12 mark Exp $
+# $Id: gfs-lib.sh,v 1.35 2007-09-18 10:10:25 mark Exp $
 #
 # @(#)$File$
 #
@@ -609,7 +609,7 @@ function gfs_start_cman {
 #
 function gfs_start_fenced {
   local chroot_path=$1
-  start_service_chroot $chroot_path 'fenced -c'
+  #start_service_chroot $chroot_path 'fenced -c'
   start_service_chroot $chroot_path '/sbin/fence_tool -c -w join'
   #echo_local "Waiting for fenced to complete join"
   #exec_local fence_tool wait
@@ -851,7 +851,10 @@ function gfs_checkhosts_alive {
 #********* gfs_checkhosts_alive
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.34  2007-09-07 08:01:12  mark
+# Revision 1.35  2007-09-18 10:10:25  mark
+# removed duplicate start of fenced
+#
+# Revision 1.34  2007/09/07 08:01:12  mark
 # bug fixes
 # added some start methods
 #
