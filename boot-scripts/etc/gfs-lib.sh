@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.35 2007-09-18 10:10:25 mark Exp $
+# $Id: gfs-lib.sh,v 1.36 2007-09-19 08:57:20 mark Exp $
 #
 # @(#)$File$
 #
@@ -454,6 +454,7 @@ function gfs_get_syslogserver {
 #  SOURCE
 #
 function gfs_load {
+  ## THIS will be overwritten for rhel5 ## 	
   local lock_method=$1
 
   GFS_MODULES="gfs cman"
@@ -494,6 +495,7 @@ function gfs_load {
 #  SOURCE
 #
 function gfs_services_start {
+  ## THIS will be overwritten for rhel5 ## 
   local chroot_path=$1 
   local lock_method=$2
 
@@ -608,6 +610,7 @@ function gfs_start_cman {
 #  SOURCE
 #
 function gfs_start_fenced {
+  ## THIS will be overwritten for rhel5 ## 
   local chroot_path=$1
   #start_service_chroot $chroot_path 'fenced -c'
   start_service_chroot $chroot_path '/sbin/fence_tool -c -w join'
@@ -773,6 +776,7 @@ function gfs_restart_fenced {
 #  SOURCE
 #
 function gfs_start_qdiskd {
+  ## THIS will be overwritten for rhel5 ## 
   local chroot_path=$1
   start_service_chroot $chroot_path /sbin/qdiskd -Q
 }
@@ -851,7 +855,10 @@ function gfs_checkhosts_alive {
 #********* gfs_checkhosts_alive
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.35  2007-09-18 10:10:25  mark
+# Revision 1.36  2007-09-19 08:57:20  mark
+# overwrite start_fenced for rhel5
+#
+# Revision 1.35  2007/09/18 10:10:25  mark
 # removed duplicate start of fenced
 #
 # Revision 1.34  2007/09/07 08:01:12  mark

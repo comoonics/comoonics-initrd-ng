@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.1 2007-09-07 07:57:55 mark Exp $
+# $Id: gfs-lib.sh,v 1.2 2007-09-19 08:57:21 mark Exp $
 #
 # @(#)$File$
 #
@@ -112,3 +112,22 @@ function gfs_start_qdiskd {
 }
 #************ gfs_start_qdiskd
 
+#****f* gfs-lib.sh/gfs_start_fenced
+#  NAME
+#    gfs_start_fenced
+#  SYNOPSIS
+#    function gfs_start_fenced {
+#  DESCRIPTION
+#    Function starts the fenced in a changeroot environment
+#  IDEAS
+#  SOURCE
+#
+function gfs_start_fenced {
+  local chroot_path=$1
+  start_service_chroot $chroot_path 'fenced -c'
+  start_service_chroot $chroot_path '/sbin/fence_tool -c -w join'
+  #echo_local "Waiting for fenced to complete join"
+  #exec_local fence_tool wait
+  return_code
+}
+#************ gfs_start_fenced
