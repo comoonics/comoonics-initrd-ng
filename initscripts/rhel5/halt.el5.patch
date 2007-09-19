@@ -1,5 +1,5 @@
 --- halt.orig	2007-09-19 11:42:12.000000000 +0200
-+++ halt	2007-09-19 15:42:31.000000000 +0200
++++ halt	2007-09-19 15:51:34.000000000 +0200
 @@ -8,6 +8,19 @@
  #               Modified for RHS Linux by Damien Neil
  #
@@ -20,7 +20,7 @@
  NOLOCALE=1
  . /etc/init.d/functions
  
-@@ -65,9 +78,13 @@
+@@ -65,9 +78,11 @@
  # Kill all processes.
  [ "${BASH+bash}" = bash ] && enable kill
  
@@ -31,12 +31,10 @@
 +action $"Sending all processes the KILL signal..."  /sbin/com-killall5 -9 $COM_KILLALL_OPTS 
 +
 +/sbin/ifup lo &> /dev/null
-+
-+ps ax
  
  # Write to wtmp file before unmounting /var
  /sbin/halt -w
-@@ -163,6 +180,7 @@
+@@ -163,6 +178,7 @@
      -f
  
  LANG=C __umount_loop '$2 ~ /^\/$|^\/proc|^\/dev/{next}

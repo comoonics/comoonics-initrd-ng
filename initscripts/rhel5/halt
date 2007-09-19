@@ -84,8 +84,6 @@ action $"Sending all processes the KILL signal..."  /sbin/com-killall5 -9 $COM_K
 
 /sbin/ifup lo &> /dev/null
 
-ps ax
-
 # Write to wtmp file before unmounting /var
 /sbin/halt -w
 
