@@ -2,7 +2,7 @@
 #****h* comoonics-bootimage/bootsr
 #  NAME
 #    bootsr
-#    $Id: bootsr,v 1.1 2007-09-14 08:33:09 mark Exp $
+#    $Id: bootsr,v 1.2 2007-09-19 13:22:25 mark Exp $
 #  DESCRIPTION
 #    Comoonics Shared Root post boot settings
 #  AUTHOR
@@ -65,6 +65,27 @@ function get_runlevel {
   return $(runlevel | cut -d" " -f2)
 }
 #************ get_runlevel
+
+#****f* bootsr/patch_halt
+#  NAME
+#    patch_halt
+#  SYNOPSIS
+#    function patch_halt
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function patch_halt {
+	if ! grep "comoonics (patch v1.0)" /etc/init.d/halt > /dev/null; then
+		echo "Patching halt"
+		cd /etc/init.d/ && patch -f -r /tmp/halt.patch.rej > /dev/null < /opt/atix/comoonics-bootimage/patches/halt.patch
+	fi
+}
+#************ patch_halt
+
+
+
+
 
 #************ umount_chroot
 #****f* bootsr/umount_chroot
@@ -162,6 +183,7 @@ case "$1" in
   stop)
   	  [ -e /var/lock/subsys/bootsr ] && rm -f /var/lock/subsys/bootsr 
 	  action "Cleaning up chroot environment" $UMOUNT_CHROOT
+	  patch_halt
         ;;
   status)
       exit 0
@@ -178,6 +200,9 @@ exit $RETVAL
 #************ main
 ###############
 # $Log: bootsr,v $
-# Revision 1.1  2007-09-14 08:33:09  mark
+# Revision 1.2  2007-09-19 13:22:25  mark
+# added method to patch /etc/init.d/halt
+#
+# Revision 1.1  2007/09/14 08:33:09  mark
 # initial checkin
 #
