@@ -1,12 +1,10 @@
 --- halt.orig	2007-09-19 11:42:12.000000000 +0200
-+++ halt	2007-09-19 14:48:01.000000000 +0200
-@@ -8,6 +8,21 @@
++++ halt	2007-09-19 15:42:31.000000000 +0200
+@@ -8,6 +8,19 @@
  #               Modified for RHS Linux by Damien Neil
  #
  
 +# Patched for comoonics (patch v1.0)
-+
-+set -x
 +
 +COM_KILLALL_OPTS="-x aisexec \
 +-x ccsd \
@@ -22,7 +20,7 @@
  NOLOCALE=1
  . /etc/init.d/functions
  
-@@ -65,9 +80,13 @@
+@@ -65,9 +78,13 @@
  # Kill all processes.
  [ "${BASH+bash}" = bash ] && enable kill
  
@@ -38,7 +36,7 @@
  
  # Write to wtmp file before unmounting /var
  /sbin/halt -w
-@@ -163,6 +182,7 @@
+@@ -163,6 +180,7 @@
      -f
  
  LANG=C __umount_loop '$2 ~ /^\/$|^\/proc|^\/dev/{next}
