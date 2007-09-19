@@ -1,0 +1,48 @@
+--- halt.orig	2007-09-19 11:42:12.000000000 +0200
++++ halt	2007-09-19 14:48:01.000000000 +0200
+@@ -8,6 +8,21 @@
+ #               Modified for RHS Linux by Damien Neil
+ #
+ 
++# Patched for comoonics (patch v1.0)
++
++set -x
++
++COM_KILLALL_OPTS="-x aisexec \
++-x ccsd \
++-x fenced \
++-x gfs_controld \
++-x dlm_controld \
++-x groupd \
++-x qdiskd \
++-x clvmd"
++
++COM_CHROOT_PATH=$(/opt/atix/comoonics-bootimage/manage_chroot.sh -p | sed s#/#\\\\\/#g)
++
+ NOLOCALE=1
+ . /etc/init.d/functions
+ 
+@@ -65,9 +80,13 @@
+ # Kill all processes.
+ [ "${BASH+bash}" = bash ] && enable kill
+ 
+-action $"Sending all processes the TERM signal..." /sbin/killall5 -15
++action $"Sending all processes the TERM signal..." /sbin/com-killall5 -15 $COM_KILLALL_OPTS 
+ sleep 5
+-action $"Sending all processes the KILL signal..."  /sbin/killall5 -9
++action $"Sending all processes the KILL signal..."  /sbin/com-killall5 -9 $COM_KILLALL_OPTS 
++
++/sbin/ifup lo &> /dev/null
++
++ps ax
+ 
+ # Write to wtmp file before unmounting /var
+ /sbin/halt -w
+@@ -163,6 +182,7 @@
+     -f
+ 
+ LANG=C __umount_loop '$2 ~ /^\/$|^\/proc|^\/dev/{next}
++	$2 ~ /'$COM_CHROOT_PATH'/ | $2 ~/^\/cdsl.local/ {next}
+ 	$3 == "tmpfs" || $3 == "proc" {print $2 ; next}
+ 	/(loopfs|autofs|nfs|cifs|smbfs|ncpfs|sysfs|^none|^\/dev\/ram|^\/dev\/root$)/ {next}
+ 	{print $2}' /proc/mounts \
