@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.45 2007-09-18 10:10:05 mark Exp $
+# $Id: boot-lib.sh,v 1.46 2007-09-21 15:35:56 mark Exp $
 #
 # @(#)$File$
 #
@@ -480,6 +480,7 @@ function create_chroot () {
   chroot_path=$2
   
   exec_local cp -ax $chroot_source $chroot_path
+  exec_local rm -rf $chroot_path/var/run/*
   exec_local mkdir -p $chroot_path/tmp
   exec_local mount --bind /dev $chroot_path/dev
   exec_local mount -t devpts none $chroot_path/dev/pts
@@ -727,12 +728,12 @@ function stop_service {
 #
 function clean_initrd() {
 	local procs="udevd"
-	echo_local_debug "Sending processes the KILL signal  "
+	echo_local_debug "Sending unnecessary processes the KILL signal"
 	for p in $procs; do
 		kill $p &> /dev/null
 	done
 	sleep 3
-	echo_local_debug "Sending processes the TERM signal "
+	echo_local_debug "Sending unnecessary processes the TERM signal"
 	for p in $procs; do
 		kill -9 $p &> /dev/null
 	done
@@ -924,7 +925,10 @@ function exec_local_debug() {
 
 
 # $Log: boot-lib.sh,v $
-# Revision 1.45  2007-09-18 10:10:05  mark
+# Revision 1.46  2007-09-21 15:35:56  mark
+# clean up /var/run
+#
+# Revision 1.45  2007/09/18 10:10:05  mark
 # modified clean_initrd as it was too aggressive
 #
 # Revision 1.44  2007/09/07 07:59:45  mark
