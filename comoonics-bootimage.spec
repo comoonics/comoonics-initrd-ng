@@ -19,7 +19,7 @@
 # disclose such Confidential Information and shall use it only in
 # accordance with the terms of the license agreement you entered into
 # with ATIX.
-# $Id: comoonics-bootimage.spec,v 1.49 2007-09-18 11:21:15 mark Exp $
+# $Id: comoonics-bootimage.spec,v 1.50 2007-09-21 15:34:51 mark Exp $
 #
 ##
 ##
@@ -45,7 +45,7 @@ Version: 1.3
 BuildArch: noarch
 Requires: comoonics-cs-py >= 0.1-43 comoonics-cluster-py >= 0.1-2 comoonics-bootimage-initscripts >= 1.3 comoonics-bootimage-listfiles >= 1.3
 #Conflicts:
-Release: 10
+Release: 11
 Vendor: ATIX AG
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -395,7 +395,9 @@ rm -rf %{buildroot}
 
 
 %changelog
-* Tue Sep 18 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3.4
+* Tue Sep 18 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3.11
+- modifications for el5, bugfixes
+* Tue Sep 18 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3.10
 - bugfixes
 * Fri Sep 14 2007 Marc Grimme <grimme@atix.de> - 1.3-8
 - added support for rdac multipath
@@ -469,7 +471,10 @@ rm -rf %{buildroot}
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.49  2007-09-18 11:21:15  mark
+# Revision 1.50  2007-09-21 15:34:51  mark
+# new release
+#
+# Revision 1.49  2007/09/18 11:21:15  mark
 # bootimage-1.3.10
 #
 # Revision 1.48  2007/09/15 14:49:38  mark

@@ -19,14 +19,14 @@
 # disclose such Confidential Information and shall use it only in
 # accordance with the terms of the license agreement you entered into
 # with ATIX.
-# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.1 2007-09-14 08:32:58 mark Exp $
+# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.2 2007-09-21 15:34:51 mark Exp $
 #
 ##
 ##
 
 %define _user root
 %define CONFIGDIR /%{_sysconfdir}/comoonics
-%define APPDIR    /opt/atix/%{name}
+%define APPDIR    /opt/atix/comoonics-bootimage
 %define ENVDIR    /etc/profile.d
 %define ENVFILE   %{ENVDIR}/%{name}.sh
 %define INITDIR   /etc/rc.d/init.d
@@ -36,9 +36,9 @@ Name: comoonics-bootimage-initscripts
 Summary: Comoonics Bootimage initscripts. Initscripts used by the comoonics shared root cluster environment.
 Version: 1.3
 BuildArch: noarch
-Requires: comoonics-bootimage >= 1.3-1
+Requires: comoonics-bootimage >= 1.3-1 SysVinit-comoonics
 #Conflicts: 
-Release: 1.el5
+Release: 2.el5
 Vendor: ATIX AG
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -61,9 +61,8 @@ Comoonics Bootimage initscripts. Initscripts used by the comoonics shared root c
 # Files for compat
 install -d -m 755 $RPM_BUILD_ROOT/%{INITDIR}
 install -m755 initscripts/rhel5/bootsr $RPM_BUILD_ROOT/%{INITDIR}/bootsr
-
-%clean 
-rm -rf %{buildroot}
+install -d -m 755 $RPM_BUILD_ROOT/%{APPDIR}/patches
+install -m600 initscripts/rhel5/halt.el5.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/halt.patch
 
 %postun
 
@@ -101,15 +100,20 @@ done
 %files
 
 %attr(750, root, root) %{INITDIR}/bootsr
+%attr(600, root, root) %{APPDIR}/patches/halt.patch
+
+%clean
+rm -rf %{buildroot}
 
 %changelog
+* Wed Sep 19 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3.2
+- added file halt.patch
 * Wed Sep 12 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3.1
 - first revision
 # ------
 # $Log: comoonics-bootimage-initscripts-el5.spec,v $
-# Revision 1.1  2007-09-14 08:32:58  mark
+# Revision 1.2  2007-09-21 15:34:51  mark
+# new release
+#
+# Revision 1.1  2007/09/14 08:32:58  mark
 # initial check in
-#
-# Revision 1.1  2007/09/13 08:35:22  mark
-# initital check in
-#
