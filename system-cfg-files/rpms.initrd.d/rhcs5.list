@@ -2,9 +2,13 @@ cman
 openais
 lvm2-cluster
 OpenIPMI-tools
+pam
 #######
 # $Log: rhcs5.list,v $
-# Revision 1.1  2007-09-11 12:42:41  mark
+# Revision 1.2  2007-09-25 15:52:34  mark
+# added pam
+#
+# Revision 1.1  2007/09/11 12:42:41  mark
 # renamed files
 # added files for el5
 #
