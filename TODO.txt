@@ -22,7 +22,7 @@ Major Tasks (1.3)
   - add fsck option to chroot mount [open/later]
   - create fsck option for sharedroot [open/later] 
   - enable udevd 
-     -> RHEL5 hardware-lib.sh is unclean in start_udev
+     -> RHEL5 [OK/test]
   
   - create rpms
   
@@ -32,9 +32,9 @@ Major Tasks (1.3)
   
 RHEL5 Tasks
 
-  - reorganize yum repository 
-    /preview/redhat/el4
-    /preview/redhat/el5  
+  - reorganize yum repository [OK]
+    redhat-el4
+    redhat-el5
   - rebuild python related rpms
   - add RHEL5 parts to comoonics bootimage
   - killall5 initscript -> udevd
@@ -47,3 +47,4 @@ Minor Tasks
   - leerzeilen in filelists machen Probleme
   - cleanup /tmp/mnt.initrd...
   - mkinitrd Fehlerausgabe in eine .skip Datei
+  - lvm in initrd FAILED in cluster vgs klären
