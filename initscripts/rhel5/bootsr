@@ -2,7 +2,7 @@
 #****h* comoonics-bootimage/bootsr
 #  NAME
 #    bootsr
-#    $Id: bootsr,v 1.2 2007-09-19 13:22:25 mark Exp $
+#    $Id: bootsr,v 1.3 2007-09-25 11:54:50 mark Exp $
 #  DESCRIPTION
 #    Comoonics Shared Root post boot settings
 #  AUTHOR
@@ -26,10 +26,12 @@ CCSD_OPTS=
 
 CCSD_LOCK_FILE="/var/lock/subsys/ccsd-chroot"
 DEFAULT_LOCK_COUNT=50000
+CHROOT_PATH=$(/opt/atix/comoonics-bootimage/manage_chroot.sh -p) 
 UPDATE_CHROOT="/opt/atix/comoonics-bootimage/manage_chroot.sh -a update"
 UMOUNT_CHROOT="/opt/atix/comoonics-bootimage/manage_chroot.sh -a umount"
 MOUNT_CHROOT="/opt/atix/comoonics-bootimage/manage_chroot.sh -a mount"
 BUILD_FILE="/etc/comoonics-build.txt"
+VAR_RUN_FILES="cman_admin cman_client"
 
 RETVAL=0
 [ -f /etc/sysconfig/cluster ] && . /etc/sysconfig/cluster
@@ -143,10 +145,8 @@ function get_lockcount {
 case "$1" in
   start)
   	# will do
-  	# - activate all lvm devices (na)
   	# - activate swap partitions (currently disabled)
   	# - mount everything except nfs (na)
-  	# - adjust dlm lock_count (na)
   	# - update chroot environment for additional services (fence_ack_server)
 
     if [ check_sharedroot ]; then
@@ -155,19 +155,12 @@ case "$1" in
       echo  "Doing the Comoonics Shared Root post settings "
       touch /var/lock/subsys/bootsr
 #      echo `date` Doing the Comoonics Shared Root post settings | tee -a /var/log/bootsr | logger -t com-bootsr
-#      /sbin/lvm vgscan --ignorelockingfailure --mknodes 2>&1 | tee -a /var/log/bootsr | logger -t com-bootsr
-#      /sbin/lvm vgchange --ignorelockingfailure -ay 2>&1 | tee -a /var/log/bootsr | logger -t com-bootsr
-#      sleep 1
 #      /sbin/swapon -av 2>&1 | tee -a /var/log/bootsr | logger -t com-bootsr
 #      /bin/mount -at nonfs 2>&1 | tee -a /var/log/bootsr | logger -t com-bootsr
-#      # change drop lock counter		
-#      count=$(get_lockcount ${DEFAULT_LOCK_COUNT} ${MAX_LOCK_COUNT})
-#      # This does not work with rhel5 
-#	   action "Changing dlm:drop_count to $count" "sh -c \"echo $count > /proc/cluster/lock_dlm/drop_count\""
-#      echo $count > /proc/cluster/lock_dlm/drop_count && echo -n "($count)" &&
-#      success || failure
-#      echo
-
+	  # Create symbolic links
+	  for file in $VAR_RUN_FILES; do
+	  	/bin/ln -sf $CHROOT_PATH/var/run/$file /var/run/
+      done	
       # Start ccsd-chroot if it will not be started from init in Runlevel 3
       # FIXME: There will be propably be no $FENCE_CHROOT this time.
 #      chkconfig --list ccsd-chroot | grep "3:on" >/dev/null 2>/dev/null
@@ -200,7 +193,10 @@ exit $RETVAL
 #************ main
 ###############
 # $Log: bootsr,v $
-# Revision 1.2  2007-09-19 13:22:25  mark
+# Revision 1.3  2007-09-25 11:54:50  mark
+# added functionality to create symlinks to /var/run/cman...
+#
+# Revision 1.2  2007/09/19 13:22:25  mark
 # added method to patch /etc/init.d/halt
 #
 # Revision 1.1  2007/09/14 08:33:09  mark
