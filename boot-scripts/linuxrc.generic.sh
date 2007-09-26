@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.37 2007-09-18 10:06:36 mark Exp $
+# $Id: linuxrc.generic.sh,v 1.38 2007-09-26 11:40:48 mark Exp $
 #
 # @(#)$File$
 #
@@ -17,7 +17,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.37 2007-09-18 10:06:36 mark Exp $
+#    $Id: linuxrc.generic.sh,v 1.38 2007-09-26 11:40:48 mark Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -73,7 +73,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.37 $ $Date: 2007-09-18 10:06:36 $'
+echo_local 'Internal Version $Revision: 1.38 $ $Date: 2007-09-26 11:40:48 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -202,31 +202,6 @@ if [ "$clutype" != "$rootfs" ]; then
 	[ -e /etc/${distribution}/${rootfs}-lib.sh ] && source /etc/${distribution}/${rootfs}-lib.sh
 fi
 
-dm_start
-scsi_start $scsifailover
-
-# loads kernel modules for cluster stack
-# TODO: - rename to clusterfs_kernel_load
-#       - add cluster_kernel_load
-#       - move below ?
-# 1.3.+ ?
-clusterfs_load $lockmethod
-
-step "Hardware detected, modules loaded"
-
-echo_local -n "Restarting udev "
-exec_local udev_start
-return_code
-
-if [ "$scsifailover" = "mapper" ] || [ "$scsifailover" = "devicemapper" ]; then
-  dm_mp_start
-  step "device mapper multipath started"
-fi
-
-lvm_start
-
-step "LVM subsystem started"
-
 netdevs=""
 for ipconfig in $ipConfig; do
   dev=$(getPosFromIPString 6, $ipconfig)
@@ -252,6 +227,33 @@ for ipconfig in $ipConfig; do
 done
 
 step "Network configuration started"
+
+
+dm_start
+scsi_start $scsifailover
+
+# loads kernel modules for cluster stack
+# TODO: - rename to clusterfs_kernel_load
+#       - add cluster_kernel_load
+#       - move below ?
+# 1.3.+ ?
+clusterfs_load $lockmethod
+
+step "Hardware detected, modules loaded"
+
+echo_local -n "Restarting udev "
+exec_local udev_start
+return_code
+
+if [ "$scsifailover" = "mapper" ] || [ "$scsifailover" = "devicemapper" ]; then
+  dm_mp_start
+  step "device mapper multipath started"
+fi
+
+lvm_start
+
+step "LVM subsystem started"
+
 
 # TODO:
 # - mount chroot from either
@@ -409,7 +411,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.37  2007-09-18 10:06:36  mark
+# Revision 1.38  2007-09-26 11:40:48  mark
+# moved network config before storage config
+#
+# Revision 1.37  2007/09/18 10:06:36  mark
 # removed unneeded code
 #
 # Revision 1.36  2007/09/14 13:28:54  marc
