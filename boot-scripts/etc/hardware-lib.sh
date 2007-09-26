@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.9 2007-09-17 09:27:01 marc Exp $
+# $Id: hardware-lib.sh,v 1.10 2007-09-26 11:40:18 mark Exp $
 #
 # @(#)$File$
 #
@@ -315,9 +315,9 @@ function hardware_detect() {
   exec_local /sbin/depmod -a
   return_code
 
-  echo_local -n "Starting udev"
-  udev_start
-  return_code
+#  echo_local -n "Starting udev"
+#  udev_start
+#  return_code
 
   echo_local_debug "File $modules_conf ***"
   exec_local_debug cat $modules_conf
@@ -357,7 +357,10 @@ function add_scsi_device() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.9  2007-09-17 09:27:01  marc
+# Revision 1.10  2007-09-26 11:40:18  mark
+# removed udev_start from hardware detection
+#
+# Revision 1.9  2007/09/17 09:27:01  marc
 # - added another dep needed with #116
 #
 # Revision 1.8  2007/09/14 13:27:38  marc
