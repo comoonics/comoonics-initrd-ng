@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.46 2007-09-21 15:35:56 mark Exp $
+# $Id: boot-lib.sh,v 1.47 2007-09-26 11:39:59 mark Exp $
 #
 # @(#)$File$
 #
@@ -730,12 +730,12 @@ function clean_initrd() {
 	local procs="udevd"
 	echo_local_debug "Sending unnecessary processes the KILL signal"
 	for p in $procs; do
-		kill $p &> /dev/null
+		killall $p &> /dev/null
 	done
 	sleep 3
 	echo_local_debug "Sending unnecessary processes the TERM signal"
 	for p in $procs; do
-		kill -9 $p &> /dev/null
+		killall -9 $p &> /dev/null
 	done
 	
 }
@@ -925,7 +925,10 @@ function exec_local_debug() {
 
 
 # $Log: boot-lib.sh,v $
-# Revision 1.46  2007-09-21 15:35:56  mark
+# Revision 1.47  2007-09-26 11:39:59  mark
+# fixes typo
+#
+# Revision 1.46  2007/09/21 15:35:56  mark
 # clean up /var/run
 #
 # Revision 1.45  2007/09/18 10:10:05  mark
