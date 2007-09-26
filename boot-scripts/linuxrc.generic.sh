@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.38 2007-09-26 11:40:48 mark Exp $
+# $Id: linuxrc.generic.sh,v 1.39 2007-09-26 11:56:02 marc Exp $
 #
 # @(#)$File$
 #
@@ -17,7 +17,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.38 2007-09-26 11:40:48 mark Exp $
+#    $Id: linuxrc.generic.sh,v 1.39 2007-09-26 11:56:02 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -73,7 +73,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.38 $ $Date: 2007-09-26 11:40:48 $'
+echo_local 'Internal Version $Revision: 1.39 $ $Date: 2007-09-26 11:56:02 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -269,7 +269,7 @@ step "LVM subsystem started"
 # TODO:
 # Put all things into a library function
 
-echo_local "Building comoonics chroot environment"
+echo_local -n "Building comoonics chroot environment"
 res=( $(build_chroot $cluster_conf $nodename) )
 chroot_mount=${res[0]}
 chroot_path=${res[1]}
@@ -356,12 +356,13 @@ step
 # TODO:
 # remove tmpfix as this is replaced with /comoonics
 if [ -n "$tmpfix" ]; then
-  echo_local "Setting up tmp..."
+  echo_local -n "Setting up tmp..."
   exec_local createTemp /dev/ram1
+  return_code
 fi
 
 
-echo_local "Mounting the device file system"
+echo_local -n "Mounting the device file system"
 #TODO
 # try an exec_local mount --move /dev $newroot/dev
 exec_local mount --move /dev $newroot/dev
@@ -389,18 +390,19 @@ echo_local -n "Stopping syslogd..."
 exec_local stop_service "syslogd" / &&
 return_code
 
-echo_local "Moving chroot environment to $newroot"
+echo_local -n "Moving chroot environment to $newroot"
 move_chroot $chroot_mount $newroot/$chroot_mount
 return_code
 
-echo_local "Writing information ..."
+echo_local -n "Writing information ..."
 exec_local mkdir -p $newroot/var/comoonics
 echo $chroot_path > $newroot/var/comoonics/chrootpath
 return_code
 
-echo_local "cleaning up initrd ..."
+echo_local -n "cleaning up initrd ..."
 exec_local clean_initrd
 success
+echo
 
 step "Initialization completed."
 
@@ -411,7 +413,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.38  2007-09-26 11:40:48  mark
+# Revision 1.39  2007-09-26 11:56:02  marc
+# cosmetic changes
+#
+# Revision 1.38  2007/09/26 11:40:48  mark
 # moved network config before storage config
 #
 # Revision 1.37  2007/09/18 10:06:36  mark
