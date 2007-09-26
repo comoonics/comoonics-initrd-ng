@@ -19,7 +19,7 @@
 # disclose such Confidential Information and shall use it only in
 # accordance with the terms of the license agreement you entered into
 # with ATIX.
-# $Id: comoonics-bootimage.spec,v 1.50 2007-09-21 15:34:51 mark Exp $
+# $Id: comoonics-bootimage.spec,v 1.51 2007-09-26 11:55:51 mark Exp $
 #
 ##
 ##
@@ -45,7 +45,7 @@ Version: 1.3
 BuildArch: noarch
 Requires: comoonics-cs-py >= 0.1-43 comoonics-cluster-py >= 0.1-2 comoonics-bootimage-initscripts >= 1.3 comoonics-bootimage-listfiles >= 1.3
 #Conflicts:
-Release: 11
+Release: 12
 Vendor: ATIX AG
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -130,7 +130,7 @@ The Fence ackserver is a service running in the fencedchroot and managing manual
 
 %package fenceclient-ilo
 Version: 0.1
-Release: 17
+Release: 18
 Summary: An alternative fence client for ilo cards of HP servers. Written in python.
 Group:   Storage/Management
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
@@ -395,6 +395,8 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Wed Sep 26 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3.12
+- modifications and bugfixes for el5
 * Tue Sep 18 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3.11
 - modifications for el5, bugfixes
 * Tue Sep 18 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3.10
@@ -471,7 +473,10 @@ rm -rf %{buildroot}
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.50  2007-09-21 15:34:51  mark
+# Revision 1.51  2007-09-26 11:55:51  mark
+# new releases
+#
+# Revision 1.50  2007/09/21 15:34:51  mark
 # new release
 #
 # Revision 1.49  2007/09/18 11:21:15  mark

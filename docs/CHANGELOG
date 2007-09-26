@@ -7,6 +7,10 @@ IDEAS:
 CHANGES:
 
 comoonics-bootimage:
+- 2007-09-26 Release 1.3.12
+    * bugfixes 
+- 2007-09-18 Release 1.3.11
+    * bugfixes 
 - 2007-09-18 Release 1.3.10
     * bugfixes 
 - 2007-09-15 Release 1.3.9
@@ -89,6 +93,8 @@ comoonics-bootimage-extras-rdac-multipath:
     * initial release 
 
 comoonics-bootimage-fenceclient-ilo:
+- 2007-09-26 Release 0.1.18
+    * bug fixes for el5
 - 2007-09-15 Release 0.1.17
     * new release
     
@@ -131,7 +137,10 @@ TODO:
 ########################################
 # CVS-Log
 # $Log: CHANGELOG,v $
-# Revision 1.19  2007-09-18 11:27:23  mark
+# Revision 1.20  2007-09-26 11:55:30  mark
+# new releases
+#
+# Revision 1.19  2007/09/18 11:27:23  mark
 # comoonics-bootimage 1.3.10
 #
 # Revision 1.18  2007/09/17 09:45:32  mark

@@ -19,7 +19,7 @@
 # disclose such Confidential Information and shall use it only in
 # accordance with the terms of the license agreement you entered into
 # with ATIX.
-# $Id: comoonics-bootimage-listfiles-el5.spec,v 1.3 2007-09-17 09:37:40 mark Exp $
+# $Id: comoonics-bootimage-listfiles-el5.spec,v 1.4 2007-09-26 11:55:51 mark Exp $
 #
 ##
 ##
@@ -38,7 +38,7 @@ Version: 1.3
 BuildArch: noarch
 Requires: comoonics-bootimage >= 1.3-1
 #Conflicts: 
-Release: 2.el5
+Release: 3.el5
 Vendor: ATIX AG
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -71,6 +71,7 @@ install -m644 system-cfg-files/files.initrd.d/gfs.list $RPM_BUILD_ROOT/%{CONFIGD
 install -m644 system-cfg-files/files.initrd.d/grub.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/files.initrd.d/grub.list
 install -m644 system-cfg-files/files.initrd.d/locales.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/files.initrd.d/locales.list
 install -m644 system-cfg-files/files.initrd.d/network.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/files.initrd.d/network.list
+install -m644 system-cfg-files/files.initrd.d/rhcs5.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/files.initrd.d/rhcs5.list
 install -m644 system-cfg-files/files.initrd.d/scsi.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/files.initrd.d/scsi.list
 install -m644 system-cfg-files/rpms.initrd.d/baselibs.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/rpms.initrd.d/baselibs.list
 install -m644 system-cfg-files/rpms.initrd.d/comoonics.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/rpms.initrd.d/comoonics.list
@@ -96,6 +97,7 @@ install -m644 system-cfg-files/rpms.initrd.d/rhcs5.list $RPM_BUILD_ROOT/%{CONFIG
 %attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/grub.list
 %attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/locales.list
 %attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/network.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhcs5.list
 %attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/scsi.list
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/baselibs.list
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/comoonics.list
@@ -113,7 +115,10 @@ rm -rf %{buildroot}
 - first revision
 # ------
 # $Log: comoonics-bootimage-listfiles-el5.spec,v $
-# Revision 1.3  2007-09-17 09:37:40  mark
+# Revision 1.4  2007-09-26 11:55:51  mark
+# new releases
+#
+# Revision 1.3  2007/09/17 09:37:40  mark
 # new release
 #
 # Revision 1.2  2007/09/17 09:36:20  mark
