@@ -1,5 +1,5 @@
 #
-# $Id: std-lib.sh,v 1.1 2007-08-06 15:50:11 mark Exp $
+# $Id: std-lib.sh,v 1.2 2007-09-26 10:18:04 marc Exp $
 #
 # @(#)$File$
 #
@@ -63,8 +63,8 @@ function initEnv {
 
   # Read in our configuration
   if [ -z "${BOOTUP:-}" ]; then
-    if [ -f /etc/sysconfig/init ]; then
-      . /etc/sysconfig/init
+    if [ -f /etc/sysconfig/init-comoonics ]; then
+      . /etc/sysconfig/init-comoonics
     else
       # This all seem confusing? Look in /etc/sysconfig/init,
       # or in /usr/doc/initscripts-*/sysconfig.txt
