@@ -19,7 +19,7 @@
 # disclose such Confidential Information and shall use it only in
 # accordance with the terms of the license agreement you entered into
 # with ATIX.
-# $Id: comoonics-bootimage.spec,v 1.51 2007-09-26 11:55:51 mark Exp $
+# $Id: comoonics-bootimage.spec,v 1.52 2007-09-27 11:56:14 marc Exp $
 #
 ##
 ##
@@ -45,7 +45,7 @@ Version: 1.3
 BuildArch: noarch
 Requires: comoonics-cs-py >= 0.1-43 comoonics-cluster-py >= 0.1-2 comoonics-bootimage-initscripts >= 1.3 comoonics-bootimage-listfiles >= 1.3
 #Conflicts:
-Release: 12
+Release: 13
 Vendor: ATIX AG
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -316,7 +316,7 @@ fi
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/iscsi-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/network-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/nfs-lib.sh
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/passwd
+#%attr(640, root, root) %{APPDIR}/boot-scripts/etc/passwd
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/stdfs-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/std-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/sysconfig/comoonics
@@ -395,6 +395,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Thu Sep 27 2007 Marc Grimme <grimme@atix.de> 1.3-13
+- Fixed BUG 125 (qdisk was wrongly started)
+- Fixed Problem with hardware detection (/etc/passwd) has to be removed
 * Wed Sep 26 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3.12
 - modifications and bugfixes for el5
 * Tue Sep 18 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3.11
@@ -473,7 +476,10 @@ rm -rf %{buildroot}
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.51  2007-09-26 11:55:51  mark
+# Revision 1.52  2007-09-27 11:56:14  marc
+# new version of comoonics-bootimage-1.3-13
+#
+# Revision 1.51  2007/09/26 11:55:51  mark
 # new releases
 #
 # Revision 1.50  2007/09/21 15:34:51  mark
