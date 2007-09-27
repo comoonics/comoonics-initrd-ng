@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.2 2007-09-19 08:57:21 mark Exp $
+# $Id: gfs-lib.sh,v 1.3 2007-09-27 09:32:00 marc Exp $
 #
 # @(#)$File$
 #
@@ -18,7 +18,7 @@
 #    gfs-lib.sh
 #    $id$
 #  DESCRIPTION
-#    Libraryfunctions for gfs support functions for Red Hat 
+#    Libraryfunctions for gfs support functions for Red Hat
 #    Enterprise Linux 5.
 #*******
 
@@ -78,7 +78,7 @@ GFS_MODULES="configfs gfs2 gfs dlm"
 #  SOURCE
 #
 function gfs_services_start {
-  local chroot_path=$1 
+  local chroot_path=$1
 
   echo_local -n "Mounting configfs"
   exec_local mount -t configfs none $chroot_path/sys/kernel/config
@@ -108,7 +108,14 @@ function gfs_services_start {
 #
 function gfs_start_qdiskd {
   local chroot_path=$1
-  start_service_chroot $chroot_path /usr/sbin/qdiskd
+
+  $ccs_xml_query query_xml /cluster/quorumd 2>&1 > /dev/null
+  if [ $? -eq 0 ]; then
+     start_service_chroot $chroot_path /usr/sbin/qdiskd
+  else
+     skipped
+     echo_local
+  fi
 }
 #************ gfs_start_qdiskd
 

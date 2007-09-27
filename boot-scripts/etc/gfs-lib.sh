@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.36 2007-09-19 08:57:20 mark Exp $
+# $Id: gfs-lib.sh,v 1.37 2007-09-27 09:32:11 marc Exp $
 #
 # @(#)$File$
 #
@@ -454,7 +454,7 @@ function gfs_get_syslogserver {
 #  SOURCE
 #
 function gfs_load {
-  ## THIS will be overwritten for rhel5 ## 	
+  ## THIS will be overwritten for rhel5 ##
   local lock_method=$1
 
   GFS_MODULES="gfs cman"
@@ -495,8 +495,8 @@ function gfs_load {
 #  SOURCE
 #
 function gfs_services_start {
-  ## THIS will be overwritten for rhel5 ## 
-  local chroot_path=$1 
+  ## THIS will be overwritten for rhel5 ##
+  local chroot_path=$1
   local lock_method=$2
 
   services="ccsd $lock_method cman qdiskd fenced clvmd"
@@ -610,7 +610,7 @@ function gfs_start_cman {
 #  SOURCE
 #
 function gfs_start_fenced {
-  ## THIS will be overwritten for rhel5 ## 
+  ## THIS will be overwritten for rhel5 ##
   local chroot_path=$1
   #start_service_chroot $chroot_path 'fenced -c'
   start_service_chroot $chroot_path '/sbin/fence_tool -c -w join'
@@ -632,7 +632,7 @@ function gfs_start_fenced {
 #
 function gfs_start_ccsd {
   local chroot_path=$1
-  start_service_chroot $chroot_path /sbin/ccsd 
+  start_service_chroot $chroot_path /sbin/ccsd
 }
 
 #************ gfs_start_ccsd
@@ -776,9 +776,16 @@ function gfs_restart_fenced {
 #  SOURCE
 #
 function gfs_start_qdiskd {
-  ## THIS will be overwritten for rhel5 ## 
+  ## THIS will be overwritten for rhel5 ##
   local chroot_path=$1
-  start_service_chroot $chroot_path /sbin/qdiskd -Q
+
+  $ccs_xml_query query_xml /cluster/quorumd 2>&1 > /dev/null
+  if [ $? -eq 0 ]; then
+     start_service_chroot $chroot_path /usr/sbin/qdiskd -Q
+  else
+     skipped
+     echo_local
+  fi
 }
 #************ gfs_start_qdiskd
 
@@ -803,7 +810,7 @@ function gfs_start_groupd {
 #    gfs_start_dlm_controld
 #  SYNOPSIS
 #    function gfs_start_dlm_controld {
-# 
+#
 #  DESCRIPTION
 #    Function starts the dlm_controld in chroot environment
 #  IDEAS
@@ -820,7 +827,7 @@ function gfs_start_dlm_controld {
 #    gfs_start_gfs_controld
 #  SYNOPSIS
 #    function gfs_start_gfs_controld {
-# 
+#
 #  DESCRIPTION
 #    Function starts the gfs_controld in chroot environment
 #  IDEAS
@@ -855,7 +862,10 @@ function gfs_checkhosts_alive {
 #********* gfs_checkhosts_alive
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.36  2007-09-19 08:57:20  mark
+# Revision 1.37  2007-09-27 09:32:11  marc
+# - BUG 125: made qdiskd only to be started only when configured in cluster.conf
+#
+# Revision 1.36  2007/09/19 08:57:20  mark
 # overwrite start_fenced for rhel5
 #
 # Revision 1.35  2007/09/18 10:10:25  mark
