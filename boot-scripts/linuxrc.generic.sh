@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.39 2007-09-26 11:56:02 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.40 2007-09-27 09:34:32 marc Exp $
 #
 # @(#)$File$
 #
@@ -17,7 +17,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.39 2007-09-26 11:56:02 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.40 2007-09-27 09:34:32 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -73,7 +73,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.39 $ $Date: 2007-09-26 11:56:02 $'
+echo_local 'Internal Version $Revision: 1.40 $ $Date: 2007-09-27 09:34:32 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -348,7 +348,7 @@ step "CDSL tree mounted"
 
 #if [ -n "$debug" ]; then set -x; fi
 #TODO clean up method
-copy_relevant_files $cdsl_local_dir $newroot $netdevs
+#copy_relevant_files $cdsl_local_dir $newroot $netdevs
 #if [ -n "$debug" ]; then set +x; fi
 step
 
@@ -413,7 +413,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.39  2007-09-26 11:56:02  marc
+# Revision 1.40  2007-09-27 09:34:32  marc
+# - comment out copy_relevant_files because of problems with kudzu
+#
+# Revision 1.39  2007/09/26 11:56:02  marc
 # cosmetic changes
 #
 # Revision 1.38  2007/09/26 11:40:48  mark
