@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.31 2007-09-15 14:49:38 mark Exp $
+# $Id: Makefile,v 1.32 2007-09-27 11:56:29 marc Exp $
 #
 # @(#)$file$
 #
@@ -107,7 +107,6 @@ EXEC_FILES=create-gfs-initrd-generic.sh \
 #
 LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/inittab \
-  boot-scripts/etc/passwd \
   boot-scripts/etc/atix.txt \
   boot-scripts/etc/boot-lib.sh \
   boot-scripts/etc/chroot-lib.sh \
@@ -376,7 +375,10 @@ rpmsign
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.31  2007-09-15 14:49:38  mark
+# Revision 1.32  2007-09-27 11:56:29  marc
+# removed passwd file
+#
+# Revision 1.31  2007/09/15 14:49:38  mark
 # moved listfiles into extra rpms
 #
 # Revision 1.30  2007/09/14 13:35:28  marc
