@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.37 2007-09-27 09:32:11 marc Exp $
+# $Id: gfs-lib.sh,v 1.38 2007-09-27 12:01:29 marc Exp $
 #
 # @(#)$File$
 #
@@ -779,7 +779,7 @@ function gfs_start_qdiskd {
   ## THIS will be overwritten for rhel5 ##
   local chroot_path=$1
 
-  $ccs_xml_query query_xml /cluster/quorumd 2>&1 > /dev/null
+  $ccs_xml_query query_xml /cluster/quorumd >/dev/null 2>&1
   if [ $? -eq 0 ]; then
      start_service_chroot $chroot_path /usr/sbin/qdiskd -Q
   else
@@ -862,7 +862,10 @@ function gfs_checkhosts_alive {
 #********* gfs_checkhosts_alive
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.37  2007-09-27 09:32:11  marc
+# Revision 1.38  2007-09-27 12:01:29  marc
+# cosmetic change
+#
+# Revision 1.37  2007/09/27 09:32:11  marc
 # - BUG 125: made qdiskd only to be started only when configured in cluster.conf
 #
 # Revision 1.36  2007/09/19 08:57:20  mark

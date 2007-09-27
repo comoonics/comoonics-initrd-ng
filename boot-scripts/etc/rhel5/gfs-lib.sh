@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.3 2007-09-27 09:32:00 marc Exp $
+# $Id: gfs-lib.sh,v 1.4 2007-09-27 12:01:20 marc Exp $
 #
 # @(#)$File$
 #
@@ -109,7 +109,7 @@ function gfs_services_start {
 function gfs_start_qdiskd {
   local chroot_path=$1
 
-  $ccs_xml_query query_xml /cluster/quorumd 2>&1 > /dev/null
+  $ccs_xml_query query_xml /cluster/quorumd > /dev/null 2>&1
   if [ $? -eq 0 ]; then
      start_service_chroot $chroot_path /usr/sbin/qdiskd
   else
