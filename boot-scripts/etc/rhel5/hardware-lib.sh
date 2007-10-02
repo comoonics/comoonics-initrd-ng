@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.2 2007-10-02 11:51:48 mark Exp $
+# $Id: hardware-lib.sh,v 1.3 2007-10-02 12:06:36 marc Exp $
 #
 # @(#)$File$
 #
@@ -21,7 +21,7 @@
 #    hardware-lib.sh
 #    $id$
 #  DESCRIPTION
-#    Libraryfunctions for hardware support functions for Red Hat 
+#    Libraryfunctions for hardware support functions for Red Hat
 #    Enterprise Linux 5.
 #*******
 
@@ -37,12 +37,12 @@
 function rhel5_hardware_detect() {
   local KUDZU="/sbin/kudzu"
   cp ${modules_conf} ${modules_conf}.tmpl
-  exec_local $KUDZU -t 30 -c SCSI -q 
+  exec_local $KUDZU -t 30 -c SCSI -q
   mv ${modules_conf} ${modules_conf}.scsi
   cp ${modules_conf}.tmpl ${modules_conf}
-  #exec_local $KUDZU -t 30 -c RAID -q 
+  #exec_local $KUDZU -t 30 -c RAID -q
   #mv ${modules_conf} ${modules_conf}.raid
-  exec_local $KUDZU -t 30 -c USB -q 
+  exec_local $KUDZU -t 30 -c USB -q
   mv ${modules_conf} ${modules_conf}.usb
   cp ${modules_conf}.tmpl ${modules_conf}
   exec_local $KUDZU -t 30 -c NETWORK -q
@@ -54,7 +54,7 @@ function rhel5_hardware_detect() {
 
   return $return_c
 }
-#************ rhel5_hardware_detect 
+#************ rhel5_hardware_detect
 
 #****f* hardware-lib.sh/rhel5_udev_start
 #  NAME
@@ -66,14 +66,17 @@ function rhel5_hardware_detect() {
 #  SOURCE
 #
 function rhel5_udev_start() {
-	udevd -d
-    /sbin/udevtrigger
+	udevd -d &&
+    udevtrigger
 }
 #************rhel4_udev_start
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.2  2007-10-02 11:51:48  mark
+# Revision 1.3  2007-10-02 12:06:36  marc
+# cosmetic-changes
+#
+# Revision 1.2  2007/10/02 11:51:48  mark
 # fixes typo in comment
 #
 # Revision 1.1  2007/09/07 07:57:55  mark
