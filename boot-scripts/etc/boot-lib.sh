@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.47 2007-09-26 11:39:59 mark Exp $
+# $Id: boot-lib.sh,v 1.48 2007-10-02 11:52:25 mark Exp $
 #
 # @(#)$File$
 #
@@ -482,7 +482,8 @@ function create_chroot () {
   exec_local cp -ax $chroot_source $chroot_path
   exec_local rm -rf $chroot_path/var/run/*
   exec_local mkdir -p $chroot_path/tmp
-  exec_local mount --bind /dev $chroot_path/dev
+#  exec_local mount --bind /dev $chroot_path/dev
+  exec_local cp -a /dev/* $chroot_path/dev/
   exec_local mount -t devpts none $chroot_path/dev/pts
   exec_local mount -t proc proc $chroot_path/proc
   exec_local mount -t sysfs none $chroot_path/sys
@@ -925,7 +926,10 @@ function exec_local_debug() {
 
 
 # $Log: boot-lib.sh,v $
-# Revision 1.47  2007-09-26 11:39:59  mark
+# Revision 1.48  2007-10-02 11:52:25  mark
+# copy /dev instead of --bind mount
+#
+# Revision 1.47  2007/09/26 11:39:59  mark
 # fixes typo
 #
 # Revision 1.46  2007/09/21 15:35:56  mark
