@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.38 2007-09-27 12:01:29 marc Exp $
+# $Id: gfs-lib.sh,v 1.39 2007-10-02 11:53:11 mark Exp $
 #
 # @(#)$File$
 #
@@ -694,6 +694,8 @@ function gfs_start_clvmd {
    echo_local -n "Activating VGs:"
    start_service_chroot $chroot_path /sbin/lvm vgscan --mknodes >/dev/null 2>&1
    start_service_chroot $chroot_path /sbin/lvm vgchange -ay >/dev/null 2>&1
+   exec_local /sbin/lvm vgscan --mknodes >/dev/null 2>&1
+   exec_local /sbin/lvm vgchange -ay >/dev/null 2>&1
    return_code $?
 }
 #******gfs_start_clvmd
@@ -862,7 +864,10 @@ function gfs_checkhosts_alive {
 #********* gfs_checkhosts_alive
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.38  2007-09-27 12:01:29  marc
+# Revision 1.39  2007-10-02 11:53:11  mark
+# add another vgscan to source /dev
+#
+# Revision 1.38  2007/09/27 12:01:29  marc
 # cosmetic change
 #
 # Revision 1.37  2007/09/27 09:32:11  marc
