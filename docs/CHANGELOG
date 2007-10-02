@@ -7,6 +7,10 @@ IDEAS:
 CHANGES:
 
 comoonics-bootimage:
+* 2007-10-02 Release 1.3-14
+  * Fixed BUG 127, chrootenv and /etc/sysconfig/comoonics-chroot would not work before
+  * Fixed BUG 128, chroot was not build correctly if oldone existed
+  * Fixed BUG 130, fenced is hanging because dev-bindmounts do not work
 - 2007-09-27 Release 1.3-13
   * Fixed BUG 125 (qdisk was wrongly started)
   * Fixed Problem with hardware detection (/etc/passwd) has to be removed
@@ -140,7 +144,10 @@ TODO:
 ########################################
 # CVS-Log
 # $Log: CHANGELOG,v $
-# Revision 1.21  2007-09-27 11:55:56  marc
+# Revision 1.22  2007-10-02 12:16:19  marc
+# - new release comoonics-bootimage-1.3-14
+#
+# Revision 1.21  2007/09/27 11:55:56  marc
 # new version of comoonics-bootimage-1.3-13
 #
 # Revision 1.20  2007/09/26 11:55:30  mark
