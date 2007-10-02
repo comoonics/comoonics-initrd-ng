@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.40 2007-09-27 09:34:32 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.41 2007-10-02 12:16:02 marc Exp $
 #
 # @(#)$File$
 #
@@ -17,7 +17,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.40 2007-09-27 09:34:32 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.41 2007-10-02 12:16:02 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -73,7 +73,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.40 $ $Date: 2007-09-27 09:34:32 $'
+echo_local 'Internal Version $Revision: 1.41 $ $Date: 2007-10-02 12:16:02 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -142,6 +142,7 @@ echo_local_debug "quorumack: $quorumack"
 echo_local_debug "nodeid: $nodeid"
 echo_local_debug "nodename: $nodename"
 echo_local_debug "rootfs: $rootfs"
+echo_local_debug "clutype: $clutype"
 echo_local_debug "*****************************"
 
 echo_local_debug "*****************************"
@@ -165,7 +166,7 @@ if [ "$confirm" = "i" ]; then
 fi
 wait
 
-step
+step "Inialization started"
 
 # cluster_conf is set in clusterfs-lib.sh or overwritten in gfs-lib.sh
 # FIXME: This overrides boot setting !
@@ -238,17 +239,18 @@ scsi_start $scsifailover
 #       - move below ?
 # 1.3.+ ?
 clusterfs_load $lockmethod
+return_code
 
 step "Hardware detected, modules loaded"
 
-echo_local -n "Restarting udev "
+echo_local -n "Starting udev "
 exec_local udev_start
 return_code
 
 if [ "$scsifailover" = "mapper" ] || [ "$scsifailover" = "devicemapper" ]; then
   dm_mp_start
-  step "device mapper multipath started"
 fi
+step "UDEV started"
 
 lvm_start
 
@@ -273,7 +275,7 @@ echo_local -n "Building comoonics chroot environment"
 res=( $(build_chroot $cluster_conf $nodename) )
 chroot_mount=${res[0]}
 chroot_path=${res[1]}
-return_code
+return_code $?
 
 echo_local_debug "res: $res -> chroot_mount=$chroot_mount, chroot_path=$chroot_path"
 
@@ -366,9 +368,10 @@ echo_local -n "Mounting the device file system"
 #TODO
 # try an exec_local mount --move /dev $newroot/dev
 exec_local mount --move /dev $newroot/dev
+_error=$?
 exec_local cp -a $newroot/dev/console /dev/
 #exec_local mount --bind /dev $newroot/dev
-return_code
+return_code $_error
 
 echo_local -n "Copying logfile to $newroot/${bootlog}..."
 exec_local cp -f ${bootlog} ${newroot}/${bootlog} || cp -f ${bootlog} ${newroot}/$(basename $bootlog)
@@ -377,9 +380,9 @@ if [ -f ${newroot}/$bootlog ]; then
 else
   bootlog=${newroot}/$(basename $bootlog)
 fi
+return_code_warning
 exec 3>> $bootlog
 exec 4>> $bootlog
-return_code_warning
 step "Logfiles copied"
 
 # FIXME: Remove line
@@ -413,7 +416,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.40  2007-09-27 09:34:32  marc
+# Revision 1.41  2007-10-02 12:16:02  marc
+# - cosmetic changes to prevent unnecesarry ugly FAILED
+#
+# Revision 1.40  2007/09/27 09:34:32  marc
 # - comment out copy_relevant_files because of problems with kudzu
 #
 # Revision 1.39  2007/09/26 11:56:02  marc
