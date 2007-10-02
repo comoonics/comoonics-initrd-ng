@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.10 2007-09-26 11:40:18 mark Exp $
+# $Id: hardware-lib.sh,v 1.11 2007-10-02 12:14:49 marc Exp $
 #
 # @(#)$File$
 #
@@ -223,19 +223,18 @@ function dm_start {
 #  SOURCE
 #
 function lvm_start {
-   echo_local -n "Loading LVM"
+   sleep 5
+   echo_local -n "Scanning logical volumes"
+   exec_local lvm vgscan --ignorelockingfailure >/dev/null 2>&1
+   return_code 0
 
-   echo_local -n Scanning logical volumes
-   lvm vgscan >/dev/null 2>&1
-   return_code $?
+   echo_local -n "Activating logical volumes"
+   exec_local lvm vgchange -ay  --ignorelockingfailure >/dev/null 2>&1
+   return_code 0
 
-   echo_local -n Activating logical volumes
-   lvm vgchange -ay >/dev/null 2>&1
-   return_code $?
-
-   echo_local -n Making device nodes
-   lvm vgmknodes >/dev/null 2>&1
-   return_code $?
+   echo_local -n "Making device nodes"
+   exec_local lvm vgmknodes --ignorelockingfailure >/dev/null 2>&1
+   return_code 0
 
    echo_local_debug "Found lvm devices (/dev/mapper): "
    lvm_devices=$(ls -1 /dev/mapper)
@@ -357,7 +356,11 @@ function add_scsi_device() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.10  2007-09-26 11:40:18  mark
+# Revision 1.11  2007-10-02 12:14:49  marc
+# - adding a sleep before lvm starts (did not work without, udev is to slow)
+# - cosmetic changes
+#
+# Revision 1.10  2007/09/26 11:40:18  mark
 # removed udev_start from hardware detection
 #
 # Revision 1.9  2007/09/17 09:27:01  marc
