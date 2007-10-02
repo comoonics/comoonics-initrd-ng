@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.48 2007-10-02 11:52:25 mark Exp $
+# $Id: boot-lib.sh,v 1.49 2007-10-02 12:13:49 marc Exp $
 #
 # @(#)$File$
 #
@@ -478,8 +478,8 @@ function start_service {
 function create_chroot () {
   chroot_source=$1
   chroot_path=$2
-  
-  exec_local cp -ax $chroot_source $chroot_path
+
+  exec_local cp -axf $chroot_source $chroot_path
   exec_local rm -rf $chroot_path/var/run/*
   exec_local mkdir -p $chroot_path/tmp
 #  exec_local mount --bind /dev $chroot_path/dev
@@ -498,7 +498,7 @@ function create_chroot () {
 #    function switchRoot(chroot_path, new_chroot_path) {
 #  MODIFICATION HISTORY
 #  USAGE
-#  
+#
 #  IDEAS
 #
 #  SOURCE
@@ -506,9 +506,9 @@ function create_chroot () {
 function move_chroot () {
   local chroot_mount=$1
   local new_chroot_mount=$2
-  
+
   exec_local mkdir -p $new_chroot_mount
-  exec_local /bin/mount --move $chroot_mount $new_chroot_mount 
+  exec_local /bin/mount --move $chroot_mount $new_chroot_mount
 }
 #************ move_chroot
 
@@ -519,14 +519,14 @@ function move_chroot () {
 #    function build_chroot(clusterconf, nodename) {
 #  MODIFICATION HISTORY
 #  USAGE
-#  
+#
 #  IDEAS
 #
 #  SOURCE
 #
 function build_chroot () {
 	local cluster_conf=$1
-	local nodename=2
+	local nodename=$2
 	local chroot_fstype
 	local chroot_dev
 	local chroot_mount
@@ -554,9 +554,10 @@ function build_chroot () {
 	echo_out "Creating chroot environment"
 	exec_local mkdir -p $chroot_mount
 	exec_local /bin/mount -t $chroot_fstype -o $chroot_options $chroot_dev $chroot_mount
+	return_code $? >/dev/null
 	# method3 fallback to tmpfs
 	if [ $? -ne 0 ]; then
-		echo_out "Mounting chroot failed. Using default values"
+		echo_out -n "Mounting chroot failed. Using default values"
 		#Fallback values
 		# Filesystem type for the chroot device
 		chroot_fstype="tmpfs"
@@ -568,8 +569,9 @@ function build_chroot () {
 		chroot_path=$DFLT_CHROOT_PATH
 		# Mount options for the chroot device
 		chroot_options="defaults"
-		exec_local mkdir $chroot_mount
+		exec_local mkdir -p $chroot_mount
 		exec_local /bin/mount -t $chroot_fstype -o $chroot_options $chroot_dev $chroot_mount
+		return_code >/dev/null
 	fi
 	create_chroot "/" $chroot_path
 	echo "$chroot_mount $chroot_path"
@@ -738,7 +740,7 @@ function clean_initrd() {
 	for p in $procs; do
 		killall -9 $p &> /dev/null
 	done
-	
+
 }
 
 #************ clean_initrd
@@ -926,7 +928,11 @@ function exec_local_debug() {
 
 
 # $Log: boot-lib.sh,v $
-# Revision 1.48  2007-10-02 11:52:25  mark
+# Revision 1.49  2007-10-02 12:13:49  marc
+# - fixed BUG 127, chroot would not work because nodename not set correctly
+# - fixed BUG 128, old chroot would not be overwritten as expected
+#
+# Revision 1.48  2007/10/02 11:52:25  mark
 # copy /dev instead of --bind mount
 #
 # Revision 1.47  2007/09/26 11:39:59  mark
