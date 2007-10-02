@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.1 2007-09-07 07:57:55 mark Exp $
+# $Id: hardware-lib.sh,v 1.2 2007-10-02 11:51:48 mark Exp $
 #
 # @(#)$File$
 #
@@ -25,7 +25,7 @@
 #    Enterprise Linux 5.
 #*******
 
-#****f* hardware-lib.sh/rhel4_hardware_detect
+#****f* hardware-lib.sh/rhel5_hardware_detect
 #  NAME
 #    rhel5_hardware_detect
 #  SYNOPSIS
@@ -73,7 +73,10 @@ function rhel5_udev_start() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.1  2007-09-07 07:57:55  mark
+# Revision 1.2  2007-10-02 11:51:48  mark
+# fixes typo in comment
+#
+# Revision 1.1  2007/09/07 07:57:55  mark
 # initial check in
 #
 # Revision 1.3  2006/07/03 08:33:26  marc
