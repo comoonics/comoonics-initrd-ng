@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.49 2007-10-02 12:13:49 marc Exp $
+# $Id: boot-lib.sh,v 1.50 2007-10-05 09:04:26 mark Exp $
 #
 # @(#)$File$
 #
@@ -701,7 +701,20 @@ function createTemp {
     chmod -R a+t,a+rwX ./tmp/. ./tmp/*
 }
 
-#************ createTemp
+#****f* boot-lib.sh/restart_init
+#  NAME
+#    restart_init
+#  SYNOPSIS
+#    function restart_init {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function restart_init {
+	exec_local init u
+}
+#************ restart_init
+
 #****f* boot-lib.sh/stop_service
 #  NAME
 #    stop_service
@@ -891,8 +904,8 @@ function exec_local() {
   if [ -n "$dstepmode" ]; then
   	echo -n "$* (Y|n|c)? " >&2
   	read dstep_ans
-  	[ $dstep_ans == "n" ] && do_exec=0
-  	[ $dstep_ans == "c" ] && dstepmode=""
+  	[ "$dstep_ans" == "n" ] && do_exec=0
+  	[ "$dstep_ans" == "c" ] && dstepmode=""
   fi
   if [ $do_exec == 1 ]; then
   	output=$($*)
@@ -928,7 +941,10 @@ function exec_local_debug() {
 
 
 # $Log: boot-lib.sh,v $
-# Revision 1.49  2007-10-02 12:13:49  marc
+# Revision 1.50  2007-10-05 09:04:26  mark
+# added restart_init
+#
+# Revision 1.49  2007/10/02 12:13:49  marc
 # - fixed BUG 127, chroot would not work because nodename not set correctly
 # - fixed BUG 128, old chroot would not be overwritten as expected
 #
