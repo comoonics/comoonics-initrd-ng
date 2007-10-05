@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: com-realhalt.sh,v 1.1 2007-10-05 09:08:42 mark Exp $
+# $Id: com-realhalt.sh,v 1.2 2007-10-05 13:36:25 mark Exp $
 #
 # @(#)$File$
 #
@@ -17,7 +17,7 @@
 #****h* comoonics-bootimage/com-halt.sh
 #  NAME
 #    com-halt.sh
-#    $Id: com-realhalt.sh,v 1.1 2007-10-05 09:08:42 mark Exp $
+#    $Id: com-realhalt.sh,v 1.2 2007-10-05 13:36:25 mark Exp $
 #  DESCRIPTION
 #    script called from <chrootpath>/com-halt.sh
 #  USAGE
@@ -142,7 +142,7 @@ echo_local -n "Preparing chroot"
 /bin/mount -t configfs none /sys/kernel/config &> /dev/null
 /bin/ln -sf /proc/mounts /etc/mtab
 /bin/true
-retrun_code
+return_code
 
 step
 
