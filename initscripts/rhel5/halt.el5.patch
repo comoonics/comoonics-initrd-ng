@@ -1,10 +1,11 @@
 --- halt.orig	2007-09-19 11:42:12.000000000 +0200
-+++ halt	2007-09-19 15:51:34.000000000 +0200
-@@ -8,6 +8,19 @@
++++ halt	2007-10-05 12:02:22.000000000 +0200
+@@ -8,6 +8,21 @@
  #               Modified for RHS Linux by Damien Neil
  #
  
-+# Patched for comoonics (patch v1.0)
++# Patched for comoonics patch 1.1
++
 +
 +COM_KILLALL_OPTS="-x aisexec \
 +-x ccsd \
@@ -16,11 +17,12 @@
 +-x clvmd"
 +
 +COM_CHROOT_PATH=$(/opt/atix/comoonics-bootimage/manage_chroot.sh -p | sed s#/#\\\\\/#g)
++COM_CHROOT_PATH_REAL=$(/opt/atix/comoonics-bootimage/manage_chroot.sh -p)
 +
  NOLOCALE=1
  . /etc/init.d/functions
  
-@@ -65,9 +78,11 @@
+@@ -65,9 +80,11 @@
  # Kill all processes.
  [ "${BASH+bash}" = bash ] && enable kill
  
@@ -34,11 +36,17 @@
  
  # Write to wtmp file before unmounting /var
  /sbin/halt -w
-@@ -163,6 +178,7 @@
+@@ -163,6 +180,7 @@
      -f
  
  LANG=C __umount_loop '$2 ~ /^\/$|^\/proc|^\/dev/{next}
-+	$2 ~ /'$COM_CHROOT_PATH'/ | $2 ~/^\/cdsl.local/ {next}
++	$2 ~ /'$COM_CHROOT_PATH'/ || $2 ~/^\/cdsl.local/ {next}
  	$3 == "tmpfs" || $3 == "proc" {print $2 ; next}
  	/(loopfs|autofs|nfs|cifs|smbfs|ncpfs|sysfs|^none|^\/dev\/ram|^\/dev\/root$)/ {next}
  	{print $2}' /proc/mounts \
+@@ -219,4 +237,5 @@
+ HALTARGS="-d"
+ [ -f /poweroff -o ! -f /halt ] && HALTARGS="$HALTARGS -p"
+ 
++$COM_CHROOT_PATH_REAL/com-halt.sh "$command $HALTARGS"
+ exec $command $HALTARGS
