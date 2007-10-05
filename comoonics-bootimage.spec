@@ -19,7 +19,7 @@
 # disclose such Confidential Information and shall use it only in
 # accordance with the terms of the license agreement you entered into
 # with ATIX.
-# $Id: comoonics-bootimage.spec,v 1.53 2007-10-02 12:16:30 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.54 2007-10-05 10:10:13 marc Exp $
 #
 ##
 ##
@@ -45,7 +45,7 @@ Version: 1.3
 BuildArch: noarch
 Requires: comoonics-cs-py >= 0.1-43 comoonics-cluster-py >= 0.1-2 comoonics-bootimage-initscripts >= 1.3 comoonics-bootimage-listfiles >= 1.3
 #Conflicts:
-Release: 14
+Release: 15
 Vendor: ATIX AG
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -101,6 +101,17 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description extras-rdac-multipath
 Extra listfiles for rdac multipath sharedroot configurations
+
+%package extras-xen
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage >= 1.3-14
+Summary: listfiles for xen support in the open-sharedroot cluster
+Group:   Storage/Management
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description extras-xen
+Extra listfiles for xen support in the open-sharedroot cluster
 
 %package compat
 Version: 0.1
@@ -316,6 +327,7 @@ fi
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/iscsi-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/network-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/nfs-lib.sh
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/xen-lib.sh
 #%attr(640, root, root) %{APPDIR}/boot-scripts/etc/passwd
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/stdfs-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/std-lib.sh
@@ -353,6 +365,10 @@ fi
 
 %files extras-rdac-multipath
 %attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rdac_multipath.list
+
+%files extras-xen
+%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/xen.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/xen.list
 
 %files fenceacksv
 %attr(755, root, root) %{FENCEACKSV_DIR}/fence_ack_server.py
@@ -395,6 +411,8 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Fri Oct 05 2007 Marc Grimme <grimme@atix.de> 1.3-15
+- added xensupport
 * Tue Oct 02 2007 Marc Grimme <grimme@atix.de> 1.3-14
 - Fixed BUG 127, chrootenv and /etc/sysconfig/comoonics-chroot would not work before
 - Fixed BUG 128, chroot was not build correctly if oldone existed
@@ -453,6 +471,10 @@ rm -rf %{buildroot}
 * Fri Sep 14 2007 Marc Grimme <grimme@atix.de> - 0.1-1
 - first release
 
+%changelog extras-xen
+* Wed Oct 03 2007 Marc Grimme <grimme@atix.de> - 0.1-1
+- first release
+
 %changelog fenceacksv
 * Mon Sep 10 2007 Marc Grimme <grimme@atix.de> - 0.3-1
   - Fixed Bug BZ#107, fixed problems with not installed plugins
@@ -480,7 +502,10 @@ rm -rf %{buildroot}
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.53  2007-10-02 12:16:30  marc
+# Revision 1.54  2007-10-05 10:10:13  marc
+# - new version comoonics-bootimage-1.3-15
+#
+# Revision 1.53  2007/10/02 12:16:30  marc
 # - new release comoonics-bootimage-1.3-14
 #
 # Revision 1.52  2007/09/27 11:56:14  marc
