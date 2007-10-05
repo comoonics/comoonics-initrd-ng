@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.39 2007-10-02 11:53:11 mark Exp $
+# $Id: gfs-lib.sh,v 1.40 2007-10-05 09:02:40 mark Exp $
 #
 # @(#)$File$
 #
@@ -599,6 +599,23 @@ function gfs_start_cman {
 }
 #************ gfs_start_cman
 
+#****f* gfs-lib.sh/gfs_stop_cman
+#  NAME
+#    gfs_stop_cman
+#  SYNOPSIS
+#    function gfs_stop_cman
+#  DESCRIPTION
+#    Function stops the cman in a changeroot environment
+#  IDEAS
+#  SOURCE
+#
+function gfs_stop_cman {
+  echo_local -n "Leaving the cluster"
+  exec_local cman_tool leave remove -w
+  return_code
+}
+#************ gfs_stop_cman
+
 #****f* gfs-lib.sh/gfs_start_fenced
 #  NAME
 #    gfs_start_fenced
@@ -616,6 +633,24 @@ function gfs_start_fenced {
   start_service_chroot $chroot_path '/sbin/fence_tool -c -w join'
   #echo_local "Waiting for fenced to complete join"
   #exec_local fence_tool wait
+  return_code
+}
+#************ gfs_start_fenced
+
+#****f* gfs-lib.sh/gfs_stop_fenced
+#  NAME
+#    gfs_stop_fenced
+#  SYNOPSIS
+#    function gfs_stop_fenced {
+#  DESCRIPTION
+#    Function stops the fenced in a changeroot environment
+#  IDEAS
+#  SOURCE
+#
+function gfs_stop_fenced {
+  local chroot_path=$1
+  echo_local "stopping fenced"
+  exec_local '/sbin/fence_tool leave -w'
   return_code
 }
 #************ gfs_start_fenced
@@ -699,6 +734,28 @@ function gfs_start_clvmd {
    return_code $?
 }
 #******gfs_start_clvmd
+
+#****f* gfs-lib.sh/gfs_stop_clvmd
+#  NAME
+#    gfs_stop_clvmd
+#  SYNOPSIS
+#    function gfs_stop_clvmd(chroot)
+#  DESCRIPTION
+#    Function stops the clvmd in a chroot environment
+#  IDEAS
+#  SOURCE
+#
+function gfs_stop_clvmd {
+   chroot_path=$1
+
+   echo_local -n "Stopping clvmd ($chroot_path) "
+   exec_local killall clvmd
+   if pidof clvmd > /dev/null; then
+       killall -9 clvmd
+   fi 
+   return_code $?
+}
+#******gfs_stop_clvmd
 
 #****f* gfs-lib.sh/gfs_restart_clvmd
 #  NAME
@@ -864,7 +921,10 @@ function gfs_checkhosts_alive {
 #********* gfs_checkhosts_alive
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.39  2007-10-02 11:53:11  mark
+# Revision 1.40  2007-10-05 09:02:40  mark
+# added stop methods
+#
+# Revision 1.39  2007/10/02 11:53:11  mark
 # add another vgscan to source /dev
 #
 # Revision 1.38  2007/09/27 12:01:29  marc
