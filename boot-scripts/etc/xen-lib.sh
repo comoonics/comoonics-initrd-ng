@@ -1,5 +1,5 @@
 #
-# $Id: xen-lib.sh,v 1.1 2007-10-05 10:08:25 marc Exp $
+# $Id: xen-lib.sh,v 1.2 2007-10-05 14:25:57 marc Exp $
 #
 # @(#)$File$
 #
@@ -45,16 +45,17 @@ function xen_domx_detect() {
 #  SOURCE
 #
 function xen_dom0_detect() {
-  if ! [ -d /etc/xen ]; then
-  	echo_local "WARNING XEN DETECTED BUT NO EXTRAFILES FOUND."
-  	echo_local "You might want to install comoonics-bootimage-extras-xen to have full support"
-  fi
   dmesg | grep -A1 BIOS | tail -1 | grep "[[:space:]]Xen" >/dev/null 2>&1
   if [ $? -eq 0 ]; then
   	return 1
   fi
   dmesg | grep -i xen >/dev/null 2>&1
-  return $?
+  _err=$?
+  if [ $_err -eq 0 ] && ! [ -d /etc/xen ]; then
+  	echo_local "WARNING XEN DETECTED BUT NO EXTRAFILES FOUND."
+  	echo_local "You might want to install comoonics-bootimage-extras-xen to have full support"
+  fi
+  return $_err
 }
 #************ xen_domx_detect
 
@@ -68,11 +69,13 @@ function xen_dom0_detect() {
 #  SOURCE
 #
 function xen_domx_detect() {
-  if ! [ -d /etc/xen ]; then
+  dmesg | grep -A1 BIOS | tail -1 | grep "[[:space:]]Xen" >/dev/null 2>&1
+  _err=$?
+  if [ $_err -eq 0 ] && ! [ -d /etc/xen ]; then
   	echo_local "WARNING XEN DETECTED BUT NO EXTRAFILES FOUND."
   	echo_local "You might want to install comoonics-bootimage-extras-xen to have full support"
   fi
-  dmesg | grep -A1 BIOS | tail -1 | grep "[[:space:]]Xen" >/dev/null 2>&1
+  return $_err
 }
 #************ xen_domx_detect
 
