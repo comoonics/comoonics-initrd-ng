@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.13 2007-08-06 15:50:11 mark Exp $
+# $Id: clusterfs-lib.sh,v 1.14 2007-10-05 09:03:03 mark Exp $
 #
 # @(#)$File$
 #
@@ -511,6 +511,20 @@ function clusterfs_services_start {
 }
 #***** clusterfs_services_start
 
+#****f* clusterfs-lib.sh/clusterfs_services_stop
+#  NAME
+#    clusterfs_services_stop
+#  SYNOPSIS
+#    function clusterfs_services_stop
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function clusterfs_services_stop {
+   ${rootfs}_services_stop $*
+}
+#***** clusterfs_services_stop
+
 #****f* clusterfs-lib.sh/clusterfs_services_restart
 #  NAME
 #    clusterfs_services_restart
@@ -695,7 +709,10 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.13  2007-08-06 15:50:11  mark
+# Revision 1.14  2007-10-05 09:03:03  mark
+# added clusterfs_services_stop
+#
+# Revision 1.13  2007/08/06 15:50:11  mark
 # reorganized libraries
 # added methods for chroot management
 # fits for bootimage release 1.3
