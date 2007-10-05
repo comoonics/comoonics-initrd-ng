@@ -1,0 +1,5 @@
+cut
+brctl
+sysctl
+egrep
+fgrep
