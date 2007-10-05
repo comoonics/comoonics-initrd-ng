@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.50 2007-10-05 09:04:26 mark Exp $
+# $Id: boot-lib.sh,v 1.51 2007-10-05 14:33:38 mark Exp $
 #
 # @(#)$File$
 #
@@ -495,7 +495,7 @@ function create_chroot () {
 #  NAME
 #    move chroot environment
 #  SYNOPSIS
-#    function switchRoot(chroot_path, new_chroot_path) {
+#    function move_chroot(chroot_path, new_chroot_path) {
 #  MODIFICATION HISTORY
 #  USAGE
 #
@@ -593,6 +593,7 @@ function build_chroot () {
 function switchRoot() {
   local skipfiles="rm mount chroot find"
   local newroot=$1
+  local cominit="/usr/comoonics/sbin/init"
   if [ -z "$new_root" ]; then
      newroot="/mnt/newroot"
   fi
@@ -601,8 +602,12 @@ function switchRoot() {
   echo " comoonics generic switchroot"
 
   #get init_cmd from /proc
-  init_cmd="/sbin/init $(cat /proc/cmdline)"
-
+  if [ -e "$newroot/$cominit" ]; then
+  	init_cmd="$cominit $(cat /proc/cmdline)"
+  	echo_local_debug "found init in $cominit"
+  else
+  	init_cmd="/sbin/init $(cat /proc/cmdline)"
+  fi
   # clean up
   echo "Cleaning up..."
   #umount /dev
@@ -941,7 +946,10 @@ function exec_local_debug() {
 
 
 # $Log: boot-lib.sh,v $
-# Revision 1.50  2007-10-05 09:04:26  mark
+# Revision 1.51  2007-10-05 14:33:38  mark
+# bug fix
+#
+# Revision 1.50  2007/10/05 09:04:26  mark
 # added restart_init
 #
 # Revision 1.49  2007/10/02 12:13:49  marc
