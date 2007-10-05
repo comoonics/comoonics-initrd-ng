@@ -2,7 +2,7 @@
 #****h* comoonics-bootimage/bootsr
 #  NAME
 #    bootsr
-#    $Id: bootsr,v 1.3 2007-09-25 11:54:50 mark Exp $
+#    $Id: bootsr,v 1.4 2007-10-05 10:04:06 mark Exp $
 #  DESCRIPTION
 #    Comoonics Shared Root post boot settings
 #  AUTHOR
@@ -78,16 +78,13 @@ function get_runlevel {
 #  SOURCE
 #
 function patch_halt {
-	if ! grep "comoonics (patch v1.0)" /etc/init.d/halt > /dev/null; then
+	# we patch all versions here
+	if ! grep "comoonics (patch " /etc/init.d/halt > /dev/null; then
 		echo "Patching halt"
 		cd /etc/init.d/ && patch -f -r /tmp/halt.patch.rej > /dev/null < /opt/atix/comoonics-bootimage/patches/halt.patch
 	fi
 }
 #************ patch_halt
-
-
-
-
 
 #************ umount_chroot
 #****f* bootsr/umount_chroot
@@ -193,7 +190,10 @@ exit $RETVAL
 #************ main
 ###############
 # $Log: bootsr,v $
-# Revision 1.3  2007-09-25 11:54:50  mark
+# Revision 1.4  2007-10-05 10:04:06  mark
+# patch halt more generic
+#
+# Revision 1.3  2007/09/25 11:54:50  mark
 # added functionality to create symlinks to /var/run/cman...
 #
 # Revision 1.2  2007/09/19 13:22:25  mark
