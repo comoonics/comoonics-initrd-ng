@@ -7,7 +7,7 @@
 #  DESCRIPTION
 #*******
 #
-# $Id: manage_chroot.sh,v 1.3 2007-09-19 13:21:39 mark Exp $
+# $Id: manage_chroot.sh,v 1.4 2007-10-05 14:57:17 mark Exp $
 #
 # @(#)$File$
 #
@@ -110,14 +110,11 @@ function log() {
 
 function umount_chroot() {
 	for dir in $UMOUNTFS; do 
-		umount $chrootdir/$dir
+		umount $chrootdir/$dir & >/dev/null
 	done
 }
 
 function mount_chroot() {
-	if ! mount | grep "$chrootdir/dev" &> /dev/null; then
-		mount --bind /dev $chrootdir/dev
-	fi
 	if ! mount | grep "$chrootdir/dev/pts" &> /dev/null; then
 		mount -t devpts none $chrootdir/dev/pts
 	fi
