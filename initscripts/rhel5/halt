@@ -80,9 +80,9 @@ esac
 # Kill all processes.
 [ "${BASH+bash}" = bash ] && enable kill
 
-action $"Sending all processes the TERM signal..." /sbin/com-killall5 -15 $COM_KILLALL_OPTS 
+action $"Sending all processes the TERM signal..." /usr/comoonics/sbin/killall5 -15 $COM_KILLALL_OPTS 
 sleep 5
-action $"Sending all processes the KILL signal..."  /sbin/com-killall5 -9 $COM_KILLALL_OPTS 
+action $"Sending all processes the KILL signal..."  /sbin/comoonics/sbin/killall5 -9 $COM_KILLALL_OPTS 
 
 /sbin/ifup lo &> /dev/null
 
