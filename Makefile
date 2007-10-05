@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.33 2007-10-05 10:10:24 marc Exp $
+# $Id: Makefile,v 1.34 2007-10-05 13:38:35 mark Exp $
 #
 # @(#)$file$
 #
@@ -90,6 +90,8 @@ INSTALL_DIR=/opt/atix/comoonics_bootimage
 #
 EXEC_FILES=create-gfs-initrd-generic.sh \
   manage_chroot.sh \
+  boot-scripts/com-halt.sh \
+  boot-scripts/com-realhalt.sh \
   boot-scripts/linuxrc \
   boot-scripts/linuxrc.generic.sh \
   boot-scripts/linuxrc.bash \
@@ -378,7 +380,10 @@ rpmsign
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.33  2007-10-05 10:10:24  marc
+# Revision 1.34  2007-10-05 13:38:35  mark
+# added com-halt.sh and com-realhalt.sh
+#
+# Revision 1.33  2007/10/05 10:10:24  marc
 # - added xen-support
 #
 # Revision 1.32  2007/09/27 11:56:29  marc
