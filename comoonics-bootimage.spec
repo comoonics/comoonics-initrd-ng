@@ -19,7 +19,7 @@
 # disclose such Confidential Information and shall use it only in
 # accordance with the terms of the license agreement you entered into
 # with ATIX.
-# $Id: comoonics-bootimage.spec,v 1.54 2007-10-05 10:10:13 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.55 2007-10-05 14:09:53 mark Exp $
 #
 ##
 ##
@@ -308,6 +308,9 @@ fi
 %attr(750, root, root) %{APPDIR}/create-gfs-initrd-generic.sh
 %attr(640, root, root) %{APPDIR}/create-gfs-initrd-lib.sh
 %attr(750, root, root) %{APPDIR}/manage_chroot.sh
+%attr(750, root, root) %{APPDIR}/boot-scripts/com-halt.sh
+%attr(750, root, root) %{APPDIR}/boot-scripts/com-realhalt.sh
+%attr(750, root, root) %{APPDIR}/boot-scripts/linuxrc.generic.sh
 %attr(750, root, root) %{APPDIR}/boot-scripts/linuxrc.generic.sh
 %attr(750, root, root) %{APPDIR}/boot-scripts/exec_part_from_bash.sh
 %attr(750, root, root) %{APPDIR}/boot-scripts/detectHardware.sh
@@ -502,7 +505,10 @@ rm -rf %{buildroot}
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.54  2007-10-05 10:10:13  marc
+# Revision 1.55  2007-10-05 14:09:53  mark
+# new revision
+#
+# Revision 1.54  2007/10/05 10:10:13  marc
 # - new version comoonics-bootimage-1.3-15
 #
 # Revision 1.53  2007/10/02 12:16:30  marc

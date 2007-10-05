@@ -19,7 +19,7 @@
 # disclose such Confidential Information and shall use it only in
 # accordance with the terms of the license agreement you entered into
 # with ATIX.
-# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.3 2007-09-26 11:55:51 mark Exp $
+# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.4 2007-10-05 14:09:53 mark Exp $
 #
 ##
 ##
@@ -38,7 +38,7 @@ Version: 1.3
 BuildArch: noarch
 Requires: comoonics-bootimage >= 1.3-1 SysVinit-comoonics
 #Conflicts: 
-Release: 3.el5
+Release: 4.el5
 Vendor: ATIX AG
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -64,16 +64,20 @@ install -m755 initscripts/rhel5/bootsr $RPM_BUILD_ROOT/%{INITDIR}/bootsr
 install -d -m 755 $RPM_BUILD_ROOT/%{APPDIR}/patches
 install -m600 initscripts/rhel5/halt.el5.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/halt.patch
 
-%postun
+%preun
 
 if [ "$1" -eq 0 ]; then
-  echo "Postuninstalling comoonics-bootimage-initscripts"
+  echo "Preuninstalling comoonics-bootimage-initscripts"
   root_fstype=$(mount | grep "/ " | awk '
 BEGIN { exit_c=1; }
 { if ($5) {  print $5; exit_c=0; } }
 END{ exit exit_c}')
   if [ "$root_fstype" != "gfs" ]; then
 	/sbin/chkconfig --del bootsr
+	if grep "comoonics patch " /etc/init.d/halt > /dev/null; then
+		echo "Unpatching halt"
+		cd /etc/init.d/ && patch -R -f -r /tmp/halt.patch.rej > /dev/null < /opt/atix/comoonics-bootimage/patches/halt.patch
+	fi
   fi
 fi
 
@@ -114,7 +118,10 @@ rm -rf %{buildroot}
 - first revision
 # ------
 # $Log: comoonics-bootimage-initscripts-el5.spec,v $
-# Revision 1.3  2007-09-26 11:55:51  mark
+# Revision 1.4  2007-10-05 14:09:53  mark
+# new revision
+#
+# Revision 1.3  2007/09/26 11:55:51  mark
 # new releases
 #
 # Revision 1.2  2007/09/21 15:34:51  mark
