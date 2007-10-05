@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.4 2007-09-27 12:01:20 marc Exp $
+# $Id: gfs-lib.sh,v 1.5 2007-10-05 09:02:06 mark Exp $
 #
 # @(#)$File$
 #
@@ -94,6 +94,30 @@ function gfs_services_start {
   return $return_c
 }
 #************ gfs_services_start
+
+#****f* gfs-lib.sh/gfs_services_stop
+#  NAME
+#    gfs_services_stop
+#  SYNOPSIS
+#    function gfs_services_stop
+#  DESCRIPTION
+#    This function loads all relevant gfs modules
+#  IDEAS
+#  SOURCE
+#
+function gfs_services_stop {
+  local chroot_path=$1
+
+  services="fenced clvmd cman"
+  for service in $services; do
+    gfs_stop_$service $chroot_path
+    if [ $? -ne 0 ]; then
+      return $?
+    fi
+  done
+  return $return_c
+}
+#************ gfs_services_stop
 
 
 #****f* gfs-lib.sh/gfs_start_qdiskd
