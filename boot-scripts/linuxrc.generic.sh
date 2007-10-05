@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.41 2007-10-02 12:16:02 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.42 2007-10-05 10:07:56 marc Exp $
 #
 # @(#)$File$
 #
@@ -17,7 +17,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.41 2007-10-02 12:16:02 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.42 2007-10-05 10:07:56 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -58,6 +58,7 @@
 . /etc/std-lib.sh
 . /etc/stdfs-lib.sh
 . /etc/defaults.sh
+. /etc/xen-lib.sh
 
 clutype=$(getCluType)
 . /etc/${clutype}-lib.sh
@@ -68,12 +69,13 @@ distribution=$(getDistribution)
 [ -e /etc/${distribution}/network-lib.sh ] && source /etc/${distribution}/network-lib.sh
 [ -e /etc/${distribution}/clusterfs-lib.sh ] && source /etc/${distribution}/clusterfs-lib.sh
 [ -e /etc/${distribution}/${clutype}-lib.sh ] && source /etc/${distribution}/${clutype}-lib.sh
+[ -e /etc/${distribution}/xen-lib.sh ] && source /etc/${distribution}/xen-lib.sh
 
 echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.41 $ $Date: 2007-10-02 12:16:02 $'
+echo_local 'Internal Version $Revision: 1.42 $ $Date: 2007-10-05 10:07:56 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -416,7 +418,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.41  2007-10-02 12:16:02  marc
+# Revision 1.42  2007-10-05 10:07:56  marc
+# - added xen-support
+#
+# Revision 1.41  2007/10/02 12:16:02  marc
 # - cosmetic changes to prevent unnecesarry ugly FAILED
 #
 # Revision 1.40  2007/09/27 09:34:32  marc

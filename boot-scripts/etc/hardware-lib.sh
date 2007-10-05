@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.11 2007-10-02 12:14:49 marc Exp $
+# $Id: hardware-lib.sh,v 1.12 2007-10-05 10:07:07 marc Exp $
 #
 # @(#)$File$
 #
@@ -34,7 +34,7 @@
 #  SOURCE
 #
 function hardware_start_services() {
-	${distribution}_hardware_start_services
+    ${distribution}_hardware_start_services
     return_code
 }
 #************hardware_start_services
@@ -93,20 +93,25 @@ function scsi_start() {
   local scsifailover=$1
   echo_local "Starting scsi-driver..."
 
-  echo_local -n "Loading scsi_disk Module..."
-  exec_local /sbin/modprobe sd_mod
-  return_code
-
-  echo_local -n "Loading sg.ko module"
-  exec_local /sbin/modprobe sg
-  return_code
-
-  if [ -n "$scsifailover" ] && [ "$scsifailover" = "rdac" ]; then
-    mkdir /tmp &>/dev/null
-    echo_local "RDAC Detected ($scsifailover)"
-    echo_local -n "Loading mppUpper module"
-    exec_local modprobe mppUpper
+  # SCSI should not be loaded with xen!!
+  xen_domx_detect
+  _xen=$?
+  if [ $_xen -ne 0 ]; then
+    echo_local -n "Loading scsi_disk Module..."
+    exec_local /sbin/modprobe sd_mod
     return_code
+
+    echo_local -n "Loading sg.ko module"
+    exec_local /sbin/modprobe sg
+    return_code
+
+    if [ -n "$scsifailover" ] && [ "$scsifailover" = "rdac" ]; then
+      mkdir /tmp &>/dev/null
+      echo_local "RDAC Detected ($scsifailover)"
+      echo_local -n "Loading mppUpper module"
+      exec_local modprobe mppUpper
+      return_code
+    fi
   fi
 
   if [ -n "${FC_MODULES}" ]; then
@@ -131,23 +136,25 @@ function scsi_start() {
     return_code
   fi
 
-  if [ -x "/opt/atix/comoonics_cs/rescan_scsi" ]; then
-    /opt/atix/comoonics_cs/rescan_scsi -a
-  elif [ -z "$scsifailover" ] || [ "$scsifailover" != "rdac" ]; then
-    echo_local -n "Importing unconfigured scsi-devices..."
-    devs=$(find /proc/scsi -name "[0-9]*" 2> /dev/null)
-    channels=0
-    for dev in $devs; do
-      for channel in $channels; do
-        id=$(basename $dev)
-        echo_local -n "$dev On id $id and channel $channel"
-        add_scsi_device $id $channel $dev
-        return_code
+  if [ $_xen -ne 0 ]; then
+    if [ -x "/opt/atix/comoonics_cs/rescan_scsi" ]; then
+      /opt/atix/comoonics_cs/rescan_scsi -a
+    elif [ -z "$scsifailover" ] || [ "$scsifailover" != "rdac" ]; then
+      echo_local -n "Importing unconfigured scsi-devices..."
+      devs=$(find /proc/scsi -name "[0-9]*" 2> /dev/null)
+      channels=0
+      for dev in $devs; do
+        for channel in $channels; do
+          id=$(basename $dev)
+          echo_local -n "$dev On id $id and channel $channel"
+          add_scsi_device $id $channel $dev
+          return_code
+        done
       done
-    done
+    fi
+    echo_local_debug "3.3 Configured SCSI-Devices:"
+    exec_local_debug /bin/cat /proc/scsi/scsi
   fi
-  echo_local_debug "3.3 Configured SCSI-Devices:"
-  exec_local_debug /bin/cat /proc/scsi/scsi
 }
 #************ scsi_start
 
@@ -307,7 +314,14 @@ function setHWClock() {
 #
 function hardware_detect() {
   echo_local -n "Detecting Hardware "
-  ${distribution}_hardware_detect
+  # detecting xen
+  xen_domx_detect
+  if [ $? -eq 0 ]; then
+	echo_local -n "..(xen DomX).."
+	xen_domx_hardware_detect
+  else
+    ${distribution}_hardware_detect
+  fi
   return_code
 
   echo_local -n "Module-depency"
@@ -356,7 +370,10 @@ function add_scsi_device() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.11  2007-10-02 12:14:49  marc
+# Revision 1.12  2007-10-05 10:07:07  marc
+# - added xen-support
+#
+# Revision 1.11  2007/10/02 12:14:49  marc
 # - adding a sleep before lvm starts (did not work without, udev is to slow)
 # - cosmetic changes
 #

@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.3 2007-09-14 13:28:31 marc Exp $
+# $Id: network-lib.sh,v 1.4 2007-10-05 10:07:31 marc Exp $
 #
 # @(#)$File$
 #
@@ -90,7 +90,15 @@ function nicConfig {
 function nicUp() {
    local dev=$1
    /sbin/ifup $dev
-   return $?
+   _err=$?
+   if [ "${dev:0:2}" != "lo" ]; then
+     xen_dom0_detect
+     if [ $? -eq 0 ]; then
+       xen_nic_post $dev
+     fi
+   fi
+   return $_err
+
 }
 #************ ifup
 
@@ -174,7 +182,10 @@ function getPosFromIPString() {
 
 #############
 # $Log: network-lib.sh,v $
-# Revision 1.3  2007-09-14 13:28:31  marc
+# Revision 1.4  2007-10-05 10:07:31  marc
+# - added xen-support
+#
+# Revision 1.3  2007/09/14 13:28:31  marc
 # no changes
 #
 # Revision 1.2  2006/05/12 13:06:41  marc

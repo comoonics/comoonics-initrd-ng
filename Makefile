@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.32 2007-09-27 11:56:29 marc Exp $
+# $Id: Makefile,v 1.33 2007-10-05 10:10:24 marc Exp $
 #
 # @(#)$file$
 #
@@ -121,6 +121,7 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/nfs-lib.sh \
   boot-scripts/etc/stdfs-lib.sh \
   boot-scripts/etc/std-lib.sh \
+  boot-scripts/etc/xen-lib.sh \
   boot-scripts/etc/sysconfig/comoonics \
   boot-scripts/etc/rhel4/hardware-lib.sh \
   boot-scripts/etc/rhel4/network-lib.sh \
@@ -168,8 +169,10 @@ CFG_DIR=$(SYSTEM_CFG_DIR)/bootimage
 CFG_FILES=files.initrd.d/rdac_multipath.list \
 	files.initrd.d/user_edit.list \
 	files.initrd.d/vlan.list \
+	files.initrd.d/xen.list \
 	rpms.initrd.d/dm_multipath.list \
 	rpms.initrd.d/nfs.list \
+	rpms.initrd.d/xen.list \
 	
 #************ CFG_FILES 
 
@@ -375,7 +378,10 @@ rpmsign
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.32  2007-09-27 11:56:29  marc
+# Revision 1.33  2007-10-05 10:10:24  marc
+# - added xen-support
+#
+# Revision 1.32  2007/09/27 11:56:29  marc
 # removed passwd file
 #
 # Revision 1.31  2007/09/15 14:49:38  mark
