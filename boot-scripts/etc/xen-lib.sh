@@ -1,5 +1,5 @@
 #
-# $Id: xen-lib.sh,v 1.2 2007-10-05 14:25:57 marc Exp $
+# $Id: xen-lib.sh,v 1.3 2007-10-05 14:26:25 marc Exp $
 #
 # @(#)$File$
 #
@@ -54,6 +54,7 @@ function xen_dom0_detect() {
   if [ $_err -eq 0 ] && ! [ -d /etc/xen ]; then
   	echo_local "WARNING XEN DETECTED BUT NO EXTRAFILES FOUND."
   	echo_local "You might want to install comoonics-bootimage-extras-xen to have full support"
+  	_err=1
   fi
   return $_err
 }
@@ -74,6 +75,7 @@ function xen_domx_detect() {
   if [ $_err -eq 0 ] && ! [ -d /etc/xen ]; then
   	echo_local "WARNING XEN DETECTED BUT NO EXTRAFILES FOUND."
   	echo_local "You might want to install comoonics-bootimage-extras-xen to have full support"
+  	_err=1
   fi
   return $_err
 }
