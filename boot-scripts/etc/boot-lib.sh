@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.51 2007-10-05 14:33:38 mark Exp $
+# $Id: boot-lib.sh,v 1.52 2007-10-08 15:17:24 mark Exp $
 #
 # @(#)$File$
 #
@@ -463,34 +463,6 @@ function start_service {
 }
 #************ start_service
 
-#****f* boot-lib.sh/create_chroot
-#  NAME
-#    create_chroot build a chroot environment
-#  SYNOPSIS
-#    function create_chroot($chroot_source $chroot_path) {
-#  MODIFICATION HISTORY
-#  USAGE
-#  create_chroot
-#  IDEAS
-#
-#  SOURCE
-#
-function create_chroot () {
-  chroot_source=$1
-  chroot_path=$2
-
-  exec_local cp -axf $chroot_source $chroot_path
-  exec_local rm -rf $chroot_path/var/run/*
-  exec_local mkdir -p $chroot_path/tmp
-#  exec_local mount --bind /dev $chroot_path/dev
-  exec_local cp -a /dev/* $chroot_path/dev/
-  exec_local mount -t devpts none $chroot_path/dev/pts
-  exec_local mount -t proc proc $chroot_path/proc
-  exec_local mount -t sysfs none $chroot_path/sys
-}
-#************ create_chroot
-
-
 #****f* boot-lib.sh/move_chroot
 #  NAME
 #    move chroot environment
@@ -946,7 +918,10 @@ function exec_local_debug() {
 
 
 # $Log: boot-lib.sh,v $
-# Revision 1.51  2007-10-05 14:33:38  mark
+# Revision 1.52  2007-10-08 15:17:24  mark
+# made create_chroot distro dependent
+#
+# Revision 1.51  2007/10/05 14:33:38  mark
 # bug fix
 #
 # Revision 1.50  2007/10/05 09:04:26  mark
