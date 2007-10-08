@@ -19,7 +19,7 @@
 # disclose such Confidential Information and shall use it only in
 # accordance with the terms of the license agreement you entered into
 # with ATIX.
-# $Id: comoonics-bootimage.spec,v 1.55 2007-10-05 14:09:53 mark Exp $
+# $Id: comoonics-bootimage.spec,v 1.56 2007-10-08 16:15:05 mark Exp $
 #
 ##
 ##
@@ -45,7 +45,7 @@ Version: 1.3
 BuildArch: noarch
 Requires: comoonics-cs-py >= 0.1-43 comoonics-cluster-py >= 0.1-2 comoonics-bootimage-initscripts >= 1.3 comoonics-bootimage-listfiles >= 1.3
 #Conflicts:
-Release: 15
+Release: 16
 Vendor: ATIX AG
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -335,8 +335,10 @@ fi
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/stdfs-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/std-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/sysconfig/comoonics
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/rhel4/boot-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/rhel4/hardware-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/rhel4/network-lib.sh
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/rhel5/boot-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/rhel5/gfs-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/rhel5/hardware-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/rhel5/network-lib.sh
@@ -414,6 +416,8 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Mon Oct 08 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3-16
+- Fiexed BUG 136
 * Fri Oct 05 2007 Marc Grimme <grimme@atix.de> 1.3-15
 - added xensupport
 * Tue Oct 02 2007 Marc Grimme <grimme@atix.de> 1.3-14
@@ -505,7 +509,10 @@ rm -rf %{buildroot}
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.55  2007-10-05 14:09:53  mark
+# Revision 1.56  2007-10-08 16:15:05  mark
+# new release
+#
+# Revision 1.55  2007/10/05 14:09:53  mark
 # new revision
 #
 # Revision 1.54  2007/10/05 10:10:13  marc
