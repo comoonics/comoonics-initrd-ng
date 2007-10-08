@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.34 2007-10-05 13:38:35 mark Exp $
+# $Id: Makefile,v 1.35 2007-10-08 16:14:55 mark Exp $
 #
 # @(#)$file$
 #
@@ -125,10 +125,12 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/std-lib.sh \
   boot-scripts/etc/xen-lib.sh \
   boot-scripts/etc/sysconfig/comoonics \
+  boot-scripts/etc/rhel4/boot-lib.sh \
   boot-scripts/etc/rhel4/hardware-lib.sh \
   boot-scripts/etc/rhel4/network-lib.sh \
-  boot-scripts/etc/rhel5/hardware-lib.sh \
+  boot-scripts/etc/rhel5/boot-lib.sh \
   boot-scripts/etc/rhel5/gfs-lib.sh \
+  boot-scripts/etc/rhel5/hardware-lib.sh \
   boot-scripts/etc/rhel5/network-lib.sh \
   boot-scripts/etc/sles8/hardware-lib.sh \
   boot-scripts/etc/sles8/network-lib.sh
@@ -380,7 +382,10 @@ rpmsign
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.34  2007-10-05 13:38:35  mark
+# Revision 1.35  2007-10-08 16:14:55  mark
+# added distrodependent boot-lib.sh
+#
+# Revision 1.34  2007/10/05 13:38:35  mark
 # added com-halt.sh and com-realhalt.sh
 #
 # Revision 1.33  2007/10/05 10:10:24  marc
