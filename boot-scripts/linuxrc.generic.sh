@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.42 2007-10-05 10:07:56 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.43 2007-10-08 16:13:55 mark Exp $
 #
 # @(#)$File$
 #
@@ -17,7 +17,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.42 2007-10-05 10:07:56 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.43 2007-10-08 16:13:55 mark Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -65,6 +65,7 @@ clutype=$(getCluType)
 
 # including all distribution dependent files
 distribution=$(getDistribution)
+[ -e /etc/${distribution}/boot-lib.sh ] && source /etc/${distribution}/boot-lib.sh
 [ -e /etc/${distribution}/hardware-lib.sh ] && source /etc/${distribution}/hardware-lib.sh
 [ -e /etc/${distribution}/network-lib.sh ] && source /etc/${distribution}/network-lib.sh
 [ -e /etc/${distribution}/clusterfs-lib.sh ] && source /etc/${distribution}/clusterfs-lib.sh
@@ -75,7 +76,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.42 $ $Date: 2007-10-05 10:07:56 $'
+echo_local 'Internal Version $Revision: 1.43 $ $Date: 2007-10-08 16:13:55 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -418,7 +419,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.42  2007-10-05 10:07:56  marc
+# Revision 1.43  2007-10-08 16:13:55  mark
+# source distrodependent boot-lib.sh
+#
+# Revision 1.42  2007/10/05 10:07:56  marc
 # - added xen-support
 #
 # Revision 1.41  2007/10/02 12:16:02  marc
