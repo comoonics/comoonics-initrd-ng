@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.44 2007-10-09 14:24:27 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.45 2007-10-09 16:48:33 mark Exp $
 #
 # @(#)$File$
 #
@@ -17,7 +17,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.44 2007-10-09 14:24:27 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.45 2007-10-09 16:48:33 mark Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -76,7 +76,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.44 $ $Date: 2007-10-09 14:24:27 $'
+echo_local 'Internal Version $Revision: 1.45 $ $Date: 2007-10-09 16:48:33 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -415,6 +415,11 @@ exec_local clean_initrd
 success
 echo
 
+echo_local -n "start services in newroot ..."
+exec_local prepare_newroot $newroot
+exec_local clusterfs_services_restart_newroot $newroot
+return_code $?
+
 step "Initialization completed."
 
 echo_local "Starting init-process ($init_cmd)..."
@@ -424,7 +429,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.44  2007-10-09 14:24:27  marc
+# Revision 1.45  2007-10-09 16:48:33  mark
+# restart some cluster services in newroot (clvmd)
+#
+# Revision 1.44  2007/10/09 14:24:27  marc
 # usbLoad fixed and more stabilized
 #
 # Revision 1.43  2007/10/08 16:13:55  mark
