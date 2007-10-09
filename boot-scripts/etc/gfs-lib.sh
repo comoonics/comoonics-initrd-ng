@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.40 2007-10-05 09:02:40 mark Exp $
+# $Id: gfs-lib.sh,v 1.41 2007-10-09 16:47:44 mark Exp $
 #
 # @(#)$File$
 #
@@ -510,6 +510,22 @@ function gfs_services_start {
 }
 #************ gfs_services_start
 
+#****f* gfs-lib.sh/gfs_services_restart_newroot
+#  NAME
+#    gfs_services_restart_newroot
+#  SYNOPSIS
+#    function gfs_services_restart_newroot()
+#  DESCRIPTION
+#    This function starts all needed services in newroot
+#  IDEAS
+#  SOURCE
+#
+function gfs_services_restart_newroot() {
+  ## THIS will be overwritten for rhel5 ##
+  exec_local /bin/true
+}
+#************ gfs_services_restart_newroot
+
 #****f* gfs-lib.sh/gfs_services_restart
 #  NAME
 #    gfs_services_restart
@@ -921,7 +937,10 @@ function gfs_checkhosts_alive {
 #********* gfs_checkhosts_alive
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.40  2007-10-05 09:02:40  mark
+# Revision 1.41  2007-10-09 16:47:44  mark
+# added gfs_services_restart_newroot
+#
+# Revision 1.40  2007/10/05 09:02:40  mark
 # added stop methods
 #
 # Revision 1.39  2007/10/02 11:53:11  mark
