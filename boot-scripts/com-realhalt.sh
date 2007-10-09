@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: com-realhalt.sh,v 1.2 2007-10-05 13:36:25 mark Exp $
+# $Id: com-realhalt.sh,v 1.3 2007-10-09 16:52:39 mark Exp $
 #
 # @(#)$File$
 #
@@ -17,7 +17,7 @@
 #****h* comoonics-bootimage/com-halt.sh
 #  NAME
 #    com-halt.sh
-#    $Id: com-realhalt.sh,v 1.2 2007-10-05 13:36:25 mark Exp $
+#    $Id: com-realhalt.sh,v 1.3 2007-10-09 16:52:39 mark Exp $
 #  DESCRIPTION
 #    script called from <chrootpath>/com-halt.sh
 #  USAGE
@@ -141,8 +141,8 @@ echo_local -n "Preparing chroot"
 /bin/mount -t sysfs none /sys &> /dev/null
 /bin/mount -t configfs none /sys/kernel/config &> /dev/null
 /bin/ln -sf /proc/mounts /etc/mtab
-/bin/true
-return_code
+success
+echo
 
 step
 
@@ -159,11 +159,12 @@ echo_local -n "Stopping processes in oldroot"
 exec_local fuser -km -15 $COM_OLDROOT &> /dev/null
 sleep 5
 exec_local fuser -km -9 $COM_OLDROOT &> /dev/null
-return_code
+success
+echo
 
 step
 
-echo_local -n "Umounting filsystems in oldroot"
+echo_local -n "Umounting filesystems in oldroot"
 exec_local mkdir /dev2
 exec_local "mount --move $COM_OLDROOT/dev /dev2"
 for fs in sys proc cdsl.local; do
