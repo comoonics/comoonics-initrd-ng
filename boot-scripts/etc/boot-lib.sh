@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.52 2007-10-08 15:17:24 mark Exp $
+# $Id: boot-lib.sh,v 1.53 2007-10-09 15:07:37 marc Exp $
 #
 # @(#)$File$
 #
@@ -372,8 +372,9 @@ function start_service_chroot() {
 	shift
 	service_name=$1
 	shift
-	echo_local "Starting service $service_name"
+	echo_local -n "Starting service $service_name"
 	exec_local /usr/sbin/chroot $chroot_dir $service_name $*
+	return_code
 }
 #********start_service_chroot
 
@@ -523,7 +524,7 @@ function build_chroot () {
 		chroot_options=$(cc_get_chroot_mountopts $cluster_conf $nodename)
 	fi
 
-	echo_out "Creating chroot environment"
+	echo_out -n "Creating chroot environment"
 	exec_local mkdir -p $chroot_mount
 	exec_local /bin/mount -t $chroot_fstype -o $chroot_options $chroot_dev $chroot_mount
 	return_code $? >/dev/null
@@ -918,7 +919,10 @@ function exec_local_debug() {
 
 
 # $Log: boot-lib.sh,v $
-# Revision 1.52  2007-10-08 15:17:24  mark
+# Revision 1.53  2007-10-09 15:07:37  marc
+# - beautified
+#
+# Revision 1.52  2007/10/08 15:17:24  mark
 # made create_chroot distro dependent
 #
 # Revision 1.51  2007/10/05 14:33:38  mark
