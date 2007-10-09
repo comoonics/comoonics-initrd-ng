@@ -19,7 +19,7 @@
 # disclose such Confidential Information and shall use it only in
 # accordance with the terms of the license agreement you entered into
 # with ATIX.
-# $Id: comoonics-bootimage.spec,v 1.56 2007-10-08 16:15:05 mark Exp $
+# $Id: comoonics-bootimage.spec,v 1.57 2007-10-09 14:25:12 marc Exp $
 #
 ##
 ##
@@ -45,7 +45,7 @@ Version: 1.3
 BuildArch: noarch
 Requires: comoonics-cs-py >= 0.1-43 comoonics-cluster-py >= 0.1-2 comoonics-bootimage-initscripts >= 1.3 comoonics-bootimage-listfiles >= 1.3
 #Conflicts:
-Release: 16
+Release: 17
 Vendor: ATIX AG
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -311,7 +311,6 @@ fi
 %attr(750, root, root) %{APPDIR}/boot-scripts/com-halt.sh
 %attr(750, root, root) %{APPDIR}/boot-scripts/com-realhalt.sh
 %attr(750, root, root) %{APPDIR}/boot-scripts/linuxrc.generic.sh
-%attr(750, root, root) %{APPDIR}/boot-scripts/linuxrc.generic.sh
 %attr(750, root, root) %{APPDIR}/boot-scripts/exec_part_from_bash.sh
 %attr(750, root, root) %{APPDIR}/boot-scripts/detectHardware.sh
 %attr(750, root, root) %{APPDIR}/boot-scripts/rescue.sh
@@ -377,7 +376,11 @@ fi
 
 %files fenceacksv
 %attr(755, root, root) %{FENCEACKSV_DIR}/fence_ack_server.py
+%attr(755, root, root) %{FENCEACKSV_DIR}/fence_ack_server.pyc
+%attr(755, root, root) %{FENCEACKSV_DIR}/fence_ack_server.pyo
 %attr(644, root, root) %{FENCEACKSV_DIR}/shell.py
+%attr(644, root, root) %{FENCEACKSV_DIR}/shell.pyc
+%attr(644, root, root) %{FENCEACKSV_DIR}/shell.pyo
 %attr(640, root, root) %{FENCEACKSV_DIR}/server.pkey
 %attr(640, root, root) %{FENCEACKSV_DIR}/server.cert
 %attr(640, root, root) %{FENCEACKSV_DIR}/CA.pkey
@@ -416,6 +419,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Mon Oct 08 2007 Marc Grimme <grimme@atix.de> 1.3-17
+- readded usb (hid) Support
+- added stabilized for having stabilized files
 * Mon Oct 08 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3-16
 - Fiexed BUG 136
 * Fri Oct 05 2007 Marc Grimme <grimme@atix.de> 1.3-15
@@ -509,7 +515,10 @@ rm -rf %{buildroot}
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.56  2007-10-08 16:15:05  mark
+# Revision 1.57  2007-10-09 14:25:12  marc
+# - new release of comoonics-bootimage 1.3-17
+#
+# Revision 1.56  2007/10/08 16:15:05  mark
 # new release
 #
 # Revision 1.55  2007/10/05 14:09:53  mark

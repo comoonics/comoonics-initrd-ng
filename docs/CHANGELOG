@@ -7,7 +7,10 @@ IDEAS:
 CHANGES:
 
 comoonics-bootimage:
-* 2007-10-07 Release 1.3-16
+- 2007-10-07 Release 1.3-17
+  * readded usb (hid) Support
+  * added stabilized for having stabilized files
+- 2007-10-07 Release 1.3-16
   * Fixes BUG 136
 * 2007-10-05 Release 1.3-15
   * added xensupport
@@ -128,7 +131,7 @@ comoonics-bootimage-fencemaster-vmware:
 
 comoonics-bootimage-initscripts:
 - 2007-10-05 Release 1.3.4-el5
-    * Fixes BUG 131: new halt patch 
+    * Fixes BUG 131: new halt patch
 - 2007-09-15 Release 1.3.1-el5
     * initial release for el5
 - 2007-09-15 Release 1.3.1-el4
@@ -151,7 +154,10 @@ TODO:
 ########################################
 # CVS-Log
 # $Log: CHANGELOG,v $
-# Revision 1.24  2007-10-08 16:14:17  mark
+# Revision 1.25  2007-10-09 14:24:59  marc
+# - new release of comoonics-bootimage 1.3-17
+#
+# Revision 1.24  2007/10/08 16:14:17  mark
 # new release
 #
 # Revision 1.23  2007/10/05 10:11:04  marc
