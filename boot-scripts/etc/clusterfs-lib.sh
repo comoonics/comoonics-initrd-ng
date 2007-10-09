@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.14 2007-10-05 09:03:03 mark Exp $
+# $Id: clusterfs-lib.sh,v 1.15 2007-10-09 16:47:21 mark Exp $
 #
 # @(#)$File$
 #
@@ -539,6 +539,21 @@ function clusterfs_services_restart {
 }
 #***** clusterfs_services_restart
 
+#****f* clusterfs-lib.sh/clusterfs_services_start_newroot
+#  NAME
+#    clusterfs_services_start_newroot
+#  SYNOPSIS
+#    function clusterfs_services_start_newroot($newroot)
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function clusterfs_services_restart_newroot {
+   ${rootfs}_services_restart_newroot $*
+}
+#***** clusterfs_services_restart_newroot
+
+
 #****f* clusterfs-lib.sh/clusterfs_mount
 #  NAME
 #    clusterfs_mount
@@ -709,7 +724,10 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.14  2007-10-05 09:03:03  mark
+# Revision 1.15  2007-10-09 16:47:21  mark
+# added clusterfs_services_start_newroot
+#
+# Revision 1.14  2007/10/05 09:03:03  mark
 # added clusterfs_services_stop
 #
 # Revision 1.13  2007/08/06 15:50:11  mark
