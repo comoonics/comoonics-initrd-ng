@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.12 2007-10-05 10:07:07 marc Exp $
+# $Id: hardware-lib.sh,v 1.13 2007-10-09 14:24:15 marc Exp $
 #
 # @(#)$File$
 #
@@ -191,6 +191,57 @@ function dm_mp_start() {
 }
 #************ dm_mp_start
 
+#****f* boot-lib.sh/usbLoad
+#  NAME
+#    usbLoad
+#  SYNOPSIS
+#    function usbLoad
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function usbLoad() {
+	modules="ehci_hcd ohci_hcd uhci_hcd hidp"
+	for module in modules; do
+		modprobe $module
+	done
+	mount -t usbfs /proc/bus/usb /proc/bus/usb
+}
+#************ dm_mp_start
+
+#****f* boot-lib.sh/dm_mp_start
+#  NAME
+#    dm_mp_start
+#  SYNOPSIS
+#    function dm_mp_start
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function dm_mp_start() {
+  echo_local -n "Loading dm-mutltipath.ko module"
+  exec_local modprobe dm-multipath
+  return_code
+
+  echo_local -n "Setting up Multipath"
+  exec_local multipath
+  return_code
+
+  exec_local_debug multipath -l
+
+  echo_local -n "Restarting udev "
+  exec_local udev_start
+  return_code
+
+  echo_local -n "Setting up devicemapper partitions"
+  if [ -x /sbin/kpartx ]; then
+    /sbin/dmsetup ls --target multipath --exec "/sbin/kpartx -a"
+  fi
+
+  return_code
+}
+#************ dm_mp_start
+
 #****f* boot-lib.sh/dm_start
 #  NAME
 #    dm_start
@@ -230,7 +281,6 @@ function dm_start {
 #  SOURCE
 #
 function lvm_start {
-   sleep 5
    echo_local -n "Scanning logical volumes"
    exec_local lvm vgscan --ignorelockingfailure >/dev/null 2>&1
    return_code 0
@@ -370,7 +420,10 @@ function add_scsi_device() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.12  2007-10-05 10:07:07  marc
+# Revision 1.13  2007-10-09 14:24:15  marc
+# usbLoad fixed and more stabilized
+#
+# Revision 1.12  2007/10/05 10:07:07  marc
 # - added xen-support
 #
 # Revision 1.11  2007/10/02 12:14:49  marc

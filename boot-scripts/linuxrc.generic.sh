@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.43 2007-10-08 16:13:55 mark Exp $
+# $Id: linuxrc.generic.sh,v 1.44 2007-10-09 14:24:27 marc Exp $
 #
 # @(#)$File$
 #
@@ -17,7 +17,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.43 2007-10-08 16:13:55 mark Exp $
+#    $Id: linuxrc.generic.sh,v 1.44 2007-10-09 14:24:27 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -76,7 +76,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.43 $ $Date: 2007-10-08 16:13:55 $'
+echo_local 'Internal Version $Revision: 1.44 $ $Date: 2007-10-09 14:24:27 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -224,6 +224,11 @@ for ipconfig in $ipConfig; do
 
   nicConfig $ipconfig
 
+  echo_local -n "Loading USB Modules.."
+  exec_local usbLoad
+  return_code
+  [ -e /proc/bus/usb/devices ] && stabilized --type=hash --interval=300 /proc/bus/usb/devices
+
   echo_local -n "Powering up $dev.."
   exec_local nicUp $dev >/dev/null 2>&1
   return_code
@@ -235,7 +240,6 @@ step "Network configuration started"
 
 dm_start
 scsi_start $scsifailover
-
 # loads kernel modules for cluster stack
 # TODO: - rename to clusterfs_kernel_load
 #       - add cluster_kernel_load
@@ -253,6 +257,7 @@ return_code
 if [ "$scsifailover" = "mapper" ] || [ "$scsifailover" = "devicemapper" ]; then
   dm_mp_start
 fi
+[ -e /proc/scsi/scsi ] && stabilized --type=hash --interval=600 /proc/scsi/scsi
 step "UDEV started"
 
 lvm_start
@@ -419,7 +424,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.43  2007-10-08 16:13:55  mark
+# Revision 1.44  2007-10-09 14:24:27  marc
+# usbLoad fixed and more stabilized
+#
+# Revision 1.43  2007/10/08 16:13:55  mark
 # source distrodependent boot-lib.sh
 #
 # Revision 1.42  2007/10/05 10:07:56  marc
