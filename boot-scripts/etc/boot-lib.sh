@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.53 2007-10-09 15:07:37 marc Exp $
+# $Id: boot-lib.sh,v 1.54 2007-10-09 16:46:45 mark Exp $
 #
 # @(#)$File$
 #
@@ -485,6 +485,23 @@ function move_chroot () {
 }
 #************ move_chroot
 
+#****f* boot-lib.sh/prepare_newroot
+#  NAME
+#    prepare_newroot
+#  SYNOPSIS
+#    function prepare_newroot(newroot) {
+#  MODIFICATION HISTORY
+#  USAGE
+#
+#  IDEAS
+#
+#  SOURCE
+#
+function prepare_newroot() {
+	exec_local mount -t proc proc $1/proc
+}
+#************** prepare_newroot
+
 #****f* boot-lib.sh/build_chroot
 #  NAME
 #    move chroot environment
@@ -919,7 +936,10 @@ function exec_local_debug() {
 
 
 # $Log: boot-lib.sh,v $
-# Revision 1.53  2007-10-09 15:07:37  marc
+# Revision 1.54  2007-10-09 16:46:45  mark
+# added prepare_newroot
+#
+# Revision 1.53  2007/10/09 15:07:37  marc
 # - beautified
 #
 # Revision 1.52  2007/10/08 15:17:24  mark
