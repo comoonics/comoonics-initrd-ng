@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.6 2007-10-05 10:06:27 marc Exp $
+# $Id: gfs-lib.sh,v 1.7 2007-10-09 16:40:09 mark Exp $
 #
 # @(#)$File$
 #
@@ -119,6 +119,35 @@ function gfs_services_stop {
 }
 #************ gfs_services_stop
 
+#****f* gfs-lib.sh/gfs_services_restart_newroot
+#  NAME
+#    gfs_services_restart_newroot
+#  SYNOPSIS
+#    function gfs_services_restart_newroot()
+#  DESCRIPTION
+#    This function restarts all needed services in newroot
+#  IDEAS
+#  SOURCE
+#
+function gfs_services_restart_newroot {
+  local chroot_path=$1
+  services="clvmd"
+  for service in $services; do
+    gfs_stop_$service $chroot_path
+    if [ $? -ne 0 ]; then
+      return $?
+    fi
+  done
+ 
+  for service in $services; do
+    gfs_start_$service $chroot_path
+    if [ $? -ne 0 ]; then
+      return $?
+    fi
+  done
+  return $return_c	
+}
+#************ gfs_services_start_newroot
 
 #****f* gfs-lib.sh/gfs_start_qdiskd
 #  NAME
