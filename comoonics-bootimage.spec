@@ -19,7 +19,7 @@
 # disclose such Confidential Information and shall use it only in
 # accordance with the terms of the license agreement you entered into
 # with ATIX.
-# $Id: comoonics-bootimage.spec,v 1.57 2007-10-09 14:25:12 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.58 2007-10-10 12:29:16 mark Exp $
 #
 ##
 ##
@@ -45,7 +45,7 @@ Version: 1.3
 BuildArch: noarch
 Requires: comoonics-cs-py >= 0.1-43 comoonics-cluster-py >= 0.1-2 comoonics-bootimage-initscripts >= 1.3 comoonics-bootimage-listfiles >= 1.3
 #Conflicts:
-Release: 17
+Release: 18
 Vendor: ATIX AG
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -277,7 +277,7 @@ to the syslog configuration
 
 CAUTION:
 - tmpwatch:
-if you use the /tmp filesystem for our chroot environment,
+if you use the /tmp filesystem for your chroot environment,
 and tmpwatch is installed, you need to modify
 /etc/cron.daily/tmpwatch to fit your needs.
 '
@@ -376,11 +376,11 @@ fi
 
 %files fenceacksv
 %attr(755, root, root) %{FENCEACKSV_DIR}/fence_ack_server.py
-%attr(755, root, root) %{FENCEACKSV_DIR}/fence_ack_server.pyc
-%attr(755, root, root) %{FENCEACKSV_DIR}/fence_ack_server.pyo
+#%attr(755, root, root) %{FENCEACKSV_DIR}/fence_ack_server.pyc
+#%attr(755, root, root) %{FENCEACKSV_DIR}/fence_ack_server.pyo
 %attr(644, root, root) %{FENCEACKSV_DIR}/shell.py
-%attr(644, root, root) %{FENCEACKSV_DIR}/shell.pyc
-%attr(644, root, root) %{FENCEACKSV_DIR}/shell.pyo
+#%attr(644, root, root) %{FENCEACKSV_DIR}/shell.pyc
+#%attr(644, root, root) %{FENCEACKSV_DIR}/shell.pyo
 %attr(640, root, root) %{FENCEACKSV_DIR}/server.pkey
 %attr(640, root, root) %{FENCEACKSV_DIR}/server.cert
 %attr(640, root, root) %{FENCEACKSV_DIR}/CA.pkey
@@ -419,11 +419,14 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Tue Oct 09 2007 Marc Hlawatschek <hlawatschek@atix.de> 1.3-18
+- Another fix for BUG 136
+- start syslogd in chroot
 * Mon Oct 08 2007 Marc Grimme <grimme@atix.de> 1.3-17
 - readded usb (hid) Support
 - added stabilized for having stabilized files
 * Mon Oct 08 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3-16
-- Fiexed BUG 136
+- Fixed BUG 136
 * Fri Oct 05 2007 Marc Grimme <grimme@atix.de> 1.3-15
 - added xensupport
 * Tue Oct 02 2007 Marc Grimme <grimme@atix.de> 1.3-14
@@ -515,7 +518,10 @@ rm -rf %{buildroot}
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.57  2007-10-09 14:25:12  marc
+# Revision 1.58  2007-10-10 12:29:16  mark
+# new release
+#
+# Revision 1.57  2007/10/09 14:25:12  marc
 # - new release of comoonics-bootimage 1.3-17
 #
 # Revision 1.56  2007/10/08 16:15:05  mark

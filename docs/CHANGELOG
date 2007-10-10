@@ -9,6 +9,7 @@ CHANGES:
 comoonics-bootimage:
 - 2007-10-07 Release 1.3-18
   * Another fix for BUG 136
+  * start syslogd in chroot
 - 2007-10-07 Release 1.3-17
   * readded usb (hid) Support
   * added stabilized for having stabilized files
@@ -156,7 +157,10 @@ TODO:
 ########################################
 # CVS-Log
 # $Log: CHANGELOG,v $
-# Revision 1.26  2007-10-09 16:50:07  mark
+# Revision 1.27  2007-10-10 12:29:57  mark
+# new release
+#
+# Revision 1.26  2007/10/09 16:50:07  mark
 # new release
 #
 # Revision 1.25  2007/10/09 14:24:59  marc
