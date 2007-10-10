@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.48 2007-10-10 15:09:48 mark Exp $
+# $Id: linuxrc.generic.sh,v 1.49 2007-10-10 22:48:08 mark Exp $
 #
 # @(#)$File$
 #
@@ -17,7 +17,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.48 2007-10-10 15:09:48 mark Exp $
+#    $Id: linuxrc.generic.sh,v 1.49 2007-10-10 22:48:08 mark Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -78,7 +78,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.48 $ $Date: 2007-10-10 15:09:48 $'
+echo_local 'Internal Version $Revision: 1.49 $ $Date: 2007-10-10 22:48:08 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -418,6 +418,7 @@ exec_local clean_initrd
 success
 echo
 
+#TODO umount $newroot/proc again
 echo_local -n "start services in newroot ..."
 exec_local prepare_newroot $newroot
 exec_local clusterfs_services_restart_newroot $newroot
@@ -432,7 +433,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.48  2007-10-10 15:09:48  mark
+# Revision 1.49  2007-10-10 22:48:08  mark
+# fixes BZ139
+#
+# Revision 1.48  2007/10/10 15:09:48  mark
 # move usbstart out of for-loop
 #
 # Revision 1.47  2007/10/10 12:23:27  mark

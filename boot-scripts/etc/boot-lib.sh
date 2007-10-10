@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.54 2007-10-09 16:46:45 mark Exp $
+# $Id: boot-lib.sh,v 1.55 2007-10-10 22:48:08 mark Exp $
 #
 # @(#)$File$
 #
@@ -601,6 +601,7 @@ function switchRoot() {
   # clean up
   echo "Cleaning up..."
   #umount /dev
+  [ -e /proc/bus/usb ] && umount /proc/bus/usb
   umount /proc
   umount /sys
 
@@ -936,7 +937,10 @@ function exec_local_debug() {
 
 
 # $Log: boot-lib.sh,v $
-# Revision 1.54  2007-10-09 16:46:45  mark
+# Revision 1.55  2007-10-10 22:48:08  mark
+# fixes BZ139
+#
+# Revision 1.54  2007/10/09 16:46:45  mark
 # added prepare_newroot
 #
 # Revision 1.53  2007/10/09 15:07:37  marc

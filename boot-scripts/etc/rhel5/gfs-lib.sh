@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.7 2007-10-09 16:40:09 mark Exp $
+# $Id: gfs-lib.sh,v 1.8 2007-10-10 22:48:08 mark Exp $
 #
 # @(#)$File$
 #
@@ -145,6 +145,9 @@ function gfs_services_restart_newroot {
       return $?
     fi
   done
+  
+  exec_local umount $chroot_path/proc
+  
   return $return_c	
 }
 #************ gfs_services_start_newroot
