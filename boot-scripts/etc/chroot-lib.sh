@@ -1,5 +1,5 @@
 #
-# $Id: chroot-lib.sh,v 1.3 2007-09-14 13:27:04 marc Exp $
+# $Id: chroot-lib.sh,v 1.4 2007-10-10 19:51:28 marc Exp $
 #
 # @(#)$File$
 #
@@ -330,66 +330,68 @@ function get_all_files_dependent() {
 	# FIXME:
 	#   if [ "${line:0:1}" != '#' ]; then does not work. Don't know WHY the shit!!
 	#
-    if [ ${line:0:1} != '#' ]; then
-      if [ ! -e "$line" ] && [ "${line:0:7}" = '@perlcc' ]; then
-        # take next as filename and compile
-        echo "Skipping line $todir..." >&2
-	    line=${line:8}
-	    local filename=`which $line 2>/dev/null`
-	    if [ -z $filename ]; then
-	      filename=$line
-	    fi
-	    #echo $filename
-	    [ -n "$verbose" ] && echo "Taking perl file $filename..." >&2
-	    dirname=`dirname $filename`
-	    create_dir ${mountpoint}$dirname
-	    perlcc_file $filename ${mountpoint}$filename
-	    get_dependent_files ${mountpoint}$filename
-      elif [ ! -e "$line" ] && [ "${line:0:4}" = '@map' ]; then
-        declare -a aline
-        aline=( $(echo $line | tr '&' ' ') )
-	    mapdir=${aline[2]}
-        line=${aline[1]}
-        [ -n "$verbose" ] && echo "Mapping $line to $mapdir" >&2
-	    local filename=`which $line 2>/dev/null`
-	    if [ -z $filename ]; then
-	      filename=$line
-	    fi
-	    echo "@map&$filename&$mapdir"
-        # get_dependent_files $filename
-      elif [ ! -e "$line" ] && [ "${line:0:8}" = '@include' ]; then
-        declare -a aline
-        aline=( $(echo $line) )
-	    include=${aline[@]:1}
-	    if [ -d "$include" ]; then
-	      for file in ${include}/*; do
-	        [ -n "$verbose" ] && echo "Including file $file" >&2
-            get_all_files_dependent $file $verbose
-          done
-        elif [ -e "$include" ]; then
-	      get_all_files_dependent $include $verbose
-	    else
-          if [ "${include:0:2}" = '$(' ] || [ "${include:0:1}" = '`' ]; then
-	        [ -n "$verbose" ] && echo "Eval $include"  >&2
-	        include=$(echo ${include/#\$\(/})
-	        include=$(echo ${include/#\`/})
-	        include=$(echo ${include/%\)/})
-	        files=$(eval "$include")
-          else
-            files="$include"
+	if [ -n "${line:0:1}" ]; then
+      if [ ${line:0:1} != '#' ]; then
+        if [ ! -e "$line" ] && [ "${line:0:7}" = '@perlcc' ]; then
+          # take next as filename and compile
+          echo "Skipping line $todir..." >&2
+	      line=${line:8}
+	      local filename=`which $line 2>/dev/null`
+	      if [ -z $filename ]; then
+	        filename=$line
 	      fi
-          for file in $files; do
-  	        [ -n "$verbose" ] && echo "Including file $file" >&2
-            get_all_files_dependent $file $verbose
-          done
+	      #echo $filename
+	      [ -n "$verbose" ] && echo "Taking perl file $filename..." >&2
+	      dirname=`dirname $filename`
+	      create_dir ${mountpoint}$dirname
+	      perlcc_file $filename ${mountpoint}$filename
+	      get_dependent_files ${mountpoint}$filename
+        elif [ ! -e "$line" ] && [ "${line:0:4}" = '@map' ]; then
+          declare -a aline
+          aline=( $(echo $line | tr '&' ' ') )
+	      mapdir=${aline[2]}
+          line=${aline[1]}
+          [ -n "$verbose" ] && echo "Mapping $line to $mapdir" >&2
+	      local filename=`which $line 2>/dev/null`
+	      if [ -z $filename ]; then
+	        filename=$line
+  	      fi
+	      echo "@map&$filename&$mapdir"
+          # get_dependent_files $filename
+        elif [ ! -e "$line" ] && [ "${line:0:8}" = '@include' ]; then
+          declare -a aline
+          aline=( $(echo $line) )
+	      include=${aline[@]:1}
+	      if [ -d "$include" ]; then
+	        for file in ${include}/*; do
+	          [ -n "$verbose" ] && echo "Including file $file" >&2
+              get_all_files_dependent $file $verbose
+            done
+          elif [ -e "$include" ]; then
+	        get_all_files_dependent $include $verbose
+	      else
+            if [ "${include:0:2}" = '$(' ] || [ "${include:0:1}" = '`' ]; then
+	          [ -n "$verbose" ] && echo "Eval $include"  >&2
+	          include=$(echo ${include/#\$\(/})
+	          include=$(echo ${include/#\`/})
+	          include=$(echo ${include/%\)/})
+	          files=$(eval "$include")
+            else
+              files="$include"
+	        fi
+            for file in $files; do
+  	          [ -n "$verbose" ] && echo "Including file $file" >&2
+              get_all_files_dependent $file $verbose
+            done
+          fi
+        else
+	      local filename=`which $line 2>/dev/null`
+	      if [ -z $filename ]; then
+	        filename=$line
+	      fi
+	      echo $filename
+	      get_dependent_files $filename
         fi
-      else
-	    local filename=`which $line 2>/dev/null`
-	    if [ -z $filename ]; then
-	      filename=$line
-	    fi
-	    echo $filename
-	    get_dependent_files $filename
       fi
     fi
   done <$filename
