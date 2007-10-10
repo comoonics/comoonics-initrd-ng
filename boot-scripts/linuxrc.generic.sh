@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.45 2007-10-09 16:48:33 mark Exp $
+# $Id: linuxrc.generic.sh,v 1.46 2007-10-10 11:05:22 marc Exp $
 #
 # @(#)$File$
 #
@@ -17,7 +17,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.45 2007-10-09 16:48:33 mark Exp $
+#    $Id: linuxrc.generic.sh,v 1.46 2007-10-10 11:05:22 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -59,6 +59,7 @@
 . /etc/stdfs-lib.sh
 . /etc/defaults.sh
 . /etc/xen-lib.sh
+[ -e source /etc/iscsi-lib.sh ] && /etc/iscsi-lib.sh
 
 clutype=$(getCluType)
 . /etc/${clutype}-lib.sh
@@ -71,12 +72,13 @@ distribution=$(getDistribution)
 [ -e /etc/${distribution}/clusterfs-lib.sh ] && source /etc/${distribution}/clusterfs-lib.sh
 [ -e /etc/${distribution}/${clutype}-lib.sh ] && source /etc/${distribution}/${clutype}-lib.sh
 [ -e /etc/${distribution}/xen-lib.sh ] && source /etc/${distribution}/xen-lib.sh
+[ -e /etc/${distribution}/iscsi-lib.sh ] && source /etc/${distribution}/iscsi-lib.sh
 
 echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.45 $ $Date: 2007-10-09 16:48:33 $'
+echo_local 'Internal Version $Revision: 1.46 $ $Date: 2007-10-10 11:05:22 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -120,11 +122,6 @@ nodeid=$(getParm ${cfsparams} 6)
 nodename=$(getParm ${cfsparams} 7)
 rootfs=$(getParm ${cfsparams} 8)
 return_code 0
-
-if [ -n "$rootsource" ] && [ "$rootsource" = "iscsi" ]; then
-    source /etc/iscsi-lib.sh
-    source /etc/${distribution}/iscsi-lib.sh
-fi
 
 check_cmd_params $*
 
@@ -429,7 +426,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.45  2007-10-09 16:48:33  mark
+# Revision 1.46  2007-10-10 11:05:22  marc
+# readded inclusion of iscsi-lib if available
+#
+# Revision 1.45  2007/10/09 16:48:33  mark
 # restart some cluster services in newroot (clvmd)
 #
 # Revision 1.44  2007/10/09 14:24:27  marc
