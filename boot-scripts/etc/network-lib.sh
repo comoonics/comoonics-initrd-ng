@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.4 2007-10-05 10:07:31 marc Exp $
+# $Id: network-lib.sh,v 1.5 2007-10-10 15:08:56 mark Exp $
 #
 # @(#)$File$
 #
@@ -88,6 +88,7 @@ function nicConfig {
 #  SOURCE
 #
 function nicUp() {
+   local _err=0
    local dev=$1
    /sbin/ifup $dev
    _err=$?
@@ -182,7 +183,10 @@ function getPosFromIPString() {
 
 #############
 # $Log: network-lib.sh,v $
-# Revision 1.4  2007-10-05 10:07:31  marc
+# Revision 1.5  2007-10-10 15:08:56  mark
+# fix for BZ138
+#
+# Revision 1.4  2007/10/05 10:07:31  marc
 # - added xen-support
 #
 # Revision 1.3  2007/09/14 13:28:31  marc

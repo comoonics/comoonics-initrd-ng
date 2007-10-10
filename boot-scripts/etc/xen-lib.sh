@@ -1,5 +1,5 @@
 #
-# $Id: xen-lib.sh,v 1.3 2007-10-05 14:26:25 marc Exp $
+# $Id: xen-lib.sh,v 1.4 2007-10-10 15:09:15 mark Exp $
 #
 # @(#)$File$
 #
@@ -45,6 +45,7 @@ function xen_domx_detect() {
 #  SOURCE
 #
 function xen_dom0_detect() {
+  local _err=0
   dmesg | grep -A1 BIOS | tail -1 | grep "[[:space:]]Xen" >/dev/null 2>&1
   if [ $? -eq 0 ]; then
   	return 1
@@ -70,6 +71,7 @@ function xen_dom0_detect() {
 #  SOURCE
 #
 function xen_domx_detect() {
+  local _err=0
   dmesg | grep -A1 BIOS | tail -1 | grep "[[:space:]]Xen" >/dev/null 2>&1
   _err=$?
   if [ $_err -eq 0 ] && ! [ -d /etc/xen ]; then
