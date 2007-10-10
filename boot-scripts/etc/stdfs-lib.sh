@@ -1,5 +1,5 @@
 #
-# $Id: stdfs-lib.sh,v 1.1 2007-08-06 15:50:11 mark Exp $
+# $Id: stdfs-lib.sh,v 1.2 2007-10-10 12:19:41 mark Exp $
 #
 # @(#)$File$
 #
@@ -47,6 +47,39 @@ function is_modified {
   fi
 }
 #*********** is_modified
+
+#****f* boot-lib.sh/is_same_inode
+#  NAME
+#    is_same_inode
+#  SYNOPSIS
+#    function is_same_inode(sourcefile, destfile)
+#  DESCRIPTION
+#    returns 0 if sourcefile and destfile are the same inode. Otherwise it returns 0
+#  IDEAS
+#  SOURCE
+#
+function is_same_inode {
+  local source=$1
+  local dest=$2
+  local lsopt=""
+  if [ -d "$source" ]; then
+  	lsopt="-d"
+  fi
+  local sinode=$(/bin/ls $lsopt -i $source | awk '{print $1}')
+  if [ -d "$dest" ]; then
+  	lsopt="-d"
+  else
+  	lsopt=""
+  fi
+  local dinode=$(/bin/ls $lsopt -i $dest | awk '{print $1}')
+  if [ $dinode -eq $sinode ]; then
+  	return 0
+  else
+  	return 1
+  fi
+
+}
+#*********** is_same_inode
 
 
 
