@@ -19,7 +19,7 @@
 # disclose such Confidential Information and shall use it only in
 # accordance with the terms of the license agreement you entered into
 # with ATIX.
-# $Id: comoonics-bootimage.spec,v 1.58 2007-10-10 12:29:16 mark Exp $
+# $Id: comoonics-bootimage.spec,v 1.59 2007-10-10 15:11:07 mark Exp $
 #
 ##
 ##
@@ -45,7 +45,7 @@ Version: 1.3
 BuildArch: noarch
 Requires: comoonics-cs-py >= 0.1-43 comoonics-cluster-py >= 0.1-2 comoonics-bootimage-initscripts >= 1.3 comoonics-bootimage-listfiles >= 1.3
 #Conflicts:
-Release: 18
+Release: 19
 Vendor: ATIX AG
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -419,6 +419,8 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Wed Oct 10 2007 Marc Hlawatschek <hlawatschek@atix.de> 1.3-19
+- Fixes BUG 138
 * Tue Oct 09 2007 Marc Hlawatschek <hlawatschek@atix.de> 1.3-18
 - Another fix for BUG 136
 - start syslogd in chroot
@@ -518,7 +520,10 @@ rm -rf %{buildroot}
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.58  2007-10-10 12:29:16  mark
+# Revision 1.59  2007-10-10 15:11:07  mark
+# new release
+#
+# Revision 1.58  2007/10/10 12:29:16  mark
 # new release
 #
 # Revision 1.57  2007/10/09 14:25:12  marc
