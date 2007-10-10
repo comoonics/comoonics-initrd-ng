@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.47 2007-10-10 12:23:27 mark Exp $
+# $Id: linuxrc.generic.sh,v 1.48 2007-10-10 15:09:48 mark Exp $
 #
 # @(#)$File$
 #
@@ -17,7 +17,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.47 2007-10-10 12:23:27 mark Exp $
+#    $Id: linuxrc.generic.sh,v 1.48 2007-10-10 15:09:48 mark Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -78,7 +78,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.47 $ $Date: 2007-10-10 12:23:27 $'
+echo_local 'Internal Version $Revision: 1.48 $ $Date: 2007-10-10 15:09:48 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -203,6 +203,11 @@ if [ "$clutype" != "$rootfs" ]; then
 	[ -e /etc/${distribution}/${rootfs}-lib.sh ] && source /etc/${distribution}/${rootfs}-lib.sh
 fi
 
+echo_local -n "Loading USB Modules.."
+exec_local usbLoad
+return_code
+[ -e /proc/bus/usb/devices ] && stabilized --type=hash --interval=300 /proc/bus/usb/devices
+
 netdevs=""
 for ipconfig in $ipConfig; do
   dev=$(getPosFromIPString 6, $ipconfig)
@@ -220,11 +225,6 @@ for ipconfig in $ipConfig; do
   fi
 
   nicConfig $ipconfig
-
-  echo_local -n "Loading USB Modules.."
-  exec_local usbLoad
-  return_code
-  [ -e /proc/bus/usb/devices ] && stabilized --type=hash --interval=300 /proc/bus/usb/devices
 
   echo_local -n "Powering up $dev.."
   exec_local nicUp $dev >/dev/null 2>&1
@@ -432,7 +432,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.47  2007-10-10 12:23:27  mark
+# Revision 1.48  2007-10-10 15:09:48  mark
+# move usbstart out of for-loop
+#
+# Revision 1.47  2007/10/10 12:23:27  mark
 # added syslog to chroot
 #
 # Revision 1.46  2007/10/10 11:05:22  marc
