@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.46 2007-10-10 11:05:22 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.47 2007-10-10 12:23:27 mark Exp $
 #
 # @(#)$File$
 #
@@ -17,7 +17,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.46 2007-10-10 11:05:22 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.47 2007-10-10 12:23:27 mark Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -78,7 +78,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.46 $ $Date: 2007-10-10 11:05:22 $'
+echo_local 'Internal Version $Revision: 1.47 $ $Date: 2007-10-10 12:23:27 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -228,7 +228,7 @@ for ipconfig in $ipConfig; do
 
   echo_local -n "Powering up $dev.."
   exec_local nicUp $dev >/dev/null 2>&1
-  return_code
+  return_code $?
   netdevs="$netdevs $dev"
 done
 
@@ -287,11 +287,17 @@ echo_local_debug "res: $res -> chroot_mount=$chroot_mount, chroot_path=$chroot_p
 
 step "chroot environment created"
 
-# TODO: start syslog in /comoonics ?
 cc_auto_syslogconfig $cluster_conf $nodename
 start_service /sbin/syslogd no_chroot -m 0
 
-step "Syslog service started"
+# start syslog in $chroot_path
+# but only if /dev is not the same inode as $chroot_path /dev
+if ! is_same_inode /dev $chroot_path/dev; then
+	cc_auto_syslogconfig $cluster_conf $nodename $chroot_path no
+	start_service_chroot $chroot_path /sbin/syslogd -m 0
+fi
+	
+step "Syslog services started"
 
 
 if [ -z "$quorumack" ]; then
@@ -426,7 +432,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.46  2007-10-10 11:05:22  marc
+# Revision 1.47  2007-10-10 12:23:27  mark
+# added syslog to chroot
+#
+# Revision 1.46  2007/10/10 11:05:22  marc
 # readded inclusion of iscsi-lib if available
 #
 # Revision 1.45  2007/10/09 16:48:33  mark
