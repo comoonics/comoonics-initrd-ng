@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.15 2007-10-09 16:47:21 mark Exp $
+# $Id: clusterfs-lib.sh,v 1.16 2007-10-10 12:18:31 mark Exp $
 #
 # @(#)$File$
 #
@@ -462,23 +462,28 @@ function cc_auto_hosts {
 #  NAME
 #    cc_auto_syslogconfig
 #  SYNOPSIS
-#    function cc_auto_syslogconfig(cluster_conf, nodename)
+#    function cc_auto_syslogconfig(cluster_conf, nodename, chroot_path, locallog)
 #  DESCRIPTION
 #    creates config for the syslog service
+#    to enable local logging use "yes"
 #  SOURCE
 function cc_auto_syslogconfig {
   local cluster_conf=$1
   local nodename=$2
-  local syslog_server=$(${clutype}_get_syslogserver $cluster_conf $nodename)
+  local chroot_path=$3
+  local local_log=$4
+  local syslog_server_list=$(${clutype}_get_syslogserver $cluster_conf $nodename)
 
-  echo_local -n "Creating syslog config for syslog server: $syslog_server"
-  if [ -n "$syslog_server" ]; then
-    echo '*.* @'"$syslog_server" >> /etc/syslog.conf
-  else
-    echo "*.* -/var/log/comoonics_boot.syslog" >> /etc/syslog.conf
+  echo_local -n "Creating syslog config for syslog servers: $syslog_server_list"
+  exec_local /bin/rm $chroot_path/etc/syslog.conf
+  for syslog_server in $syslog_server_list; do
+  	echo '*.* @'"$syslog_server" >> $chroot_path/etc/syslog.conf
+  done
+  if [ "$local_log" == "yes" ]; then
+    echo "*.* -/var/log/comoonics_boot.syslog" >> $chroot_path/etc/syslog.conf
   fi
 
-  echo "syslog          514/udp" >> /etc/services
+  echo "syslog          514/udp" >> $chroot_path/etc/services
   return_code $?
 }
 #******** cc_auto_syslogconfig
@@ -724,7 +729,10 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.15  2007-10-09 16:47:21  mark
+# Revision 1.16  2007-10-10 12:18:31  mark
+# redesigned cc_auto_syslogconfig to support diffrent configurations
+#
+# Revision 1.15  2007/10/09 16:47:21  mark
 # added clusterfs_services_start_newroot
 #
 # Revision 1.14  2007/10/05 09:03:03  mark
