@@ -19,7 +19,7 @@
 # disclose such Confidential Information and shall use it only in
 # accordance with the terms of the license agreement you entered into
 # with ATIX.
-# $Id: comoonics-bootimage.spec,v 1.60 2007-10-10 19:50:52 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.61 2007-10-11 07:34:37 mark Exp $
 #
 ##
 ##
@@ -419,8 +419,9 @@ rm -rf %{buildroot}
 
 
 %changelog
-* Wed Oct 10 2007 Marc Grimme <hlawatschek@atix.de> 1.3-19
+* Wed Oct 10 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3-20
 - Fixes BUG 114
+- Fixes BUG 139
 * Wed Oct 10 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3-19
 - Fixes BUG 138
 * Tue Oct 09 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3-18
@@ -522,7 +523,10 @@ rm -rf %{buildroot}
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.60  2007-10-10 19:50:52  marc
+# Revision 1.61  2007-10-11 07:34:37  mark
+# new revision
+#
+# Revision 1.60  2007/10/10 19:50:52  marc
 # new version 1.3-20
 #
 # Revision 1.59  2007/10/10 15:11:07  mark
