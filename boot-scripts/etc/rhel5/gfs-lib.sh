@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.8 2007-10-10 22:48:08 mark Exp $
+# $Id: gfs-lib.sh,v 1.9 2007-10-16 07:59:26 marc Exp $
 #
 # @(#)$File$
 #
@@ -79,12 +79,18 @@ GFS_MODULES="configfs gfs2 gfs dlm"
 #
 function gfs_services_start {
   local chroot_path=$1
+  local lock_method=$2
+  local lvm_sup=$3
 
   echo_local -n "Mounting configfs"
   exec_local mount -t configfs none $chroot_path/sys/kernel/config
   return_code
 
-  services="ccsd cman groupd fenced dlm_controld gfs_controld qdiskd clvmd"
+  services="ccsd cman groupd fenced dlm_controld gfs_controld qdiskd"
+  if [ "$lvm_sup" -eq 0 ]; then
+  	services="$services clvmd"
+  fi
+
   for service in $services; do
     gfs_start_$service $chroot_path
     if [ $? -ne 0 ]; then
@@ -107,8 +113,13 @@ function gfs_services_start {
 #
 function gfs_services_stop {
   local chroot_path=$1
+  local lock_method=$2
+  local lvm_sup=$3
 
-  services="fenced clvmd cman"
+  services="fenced cman"
+  if [ "$lvm_sup" -eq 0 ]; then
+  	services="fenced clvmd cman"
+  fi
   for service in $services; do
     gfs_stop_$service $chroot_path
     if [ $? -ne 0 ]; then
@@ -131,24 +142,32 @@ function gfs_services_stop {
 #
 function gfs_services_restart_newroot {
   local chroot_path=$1
-  services="clvmd"
-  for service in $services; do
-    gfs_stop_$service $chroot_path
-    if [ $? -ne 0 ]; then
-      return $?
-    fi
-  done
- 
-  for service in $services; do
-    gfs_start_$service $chroot_path
-    if [ $? -ne 0 ]; then
-      return $?
-    fi
-  done
-  
+  local lock_method=$2
+  local lvm_sup=$3
+
+  services=""
+  if [ "$lvm_sup" -eq 0 ]; then
+  	services="$services clvmd"
+  fi
+  if [ -n "$services" ]; then
+    for service in $services; do
+      gfs_stop_$service $chroot_path
+      if [ $? -ne 0 ]; then
+        return $?
+      fi
+    done
+
+    for service in $services; do
+      gfs_start_$service $chroot_path
+      if [ $? -ne 0 ]; then
+        return $?
+      fi
+    done
+  fi
+
   exec_local umount $chroot_path/proc
-  
-  return $return_c	
+
+  return $return_c
 }
 #************ gfs_services_start_newroot
 
