@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.16 2007-10-10 12:18:31 mark Exp $
+# $Id: clusterfs-lib.sh,v 1.17 2007-10-16 08:00:11 marc Exp $
 #
 # @(#)$File$
 #
@@ -162,6 +162,10 @@ function clusterfs_config {
   __rootfs=$(cc_get_rootfs ${cluster_conf} $_nodename)
   [ -z "$__rootfs" ] && __rootfs=$(getRootFS)
   echo $__rootfs
+  __rootsource=$(cc_get_rootsource ${cluster_conf} $_nodename)
+  [ -z "$__rootsource" ] && __rootsource="scsi"
+  echo $__rootsource
+
   for _dev in $(cc_get_netdevs ${cluster_conf} $_nodename); do
     cc_auto_netconfig ${cluster_conf} $_nodename $_dev
   done
@@ -193,7 +197,7 @@ function cc_get_nodeid_by_nodename {
 #    gets the cluster nodename of this node from the cluster infrastructure
 #  SOURCE
 function cc_get_clu_nodename {
-  ${clutype}_get_clu_nodename 
+  ${clutype}_get_clu_nodename
 }
 #******* cc_get_clu_nodename
 
@@ -245,6 +249,22 @@ function cc_get_rootvolume {
    ${clutype}_get_rootvolume $cluster_conf $nodename
 }
 #******** cc_get_rootvolume
+
+#****f* clusterfs-lib.sh/cc_get_rootsource
+#  NAME
+#    cc_get_rootsource
+#  SYNOPSIS
+#    function cc_get_rootsource(cluster_conf, nodename)
+#  DESCRIPTION
+#    gets the nodename of this node referenced by the networkdevice
+#  SOURCE
+function cc_get_rootsource {
+   local cluster_conf=$1
+   local nodename=$2
+
+   ${clutype}_get_rootsource $cluster_conf $nodename
+}
+#******** cc_get_rootsource
 
 #****f* clusterfs-lib.sh/cc_get_rootfs
 #  NAME
@@ -322,7 +342,7 @@ function cc_get_chroot_fstype {
    else
       echo "tmpfs"
    fi
-   
+
 }
 #******** cc_get_chroot_fstype
 
@@ -345,7 +365,7 @@ function cc_get_chroot_device {
    else
       echo "none"
    fi
-   
+
 }
 #******** cc_get_chroot_fstype
 
@@ -540,7 +560,7 @@ function clusterfs_services_stop {
 #  SOURCE
 #
 function clusterfs_services_restart {
-   ${rootfs}_services_restart $1 $2
+   ${rootfs}_services_restart $*
 }
 #***** clusterfs_services_restart
 
@@ -729,7 +749,10 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.16  2007-10-10 12:18:31  mark
+# Revision 1.17  2007-10-16 08:00:11  marc
+# - added basic rootsource support
+#
+# Revision 1.16  2007/10/10 12:18:31  mark
 # redesigned cc_auto_syslogconfig to support diffrent configurations
 #
 # Revision 1.15  2007/10/09 16:47:21  mark
