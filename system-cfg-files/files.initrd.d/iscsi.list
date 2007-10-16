@@ -1,0 +1,6 @@
+# Filelist for iSCSI
+/etc/iscsi/initiatorname.iscsi
+/etc/iscsi/iscsid.conf
+/var/lock/subsys/iscsi
+/var/lock/subsys/iscsid
+/var/lib/iscsi/nodes/
