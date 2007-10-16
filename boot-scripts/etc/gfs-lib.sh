@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.41 2007-10-09 16:47:44 mark Exp $
+# $Id: gfs-lib.sh,v 1.42 2007-10-16 08:01:24 marc Exp $
 #
 # @(#)$File$
 #
@@ -91,6 +91,26 @@ function gfs_get_rootvolume {
    $xml_cmd -q rootvolume $hostname
 }
 #************ gfs_get_rootvolume
+
+#****f* gfs-lib.sh/gfs_get_rootsource
+#  NAME
+#    gfs_get_rootsource
+#  SYNOPSIS
+#    gfs_get_rootsource(cluster_conf, nodename)
+#  DESCRIPTION
+#    Gets the rootsource for this node
+#  IDEAS
+#  SOURCE
+#
+function gfs_get_rootsource {
+   local xml_file=$1
+   local hostname=$2
+   [ -z "$hostname" ] && hostname=$(gfs_get_nodename $xml_file)
+   local xpath="/cluster/clusternodes/clusternode[@name=\"$hostname\"]/com_info/rootsource/@name"
+   local xml_cmd="${ccs_xml_query} -f $xml_file"
+   $xml_cmd -q query_value $xpath
+}
+#************ gfs_get_rootsource
 
 #****f* gfs-lib.sh/gfs_get_rootfs
 #  NAME
@@ -498,8 +518,12 @@ function gfs_services_start {
   ## THIS will be overwritten for rhel5 ##
   local chroot_path=$1
   local lock_method=$2
+  local lvm_sup=$3
 
-  services="ccsd $lock_method cman qdiskd fenced clvmd"
+  services="ccsd $lock_method cman qdiskd fenced"
+  if [ "$lvm_sup" -eq 0 ]; then
+  	services="$services clvmd"
+  fi
   for service in $services; do
     gfs_start_$service $chroot_path
     if [ $? -ne 0 ]; then
@@ -768,7 +792,7 @@ function gfs_stop_clvmd {
    exec_local killall clvmd
    if pidof clvmd > /dev/null; then
        killall -9 clvmd
-   fi 
+   fi
    return_code $?
 }
 #******gfs_stop_clvmd
@@ -856,7 +880,7 @@ function gfs_start_qdiskd {
 
   $ccs_xml_query query_xml /cluster/quorumd >/dev/null 2>&1
   if [ $? -eq 0 ]; then
-     start_service_chroot $chroot_path /usr/sbin/qdiskd -Q
+     start_service_chroot $chroot_path /sbin/qdiskd -Q
   else
      skipped
      echo_local
@@ -937,7 +961,12 @@ function gfs_checkhosts_alive {
 #********* gfs_checkhosts_alive
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.41  2007-10-09 16:47:44  mark
+# Revision 1.42  2007-10-16 08:01:24  marc
+# - added get_rootsource
+# - fixed BUG 142
+# - lvm switch support
+#
+# Revision 1.41  2007/10/09 16:47:44  mark
 # added gfs_services_restart_newroot
 #
 # Revision 1.40  2007/10/05 09:02:40  mark

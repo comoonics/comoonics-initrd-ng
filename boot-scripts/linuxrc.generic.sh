@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.49 2007-10-10 22:48:08 mark Exp $
+# $Id: linuxrc.generic.sh,v 1.50 2007-10-16 08:02:41 marc Exp $
 #
 # @(#)$File$
 #
@@ -17,7 +17,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.49 2007-10-10 22:48:08 mark Exp $
+#    $Id: linuxrc.generic.sh,v 1.50 2007-10-16 08:02:41 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -59,7 +59,7 @@
 . /etc/stdfs-lib.sh
 . /etc/defaults.sh
 . /etc/xen-lib.sh
-[ -e source /etc/iscsi-lib.sh ] && /etc/iscsi-lib.sh
+[ -e /etc/iscsi-lib.sh ] && source /etc/iscsi-lib.sh
 
 clutype=$(getCluType)
 . /etc/${clutype}-lib.sh
@@ -78,7 +78,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.49 $ $Date: 2007-10-10 22:48:08 $'
+echo_local 'Internal Version $Revision: 1.50 $ $Date: 2007-10-16 08:02:41 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -180,11 +180,13 @@ rootvolume=${cfsparams[2]}
 _mount_opts=${cfsparams[3]}
 _scsifailover=${cfsparams[4]}
 rootfs=${cfsparams[5]}
-_ipConfig=${cfsparams[@]:6}
+_rootsource=${cfsparams[6]}
+_ipConfig=${cfsparams[@]:7}
 [ -n "$_ipConfig" ] && ( [ -z "$ipConfig" ] || [ "$ipConfig" = "cluster" ] ) && ipConfig=$_ipConfig
 [ -n "$_mount_opts" ] && [ -z "$mount_opts" ] && mount_opts=$_mount_opts
 [ -n "$_scsifailover" ] && [ -z "$scsifailover" ] && scsifailover=$_scsifailover
 [ -z "$root" ] || [ "$root" = "/dev/ram0" ] && root=$rootvolume
+[ -z "$rootsource" ] && rootsource=$_rootsource
 cc_auto_hosts $cluster_conf
 
 echo_local_debug "*****************************"
@@ -193,6 +195,7 @@ echo_local_debug "nodename: $nodename"
 echo_local_debug "rootvolume: $rootvolume"
 echo_local_debug "scsifailover: $scsifailover"
 echo_local_debug "rootfs: $rootfs"
+echo_local_debug "rootsource: $rootsource"
 echo_local_debug "ipConfig: $ipConfig"
 echo_local_debug "*****************************"
 
@@ -237,6 +240,14 @@ step "Network configuration started"
 
 dm_start
 scsi_start $scsifailover
+
+# start iscsi if apropriate
+isISCSIRootsource $rootsource
+if [ $? -eq 0 ]; then
+	loadISCSI
+	startISCSI
+fi
+
 # loads kernel modules for cluster stack
 # TODO: - rename to clusterfs_kernel_load
 #       - add cluster_kernel_load
@@ -257,9 +268,12 @@ fi
 [ -e /proc/scsi/scsi ] && stabilized --type=hash --interval=600 /proc/scsi/scsi
 step "UDEV started"
 
-lvm_start
-
-step "LVM subsystem started"
+lvm_check $root
+lvm_sup=$?
+if [ "$lvm_sup" -eq 0 ]; then
+	lvm_start
+	step "LVM subsystem started"
+fi
 
 
 # TODO:
@@ -296,7 +310,7 @@ if ! is_same_inode /dev $chroot_path/dev; then
 	cc_auto_syslogconfig $cluster_conf $nodename $chroot_path no
 	start_service_chroot $chroot_path /sbin/syslogd -m 0
 fi
-	
+
 step "Syslog services started"
 
 
@@ -333,7 +347,7 @@ if [ -z "$quorumack" ]; then
 fi
 
 setHWClock
-clusterfs_services_start $chroot_path $lockmethod
+clusterfs_services_start $chroot_path "$lockmethod" "$lvm_sup"
 
 if [ $return_c -ne 0 ]; then
    echo_local "Could not start all cluster services. Exiting"
@@ -421,7 +435,7 @@ echo
 #TODO umount $newroot/proc again
 echo_local -n "start services in newroot ..."
 exec_local prepare_newroot $newroot
-exec_local clusterfs_services_restart_newroot $newroot
+exec_local clusterfs_services_restart_newroot $newroot "$lockmethod" "$lvm_sup"
 return_code $?
 
 step "Initialization completed."
@@ -433,7 +447,12 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.49  2007-10-10 22:48:08  mark
+# Revision 1.50  2007-10-16 08:02:41  marc
+# - added get_rootsource
+# - fixed BUG 142
+# - lvm switch support
+#
+# Revision 1.49  2007/10/10 22:48:08  mark
 # fixes BZ139
 #
 # Revision 1.48  2007/10/10 15:09:48  mark

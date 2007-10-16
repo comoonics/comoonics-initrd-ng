@@ -19,7 +19,7 @@
 # disclose such Confidential Information and shall use it only in
 # accordance with the terms of the license agreement you entered into
 # with ATIX.
-# $Id: comoonics-bootimage.spec,v 1.61 2007-10-11 07:34:37 mark Exp $
+# $Id: comoonics-bootimage.spec,v 1.62 2007-10-16 08:04:33 marc Exp $
 #
 ##
 ##
@@ -45,7 +45,7 @@ Version: 1.3
 BuildArch: noarch
 Requires: comoonics-cs-py >= 0.1-43 comoonics-cluster-py >= 0.1-2 comoonics-bootimage-initscripts >= 1.3 comoonics-bootimage-listfiles >= 1.3
 #Conflicts:
-Release: 20
+Release: 21
 Vendor: ATIX AG
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -111,7 +111,19 @@ Group:   Storage/Management
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description extras-xen
-Extra listfiles for xen support in the open-sharedroot cluster
+listfiles for xen support in the open-sharedroot cluster
+
+%package extras-iscsi
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage >= 1.3-21
+Summary: listfiles for iscsi support in the open-sharedroot cluster
+Group:   Storage/Management
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description extras-iscsi
+support in the open-sharedroot cluster
+PREVIEW VERSION
 
 %package compat
 Version: 0.1
@@ -374,6 +386,10 @@ fi
 %attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/xen.list
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/xen.list
 
+%files extras-iscsi
+%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/iscsi.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/iscsi.list
+
 %files fenceacksv
 %attr(755, root, root) %{FENCEACKSV_DIR}/fence_ack_server.py
 #%attr(755, root, root) %{FENCEACKSV_DIR}/fence_ack_server.pyc
@@ -419,6 +435,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Mon Oct 15 2007 Marc Grimme <grimme@atix.de> 1.3-21
+- Added ISCSI Support preview (thanks to Gordan Bobic)
+- Fixed Bug 142, where in RHEL4 qdiskd could not be started
 * Wed Oct 10 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3-20
 - Fixes BUG 114
 - Fixes BUG 139
@@ -496,6 +515,10 @@ rm -rf %{buildroot}
 * Wed Oct 03 2007 Marc Grimme <grimme@atix.de> - 0.1-1
 - first release
 
+%changelog extras-iscsi
+* Fri Oct 12 2007 Marc Grimme <grimme@atix.de> - 0.1-1
+- first release
+
 %changelog fenceacksv
 * Mon Sep 10 2007 Marc Grimme <grimme@atix.de> - 0.3-1
   - Fixed Bug BZ#107, fixed problems with not installed plugins
@@ -523,7 +546,12 @@ rm -rf %{buildroot}
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.61  2007-10-11 07:34:37  mark
+# Revision 1.62  2007-10-16 08:04:33  marc
+# - added get_rootsource
+# - fixed BUG 142
+# - lvm switch support
+#
+# Revision 1.61  2007/10/11 07:34:37  mark
 # new revision
 #
 # Revision 1.60  2007/10/10 19:50:52  marc
