@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.35 2007-10-08 16:14:55 mark Exp $
+# $Id: Makefile,v 1.36 2007-10-16 08:04:13 marc Exp $
 #
 # @(#)$file$
 #
@@ -171,10 +171,12 @@ CFG_DIR=$(SYSTEM_CFG_DIR)/bootimage
 #  SOURCE
 #
 CFG_FILES=files.initrd.d/rdac_multipath.list \
+	files.initrd.d/iscsi.list \
 	files.initrd.d/user_edit.list \
 	files.initrd.d/vlan.list \
 	files.initrd.d/xen.list \
 	rpms.initrd.d/dm_multipath.list \
+	rpms.initrd.d/iscsi.list \
 	rpms.initrd.d/nfs.list \
 	rpms.initrd.d/xen.list \
 	
@@ -382,7 +384,10 @@ rpmsign
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.35  2007-10-08 16:14:55  mark
+# Revision 1.36  2007-10-16 08:04:13  marc
+# - added iscsi-support
+#
+# Revision 1.35  2007/10/08 16:14:55  mark
 # added distrodependent boot-lib.sh
 #
 # Revision 1.34  2007/10/05 13:38:35  mark
