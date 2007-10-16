@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.13 2007-10-09 14:24:15 marc Exp $
+# $Id: hardware-lib.sh,v 1.14 2007-10-16 08:02:00 marc Exp $
 #
 # @(#)$File$
 #
@@ -271,6 +271,30 @@ function dm_start {
 }
 #************ dm_start
 
+#****f* boot-lib.sh/lvm_check
+#  NAME
+#    lvm_check
+#  SYNOPSIS
+#    function lvm_check $rootdevice
+#  DESCRIPTION
+#    checks if rootdevice is lvm compatible or not.
+#
+function lvm_check {
+	local rootdevice=$1
+	local valid_majors="8"
+	if ! [ -e "$rootdevice" ]; then
+		return 0
+	else
+		major=$(stat --format="%t" $rootdevice)
+		for _major in $valid_majors; do
+			if [ $major -eq $_major ]; then
+				return 1
+			fi
+		done
+    fi
+	return 0
+}
+
 #****f* boot-lib.sh/lvm_start
 #  NAME
 #    lvm_start
@@ -420,7 +444,10 @@ function add_scsi_device() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.13  2007-10-09 14:24:15  marc
+# Revision 1.14  2007-10-16 08:02:00  marc
+# - lvm switch support (lvm_check)
+#
+# Revision 1.13  2007/10/09 14:24:15  marc
 # usbLoad fixed and more stabilized
 #
 # Revision 1.12  2007/10/05 10:07:07  marc
