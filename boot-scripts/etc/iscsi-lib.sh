@@ -1,5 +1,5 @@
 #
-# $Id: iscsi-lib.sh,v 1.8 2006-05-03 12:45:13 marc Exp $
+# $Id: iscsi-lib.sh,v 1.9 2007-10-16 08:02:21 marc Exp $
 #
 # @(#)$File$
 #
@@ -24,6 +24,7 @@
 
 parser1="iscsi://([^:]+)"
 parser2="iscsi://([^:]+):([[:digit:]]+)/"
+parser3="^iscsi"
 
 #****f* iscsi-lib.sh/getISCSIServerFromParam
 #  NAME
@@ -36,13 +37,14 @@ parser2="iscsi://([^:]+):([[:digit:]]+)/"
 #
 function getISCSIServerFromParam {
     echo $1 | awk '
-{ 
+{
    match($1, "'$parser1'", iscsiparms);
    print iscsiparms[1];
 }'
 }
 
-#************ getISCSIServerFromParam 
+#************ getISCSIServerFromParam
+
 #****f* iscsi-lib.sh/getISCSIPortFromParam
 #  NAME
 #    getISCSIPortFromParam
@@ -54,13 +56,13 @@ function getISCSIServerFromParam {
 #
 function getISCSIPortFromParam {
     echo $1 | awk '
-{ 
+{
    match($1, "'$parser2'", iscsiparms);
    print iscsiparms[2];
 }'
 }
+#************ getISCSIPortFromParam
 
-#************ getISCSIPortFromParam 
 #****f* iscsi-lib.sh/createCiscoISCSICfgString
 #  NAME
 #    createCiscoISCSICfgString
@@ -73,10 +75,79 @@ function getISCSIPortFromParam {
 function createCiscoISCSICfgString {
     echo -n "DiscoveryAddress=$1" && ([ -n "$2" ] && echo ":$2") || echo
 }
-#************ createCiscoISCSICfgString 
+#************ createCiscoISCSICfgString
+
+#****f* iscsi-lib.sh/loadISCSI
+#  NAME
+#    loadISCSI
+#  SYNOPSIS
+#    function loadISCSI
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function loadISCSI {
+	local iscsimodules="iscsi_tcp"
+	echo_local -n "Loading iscsimodules"
+	for module in $iscsimodules; do
+		exec_local modprobe $module
+	done
+	return_code
+}
+#************ loadISCSI
+
+#****f* iscsi-lib.sh/startISCSI
+#  NAME
+#    startISCSI
+#  SYNOPSIS
+#    function startISCSI
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function startISCSI {
+	local iscsimodules="iscsi_tcp"
+	echo_local -n "Starting iscsid"
+	service iscsid start >/dev/null 2>&1
+	return_code $?
+	echo_local -n "Starting iscsi"
+	service iscsi start >/dev/null 2>&1
+	return_code $?
+}
+#************ startISCSI
+
+#****f* iscsi-lib.sh/isISCSIRootsource
+#  NAME
+#    isISCSIRootsource
+#  SYNOPSIS
+#    function isISCSIRootsource
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function isISCSIRootsource {
+	local rootsource=$1
+	if [ -z "$rootsource" ]; then
+		return 1
+	else
+      echo $1 | awk '
+/'$parser3'/ {
+	exit 0
+  }
+  {
+  	exit 1
+  }'
+      return $?
+    fi
+    return 1
+}
+#************ isISCSIRootsource
 
 # $Log: iscsi-lib.sh,v $
-# Revision 1.8  2006-05-03 12:45:13  marc
+# Revision 1.9  2007-10-16 08:02:21  marc
+# - preview version
+#
+# Revision 1.8  2006/05/03 12:45:13  marc
 # added documentation
 #
 # Revision 1.7  2004/09/29 14:32:16  marc
