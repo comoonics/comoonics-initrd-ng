@@ -118,6 +118,16 @@ comoonics-bootimage-extras-rdac-multipath:
 - 2007-09-15 Release 0.1.1
     * initial release
 
+comoonics-bootimage-extras-xen
+- 2007-10-18 Release 0.1-2
+   * added nss rpm for fence_xvm
+- 2007-10-03 Release 0.1-1
+   * first release
+
+comoonics-bootimage-extras-iscsi
+- 2007-10-12 Release 0.1-1
+   * first release
+
 comoonics-bootimage-fenceclient-ilo:
 - 2007-09-26 Release 0.1.18
     * bug fixes for el5
@@ -165,7 +175,10 @@ TODO:
 ########################################
 # CVS-Log
 # $Log: CHANGELOG,v $
-# Revision 1.32  2007-10-18 08:05:47  mark
+# Revision 1.33  2007-10-18 08:22:07  marc
+# added missing changelogs
+#
+# Revision 1.32  2007/10/18 08:05:47  mark
 # new entry
 #
 # Revision 1.31  2007/10/16 08:03:10  marc
