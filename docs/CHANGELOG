@@ -7,7 +7,8 @@ IDEAS:
 CHANGES:
 
 comoonics-bootimage:
-- 2007-10-12 Release 1.3-21
+- 2007-10-18 Release 1.3-21
+  * Fixes BUG 144 
   * Added ISCSI Support preview (thanks to Gordan Bobic)
 - 2007-10-07 Release 1.3-20
   * Fixes BUG 114
@@ -164,7 +165,10 @@ TODO:
 ########################################
 # CVS-Log
 # $Log: CHANGELOG,v $
-# Revision 1.31  2007-10-16 08:03:10  marc
+# Revision 1.32  2007-10-18 08:05:47  mark
+# new entry
+#
+# Revision 1.31  2007/10/16 08:03:10  marc
 # - added get_rootsource
 # - fixed BUG 142
 # - lvm switch support
