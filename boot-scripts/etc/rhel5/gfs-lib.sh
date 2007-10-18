@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.9 2007-10-16 07:59:26 marc Exp $
+# $Id: gfs-lib.sh,v 1.10 2007-10-18 08:03:38 mark Exp $
 #
 # @(#)$File$
 #
@@ -188,6 +188,7 @@ function gfs_start_qdiskd {
   if [ $? -eq 0 ]; then
      start_service_chroot $chroot_path /usr/sbin/qdiskd
   else
+  	 echo_local -n "Starting qdiskd"
      passed
      echo_local
   fi

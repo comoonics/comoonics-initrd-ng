@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.42 2007-10-16 08:01:24 marc Exp $
+# $Id: gfs-lib.sh,v 1.43 2007-10-18 08:03:37 mark Exp $
 #
 # @(#)$File$
 #
@@ -882,7 +882,8 @@ function gfs_start_qdiskd {
   if [ $? -eq 0 ]; then
      start_service_chroot $chroot_path /sbin/qdiskd -Q
   else
-     skipped
+  	 echo_local -n "Starting qdiskd"
+     passed
      echo_local
   fi
 }
@@ -961,7 +962,10 @@ function gfs_checkhosts_alive {
 #********* gfs_checkhosts_alive
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.42  2007-10-16 08:01:24  marc
+# Revision 1.43  2007-10-18 08:03:37  mark
+# added some fancy qdisk messages
+#
+# Revision 1.42  2007/10/16 08:01:24  marc
 # - added get_rootsource
 # - fixed BUG 142
 # - lvm switch support
