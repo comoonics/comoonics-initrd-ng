@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.55 2007-10-10 22:48:08 mark Exp $
+# $Id: boot-lib.sh,v 1.56 2007-10-18 08:04:07 mark Exp $
 #
 # @(#)$File$
 #
@@ -296,7 +296,7 @@ function getBootParameters() {
     echo -n ":"
     getBootParm com-step
     echo -n ":"
-    getBootParm mountopt defaults
+    getBootParm mountopt
     echo -n ":"
     getBootParm tmpfix
     echo -n ":"
@@ -937,7 +937,10 @@ function exec_local_debug() {
 
 
 # $Log: boot-lib.sh,v $
-# Revision 1.55  2007-10-10 22:48:08  mark
+# Revision 1.56  2007-10-18 08:04:07  mark
+# add mountopts debug message
+#
+# Revision 1.55  2007/10/10 22:48:08  mark
 # fixes BZ139
 #
 # Revision 1.54  2007/10/09 16:46:45  mark
