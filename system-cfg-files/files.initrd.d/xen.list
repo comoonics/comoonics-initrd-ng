@@ -3,3 +3,4 @@ brctl
 sysctl
 egrep
 fgrep
+nss
