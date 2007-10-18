@@ -19,7 +19,7 @@
 # disclose such Confidential Information and shall use it only in
 # accordance with the terms of the license agreement you entered into
 # with ATIX.
-# $Id: comoonics-bootimage.spec,v 1.62 2007-10-16 08:04:33 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.63 2007-10-18 08:15:27 mark Exp $
 #
 ##
 ##
@@ -435,7 +435,8 @@ rm -rf %{buildroot}
 
 
 %changelog
-* Mon Oct 15 2007 Marc Grimme <grimme@atix.de> 1.3-21
+* Mon Oct 17 2007 Marc Grimme <grimme@atix.de> 1.3-21
+- Fixed Bug 144, where mounoptions where not used
 - Added ISCSI Support preview (thanks to Gordan Bobic)
 - Fixed Bug 142, where in RHEL4 qdiskd could not be started
 * Wed Oct 10 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3-20
@@ -546,7 +547,10 @@ rm -rf %{buildroot}
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.62  2007-10-16 08:04:33  marc
+# Revision 1.63  2007-10-18 08:15:27  mark
+# new build
+#
+# Revision 1.62  2007/10/16 08:04:33  marc
 # - added get_rootsource
 # - fixed BUG 142
 # - lvm switch support
