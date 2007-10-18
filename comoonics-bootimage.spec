@@ -19,7 +19,7 @@
 # disclose such Confidential Information and shall use it only in
 # accordance with the terms of the license agreement you entered into
 # with ATIX.
-# $Id: comoonics-bootimage.spec,v 1.63 2007-10-18 08:15:27 mark Exp $
+# $Id: comoonics-bootimage.spec,v 1.64 2007-10-18 08:22:37 marc Exp $
 #
 ##
 ##
@@ -513,6 +513,8 @@ rm -rf %{buildroot}
 - first release
 
 %changelog extras-xen
+* Tue Oct 18 2007 Marc Grimme <grimme@atix.de> - 0.1-2
+- added nss rpm for fence_xvm
 * Wed Oct 03 2007 Marc Grimme <grimme@atix.de> - 0.1-1
 - first release
 
@@ -547,7 +549,10 @@ rm -rf %{buildroot}
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.63  2007-10-18 08:15:27  mark
+# Revision 1.64  2007-10-18 08:22:37  marc
+# - new version of extras-xen 0.1-2
+#
+# Revision 1.63  2007/10/18 08:15:27  mark
 # new build
 #
 # Revision 1.62  2007/10/16 08:04:33  marc
