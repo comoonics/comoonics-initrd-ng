@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.50 2007-10-16 08:02:41 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.51 2007-10-18 08:04:38 mark Exp $
 #
 # @(#)$File$
 #
@@ -17,7 +17,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.50 2007-10-16 08:02:41 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.51 2007-10-18 08:04:38 mark Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -78,7 +78,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.50 $ $Date: 2007-10-16 08:02:41 $'
+echo_local 'Internal Version $Revision: 1.51 $ $Date: 2007-10-18 08:04:38 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -184,6 +184,7 @@ _rootsource=${cfsparams[6]}
 _ipConfig=${cfsparams[@]:7}
 [ -n "$_ipConfig" ] && ( [ -z "$ipConfig" ] || [ "$ipConfig" = "cluster" ] ) && ipConfig=$_ipConfig
 [ -n "$_mount_opts" ] && [ -z "$mount_opts" ] && mount_opts=$_mount_opts
+[ -z "$mount_opts" ] && mount_opts="defaults" 
 [ -n "$_scsifailover" ] && [ -z "$scsifailover" ] && scsifailover=$_scsifailover
 [ -z "$root" ] || [ "$root" = "/dev/ram0" ] && root=$rootvolume
 [ -z "$rootsource" ] && rootsource=$_rootsource
@@ -195,6 +196,7 @@ echo_local_debug "nodename: $nodename"
 echo_local_debug "rootvolume: $rootvolume"
 echo_local_debug "scsifailover: $scsifailover"
 echo_local_debug "rootfs: $rootfs"
+echo_local_debug "mountopts: $mount_opts"
 echo_local_debug "rootsource: $rootsource"
 echo_local_debug "ipConfig: $ipConfig"
 echo_local_debug "*****************************"
@@ -447,7 +449,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.50  2007-10-16 08:02:41  marc
+# Revision 1.51  2007-10-18 08:04:38  mark
+# fixes bug #144
+#
+# Revision 1.50  2007/10/16 08:02:41  marc
 # - added get_rootsource
 # - fixed BUG 142
 # - lvm switch support
