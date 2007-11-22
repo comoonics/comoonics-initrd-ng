@@ -2,7 +2,7 @@
 #****h* comoonics-bootimage/bootsr
 #  NAME
 #    bootsr
-#    $Id: bootsr,v 1.2 2007-10-11 08:46:43 mark Exp $
+#    $Id: bootsr,v 1.3 2007-11-22 16:31:04 mark Exp $
 #  DESCRIPTION
 #    Comoonics Shared Root post boot settings
 #  AUTHOR
@@ -138,7 +138,7 @@ case "$1" in
 #      /sbin/lvm vgchange --ignorelockingfailure -ay 2>&1 | tee -a /var/log/bootsr | logger -t com-bootsr
 #      sleep 1
 #      /sbin/swapon -av 2>&1 | tee -a /var/log/bootsr | logger -t com-bootsr
-#      /bin/mount -at nonfs 2>&1 | tee -a /var/log/bootsr | logger -t com-bootsr
+      /bin/mount -at gfs 2>&1 | tee -a /var/log/bootsr | logger -t com-bootsr
       count=$(get_lockcount ${DEFAULT_LOCK_COUNT} ${MAX_LOCK_COUNT})
 	  action "Changing dlm:drop_count to $count" "sh -c \"echo $count > /proc/cluster/lock_dlm/drop_count\""
 #      echo $count > /proc/cluster/lock_dlm/drop_count && echo -n "($count)" &&
@@ -177,7 +177,10 @@ exit $RETVAL
 #************ main
 ###############
 # $Log: bootsr,v $
-# Revision 1.2  2007-10-11 08:46:43  mark
+# Revision 1.3  2007-11-22 16:31:04  mark
+# added automatic mount for gfs filesystems, fixes bz #150
+#
+# Revision 1.2  2007/10/11 08:46:43  mark
 # fix reload option #106
 #
 # Revision 1.1  2007/09/12 14:45:41  mark

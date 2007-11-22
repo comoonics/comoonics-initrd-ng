@@ -2,7 +2,7 @@
 #****h* comoonics-bootimage/bootsr
 #  NAME
 #    bootsr
-#    $Id: bootsr,v 1.5 2007-10-05 13:38:09 mark Exp $
+#    $Id: bootsr,v 1.6 2007-11-22 16:31:35 mark Exp $
 #  DESCRIPTION
 #    Comoonics Shared Root post boot settings
 #  AUTHOR
@@ -153,7 +153,7 @@ case "$1" in
       touch /var/lock/subsys/bootsr
 #      echo `date` Doing the Comoonics Shared Root post settings | tee -a /var/log/bootsr | logger -t com-bootsr
 #      /sbin/swapon -av 2>&1 | tee -a /var/log/bootsr | logger -t com-bootsr
-#      /bin/mount -at nonfs 2>&1 | tee -a /var/log/bootsr | logger -t com-bootsr
+      /bin/mount -at gfs 2>&1 | tee -a /var/log/bootsr | logger -t com-bootsr
 	  # Create symbolic links
 	  for file in $VAR_RUN_FILES; do
 	  	/bin/ln -sf $CHROOT_PATH/var/run/$file /var/run/
@@ -190,7 +190,10 @@ exit $RETVAL
 #************ main
 ###############
 # $Log: bootsr,v $
-# Revision 1.5  2007-10-05 13:38:09  mark
+# Revision 1.6  2007-11-22 16:31:35  mark
+# added automatic mount for gfs filesystems, fixes bz #150
+#
+# Revision 1.5  2007/10/05 13:38:09  mark
 # bug fixes
 #
 # Revision 1.4  2007/10/05 10:04:06  mark
