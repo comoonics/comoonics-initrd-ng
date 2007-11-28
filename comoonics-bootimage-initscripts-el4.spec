@@ -19,7 +19,7 @@
 # disclose such Confidential Information and shall use it only in
 # accordance with the terms of the license agreement you entered into
 # with ATIX.
-# $Id: comoonics-bootimage-initscripts-el4.spec,v 1.4 2007-10-11 08:47:50 mark Exp $
+# $Id: comoonics-bootimage-initscripts-el4.spec,v 1.5 2007-11-28 12:41:42 mark Exp $
 #
 ##
 ##
@@ -38,7 +38,7 @@ Version: 1.3
 BuildArch: noarch
 Requires: comoonics-bootimage >= 1.3-1
 #Conflicts:
-Release: 2.el4
+Release: 3.el4
 Vendor: ATIX AG
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -111,13 +111,18 @@ done
 %attr(750, root, root) %{INITDIR}/fenced-chroot
 %attr(750, root, root) %{INITDIR}/ccsd-chroot
 %changelog
+* Wed Nov 28 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3.3
+- Fixed BZ 150
 * Thu Oct 11 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3.2
 - Fixed BZ 106
 * Wed Sep 12 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3.1
 - first revision
 # ------
 # $Log: comoonics-bootimage-initscripts-el4.spec,v $
-# Revision 1.4  2007-10-11 08:47:50  mark
+# Revision 1.5  2007-11-28 12:41:42  mark
+# new release
+#
+# Revision 1.4  2007/10/11 08:47:50  mark
 # new release
 #
 # Revision 1.3  2007/09/14 15:07:18  mark

@@ -19,7 +19,7 @@
 # disclose such Confidential Information and shall use it only in
 # accordance with the terms of the license agreement you entered into
 # with ATIX.
-# $Id: comoonics-bootimage.spec,v 1.64 2007-10-18 08:22:37 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.65 2007-11-28 12:41:42 mark Exp $
 #
 ##
 ##
@@ -104,7 +104,7 @@ Extra listfiles for rdac multipath sharedroot configurations
 
 %package extras-xen
 Version: 0.1
-Release: 1
+Release: 2
 Requires: comoonics-bootimage >= 1.3-14
 Summary: listfiles for xen support in the open-sharedroot cluster
 Group:   Storage/Management
@@ -549,7 +549,10 @@ rm -rf %{buildroot}
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.64  2007-10-18 08:22:37  marc
+# Revision 1.65  2007-11-28 12:41:42  mark
+# new release
+#
+# Revision 1.64  2007/10/18 08:22:37  marc
 # - new version of extras-xen 0.1-2
 #
 # Revision 1.63  2007/10/18 08:15:27  mark

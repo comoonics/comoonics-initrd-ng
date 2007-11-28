@@ -19,7 +19,7 @@
 # disclose such Confidential Information and shall use it only in
 # accordance with the terms of the license agreement you entered into
 # with ATIX.
-# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.4 2007-10-05 14:09:53 mark Exp $
+# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.5 2007-11-28 12:41:42 mark Exp $
 #
 ##
 ##
@@ -38,7 +38,7 @@ Version: 1.3
 BuildArch: noarch
 Requires: comoonics-bootimage >= 1.3-1 SysVinit-comoonics
 #Conflicts: 
-Release: 4.el5
+Release: 5.el5
 Vendor: ATIX AG
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -110,6 +110,8 @@ done
 rm -rf %{buildroot}
 
 %changelog
+* Wed Nov 28 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3.5
+- Fixed BZ 150
 * Tue Sep 25 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3.3
 - create symlinks in /var/run
 * Wed Sep 19 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3.2
@@ -118,7 +120,10 @@ rm -rf %{buildroot}
 - first revision
 # ------
 # $Log: comoonics-bootimage-initscripts-el5.spec,v $
-# Revision 1.4  2007-10-05 14:09:53  mark
+# Revision 1.5  2007-11-28 12:41:42  mark
+# new release
+#
+# Revision 1.4  2007/10/05 14:09:53  mark
 # new revision
 #
 # Revision 1.3  2007/09/26 11:55:51  mark

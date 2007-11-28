@@ -19,7 +19,7 @@
 # disclose such Confidential Information and shall use it only in
 # accordance with the terms of the license agreement you entered into
 # with ATIX.
-# $Id: comoonics-bootimage-listfiles-el5.spec,v 1.6 2007-10-16 09:13:36 marc Exp $
+# $Id: comoonics-bootimage-listfiles-el5.spec,v 1.7 2007-11-28 12:41:42 mark Exp $
 #
 ##
 ##
@@ -38,7 +38,7 @@ Version: 1.3
 BuildArch: noarch
 Requires: comoonics-bootimage >= 1.3-1
 #Conflicts:
-Release: 5.el5
+Release: 6.el5
 Vendor: ATIX AG
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -111,13 +111,18 @@ install -m644 system-cfg-files/rpms.initrd.d/rhcs5.list $RPM_BUILD_ROOT/%{CONFIG
 rm -rf %{buildroot}
 
 %changelog
+* Wed Nov 28 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3-6
+- fixes bz#149
 * Fri Oct 12 2007 Marc Grimme <grimme@atix.de> 1.3-5
 - added coreutils and procps to base
 * Fri Sep 14 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3.1
 - first revision
 # ------
 # $Log: comoonics-bootimage-listfiles-el5.spec,v $
-# Revision 1.6  2007-10-16 09:13:36  marc
+# Revision 1.7  2007-11-28 12:41:42  mark
+# new release
+#
+# Revision 1.6  2007/10/16 09:13:36  marc
 # - added iscsi-support
 #
 # Revision 1.5  2007/10/05 14:52:19  mark
