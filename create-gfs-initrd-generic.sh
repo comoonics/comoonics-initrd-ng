@@ -6,19 +6,28 @@
 #*******
 #!/bin/bash
 #
-# $Id: create-gfs-initrd-generic.sh,v 1.15 2007-09-13 08:36:08 mark Exp $
+# $Id: create-gfs-initrd-generic.sh,v 1.16 2007-12-07 16:39:59 reiner Exp $
 #
 # @(#)$File$
 #
-# Copyright (c) 2001 ATIX GmbH.
+# Copyright (c) 2001 ATIX GmbH, 2007 ATIX AG.
 # Einsteinstrasse 10, 85716 Unterschleissheim, Germany
 # All rights reserved.
 #
-# This software is the confidential and proprietary information of ATIX
-# GmbH. ("Confidential Information").  You shall not
-# disclose such Confidential Information and shall use it only in
-# accordance with the terms of the license agreement you entered into
-# with ATIX.
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
 
 if  ! [ -e $(dirname $0)/boot-scripts/etc/boot-lib.sh ]; then
   echo "Cannot find $(dirname $0)/boot-scripts/etc/boot-lib.sh"
@@ -77,7 +86,7 @@ function getoptions() {
     while getopts UoRFVvhm:fd:s:r:b: option ; do
 	case "$option" in
 	    v) # version
-		echo "$0 Version "'$Revision: 1.15 $'
+		echo "$0 Version "'$Revision: 1.16 $'
 		exit 0
 		;;
 	    h) # help
@@ -315,7 +324,10 @@ ls -lk $initrdname
 
 ##########################################
 # $Log: create-gfs-initrd-generic.sh,v $
-# Revision 1.15  2007-09-13 08:36:08  mark
+# Revision 1.16  2007-12-07 16:39:59  reiner
+# Added GPL license and changed ATIX GmbH to AG.
+#
+# Revision 1.15  2007/09/13 08:36:08  mark
 # added fancy error help message
 #
 # Revision 1.14  2007/09/07 07:57:06  mark

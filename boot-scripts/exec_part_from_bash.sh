@@ -2,26 +2,35 @@
 #****h* comoonics-bootimage/exec_part_from_bash.sh
 #  NAME
 #    exec_part_from_bash.sh
-#    $Id: exec_part_from_bash.sh,v 1.5 2006-05-03 12:46:35 marc Exp $
+#    $Id: exec_part_from_bash.sh,v 1.6 2007-12-07 16:39:59 reiner Exp $
 #  DESCRIPTION
 #    helperskript for testing every script for the 
 #    comoonics-bootimage in the running initrd
 #*******
 
 #
-# $Id: exec_part_from_bash.sh,v 1.5 2006-05-03 12:46:35 marc Exp $
+# $Id: exec_part_from_bash.sh,v 1.6 2007-12-07 16:39:59 reiner Exp $
 #
 # @(#)$File$
 #
-# Copyright (c) 2001 ATIX GmbH.
+# Copyright (c) 2001 ATIX GmbH, 2007 ATIX AG.
 # Einsteinstrasse 10, 85716 Unterschleissheim, Germany
 # All rights reserved.
 #
-# This software is the confidential and proprietary information of ATIX
-# GmbH. ("Confidential Information").  You shall not
-# disclose such Confidential Information and shall use it only in
-# accordance with the terms of the license agreement you entered into
-# with ATIX.
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
 #
 # Kernelparameter for changing the bootprocess for the comoonics generic hardware detection alpha1
 #    bootpart=...          Which linuxrc.{bootpart} file should be loaded into 
@@ -42,7 +51,7 @@
 #  SOURCE
 #
 echo "Starting ATIX $0"
-echo 'Version $Date: 2006-05-03 12:46:35 $'
+echo 'Version $Date: 2007-12-07 16:39:59 $'
 
 
 . etc/sysconfig/comoonics
@@ -80,6 +89,9 @@ source $1
 
 #####################
 # $Log: exec_part_from_bash.sh,v $
-# Revision 1.5  2006-05-03 12:46:35  marc
+# Revision 1.6  2007-12-07 16:39:59  reiner
+# Added GPL license and changed ATIX GmbH to AG.
+#
+# Revision 1.5  2006/05/03 12:46:35  marc
 # added documentation
 #
