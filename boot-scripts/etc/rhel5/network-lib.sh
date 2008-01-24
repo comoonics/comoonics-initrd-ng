@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.1 2007-09-07 07:57:55 mark Exp $
+# $Id: network-lib.sh,v 1.2 2008-01-24 13:35:15 marc Exp $
 #
 # @(#)$File$
 #
@@ -35,76 +35,70 @@ function rhel5_ip2Config() {
   local ipDevice=$1
   local ipAddr=$2
 
-  #Bonding
   echo "$ipAddr" | grep "[[:digit:]][[:digit:]]*.[[:digit:]][[:digit:]]*.[[:digit:]][[:digit:]]*.[[:digit:]][[:digit:]]*" </dev/null 2>&1
   if [ -n "$ipAddr" ]; then
     local ipNetmask=$3
-    local ipHostname=$3
+    local ipHostname=$4
     local ipGate=$5
+    local MAC=$6
   else
     local master=$3
     local slave=$4
+  	local bridge=$5
+  	local MAC=$6
   fi
 
-  # just for testing
-  #local $pref="/tmp"
+  # reformating MAC from - to :
+  MAC=${MAC//-/:}
 
   if [ -z "$ipHostname" ]; then ipHostname="localhost.localdomain"; fi
   if [ -z "$ipDevice" ]; then ipDevice="eth0"; fi
 
-  # first save
-#  if [ -e ${__prefix}/etc/sysconfig/network ]; then
-#    mv ${__prefix}/etc/sysconfig/network ${__prefix}/etc/sysconfig/network.com_back
-#  fi
   if [ -e ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice ]; then
     mv ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice ${__prefix}/etc/sysconfig/network-scripts/ifcfg-${ipDevice}.com_back
   fi
+
+  (echo "DEVICE=$ipDevice" &&
+   echo "ONBOOT=no" &&
+   echo "TYPE=Ethernet") > ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
+
+  [ -n "$MAC" ] && echo "HWADDR=$MAC" >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
+
+  # test for vlan config
+  if [[ "$ipDevice" =~ "[a-z]+[0-9]+\.[0-9]+" ]]; then
+	echo "VLAN=yes" >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
+  fi
+
   if [ -n "$ipAddr" ]; then
     if [ "$ipAddr" = "dhcp" -o "$ipAddr" = "DHCP" -o -z "$ipAddr" ]; then
       bootproto="dhcp"
     else
-      bootproto="none"
+      bootproto="static"
     fi
 
-    (echo "DEVICE=$ipDevice" &&
-     echo "BOOTPROTO=$bootproto" &&
-     echo "ONBOOT=no" &&
-     echo "TYPE=Ethernet") > ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
+    echo "BOOTPROTO=$bootproto" >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
     if [ "$bootproto" != "dhcp" ]; then
       (echo "IPADDR=$ipAddr" &&
-      if [ -n "$ipNetmask" ]; then echo "NETMASK=$ipNetmask"; fi) >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
+       if [ -n "$ipNetmask" ]; then echo "NETMASK=$ipNetmask"; fi) >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
       if [ -n "$ipGate" ]; then
 	    echo "GATEWAY=$ipGate" >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
       fi
-      # test for vlan config
-	  if [[ "$ipDevice" =~ "[a-z]+[0-9]+\.[0-9]+" ]]; then
-		echo "VLAN=yes" >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
-	  fi
     fi
   else
-    (echo "DEVICE=$ipDevice" &&
-     echo "BOOTPROTO=none" &&
-     echo "ONBOOT=no" &&
-     echo "MASTER=${master}" &&
-     echo "SLAVE=${slave}" &&
-     echo "TYPE=Ethernet") > ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
+     [ -n "$master" ] && echo "MASTER=${master}" >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
+     [ -n "$slave" ] &&  echo "SLAVE=${slave}"   >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
+     [ -n "$bridge" ] && echo "BRIDGE=${bridge}" >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
   fi
-#   (echo "NETWORKING=yes" &&
-#    echo "HOSTNAME=$ipHostname") > ${__prefix}/etc/sysconfig/network
-#   if [ $(/bin/hostname) = "(none)" ] || [ $(/bin/hostname) = "localhost.localdomain" ] || [ $(/bin/hostname) = "localhost" ]; then
-#       /bin/hostname $ipHostname;
-#   fi
-#   echo_local_debug "   /etc/sysconfig/network"
-#   exec_local_debug cat /etc/sysconfig/network
-#   echo_local_debug "   /etc/sysconfig/network-scripts/ifcfg-${ipDevice}"
-#   exec_local_debug cat /etc/sysconfig/network-scripts/ifcfg-${ipDevice}
-   return 0
+  return 0
 }
 #************ rhel5_ip2Config
 
 #################
 # $Log: network-lib.sh,v $
-# Revision 1.1  2007-09-07 07:57:55  mark
+# Revision 1.2  2008-01-24 13:35:15  marc
+# - RFE#145 macaddress will be generated in configuration files
+#
+# Revision 1.1  2007/09/07 07:57:55  mark
 # initial check in
 #
 # Revision 1.3  2007/01/19 10:04:16  mark

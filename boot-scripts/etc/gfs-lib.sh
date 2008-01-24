@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.44 2007-12-07 16:39:59 reiner Exp $
+# $Id: gfs-lib.sh,v 1.45 2008-01-24 13:30:04 marc Exp $
 #
 # @(#)$File$
 #
@@ -440,14 +440,19 @@ function gfs_auto_netconfig {
   if [ -z "$netdev" ]; then netdev="eth0"; fi
 
   local ip_addr=$($xml_cmd -f $xml_file -q ip $nodename $netdev 2>/dev/null)
+  local mac_addr=$($xml_cmd -f $xml_file -q query_value /cluster/clusternodes/clusternode[@name=\"$nodename\"]/com_info/eth[@name=\"$netdev\"]/mac 2>/dev/null)
+  if [ -z "$mac_addr" ]; then
+  	local mac_addr=$(ifconfig $netdev | grep -i hwaddr | awk '{print $5;};')
+  fi
+  mac_addr=${mac_addr//:/-}
   if [ $? -eq 0 ] && [ "$ip_addr" != "" ]; then
     local gateway=$($xml_cmd -f $xml_file -q gateway $nodename $netdev) || local gateway=""
     local netmask=$($xml_cmd -f $xml_file -q mask $nodename $netdev)
-    echo ${ip_addr}"::"${gateway}":"${netmask}"::"$netdev
+    echo ${ip_addr}"::"${gateway}":"${netmask}"::"$netdev":"$mac_addr
   else
     local master=$($xml_cmd -f $xml_file -q master $nodename $netdev 2>/dev/null)
     local slave=$($xml_cmd -f $xml_file -q slave $nodename $netdev 2>/dev/null)
-    echo ":${master}:${slave}:::${netdev}"
+    echo ":${master}:${slave}:::${netdev}:${mac_addr}"
   fi
 
 #  if [ -n "$debug" ]; then set +x; fi
@@ -971,7 +976,10 @@ function gfs_checkhosts_alive {
 #********* gfs_checkhosts_alive
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.44  2007-12-07 16:39:59  reiner
+# Revision 1.45  2008-01-24 13:30:04  marc
+# - RFE#145 macaddress will be generated in configuration files
+#
+# Revision 1.44  2007/12/07 16:39:59  reiner
 # Added GPL license and changed ATIX GmbH to AG.
 #
 # Revision 1.43  2007/10/18 08:03:37  mark

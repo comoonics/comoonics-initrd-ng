@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.4 2007-12-07 16:39:59 reiner Exp $
+# $Id: network-lib.sh,v 1.5 2008-01-24 13:33:58 marc Exp $
 #
 # @(#)$File$
 #
@@ -52,9 +52,11 @@ function rhel4_ip2Config() {
     local ipNetmask=$3
     local ipHostname=$3
     local ipGate=$5
+    local ipMAC=$6
   else
     local master=$3
     local slave=$4
+    local ipMAC=$5
   fi
 
   # just for testing
@@ -81,6 +83,9 @@ function rhel4_ip2Config() {
      echo "BOOTPROTO=$bootproto" &&
      echo "ONBOOT=no" &&
      echo "TYPE=Ethernet") > ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
+    if [ -n "$ipMAC" ]; then
+    	echo "HWADDR=$ipMAC" >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
+    fi
     if [ "$bootproto" != "dhcp" ]; then
       (echo "IPADDR=$ipAddr" &&
       if [ -n "$ipNetmask" ]; then echo "NETMASK=$ipNetmask"; fi) >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
@@ -115,7 +120,10 @@ function rhel4_ip2Config() {
 
 #################
 # $Log: network-lib.sh,v $
-# Revision 1.4  2007-12-07 16:39:59  reiner
+# Revision 1.5  2008-01-24 13:33:58  marc
+# - RFE#145 macaddress will be generated in configuration files
+#
+# Revision 1.4  2007/12/07 16:39:59  reiner
 # Added GPL license and changed ATIX GmbH to AG.
 #
 # Revision 1.3  2007/01/19 10:04:16  mark

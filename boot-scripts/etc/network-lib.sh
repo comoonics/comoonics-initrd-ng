@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.6 2007-12-07 16:39:59 reiner Exp $
+# $Id: network-lib.sh,v 1.7 2008-01-24 13:33:17 marc Exp $
 #
 # @(#)$File$
 #
@@ -81,7 +81,12 @@ function nicConfig {
   if [ -n "$ipconfig" ] && [ "$ipconfig" != "skip" ]; then
     sleep 2
     echo_local "Creating network configuration for $dev"
-    exec_local ip2Config $ipconfig
+    xen_dom0_detect
+    if [ $? -eq 0 ]; then
+      xen_ip2Config $ipconfig
+    else
+      exec_local ip2Config ${ipconfig}
+    fi
 #    exec_local ip2Config $(getPosFromIPString 1, $ipconfig):$(getPosFromIPString 2, $ipconfig):$(getPosFromIPString 3, $ipconfig):$(getPosFromIPString 4, $ipconfig):$(hostname):$dev
   fi
 }
@@ -117,7 +122,7 @@ function nicUp() {
 #    ip2Config
 #  SYNOPSIS
 #    function ip2Config(ipConfig)
-#    function ip2Config(ipAddr, ipGate, ipNetmask, ipHostname, ipDevice)
+#    function ip2Config(ipAddr, ipGate, ipNetmask, ipHostname, ipDevice, master, slave, bridge)
 #  MODIFICATION HISTORY
 #  IDEAS
 #  SOURCE
@@ -135,22 +140,29 @@ function ip2Config() {
     else
       local master=$(getPosFromIPString 2, $1)
       local slave=$(getPosFromIPString 3, $1)
+      local bridge=$(getPosFromIPString 8, $1)
     fi
     local ipDevice=$(getPosFromIPString 6, $1)
+    local ipMAC=$(getPosFromIPString 7, $1)
   else
     local ipAddr=$1
+    local ipGate=$2
     local ipNetmask=$3
     local ipHostname=$4
     local ipDevice=$5
-    local ipGate=$2
+    local ipMAC=$6
+    local master=$7
+    local slave=$8
+    local bridge=$9
   fi
 
-  echo_local -n "Generating ifcfg for ${distribution} ($ipAddr, $ipGate, $ipNetmask, $ipHostname, $ipDevice)..."
   # Bonding
   if [ -n "$ipAddr" ]; then
-    ${distribution}_ip2Config "$ipDevice" "$ipAddr" "$ipNetmask" "$ipHostname" "$ipGate"
+  	echo_local -n "Generating ifcfg for ${distribution} ($ipAddr, $ipGate, $ipNetmask, $ipHostname, $ipDevice, $ipMAC)..."
+    ${distribution}_ip2Config "$ipDevice" "$ipAddr" "$ipNetmask" "$ipHostname" "$ipGate" "$ipMAC"
   else
-    ${distribution}_ip2Config "$ipDevice" "" "$master" "$slave"
+	echo_local -n "Generating ifcfg for ${distribution} ($master, $slave, $bridge, $ipDevice, $ipMAC)..."
+    ${distribution}_ip2Config "$ipDevice" "" "$master" "$slave" "$bridge" "$ipMAC"
   fi
   return_code $?
 }
@@ -192,7 +204,10 @@ function getPosFromIPString() {
 
 #############
 # $Log: network-lib.sh,v $
-# Revision 1.6  2007-12-07 16:39:59  reiner
+# Revision 1.7  2008-01-24 13:33:17  marc
+# - RFE#145 macaddress will be generated in configuration files
+#
+# Revision 1.6  2007/12/07 16:39:59  reiner
 # Added GPL license and changed ATIX GmbH to AG.
 #
 # Revision 1.5  2007/10/10 15:08:56  mark
