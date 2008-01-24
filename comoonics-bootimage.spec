@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.66 2007-12-07 16:39:59 reiner Exp $
+# $Id: comoonics-bootimage.spec,v 1.67 2008-01-24 13:57:15 marc Exp $
 #
 ##
 ##
@@ -54,7 +54,7 @@ Version: 1.3
 BuildArch: noarch
 Requires: comoonics-cs-py >= 0.1-43 comoonics-cluster-py >= 0.1-2 comoonics-bootimage-initscripts >= 1.3 comoonics-bootimage-listfiles >= 1.3
 #Conflicts:
-Release: 21
+Release: 24
 Vendor: ATIX AG
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -113,7 +113,7 @@ Extra listfiles for rdac multipath sharedroot configurations
 
 %package extras-xen
 Version: 0.1
-Release: 2
+Release: 3
 Requires: comoonics-bootimage >= 1.3-14
 Summary: listfiles for xen support in the open-sharedroot cluster
 Group:   Storage/Management
@@ -444,6 +444,12 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Tue Jan 24 2008 Marc Grimme <grimme@atix.de> 1.3-22
+- Fixed Bug#170 initrd fails with dm_multipath in RHEL5
+- Fixed Bug#178 nousb bootparameter should be available
+- Fixed Bug#179 xen guest will not be detected with rhel4
+- rewrote iscsilibs to be more generix
+- Implemented RFE#144 Mac-Address in configuration files.
 * Mon Oct 17 2007 Marc Grimme <grimme@atix.de> 1.3-21
 - Fixed Bug 144, where mounoptions where not used
 - Added ISCSI Support preview (thanks to Gordan Bobic)
@@ -558,7 +564,14 @@ rm -rf %{buildroot}
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.66  2007-12-07 16:39:59  reiner
+# Revision 1.67  2008-01-24 13:57:15  marc
+# - Fixed Bug#170 initrd fails with dm_multipath in RHEL5
+# - Fixed Bug#178 nousb bootparameter should be available
+# - Fixed Bug#179 xen guest will not be detected with rhel4
+# - rewrote iscsilibs to be more generix
+# - Implemented RFE#144 Mac-Address in configuration files.
+#
+# Revision 1.66  2007/12/07 16:39:59  reiner
 # Added GPL license and changed ATIX GmbH to AG.
 #
 # Revision 1.65  2007/11/28 12:41:42  mark
