@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.10 2007-10-18 08:03:38 mark Exp $
+# $Id: gfs-lib.sh,v 1.11 2008-01-24 15:25:03 marc Exp $
 #
 # @(#)$File$
 #
@@ -86,7 +86,7 @@ function gfs_services_start {
   exec_local mount -t configfs none $chroot_path/sys/kernel/config
   return_code
 
-  services="ccsd cman groupd fenced dlm_controld gfs_controld qdiskd"
+  services="ccsd cman groupd qdiskd fenced dlm_controld gfs_controld"
   if [ "$lvm_sup" -eq 0 ]; then
   	services="$services clvmd"
   fi
