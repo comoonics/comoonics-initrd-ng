@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.4 2007-12-18 08:43:35 mark Exp $
+# $Id: hardware-lib.sh,v 1.5 2008-01-24 13:34:56 marc Exp $
 #
 # @(#)$File$
 #
@@ -70,15 +70,18 @@ function rhel5_udev_start() {
 		udevd -d &&
 		udevtrigger
 	else
-		/bin/true
+		udevtrigger
 	fi
     
 }
-#************rhel4_udev_start
+#************rhel5_udev_start
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.4  2007-12-18 08:43:35  mark
+# Revision 1.5  2008-01-24 13:34:56  marc
+# - BUG#170, udev with dm-multipath and RHEL5 is not working. reviewed the udev and stabilized more often
+#
+# Revision 1.4  2007/12/18 08:43:35  mark
 # resolve bz 170
 #
 # Revision 1.3  2007/10/02 12:06:36  marc

@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.15 2007-12-07 16:39:59 reiner Exp $
+# $Id: hardware-lib.sh,v 1.16 2008-01-24 13:31:46 marc Exp $
 #
 # @(#)$File$
 #
@@ -161,6 +161,7 @@ function scsi_start() {
         done
       done
     fi
+    stabilized -g 5 -t hash /proc/scsi/scsi
     echo_local_debug "3.3 Configured SCSI-Devices:"
     exec_local_debug /bin/cat /proc/scsi/scsi
   fi
@@ -181,21 +182,24 @@ function dm_mp_start() {
   exec_local modprobe dm-multipath
   return_code
 
+  stabilized -g 5 -t hash /proc/partitions
   echo_local -n "Setting up Multipath"
   exec_local multipath
   return_code
+  stabilized -g 5 -t hash /proc/partitions
 
   exec_local_debug multipath -l
 
   echo_local -n "Restarting udev "
   exec_local udev_start
   return_code
+  stabilized -g 5 -t hash /proc/partitions
 
   echo_local -n "Setting up devicemapper partitions"
   if [ -x /sbin/kpartx ]; then
     /sbin/dmsetup ls --target multipath --exec "/sbin/kpartx -a"
   fi
-
+  stabilized -g 5 -t hash /proc/partitions
   return_code
 }
 #************ dm_mp_start
@@ -215,39 +219,6 @@ function usbLoad() {
 		modprobe $module
 	done
 	mount -t usbfs /proc/bus/usb /proc/bus/usb
-}
-#************ dm_mp_start
-
-#****f* boot-lib.sh/dm_mp_start
-#  NAME
-#    dm_mp_start
-#  SYNOPSIS
-#    function dm_mp_start
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function dm_mp_start() {
-  echo_local -n "Loading dm-mutltipath.ko module"
-  exec_local modprobe dm-multipath
-  return_code
-
-  echo_local -n "Setting up Multipath"
-  exec_local multipath
-  return_code
-
-  exec_local_debug multipath -l
-
-  echo_local -n "Restarting udev "
-  exec_local udev_start
-  return_code
-
-  echo_local -n "Setting up devicemapper partitions"
-  if [ -x /sbin/kpartx ]; then
-    /sbin/dmsetup ls --target multipath --exec "/sbin/kpartx -a"
-  fi
-
-  return_code
 }
 #************ dm_mp_start
 
@@ -453,7 +424,10 @@ function add_scsi_device() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.15  2007-12-07 16:39:59  reiner
+# Revision 1.16  2008-01-24 13:31:46  marc
+# - BUG#170, udev with dm-multipath and RHEL5 is not working. reviewed the udev and stabilized more often
+#
+# Revision 1.15  2007/12/07 16:39:59  reiner
 # Added GPL license and changed ATIX GmbH to AG.
 #
 # Revision 1.14  2007/10/16 08:02:00  marc
