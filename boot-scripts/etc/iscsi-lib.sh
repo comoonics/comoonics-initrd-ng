@@ -1,5 +1,5 @@
 #
-# $Id: iscsi-lib.sh,v 1.10 2007-12-07 16:39:59 reiner Exp $
+# $Id: iscsi-lib.sh,v 1.11 2008-01-24 13:32:13 marc Exp $
 #
 # @(#)$File$
 #
@@ -31,7 +31,7 @@
 #  DESCRIPTION
 #*******
 
-parser1="iscsi://([^:]+)"
+parser1="iscsi://([^:/]+)"
 parser2="iscsi://([^:]+):([[:digit:]]+)/"
 parser3="^iscsi"
 
@@ -115,13 +115,22 @@ function loadISCSI {
 #  SOURCE
 #
 function startISCSI {
+	local rootsource=$1
+	local nodename=$2
+	local iscsiserver=$(getISCSIServerFromParam $rootsource)
 	local iscsimodules="iscsi_tcp"
 	echo_local -n "Starting iscsid"
-	service iscsid start >/dev/null 2>&1
+    modprobe -q iscsi_tcp
+    modprobe -q ib_iser
+    exec_local iscsid
 	return_code $?
-	echo_local -n "Starting iscsi"
-	service iscsi start >/dev/null 2>&1
-	return_code $?
+	if [ -n "$iscsiserver" ]; then
+	   echo_local -n "Importing from node $iscsiserver"
+	   iscsiadm --mode discovery --type sendtargets --portal $iscsiserver
+	else
+	   echo_local -n "Importing old nodes"
+       iscsiadm -m node --loginall=automatic
+	fi
 }
 #************ startISCSI
 
@@ -153,7 +162,10 @@ function isISCSIRootsource {
 #************ isISCSIRootsource
 
 # $Log: iscsi-lib.sh,v $
-# Revision 1.10  2007-12-07 16:39:59  reiner
+# Revision 1.11  2008-01-24 13:32:13  marc
+# - rewrote iscsi configuration to be more generic
+#
+# Revision 1.10  2007/12/07 16:39:59  reiner
 # Added GPL license and changed ATIX GmbH to AG.
 #
 # Revision 1.9  2007/10/16 08:02:21  marc
