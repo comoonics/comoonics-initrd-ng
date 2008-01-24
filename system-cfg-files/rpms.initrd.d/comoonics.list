@@ -1,5 +1,6 @@
 expat
-comoonics-cs
+# Not needed any more
+# comoonics-cs
 comoonics-cs-py
 comoonics-cluster-py
 SysVinit-comoonics
