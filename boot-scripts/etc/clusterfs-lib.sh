@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.18 2007-12-07 16:39:59 reiner Exp $
+# $Id: clusterfs-lib.sh,v 1.19 2008-01-24 13:27:41 marc Exp $
 #
 # @(#)$File$
 #
@@ -81,7 +81,7 @@ fi
 #  SOURCE
 #
 function getClusterFSParameters() {
-  getBootParm rootsource scsi
+  getBootParm rootsource
   echo -n ":"
   getBootParm root
   echo -n ":"
@@ -758,7 +758,10 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.18  2007-12-07 16:39:59  reiner
+# Revision 1.19  2008-01-24 13:27:41  marc
+# default rootsource should be scsi
+#
+# Revision 1.18  2007/12/07 16:39:59  reiner
 # Added GPL license and changed ATIX GmbH to AG.
 #
 # Revision 1.17  2007/10/16 08:00:11  marc
