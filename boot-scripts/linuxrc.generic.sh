@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.52 2007-12-07 16:39:59 reiner Exp $
+# $Id: linuxrc.generic.sh,v 1.53 2008-01-24 13:26:12 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.52 2007-12-07 16:39:59 reiner Exp $
+#    $Id: linuxrc.generic.sh,v 1.53 2008-01-24 13:26:12 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -87,7 +87,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.52 $ $Date: 2007-12-07 16:39:59 $'
+echo_local 'Internal Version $Revision: 1.53 $ $Date: 2008-01-24 13:26:12 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -111,6 +111,7 @@ mount_opts=$(getParm ${bootparms} 3)
 tmpfix=$(getParm ${bootparms} 4)
 scsifailover=$(getParm ${bootparms} 5)
 dstepmode=$(getParm ${bootparms} 6)
+nousb=$(getParm ${bootparms} 7)
 return_code 0
 
 # network parameters
@@ -152,6 +153,7 @@ echo_local_debug "nodeid: $nodeid"
 echo_local_debug "nodename: $nodename"
 echo_local_debug "rootfs: $rootfs"
 echo_local_debug "clutype: $clutype"
+echo_local_debug "nousb: " $nousb
 echo_local_debug "*****************************"
 
 echo_local_debug "*****************************"
@@ -197,6 +199,7 @@ _ipConfig=${cfsparams[@]:7}
 [ -n "$_scsifailover" ] && [ -z "$scsifailover" ] && scsifailover=$_scsifailover
 [ -z "$root" ] || [ "$root" = "/dev/ram0" ] && root=$rootvolume
 [ -z "$rootsource" ] && rootsource=$_rootsource
+[ -z "$rootsource" ] && rootsource="scsi"
 cc_auto_hosts $cluster_conf
 
 echo_local_debug "*****************************"
@@ -217,10 +220,13 @@ if [ "$clutype" != "$rootfs" ]; then
 	[ -e /etc/${distribution}/${rootfs}-lib.sh ] && source /etc/${distribution}/${rootfs}-lib.sh
 fi
 
-echo_local -n "Loading USB Modules.."
-exec_local usbLoad
-return_code
-[ -e /proc/bus/usb/devices ] && stabilized --type=hash --interval=300 /proc/bus/usb/devices
+xen_domx_detect
+if [ $? -ne 0 ] || [ -z "$nousb" ]
+  echo_local -n "Loading USB Modules.."
+  exec_local usbLoad
+  return_code
+  [ -e /proc/bus/usb/devices ] && stabilized --type=hash --interval=300 /proc/bus/usb/devices
+fi
 
 netdevs=""
 for ipconfig in $ipConfig; do
@@ -256,7 +262,7 @@ scsi_start $scsifailover
 isISCSIRootsource $rootsource
 if [ $? -eq 0 ]; then
 	loadISCSI
-	startISCSI
+	startISCSI $rootsource $nodename
 fi
 
 # loads kernel modules for cluster stack
@@ -357,7 +363,11 @@ if [ -z "$quorumack" ]; then
   fi
 fi
 
-setHWClock
+xen_domx_detect
+if  [ $? -ne 0 ]; then
+  setHWClock
+fi
+
 clusterfs_services_start $chroot_path "$lockmethod" "$lvm_sup"
 
 if [ $return_c -ne 0 ]; then
@@ -458,7 +468,12 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.52  2007-12-07 16:39:59  reiner
+# Revision 1.53  2008-01-24 13:26:12  marc
+# - BUG#179 xen detection will not work with RHEL4 guest
+# - BUG#178 nousb parameter can be specified
+# - rewrote part of iscsi
+#
+# Revision 1.52  2007/12/07 16:39:59  reiner
 # Added GPL license and changed ATIX GmbH to AG.
 #
 # Revision 1.51  2007/10/18 08:04:38  mark
