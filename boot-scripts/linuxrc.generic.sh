@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.53 2008-01-24 13:26:12 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.54 2008-01-24 15:25:21 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.53 2008-01-24 13:26:12 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.54 2008-01-24 15:25:21 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -87,7 +87,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.53 $ $Date: 2008-01-24 13:26:12 $'
+echo_local 'Internal Version $Revision: 1.54 $ $Date: 2008-01-24 15:25:21 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -221,7 +221,7 @@ if [ "$clutype" != "$rootfs" ]; then
 fi
 
 xen_domx_detect
-if [ $? -ne 0 ] || [ -z "$nousb" ]
+if [ $? -ne 0 ] || [ -z "$nousb" ]; then
   echo_local -n "Loading USB Modules.."
   exec_local usbLoad
   return_code
@@ -468,7 +468,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.53  2008-01-24 13:26:12  marc
+# Revision 1.54  2008-01-24 15:25:21  marc
+# fixed a syntax error.
+#
+# Revision 1.53  2008/01/24 13:26:12  marc
 # - BUG#179 xen detection will not work with RHEL4 guest
 # - BUG#178 nousb parameter can be specified
 # - rewrote part of iscsi
