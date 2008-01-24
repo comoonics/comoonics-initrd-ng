@@ -1,5 +1,5 @@
 #
-# $Id: xen-lib.sh,v 1.5 2007-12-07 16:39:59 reiner Exp $
+# $Id: xen-lib.sh,v 1.6 2008-01-24 13:33:35 marc Exp $
 #
 # @(#)$File$
 #
@@ -30,20 +30,6 @@
 #    Libraryfunctions for general network support functions.
 #*******
 
-#****f* boot-lib.sh/xen_domx_detect
-#  NAME
-#    xen_domx_detect
-#  SYNOPSIS
-#    function xen_domx_detect()
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function xen_domx_detect() {
-  dmesg | grep -A1 BIOS | tail -1 | grep "[[:space:]]Xen" >/dev/null 2>&1
-}
-#************ xen_domx_detect
-
 #****f* boot-lib.sh/xen_dom0_detect
 #  NAME
 #    xen_dom0_detect
@@ -55,8 +41,7 @@ function xen_domx_detect() {
 #
 function xen_dom0_detect() {
   local _err=0
-  dmesg | grep -A1 BIOS | tail -1 | grep "[[:space:]]Xen" >/dev/null 2>&1
-  if [ $? -eq 0 ]; then
+  if [ ! -e /proc/xen ]; then
   	return 1
   fi
   dmesg | grep -i xen >/dev/null 2>&1
@@ -81,13 +66,14 @@ function xen_dom0_detect() {
 #
 function xen_domx_detect() {
   local _err=0
-  dmesg | grep -A1 BIOS | tail -1 | grep "[[:space:]]Xen" >/dev/null 2>&1
+  dmesg | grep -A1 BIOS | tail -1 | grep "[[:space:]]Xen" >/dev/null 2>&1 || dmesg | grep "Xen reported:.*processor" >/dev/null 2>&1
   _err=$?
-  if [ $_err -eq 0 ] && ! [ -d /etc/xen ]; then
-  	echo_local "WARNING XEN DETECTED BUT NO EXTRAFILES FOUND."
-  	echo_local "You might want to install comoonics-bootimage-extras-xen to have full support"
-  	_err=1
-  fi
+
+#  if [ $_err -eq 0 ] && ! [ -d /etc/xen ]; then
+#  	echo_local "WARNING XEN DETECTED BUT NO EXTRAFILES FOUND."
+#  	echo_local "You might want to install comoonics-bootimage-extras-xen to have full support"
+#  	_err=1
+#  fi
   return $_err
 }
 #************ xen_domx_detect
@@ -125,3 +111,41 @@ function xen_nic_post() {
 	modprobe netloop &&
 	/etc/xen/scripts/network-bridge start vifnum=$number
 }
+#************ xen_nic_post
+
+#****f* boot-lib.sh/xen_ip2Config
+#  NAME
+#    xen_ip2Config
+#  SYNOPSIS
+#    function xen_ip2Config()
+#  DESCRIPTION
+#    Creates the appropriate Network konfiguration for XEN (Brigde from physical interface to
+#    the bridged physical interface). Only for nics with ips.
+#  SOURCE
+#
+function xen_ip2Config() {
+  local ipAddr=$(getPosFromIPString 1, $1)
+  local ipDevice=$(getPosFromIPString 6, $1)
+  local bridge=$(getPosFromIPString 8, $1)
+
+  echo "$ipAddr" | grep "[[:digit:]][[:digit:]]*.[[:digit:]][[:digit:]]*.[[:digit:]][[:digit:]]*.[[:digit:]][[:digit:]]*" </dev/null 2>&1
+  if [ -n "$ipAddr" ] && [ "${ipDevice:0:1}" != "p" ] && [ -z "$bridge" ]; then
+    local ipGate=$(getPosFromIPString 3, $1)
+    local ipNetmask=$(getPosFromIPString 4, $1)
+    local ipHostname=$(getPosFromIPString 5, $1)
+    local ipMAC=$(getPosFromIPString 7, $1)
+    local master=$(getPosFromIPString 2, $1)
+    local slave=$(getPosFromIPString 3, $1)
+    local bridgeDevice=$ipDevice
+    local bridgeMAC=$ipMAC
+
+	# First the bridge..
+    #exec_local ip2Config "" "" "" "" "$ipDevice" "" "$ipMAC" "$master" "$slave" "$bridgeDevice"
+    # Then the bridged device
+    ip2Config "$ipAddr" "$ipGate" "$ipNetmask" "$ipHostname"  "$bridgeDevice" "$bridgeMAC" "$master" "$slave"
+  else
+    ip2Config $1
+  fi
+}
+#************ xen_ip2Config
+
