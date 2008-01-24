@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.57 2007-12-07 16:39:59 reiner Exp $
+# $Id: boot-lib.sh,v 1.58 2008-01-24 13:27:17 marc Exp $
 #
 # @(#)$File$
 #
@@ -312,6 +312,8 @@ function getBootParameters() {
     getBootParm scsifailover driver
     echo -n ":"
     getBootParm com-dstep
+    echo -n ":"
+    getBootParm nousb
 }
 #************ getBootParameters
 
@@ -946,7 +948,10 @@ function exec_local_debug() {
 
 
 # $Log: boot-lib.sh,v $
-# Revision 1.57  2007-12-07 16:39:59  reiner
+# Revision 1.58  2008-01-24 13:27:17  marc
+# - BUG#178 nousb parameter can be specified (added bootparm)
+#
+# Revision 1.57  2007/12/07 16:39:59  reiner
 # Added GPL license and changed ATIX GmbH to AG.
 #
 # Revision 1.56  2007/10/18 08:04:07  mark
