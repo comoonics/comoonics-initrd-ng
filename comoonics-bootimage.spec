@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.67 2008-01-24 13:57:15 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.68 2008-02-29 09:09:07 mark Exp $
 #
 ##
 ##
@@ -400,10 +400,10 @@ fi
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/iscsi.list
 
 %files fenceacksv
-%attr(755, root, root) %{FENCEACKSV_DIR}/fence_ack_server.py
+%attr(755, root, root) %{FENCEACKSV_DIR}/fence_ack_server.py*
 #%attr(755, root, root) %{FENCEACKSV_DIR}/fence_ack_server.pyc
 #%attr(755, root, root) %{FENCEACKSV_DIR}/fence_ack_server.pyo
-%attr(644, root, root) %{FENCEACKSV_DIR}/shell.py
+%attr(644, root, root) %{FENCEACKSV_DIR}/shell.py*
 #%attr(644, root, root) %{FENCEACKSV_DIR}/shell.pyc
 #%attr(644, root, root) %{FENCEACKSV_DIR}/shell.pyo
 %attr(640, root, root) %{FENCEACKSV_DIR}/server.pkey
@@ -564,7 +564,10 @@ rm -rf %{buildroot}
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.67  2008-01-24 13:57:15  marc
+# Revision 1.68  2008-02-29 09:09:07  mark
+# added wildcards to .py files
+#
+# Revision 1.67  2008/01/24 13:57:15  marc
 # - Fixed Bug#170 initrd fails with dm_multipath in RHEL5
 # - Fixed Bug#178 nousb bootparameter should be available
 # - Fixed Bug#179 xen guest will not be detected with rhel4
