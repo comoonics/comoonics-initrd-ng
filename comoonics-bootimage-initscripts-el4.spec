@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage-initscripts-el4.spec,v 1.6 2007-12-07 16:39:59 reiner Exp $
+# $Id: comoonics-bootimage-initscripts-el4.spec,v 1.7 2008-02-29 08:49:32 mark Exp $
 #
 ##
 ##
@@ -47,7 +47,7 @@ Version: 1.3
 BuildArch: noarch
 Requires: comoonics-bootimage >= 1.3-1
 #Conflicts:
-Release: 3.el4
+Release: 4.el4
 Vendor: ATIX AG
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -120,6 +120,10 @@ done
 %attr(750, root, root) %{INITDIR}/fenced-chroot
 %attr(750, root, root) %{INITDIR}/ccsd-chroot
 %changelog
+* Fri Feb 29 2008 Mark Hlawatschek <hlawatschek@atix.de> 1.3.5
+- Fixed BZ 203, support FENCE_OPTS from /etc/sysconfig/cluster during boot
+* Tue Dec 18 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3.4
+- changed license to GPL
 * Wed Nov 28 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3.3
 - Fixed BZ 150
 * Thu Oct 11 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3.2
@@ -128,7 +132,10 @@ done
 - first revision
 # ------
 # $Log: comoonics-bootimage-initscripts-el4.spec,v $
-# Revision 1.6  2007-12-07 16:39:59  reiner
+# Revision 1.7  2008-02-29 08:49:32  mark
+# new release 1.3.5
+#
+# Revision 1.6  2007/12/07 16:39:59  reiner
 # Added GPL license and changed ATIX GmbH to AG.
 #
 # Revision 1.5  2007/11/28 12:41:42  mark
