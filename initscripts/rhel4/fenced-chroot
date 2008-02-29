@@ -91,8 +91,7 @@ start()
   fi
 
   if $CHROOT_STATUS_PID /var/run/fenced.pid ; then
-  	success
-  	return 0
+  	$CHROOT_STOP_PID /var/run/fenced.pid
   elif [ -e $CHROOT_PATH//var/run/fenced.pid ]; then
   	# make sure the pid file is removed
   	rm -f $CHROOT_PATH/var/run/fenced.pid >& /dev/null
@@ -209,7 +208,11 @@ exit $rtrn
 
 #########################
 # $Log: fenced-chroot,v $
-# Revision 1.1  2007-09-12 14:45:41  mark
+# Revision 1.2  2008-02-29 08:45:29  mark
+# stop fenced befor start
+# fix for bz 203.
+#
+# Revision 1.1  2007/09/12 14:45:41  mark
 # extra initrd directory
 # initscripts are distro dependent
 #
