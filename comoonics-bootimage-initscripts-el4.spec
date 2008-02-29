@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage-initscripts-el4.spec,v 1.7 2008-02-29 08:49:32 mark Exp $
+# $Id: comoonics-bootimage-initscripts-el4.spec,v 1.8 2008-02-29 09:10:41 mark Exp $
 #
 ##
 ##
@@ -47,7 +47,7 @@ Version: 1.3
 BuildArch: noarch
 Requires: comoonics-bootimage >= 1.3-1
 #Conflicts:
-Release: 4.el4
+Release: 5.el4
 Vendor: ATIX AG
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -132,7 +132,10 @@ done
 - first revision
 # ------
 # $Log: comoonics-bootimage-initscripts-el4.spec,v $
-# Revision 1.7  2008-02-29 08:49:32  mark
+# Revision 1.8  2008-02-29 09:10:41  mark
+# increased release number ;-)
+#
+# Revision 1.7  2008/02/29 08:49:32  mark
 # new release 1.3.5
 #
 # Revision 1.6  2007/12/07 16:39:59  reiner
