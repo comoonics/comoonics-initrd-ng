@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.58 2008-01-24 13:27:17 marc Exp $
+# $Id: boot-lib.sh,v 1.59 2008-03-18 17:40:00 marc Exp $
 #
 # @(#)$File$
 #
@@ -309,7 +309,7 @@ function getBootParameters() {
     echo -n ":"
     getBootParm tmpfix
     echo -n ":"
-    getBootParm scsifailover driver
+    getBootParm scsifailover
     echo -n ":"
     getBootParm com-dstep
     echo -n ":"
@@ -948,7 +948,10 @@ function exec_local_debug() {
 
 
 # $Log: boot-lib.sh,v $
-# Revision 1.58  2008-01-24 13:27:17  marc
+# Revision 1.59  2008-03-18 17:40:00  marc
+# - fixed bug for not detecting failover in all cases.
+#
+# Revision 1.58  2008/01/24 13:27:17  marc
 # - BUG#178 nousb parameter can be specified (added bootparm)
 #
 # Revision 1.57  2007/12/07 16:39:59  reiner
