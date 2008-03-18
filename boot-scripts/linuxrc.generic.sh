@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.54 2008-01-24 15:25:21 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.55 2008-03-18 17:41:52 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.54 2008-01-24 15:25:21 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.55 2008-03-18 17:41:52 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -69,6 +69,7 @@
 . /etc/defaults.sh
 . /etc/xen-lib.sh
 [ -e /etc/iscsi-lib.sh ] && source /etc/iscsi-lib.sh
+[ -e /etc/drbd-lib.sh ] && source /etc/drbd-lib.sh
 
 clutype=$(getCluType)
 . /etc/${clutype}-lib.sh
@@ -82,12 +83,13 @@ distribution=$(getDistribution)
 [ -e /etc/${distribution}/${clutype}-lib.sh ] && source /etc/${distribution}/${clutype}-lib.sh
 [ -e /etc/${distribution}/xen-lib.sh ] && source /etc/${distribution}/xen-lib.sh
 [ -e /etc/${distribution}/iscsi-lib.sh ] && source /etc/${distribution}/iscsi-lib.sh
+[ -e /etc/${distribution}/drbd-lib.sh ] && source /etc/${distribution}/drbd-lib.sh
 
 echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.54 $ $Date: 2008-01-24 15:25:21 $'
+echo_local 'Internal Version $Revision: 1.55 $ $Date: 2008-03-18 17:41:52 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -189,14 +191,14 @@ nodeid=${cfsparams[0]}
 nodename=${cfsparams[1]}
 rootvolume=${cfsparams[2]}
 _mount_opts=${cfsparams[3]}
-_scsifailover=${cfsparams[4]}
+scsifailover=${cfsparams[4]}
 rootfs=${cfsparams[5]}
 _rootsource=${cfsparams[6]}
 _ipConfig=${cfsparams[@]:7}
 [ -n "$_ipConfig" ] && ( [ -z "$ipConfig" ] || [ "$ipConfig" = "cluster" ] ) && ipConfig=$_ipConfig
 [ -n "$_mount_opts" ] && [ -z "$mount_opts" ] && mount_opts=$_mount_opts
 [ -z "$mount_opts" ] && mount_opts="defaults" 
-[ -n "$_scsifailover" ] && [ -z "$scsifailover" ] && scsifailover=$_scsifailover
+[ -z "$scsifailover" ] && scsifailover="driver"
 [ -z "$root" ] || [ "$root" = "/dev/ram0" ] && root=$rootvolume
 [ -z "$rootsource" ] && rootsource=$_rootsource
 [ -z "$rootsource" ] && rootsource="scsi"
@@ -330,6 +332,14 @@ fi
 
 step "Syslog services started"
 
+# WARNING!
+# DRBD initialization doesn't seem possible before this point!
+# start drbd if appropriate
+isDRBDRootsource $rootsource
+if [ $? -eq 0 ]; then
+	loadDRBD
+	startDRBD $rootsource $nodename
+fi
 
 if [ -z "$quorumack" ]; then
   echo_local -n "Checking for all nodes to be available"
@@ -468,7 +478,11 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.54  2008-01-24 15:25:21  marc
+# Revision 1.55  2008-03-18 17:41:52  marc
+# - fixed bug for not detecting failover in all cases.
+# - Technology preview for drbd added.
+#
+# Revision 1.54  2008/01/24 15:25:21  marc
 # fixed a syntax error.
 #
 # Revision 1.53  2008/01/24 13:26:12  marc
