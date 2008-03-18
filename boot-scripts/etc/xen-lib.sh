@@ -1,5 +1,5 @@
 #
-# $Id: xen-lib.sh,v 1.6 2008-01-24 13:33:35 marc Exp $
+# $Id: xen-lib.sh,v 1.7 2008-03-18 17:41:02 marc Exp $
 #
 # @(#)$File$
 #
@@ -53,7 +53,7 @@ function xen_dom0_detect() {
   fi
   return $_err
 }
-#************ xen_domx_detect
+#************ xen_dom0_detect
 
 #****f* boot-lib.sh/xen_domx_detect
 #  NAME
@@ -69,7 +69,11 @@ function xen_domx_detect() {
   dmesg | grep -A1 BIOS | tail -1 | grep "[[:space:]]Xen" >/dev/null 2>&1 || dmesg | grep "Xen reported:.*processor" >/dev/null 2>&1
   _err=$?
 
-#  if [ $_err -eq 0 ] && ! [ -d /etc/xen ]; then
+  if [ $_err -eq 0 ] && ! [ -d /etc/xen ]; then
+    _err=0
+  else
+    _err=1
+  fi
 #  	echo_local "WARNING XEN DETECTED BUT NO EXTRAFILES FOUND."
 #  	echo_local "You might want to install comoonics-bootimage-extras-xen to have full support"
 #  	_err=1
