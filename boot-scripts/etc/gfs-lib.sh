@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.45 2008-01-24 13:30:04 marc Exp $
+# $Id: gfs-lib.sh,v 1.46 2008-04-03 15:57:21 mark Exp $
 #
 # @(#)$File$
 #
@@ -780,6 +780,8 @@ function gfs_start_clvmd {
    echo_local -n "Starting clvmd ($chroot_path) "
    start_service_chroot $chroot_path /usr/sbin/clvmd
    return_code $?
+   # Workaroud to fix bz# 193
+   sleep 10
    echo_local -n "Activating VGs:"
    start_service_chroot $chroot_path /sbin/lvm vgscan --mknodes >/dev/null 2>&1
    start_service_chroot $chroot_path /sbin/lvm vgchange -ay >/dev/null 2>&1
@@ -976,7 +978,10 @@ function gfs_checkhosts_alive {
 #********* gfs_checkhosts_alive
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.45  2008-01-24 13:30:04  marc
+# Revision 1.46  2008-04-03 15:57:21  mark
+# Workaround bz# 193
+#
+# Revision 1.45  2008/01/24 13:30:04  marc
 # - RFE#145 macaddress will be generated in configuration files
 #
 # Revision 1.44  2007/12/07 16:39:59  reiner
