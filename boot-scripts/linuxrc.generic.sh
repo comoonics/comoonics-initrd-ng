@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.55 2008-03-18 17:41:52 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.56 2008-05-10 19:42:33 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.55 2008-03-18 17:41:52 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.56 2008-05-10 19:42:33 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -89,7 +89,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.55 $ $Date: 2008-03-18 17:41:52 $'
+echo_local 'Internal Version $Revision: 1.56 $ $Date: 2008-05-10 19:42:33 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -202,7 +202,6 @@ _ipConfig=${cfsparams[@]:7}
 [ -z "$root" ] || [ "$root" = "/dev/ram0" ] && root=$rootvolume
 [ -z "$rootsource" ] && rootsource=$_rootsource
 [ -z "$rootsource" ] && rootsource="scsi"
-cc_auto_hosts $cluster_conf
 
 echo_local_debug "*****************************"
 echo_local_debug "nodeid: $nodeid"
@@ -320,6 +319,7 @@ echo_local_debug "res: $res -> chroot_mount=$chroot_mount, chroot_path=$chroot_p
 
 step "chroot environment created"
 
+cc_auto_hosts $cluster_conf
 cc_auto_syslogconfig $cluster_conf $nodename
 start_service /sbin/syslogd no_chroot -m 0
 
@@ -478,7 +478,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.55  2008-03-18 17:41:52  marc
+# Revision 1.56  2008-05-10 19:42:33  marc
+# - Implemened RFE#218 generating right hosts also with using dhcp.
+#
+# Revision 1.55  2008/03/18 17:41:52  marc
 # - fixed bug for not detecting failover in all cases.
 # - Technology preview for drbd added.
 #
