@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.5 2008-01-24 13:33:58 marc Exp $
+# $Id: network-lib.sh,v 1.6 2008-05-17 08:31:34 marc Exp $
 #
 # @(#)$File$
 #
@@ -59,6 +59,9 @@ function rhel4_ip2Config() {
     local ipMAC=$5
   fi
 
+  # reformating MAC from - to :
+  ipMAC=${ipMAC//-/:}
+ 
   # just for testing
   #local $pref="/tmp"
 
@@ -120,7 +123,10 @@ function rhel4_ip2Config() {
 
 #################
 # $Log: network-lib.sh,v $
-# Revision 1.5  2008-01-24 13:33:58  marc
+# Revision 1.6  2008-05-17 08:31:34  marc
+# fixed BUG with wrong mac-address creation. Already fixed in rhel5 but not here
+#
+# Revision 1.5  2008/01/24 13:33:58  marc
 # - RFE#145 macaddress will be generated in configuration files
 #
 # Revision 1.4  2007/12/07 16:39:59  reiner
