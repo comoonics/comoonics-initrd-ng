@@ -7,6 +7,27 @@ IDEAS:
 CHANGES:
 
 comoonics-bootimage:
+* 16.05.2008 Release 1.3-30
+  * changed creation of hostsfile (/etc/hosts) in order to support dhcp better.
+    RFE BZ#218
+  * Fixed bug in rhel4 implementation of RFE#144
+- 18.03.2008 Release 1.3-29
+  * fixed Bug#209 where not all lvm files where copied into initrd
+- 12.02.2008 Release 1.3-28
+  * updated drbd support (optimized) thanks to gordan
+- 11.02.2008 Release 1.3-27
+  * added drbd support thanks to gordan
+- 30.01.2008 Release 1.3-26
+  * fixed BUG#192 when xen dom0 would not be detected
+- 24.01.2008 Release 1.3-25
+  * fixed syntax error in linuxrc.generic.sh
+  * fixed qdisk order in rhel5/gfs-lib.sh
+- 24.01.2008 Release 1.3-22
+  * Fixed Bug#170 initrd fails with dm_multipath in RHEL5
+  * Fixed Bug#178 nousb bootparameter should be available
+  * Fixed Bug#179 xen guest will not be detected with rhel4
+  * rewrote iscsilibs to be more generix
+  * Implemented RFE#144 Mac-Address in configuration files.
 - 2007-10-18 Release 1.3-21
   * Fixes BUG 144 
   * Added ISCSI Support preview (thanks to Gordan Bobic)
@@ -128,6 +149,10 @@ comoonics-bootimage-extras-iscsi
 - 2007-10-12 Release 0.1-1
    * first release
 
+comoonics-bootimage-extras-drbd
+- 2008-02-11 Release 0.1-1
+   * first release
+
 comoonics-bootimage-fenceclient-ilo:
 - 2007-09-26 Release 0.1.18
     * bug fixes for el5
@@ -183,7 +208,10 @@ TODO:
 ########################################
 # CVS-Log
 # $Log: CHANGELOG,v $
-# Revision 1.34  2007-11-28 12:42:00  mark
+# Revision 1.35  2008-05-17 08:33:34  marc
+# - added new version 1.3-30
+#
+# Revision 1.34  2007/11/28 12:42:00  mark
 # new releases
 #
 # Revision 1.33  2007/10/18 08:22:07  marc

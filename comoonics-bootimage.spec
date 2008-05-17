@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.68 2008-02-29 09:09:07 mark Exp $
+# $Id: comoonics-bootimage.spec,v 1.69 2008-05-17 08:34:22 marc Exp $
 #
 ##
 ##
@@ -54,7 +54,7 @@ Version: 1.3
 BuildArch: noarch
 Requires: comoonics-cs-py >= 0.1-43 comoonics-cluster-py >= 0.1-2 comoonics-bootimage-initscripts >= 1.3 comoonics-bootimage-listfiles >= 1.3
 #Conflicts:
-Release: 24
+Release: 30
 Vendor: ATIX AG
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -131,6 +131,18 @@ Group:   Storage/Management
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description extras-iscsi
+support in the open-sharedroot cluster
+PREVIEW VERSION
+
+%package extras-drbd
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage >= 1.3-27
+Summary: listfiles for drbd support in the open-sharedroot cluster
+Group:   Storage/Management
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description extras-drbd
 support in the open-sharedroot cluster
 PREVIEW VERSION
 
@@ -342,6 +354,7 @@ fi
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/chroot-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/clusterfs-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/comoonics-release
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/drbd-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/defaults.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/ext3-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/gfs-lib.sh
@@ -399,6 +412,10 @@ fi
 %attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/iscsi.list
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/iscsi.list
 
+%files extras-drbd
+%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/drbd.list
+%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/drbd.list
+
 %files fenceacksv
 %attr(755, root, root) %{FENCEACKSV_DIR}/fence_ack_server.py*
 #%attr(755, root, root) %{FENCEACKSV_DIR}/fence_ack_server.pyc
@@ -444,6 +461,19 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Fri May 16 2008 Marc Grimme <grimme@atix.de> 1.3-30
+- changed creation of hostsfile (/etc/hosts) in order to support dhcp better.
+  RFE BZ#218
+- Fixed bug from RFE#144 because being not implemented for rhel4
+* Tue Feb 12 2008 Marc Grimme <grimme@atix.de> 1.3-28
+- updated drbd support (optimized) thanks to gordan
+* Mon Feb 11 2008 Marc Grimme <grimme@atix.de> 1.3-27
+- added drbd support thanks to gordan
+* Tue Jan 30 2008 Marc Grimme <grimme@atix.de> 1.3-26
+- fixed BUG#192 when xen dom0 would not be detected
+* Tue Jan 24 2008 Marc Grimme <grimme@atix.de> 1.3-25
+- fixed syntax error in linuxrc.generic.sh
+- fixed qdisk order in rhel5/gfs-lib.sh
 * Tue Jan 24 2008 Marc Grimme <grimme@atix.de> 1.3-22
 - Fixed Bug#170 initrd fails with dm_multipath in RHEL5
 - Fixed Bug#178 nousb bootparameter should be available
@@ -537,6 +567,10 @@ rm -rf %{buildroot}
 * Fri Oct 12 2007 Marc Grimme <grimme@atix.de> - 0.1-1
 - first release
 
+%changelog extras-drbd
+* Mon Feb 11 2008 Marc Grimme <grimme@atix.de> - 0.1-1
+- first release
+
 %changelog fenceacksv
 * Mon Sep 10 2007 Marc Grimme <grimme@atix.de> - 0.3-1
   - Fixed Bug BZ#107, fixed problems with not installed plugins
@@ -564,7 +598,10 @@ rm -rf %{buildroot}
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.68  2008-02-29 09:09:07  mark
+# Revision 1.69  2008-05-17 08:34:22  marc
+# - added new version 1.3-30
+#
+# Revision 1.68  2008/02/29 09:09:07  mark
 # added wildcards to .py files
 #
 # Revision 1.67  2008/01/24 13:57:15  marc
