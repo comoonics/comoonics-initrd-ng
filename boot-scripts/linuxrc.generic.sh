@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.56 2008-05-10 19:42:33 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.57 2008-05-17 08:32:18 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.56 2008-05-10 19:42:33 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.57 2008-05-17 08:32:18 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -89,7 +89,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.56 $ $Date: 2008-05-10 19:42:33 $'
+echo_local 'Internal Version $Revision: 1.57 $ $Date: 2008-05-17 08:32:18 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -308,6 +308,7 @@ fi
 # TODO:
 # Put all things into a library function
 
+cc_auto_hosts $cluster_conf
 echo_local -n "Building comoonics chroot environment"
 res=( $(build_chroot $cluster_conf $nodename) )
 chroot_mount=${res[0]}
@@ -319,7 +320,6 @@ echo_local_debug "res: $res -> chroot_mount=$chroot_mount, chroot_path=$chroot_p
 
 step "chroot environment created"
 
-cc_auto_hosts $cluster_conf
 cc_auto_syslogconfig $cluster_conf $nodename
 start_service /sbin/syslogd no_chroot -m 0
 
@@ -478,7 +478,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.56  2008-05-10 19:42:33  marc
+# Revision 1.57  2008-05-17 08:32:18  marc
+# changed the time the /etc/hosts is created a little bit to later when nics are already up.
+#
+# Revision 1.56  2008/05/10 19:42:33  marc
 # - Implemened RFE#218 generating right hosts also with using dhcp.
 #
 # Revision 1.55  2008/03/18 17:41:52  marc
