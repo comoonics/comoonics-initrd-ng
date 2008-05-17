@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.46 2008-04-03 15:57:21 mark Exp $
+# $Id: gfs-lib.sh,v 1.47 2008-05-17 08:30:52 marc Exp $
 #
 # @(#)$File$
 #
@@ -413,9 +413,9 @@ function gfs_auto_hosts {
     local hostsfile=$2
 
 #    if [ -n "$debug" ]; then set -x; fi
-    cp -f $hostsfile $hostsfile.bak
-    (cat $hostsfile.bak && \
-	$xml_cmd -f $xmlfile -q hosts)
+#    cp -f $hostsfile $hostsfile.bak
+    $xml_cmd -f $xmlfile -q hosts
+    cat $hostsfile
     ret=$?
 #    if [ -n "$debug" ]; then set +x; fi
     return $ret
@@ -978,7 +978,10 @@ function gfs_checkhosts_alive {
 #********* gfs_checkhosts_alive
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.46  2008-04-03 15:57:21  mark
+# Revision 1.47  2008-05-17 08:30:52  marc
+# changed the way the /etc/hosts is created a little bit.
+#
+# Revision 1.46  2008/04/03 15:57:21  mark
 # Workaround bz# 193
 #
 # Revision 1.45  2008/01/24 13:30:04  marc

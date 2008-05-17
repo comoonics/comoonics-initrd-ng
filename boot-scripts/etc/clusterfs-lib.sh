@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.19 2008-01-24 13:27:41 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.20 2008-05-17 08:30:41 marc Exp $
 #
 # @(#)$File$
 #
@@ -483,7 +483,8 @@ function cc_auto_netconfig {
 function cc_auto_hosts {
    local cluster_conf=$1
 
-   ${clutype}_auto_hosts $cluster_conf /etc/hosts >> /etc/hosts
+   cp /etc/hosts /etc/hosts.bak
+   ${clutype}_auto_hosts $cluster_conf /etc/hosts.bak > /etc/hosts
 }
 #******** cc_auto_netconfig
 
@@ -758,7 +759,10 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.19  2008-01-24 13:27:41  marc
+# Revision 1.20  2008-05-17 08:30:41  marc
+# changed the way the /etc/hosts is created a little bit.
+#
+# Revision 1.19  2008/01/24 13:27:41  marc
 # default rootsource should be scsi
 #
 # Revision 1.18  2007/12/07 16:39:59  reiner
