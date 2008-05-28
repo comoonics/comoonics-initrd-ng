@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.69 2008-05-17 08:34:22 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.70 2008-05-28 14:54:46 mark Exp $
 #
 ##
 ##
@@ -54,7 +54,7 @@ Version: 1.3
 BuildArch: noarch
 Requires: comoonics-cs-py >= 0.1-43 comoonics-cluster-py >= 0.1-2 comoonics-bootimage-initscripts >= 1.3 comoonics-bootimage-listfiles >= 1.3
 #Conflicts:
-Release: 30
+Release: 31
 Vendor: ATIX AG
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -461,6 +461,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Wed May 28 2008 Mark Hlawatschek <hlawatschek@atix.de> 1.3-31
+- stabilize lvm operations (fix for BZ 193)
+- change permissions for chroot path (fix for BZ 210)
 * Fri May 16 2008 Marc Grimme <grimme@atix.de> 1.3-30
 - changed creation of hostsfile (/etc/hosts) in order to support dhcp better.
   RFE BZ#218
@@ -598,7 +601,10 @@ rm -rf %{buildroot}
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.69  2008-05-17 08:34:22  marc
+# Revision 1.70  2008-05-28 14:54:46  mark
+# new bootimage revision
+#
+# Revision 1.69  2008/05/17 08:34:22  marc
 # - added new version 1.3-30
 #
 # Revision 1.68  2008/02/29 09:09:07  mark
