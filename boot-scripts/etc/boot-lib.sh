@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.59 2008-03-18 17:40:00 marc Exp $
+# $Id: boot-lib.sh,v 1.60 2008-05-28 10:12:27 mark Exp $
 #
 # @(#)$File$
 #
@@ -946,9 +946,46 @@ function exec_local_debug() {
 }
 #************ exec_local_debug
 
+#****f* boot-lib.sh/exec_local_stabilized
+#  NAME
+#    exec_local_stabilized
+#  SYNOPSIS
+#    function exec_local_stabilized(reps, sleeptime, command ...) {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+#  used to call a function until it succeded
+
+function exec_local_stabilized() {
+	reps=$1
+	stime=$2
+ 	shift 2
+	ret=1
+
+ 	for i in $(seq $reps); do
+ 		if [ ! -z "$debug" ]; then
+ 			echo "start_service_chroot run: $i, sleeptime: $stime" >&3
+ 		fi
+   		output=$($exec_local $*) 
+   		if [ $? -eq 0 ]; then
+   			ret=0
+   			break
+   		fi 
+   		sleep $stime
+ 	done	
+ 	echo $output
+ 	return $ret
+}
+#************ exec_local_stabilized
+
 
 # $Log: boot-lib.sh,v $
-# Revision 1.59  2008-03-18 17:40:00  marc
+# Revision 1.60  2008-05-28 10:12:27  mark
+# added exec_local_stabilized
+# fix for bz 193
+#
+# Revision 1.59  2008/03/18 17:40:00  marc
 # - fixed bug for not detecting failover in all cases.
 #
 # Revision 1.58  2008/01/24 13:27:17  marc

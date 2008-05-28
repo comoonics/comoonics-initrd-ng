@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.47 2008-05-17 08:30:52 marc Exp $
+# $Id: gfs-lib.sh,v 1.48 2008-05-28 10:12:27 mark Exp $
 #
 # @(#)$File$
 #
@@ -780,13 +780,12 @@ function gfs_start_clvmd {
    echo_local -n "Starting clvmd ($chroot_path) "
    start_service_chroot $chroot_path /usr/sbin/clvmd
    return_code $?
-   # Workaroud to fix bz# 193
    sleep 10
    echo_local -n "Activating VGs:"
-   start_service_chroot $chroot_path /sbin/lvm vgscan --mknodes >/dev/null 2>&1
-   start_service_chroot $chroot_path /sbin/lvm vgchange -ay >/dev/null 2>&1
-   exec_local /sbin/lvm vgscan --mknodes >/dev/null 2>&1
-   exec_local /sbin/lvm vgchange -ay >/dev/null 2>&1
+   exec_local_stabilized 5 10 chroot $chroot_path /sbin/lvm vgscan --mknodes >/dev/null 2>&1
+   exec_local_stabilized 5 10 chroot $chroot_path /sbin/lvm vgchange -ay >/dev/null 2>&1
+   exec_local_stabilized 5 10 /sbin/lvm vgscan --mknodes >/dev/null 2>&1
+   exec_local_stabilized 5 10 /sbin/lvm vgchange -ay >/dev/null 2>&1
    return_code $?
 }
 #******gfs_start_clvmd
@@ -978,7 +977,11 @@ function gfs_checkhosts_alive {
 #********* gfs_checkhosts_alive
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.47  2008-05-17 08:30:52  marc
+# Revision 1.48  2008-05-28 10:12:27  mark
+# added exec_local_stabilized
+# fix for bz 193
+#
+# Revision 1.47  2008/05/17 08:30:52  marc
 # changed the way the /etc/hosts is created a little bit.
 #
 # Revision 1.46  2008/04/03 15:57:21  mark
