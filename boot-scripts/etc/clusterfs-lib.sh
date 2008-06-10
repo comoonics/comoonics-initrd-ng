@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.20 2008-05-17 08:30:41 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.21 2008-06-10 09:54:31 marc Exp $
 #
 # @(#)$File$
 #
@@ -121,16 +121,44 @@ function getCluType {
 #  NAME
 #    getRootFS
 #  SYNOPSIS
-#    function getRootFS()
+#    function getRootFS(cluster_conf, nodeid, nodename)
 #  DESCRIPTTION
 #    returns the type of the root filesystem. Until now only "gfs"
 #    is returned.
 #  SOURCE
 #
 function getRootFS {
-   echo "gfs"
+   local cluster_conf=$1
+   local nodeid=$2
+   local nodename=$3
+   local rootfs=$(${clutype}_get_rootfs $cluster_conf $nodeid $nodename)
+   if [ -z "$rootfs" ]; then
+     rootfs="gfs"
+   fi
+   echo "$rootfs"
 }
 #******** getRootFS
+
+#****f* bootsr/get_rootfs
+#  NAME
+#    get_rootfs
+#  SYNOPSIS
+#    function returns the rootfstype of amounted rootfs
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function get_mounted_rootfs {
+   root="/"
+   if [ -n "$1" ]; then
+   	 root=$1
+   fi
+   awk '
+$1 == "rootfs" { next }
+$2 == "'$root'" { print $3 }
+' /proc/mounts
+}
+#************ get_rootfs
 
 #****f* boot-scripts/etc/clusterfs-lib.sh/cluster_config
 #  NAME
@@ -169,7 +197,7 @@ function clusterfs_config {
   [ -z "$scsifailover" ] && scsifailover="driver"
   echo $scsifailover
   __rootfs=$(cc_get_rootfs ${cluster_conf} $_nodename)
-  [ -z "$__rootfs" ] && __rootfs=$(getRootFS)
+  [ -z "$__rootfs" ] && __rootfs=$(getRootFS $cluster_conf $nodeid $nodename)
   echo $__rootfs
   __rootsource=$(cc_get_rootsource ${cluster_conf} $_nodename)
   [ -z "$__rootsource" ] && __rootsource="scsi"
@@ -504,17 +532,23 @@ function cc_auto_syslogconfig {
   local local_log=$4
   local syslog_server_list=$(${clutype}_get_syslogserver $cluster_conf $nodename)
 
-  echo_local -n "Creating syslog config for syslog servers: $syslog_server_list"
-  exec_local /bin/rm $chroot_path/etc/syslog.conf
-  for syslog_server in $syslog_server_list; do
-  	echo '*.* @'"$syslog_server" >> $chroot_path/etc/syslog.conf
-  done
-  if [ "$local_log" == "yes" ]; then
-    echo "*.* -/var/log/comoonics_boot.syslog" >> $chroot_path/etc/syslog.conf
-  fi
+  if [ -n "$syslog_server_list" ]; then
+    echo_local -n "Creating syslog config for syslog servers: $syslog_server_list"
+    exec_local /bin/rm $chroot_path/etc/syslog.conf
+    for syslog_server in $syslog_server_list; do
+  	  echo '*.* @'"$syslog_server" >> $chroot_path/etc/syslog.conf
+    done
+    if [ "$local_log" == "yes" ]; then
+      echo "*.* -/var/log/comoonics_boot.syslog" >> $chroot_path/etc/syslog.conf
+    fi
 
-  echo "syslog          514/udp" >> $chroot_path/etc/services
-  return_code $?
+    echo "syslog          514/udp" >> $chroot_path/etc/services
+    return_code 0
+    return 0
+  else
+#    return_code 1
+    return 1
+  fi
 }
 #******** cc_auto_syslogconfig
 
@@ -759,7 +793,11 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.20  2008-05-17 08:30:41  marc
+# Revision 1.21  2008-06-10 09:54:31  marc
+# - beautified syslog handling
+# - removed gfs dependencies towards more generic approach
+#
+# Revision 1.20  2008/05/17 08:30:41  marc
 # changed the way the /etc/hosts is created a little bit.
 #
 # Revision 1.19  2008/01/24 13:27:41  marc
