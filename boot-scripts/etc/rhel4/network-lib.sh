@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.6 2008-05-17 08:31:34 marc Exp $
+# $Id: network-lib.sh,v 1.7 2008-06-10 09:59:44 marc Exp $
 #
 # @(#)$File$
 #
@@ -24,7 +24,7 @@
 #
 
 #
-#****h* boot-scripts/etc/rhel8/network-lib.sh
+#****h* boot-scripts/etc/rhel4/network-lib.sh
 #  NAME
 #    network-lib.sh
 #    $id$
@@ -123,7 +123,10 @@ function rhel4_ip2Config() {
 
 #################
 # $Log: network-lib.sh,v $
-# Revision 1.6  2008-05-17 08:31:34  marc
+# Revision 1.7  2008-06-10 09:59:44  marc
+# - fixed bug with macaddress
+#
+# Revision 1.6  2008/05/17 08:31:34  marc
 # fixed BUG with wrong mac-address creation. Already fixed in rhel5 but not here
 #
 # Revision 1.5  2008/01/24 13:33:58  marc
