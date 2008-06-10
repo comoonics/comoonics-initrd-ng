@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.48 2008-05-28 10:12:27 mark Exp $
+# $Id: gfs-lib.sh,v 1.49 2008-06-10 09:57:05 marc Exp $
 #
 # @(#)$File$
 #
@@ -81,6 +81,25 @@ function getGFSMinorVersion {
 }'
 }
 #********* getGFSMinorVersion
+
+#****f* boot-scripts/etc/clusterfs-lib.sh/gfs_get_rootfs
+#  NAME
+#    gfs_get_rootfs
+#  SYNOPSIS
+#    function gfs_get_rootfs(cluster_conf, nodeid, nodename)
+#  DESCRIPTTION
+#    returns the type of the root filesystem.
+#  SOURCE
+#
+function gfs_get_rootfs {
+   local cluster_conf=$1
+   local nodeid=$2
+   local nodename=$3
+   [ -z "$nodename" ] && nodename=$(gfs_get_nodename $cluster_conf)
+   local xml_cmd="${ccs_xml_query} -f $cluster_conf"
+   $xml_cmd -q rootfs $nodename
+}
+#******** gfs_get_rootfs
 
 #****f* gfs-lib.sh/gfs_get_rootvolume
 #  NAME
@@ -976,8 +995,26 @@ function gfs_checkhosts_alive {
 }
 #********* gfs_checkhosts_alive
 
+#****f* gfs-lib.sh/gfs_init
+#  NAME
+#    gfs_init
+#  SYNOPSIS
+#    function gfs_init(start|stop|restart)
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function gfs_init {
+	return 0
+}
+#********* gfs_init
+
 # $Log: gfs-lib.sh,v $
-# Revision 1.48  2008-05-28 10:12:27  mark
+# Revision 1.49  2008-06-10 09:57:05  marc
+# - added empty gfs_init
+# - rewrote gfs_get_rootfs
+#
+# Revision 1.48  2008/05/28 10:12:27  mark
 # added exec_local_stabilized
 # fix for bz 193
 #
