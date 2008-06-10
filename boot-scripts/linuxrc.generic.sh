@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.57 2008-05-17 08:32:18 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.58 2008-06-10 09:53:33 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.57 2008-05-17 08:32:18 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.58 2008-06-10 09:53:33 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -89,7 +89,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.57 $ $Date: 2008-05-17 08:32:18 $'
+echo_local 'Internal Version $Revision: 1.58 $ $Date: 2008-06-10 09:53:33 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -321,16 +321,19 @@ echo_local_debug "res: $res -> chroot_mount=$chroot_mount, chroot_path=$chroot_p
 step "chroot environment created"
 
 cc_auto_syslogconfig $cluster_conf $nodename
-start_service /sbin/syslogd no_chroot -m 0
-
-# start syslog in $chroot_path
-# but only if /dev is not the same inode as $chroot_path /dev
-if ! is_same_inode /dev $chroot_path/dev; then
+is_syslog=$?
+if [ $is_syslog -eq 0 ]; then
+  start_service /sbin/syslogd no_chroot -m 0
+  
+  # start syslog in $chroot_path
+  # but only if /dev is not the same inode as $chroot_path /dev
+  if ! is_same_inode /dev $chroot_path/dev; then
 	cc_auto_syslogconfig $cluster_conf $nodename $chroot_path no
 	start_service_chroot $chroot_path /sbin/syslogd -m 0
-fi
+  fi
 
-step "Syslog services started"
+  step "Syslog services started"
+fi
 
 # WARNING!
 # DRBD initialization doesn't seem possible before this point!
@@ -444,10 +447,12 @@ step "Logfiles copied"
 # FIXME: Remove line
 #bootlog="/var/log/comoonics-boot.log"
 
-#TODO: remove lines as syslog can will stay in /comoonics
-echo_local -n "Stopping syslogd..."
-exec_local stop_service "syslogd" / &&
-return_code
+if [ $is_syslog -eq 0 ]; then
+  #TODO: remove lines as syslog can will stay in /comoonics
+  echo_local -n "Stopping syslogd..."
+  exec_local stop_service "syslogd" / &&
+  return_code
+fi
 
 echo_local -n "Moving chroot environment to $newroot"
 move_chroot $chroot_mount $newroot/$chroot_mount
@@ -478,7 +483,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.57  2008-05-17 08:32:18  marc
+# Revision 1.58  2008-06-10 09:53:33  marc
+# - beautified syslog handling
+#
+# Revision 1.57  2008/05/17 08:32:18  marc
 # changed the time the /etc/hosts is created a little bit to later when nics are already up.
 #
 # Revision 1.56  2008/05/10 19:42:33  marc
