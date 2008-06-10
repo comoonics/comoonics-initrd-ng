@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.11 2008-01-24 15:25:03 marc Exp $
+# $Id: gfs-lib.sh,v 1.12 2008-06-10 10:00:10 marc Exp $
 #
 # @(#)$File$
 #
@@ -208,7 +208,13 @@ function gfs_start_qdiskd {
 function gfs_start_fenced {
   local chroot_path=$1
   start_service_chroot $chroot_path 'fenced -c'
-  start_service_chroot $chroot_path '/sbin/fence_tool -c -w join'
+  # fence_tool -c is not supported from RHEL5.2 up so we need to check (ABI compatibility)
+  fence_tool -h | grep -- -c > /dev/null 2>&1
+  if [ $? -eq 0 ]; then
+    start_service_chroot $chroot_path '/sbin/fence_tool -c -w join'
+  else
+    start_service_chroot $chroot_path '/sbin/fence_tool -w join'
+  fi
   #echo_local "Waiting for fenced to complete join"
   #exec_local fence_tool wait
   return_code
