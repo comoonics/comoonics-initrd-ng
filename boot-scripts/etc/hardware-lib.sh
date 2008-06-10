@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.16 2008-01-24 13:31:46 marc Exp $
+# $Id: hardware-lib.sh,v 1.17 2008-06-10 09:57:50 marc Exp $
 #
 # @(#)$File$
 #
@@ -261,13 +261,13 @@ function dm_start {
 #
 function lvm_check {
 	local rootdevice=$1
-	local valid_majors="8"
+	local valid_majors="8 ca"
 	if ! [ -e "$rootdevice" ]; then
 		return 0
 	else
 		major=$(stat --format="%t" $rootdevice)
 		for _major in $valid_majors; do
-			if [ $major -eq $_major ]; then
+			if [ $major = $_major ]; then
 				return 1
 			fi
 		done
@@ -424,7 +424,10 @@ function add_scsi_device() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.16  2008-01-24 13:31:46  marc
+# Revision 1.17  2008-06-10 09:57:50  marc
+# - added xen major for lvm_check
+#
+# Revision 1.16  2008/01/24 13:31:46  marc
 # - BUG#170, udev with dm-multipath and RHEL5 is not working. reviewed the udev and stabilized more often
 #
 # Revision 1.15  2007/12/07 16:39:59  reiner
