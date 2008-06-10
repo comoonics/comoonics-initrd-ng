@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.70 2008-05-28 14:54:46 mark Exp $
+# $Id: comoonics-bootimage.spec,v 1.71 2008-06-10 10:10:57 marc Exp $
 #
 ##
 ##
@@ -54,7 +54,7 @@ Version: 1.3
 BuildArch: noarch
 Requires: comoonics-cs-py >= 0.1-43 comoonics-cluster-py >= 0.1-2 comoonics-bootimage-initscripts >= 1.3 comoonics-bootimage-listfiles >= 1.3
 #Conflicts:
-Release: 31
+Release: 33
 Vendor: ATIX AG
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -81,13 +81,24 @@ Extra listfiles for special network configurations
 %package extras-nfs
 Version: 0.1
 Release: 1
-Requires: comoonics-bootimage >= 1.3-1
+Requires: comoonics-bootimage >= 1.3-33
 Summary: listfiles for nfs sharedroot configurations
 Group:   Storage/Management
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description extras-nfs
 Extra listfiles for nfs sharedroot configurations
+
+%package extras-ocfs2
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage >= 1.3-33
+Summary: listfiles for ocfs2 sharedroot configurations
+Group:   Storage/Management
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description extras-ocfs2
+Extra listfiles for ocfs2 sharedroot configurations
 
 %package extras-dm-multipath
 Version: 0.1
@@ -124,8 +135,8 @@ listfiles for xen support in the open-sharedroot cluster
 
 %package extras-iscsi
 Version: 0.1
-Release: 1
-Requires: comoonics-bootimage >= 1.3-21
+Release: 2
+Requires: comoonics-bootimage >= 1.3-33
 Summary: listfiles for iscsi support in the open-sharedroot cluster
 Group:   Storage/Management
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
@@ -136,8 +147,8 @@ PREVIEW VERSION
 
 %package extras-drbd
 Version: 0.1
-Release: 1
-Requires: comoonics-bootimage >= 1.3-27
+Release: 2
+Requires: comoonics-bootimage >= 1.3-33
 Summary: listfiles for drbd support in the open-sharedroot cluster
 Group:   Storage/Management
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
@@ -354,15 +365,12 @@ fi
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/chroot-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/clusterfs-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/comoonics-release
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/drbd-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/defaults.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/ext3-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/gfs-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/hardware-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/inittab
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/iscsi-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/network-lib.sh
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/nfs-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/xen-lib.sh
 #%attr(640, root, root) %{APPDIR}/boot-scripts/etc/passwd
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/stdfs-lib.sh
@@ -396,7 +404,12 @@ fi
 %attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/vlan.list
 
 %files extras-nfs
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/nfs-lib.sh
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/nfs.list
+
+%files extras-ocfs2
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/ocfs2-lib.sh
+%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/ocfs2.list
 
 %files extras-dm-multipath
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/dm_multipath.list
@@ -409,10 +422,12 @@ fi
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/xen.list
 
 %files extras-iscsi
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/iscsi-lib.sh
 %attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/iscsi.list
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/iscsi.list
 
 %files extras-drbd
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/drbd-lib.sh
 %attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/drbd.list
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/drbd.list
 
@@ -461,6 +476,12 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Tue Jun 10 2008 Marc Grimme <grimme@atix.de> 1.3-33
+- second ocfs2 devel version
+- iscsi/drbd/nfs bugfixes
+* Tue Jun 10 2008 Marc Grimme <grimme@atix.de> 1.3-32
+- first ocfs2 devel version
+- rewrote reboot and fs dependencies
 * Wed May 28 2008 Mark Hlawatschek <hlawatschek@atix.de> 1.3-31
 - stabilize lvm operations (fix for BZ 193)
 - change permissions for chroot path (fix for BZ 210)
@@ -567,12 +588,20 @@ rm -rf %{buildroot}
 - first release
 
 %changelog extras-iscsi
+* Tue Jun 10 2008 Marc Grimme <grimme@atix.de> - 0.1-2
+- added iscsi-lib.sh file
 * Fri Oct 12 2007 Marc Grimme <grimme@atix.de> - 0.1-1
 - first release
 
 %changelog extras-drbd
+* Tue Jun 10 2008 Marc Grimme <grimme@atix.de> - 0.1-2
+- added drbd-lib.sh file
 * Mon Feb 11 2008 Marc Grimme <grimme@atix.de> - 0.1-1
 - first release
+
+%changelog extras-nfs
+* Tue Jun 10 2008 Marc Grimme <grimme@atix.de> - 0.1-2
+- added nfs-lib.sh file
 
 %changelog fenceacksv
 * Mon Sep 10 2007 Marc Grimme <grimme@atix.de> - 0.3-1
@@ -601,7 +630,10 @@ rm -rf %{buildroot}
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.70  2008-05-28 14:54:46  mark
+# Revision 1.71  2008-06-10 10:10:57  marc
+# - new versions
+#
+# Revision 1.70  2008/05/28 14:54:46  mark
 # new bootimage revision
 #
 # Revision 1.69  2008/05/17 08:34:22  marc

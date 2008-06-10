@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.6 2007-12-07 16:39:59 reiner Exp $
+# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.7 2008-06-10 10:11:03 marc Exp $
 #
 ##
 ##
@@ -47,7 +47,7 @@ Version: 1.3
 BuildArch: noarch
 Requires: comoonics-bootimage >= 1.3-1 SysVinit-comoonics
 #Conflicts: 
-Release: 5.el5
+Release: 6.el5
 Vendor: ATIX AG
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -119,6 +119,8 @@ done
 rm -rf %{buildroot}
 
 %changelog
+* Tue Jun 10 2008 Marc Grimme <grimme@atix.de> - 1.3-6
+- rewrote reboot concept
 * Wed Nov 28 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3.5
 - Fixed BZ 150
 * Tue Sep 25 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3.3
@@ -129,7 +131,10 @@ rm -rf %{buildroot}
 - first revision
 # ------
 # $Log: comoonics-bootimage-initscripts-el5.spec,v $
-# Revision 1.6  2007-12-07 16:39:59  reiner
+# Revision 1.7  2008-06-10 10:11:03  marc
+# - new versions
+#
+# Revision 1.6  2007/12/07 16:39:59  reiner
 # Added GPL license and changed ATIX GmbH to AG.
 #
 # Revision 1.5  2007/11/28 12:41:42  mark
