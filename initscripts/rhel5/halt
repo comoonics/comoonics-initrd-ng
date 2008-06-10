@@ -8,7 +8,7 @@
 #               Modified for RHS Linux by Damien Neil
 #
 
-# Patched for comoonics patch 1.1
+# Patched for comoonics patch 1.2
 
 
 COM_KILLALL_OPTS="-x aisexec \
@@ -147,6 +147,8 @@ esac
 
 # Try to unmount tmpfs filesystems to avoid swapping them in.  Ignore failures.
 tmpfs=$(awk '$2 ~ /^\/($|proc|dev)/ { next; }
+             $2 ~ /'$COM_CHROOT_PATH'/ { next; }
+             $2 ~ /^\/cdsl.local/ { next; }
 	     $3 == "tmpfs" { print $2; }' /proc/mounts | sort -r)
 [ -n "$tmpfs" ] && fstab-decode umount $tmpfs 2>/dev/null
 
@@ -180,7 +182,8 @@ __umount_loop '$3 ~ /^rpc_pipefs$/ || $3 ~ /^rpc_svc_gss_pipefs$/ {print $2}' \
     -f
 
 LANG=C __umount_loop '$2 ~ /^\/$|^\/proc|^\/dev/{next}
-	$2 ~ /'$COM_CHROOT_PATH'/ || $2 ~/^\/cdsl.local/ {next}
+	$2 ~ /'$COM_CHROOT_PATH'/ {next}
+        $2 ~ /^\/cdsl.local/ {next}
 	$3 == "tmpfs" || $3 == "proc" {print $2 ; next}
 	/(loopfs|autofs|nfs|cifs|smbfs|ncpfs|sysfs|^none|^\/dev\/ram|^\/dev\/root$)/ {next}
 	{print $2}' /proc/mounts \
@@ -198,7 +201,10 @@ rm -f /.autofsck
 
 # Try all file systems other than root, essential filesystems and RAM disks,
 # one last time.
-awk '$2 !~ /\/(|dev|proc|selinux)$/ && $1 !~ /^\/dev\/ram/ { print $2 }' \
+awk '
+$2 ~ /'$COM_CHROOT_PATH'/ {next}
+$2 ~ /^\/cdsl.local/ {next}
+$2 !~ /\/(|dev|proc|selinux)$/ && $1 !~ /^\/dev\/ram/ { print $2 }' \
     /proc/mounts | sort -r | \
   while read line; do
     fstab-decode umount -f $line
@@ -210,7 +216,10 @@ fi
 
 # Remount read only anything that's left mounted.
 # echo $"Remounting remaining filesystems readonly"
-mount | awk '{ print $3 }' | while read line; do
+mount | awk '
+$3 ~ /'$COM_CHROOT_PATH'/ {next}
+$3 ~ /^\/cdsl.local/ {next}
+{ print $3 }' | while read line; do
     fstab-decode mount -n -o ro,remount $line
 done
 
@@ -232,7 +241,7 @@ if [ "$command" = /sbin/halt -a -r /etc/ups/upsmon.conf -a -f /etc/killpower -a 
 fi
 
 # First, try kexec. If that fails, fall back to rebooting the old way.
-[ -n "$kexec_command" ] && $kexec_command -e >& /dev/null
+[ -n "$kexec_command" ] && $kexec_command -e -x >& /dev/null
 
 HALTARGS="-d"
 [ -f /poweroff -o ! -f /halt ] && HALTARGS="$HALTARGS -p"
