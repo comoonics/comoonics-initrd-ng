@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.37 2007-12-07 16:39:59 reiner Exp $
+# $Id: Makefile,v 1.38 2008-06-10 10:07:09 marc Exp $
 #
 # @(#)$file$
 #
@@ -123,6 +123,7 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/chroot-lib.sh \
   boot-scripts/etc/clusterfs-lib.sh \
   boot-scripts/etc/comoonics-release \
+  boot-scripts/etc/drbd-lib.sh \
   boot-scripts/etc/defaults.sh \
   boot-scripts/etc/ext3-lib.sh \
   boot-scripts/etc/gfs-lib.sh \
@@ -130,6 +131,7 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/iscsi-lib.sh \
   boot-scripts/etc/network-lib.sh \
   boot-scripts/etc/nfs-lib.sh \
+  boot-scripts/etc/ocfs2-lib.sh \
   boot-scripts/etc/stdfs-lib.sh \
   boot-scripts/etc/std-lib.sh \
   boot-scripts/etc/xen-lib.sh \
@@ -180,13 +182,16 @@ CFG_DIR=$(SYSTEM_CFG_DIR)/bootimage
 #  SOURCE
 #
 CFG_FILES=files.initrd.d/rdac_multipath.list \
+	files.initrd.d/drbd.list \
 	files.initrd.d/iscsi.list \
 	files.initrd.d/user_edit.list \
 	files.initrd.d/vlan.list \
 	files.initrd.d/xen.list \
 	rpms.initrd.d/dm_multipath.list \
+	rpms.initrd.d/drbd.list \
 	rpms.initrd.d/iscsi.list \
 	rpms.initrd.d/nfs.list \
+	rpms.initrd.d/ocfs2.list \
 	rpms.initrd.d/xen.list \
 	
 #************ CFG_FILES 
@@ -258,6 +263,12 @@ TAR_PATH=$(PACKAGE_NAME)-$(VERSION)/*
 
 RPM_PACKAGE_BIN_DIR=/usr/src/redhat/RPMS/*
 RPM_PACKAGE_SRC_DIR=/usr/src/redhat/SRPMS
+RPM_PACKAGE_DIR=/usr/src/redhat
+
+
+CHANNELBASEDIR=/atix/dist-mirrors
+CHANNELDIRS=comoonics/redhat-el4/preview comoonics/redhat-el5/preview
+CHANNELSUBDIRS=i386 x86_64 noarch SRPMS
 
 .PHONY: install
 install:
@@ -385,15 +396,43 @@ rpmsign:
 	@echo "Signing packages"
 	rpm --resign $(RPM_PACKAGE_BIN_DIR)/$(PACKAGE_NAME)-*.rpm $(RPM_PACKAGE_SRC_DIR)/$(PACKAGE_NAME)-*.src.rpm
 
+.PHONY: channelcopy
+channelcopy:
+	@for channeldir in $(CHANNELDIRS); do \
+		echo "Copying rpms to channel $$channeldir.."; \
+		for subdir in $(CHANNELSUBDIRS); do \
+			if [ $$subdir == "SRPMS" ]; then \
+				type="src"; \
+			else \
+				type=$$subdir; \
+			fi; \
+			find $(RPM_PACKAGE_DIR) -name "$(PACKAGE_NAME)*.$$type.rpm" -exec cp {} $(CHANNELBASEDIR)/$$channeldir/$$subdir \; ;\
+			find $(CHANNELBASEDIR)/$$channeldir -name "$(PACKAGE_NAME)*.rpm"; \
+		done; \
+	done;
+
+.PHONY: channelbuild
+channelbuild:
+	@echo "Rebuilding channels.."
+	@for channeldir in $(CHANNELDIRS); do \
+		$(CHANNELBASEDIR)/updaterepositories -r $$channeldir; \
+	done 
+
 .PHONY:rpm	
 rpm: rpmbuild rpmbuild-initscripts-el4 rpmbuild-initscripts-el5 \
 rpmbuild-listfiles-el4 rpmbuild-listfiles-el5 \
 rpmsign
 
+.PHONY: channel
+channel: rpm channelcopy channelbuild
+
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.37  2007-12-07 16:39:59  reiner
+# Revision 1.38  2008-06-10 10:07:09  marc
+# -added ocfs2 files
+#
+# Revision 1.37  2007/12/07 16:39:59  reiner
 # Added GPL license and changed ATIX GmbH to AG.
 #
 # Revision 1.36  2007/10/16 08:04:13  marc
