@@ -4,14 +4,17 @@
 #    $id$
 #  DESCRIPTION
 #*******
-# $Id: basefiles.list,v 1.5 2007-08-06 16:00:16 mark Exp $
+# $Id: basefiles.list,v 1.6 2008-06-10 10:01:00 marc Exp $
 # Map the initrd libs
 @map&/opt/atix/comoonics-bootimage/boot-scripts&/
 # General Files
-@include $(ls -1 /etc/comoonics/bootimage/files.initrd.d/*.list)
+@include $(ls -1 /etc/comoonics/bootimage/files.initrd.d/*.list 2>/dev/null)
 #####################
 # $Log: basefiles.list,v $
-# Revision 1.5  2007-08-06 16:00:16  mark
+# Revision 1.6  2008-06-10 10:01:00  marc
+# - beautified
+#
+# Revision 1.5  2007/08/06 16:00:16  mark
 # reorganized files
 # removed all libraries
 #
