@@ -7,10 +7,16 @@ IDEAS:
 CHANGES:
 
 comoonics-bootimage:
-* 28.05.2008 Release 1.3-31
+- 10.06.2008 Release 1.3-33
+  * second ocfs2 devel version
+  * iscsi/drbd/nfs bugfixes
+- 10.06.2008 Release <grimme@atix.de> 1.3-32
+  * first ocfs2 devel version
+  * rewrote reboot and fs dependencies
+- 28.05.2008 Release 1.3-31
   * fix for BZ 193 
   * fix for BZ 210
-* 16.05.2008 Release 1.3-30
+- 16.05.2008 Release 1.3-30
   * changed creation of hostsfile (/etc/hosts) in order to support dhcp better.
     RFE BZ#218
   * Fixed bug in rhel4 implementation of RFE#144
@@ -135,6 +141,8 @@ comoonics-bootimage-extras-network:
     * initial release
 
 comoonics-bootimage-extras-nfs:
+- 10.06.2008 Release 0.1-2
+  * added nfs-lib file
 - 2007-09-15 Release 0.1.1
     * initial release
 
@@ -149,10 +157,16 @@ comoonics-bootimage-extras-xen
    * first release
 
 comoonics-bootimage-extras-iscsi
+- 10.06.2008 Release 0.1-2
+  * added iscsi-lib file
+  * bugfix in parser
 - 2007-10-12 Release 0.1-1
    * first release
 
 comoonics-bootimage-extras-drbd
+- 10.06.2008 Release 0.1-2
+  * added iscsi-lib file
+  * bugfix in parser
 - 2008-02-11 Release 0.1-1
    * first release
 
@@ -179,6 +193,8 @@ comoonics-bootimage-fencemaster-vmware:
     * initial release
 
 comoonics-bootimage-initscripts:
+- 10.06.2008 Release 1.3-6
+    * Rewrote the reboot stuff
 - 2007-11-28 Release 1.3.5-el5
     * Fixes BUG 150
 - 2007-11-28 Release 1.3.3-el4
@@ -211,7 +227,10 @@ TODO:
 ########################################
 # CVS-Log
 # $Log: CHANGELOG,v $
-# Revision 1.36  2008-05-28 10:18:28  mark
+# Revision 1.37  2008-06-10 10:10:46  marc
+# new versions
+#
+# Revision 1.36  2008/05/28 10:18:28  mark
 # new bootimage release
 #
 # Revision 1.35  2008/05/17 08:33:34  marc
