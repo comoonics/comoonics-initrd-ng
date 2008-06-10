@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: com-realhalt.sh,v 1.4 2007-12-07 16:39:59 reiner Exp $
+# $Id: com-realhalt.sh,v 1.5 2008-06-10 09:52:53 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/com-halt.sh
 #  NAME
 #    com-halt.sh
-#    $Id: com-realhalt.sh,v 1.4 2007-12-07 16:39:59 reiner Exp $
+#    $Id: com-realhalt.sh,v 1.5 2008-06-10 09:52:53 marc Exp $
 #  DESCRIPTION
 #    script called from <chrootpath>/com-halt.sh
 #  USAGE
@@ -83,17 +83,9 @@ fi
 
 distribution=$(getDistribution)
 clutype=$(getCluType)
-rootfs=$(getRootFS)
 
 [ -e /etc/${distribution}/clusterfs-lib.sh ] && source /etc/${distribution}/clusterfs-lib.sh
 [ -e /etc/${distribution}/${clutype}-lib.sh ] && source /etc/${distribution}/${clutype}-lib.sh
-
-
-if [ "$rootfs" != "$clutype" ]; then
-	. $(dirname $0)/etc/${rootfs}-lib.sh
-	[ -e /etc/${distribution}/${rootfs}-lib.sh ] && source /etc/${distribution}/${rootfs}-lib.sh
-fi
-
 
 if ! [ -e $(dirname $0)/etc/$clutype-lib.sh ]; then
   echo "Cannot find $(dirname $0)/etc/$clutype-lib.sh"
@@ -155,9 +147,18 @@ echo
 
 step
 
+rootfs=$(get_mounted_rootfs $COM_OLDROOT)
+
+echo_local "com-realhalt: detected distribution: $distribution, clutype: $clutype, rootfs: $rootfs"
+if [ "$rootfs" != "$clutype" ]; then
+	. $(dirname $0)/etc/${rootfs}-lib.sh
+	[ -e /etc/${distribution}/${rootfs}-lib.sh ] && source /etc/${distribution}/${rootfs}-lib.sh
+fi
+
+
 #nasty workaround for a bug that causes fenced to exit on sigstop sigcont
 # see also rh bz#318571
-if ! pidof fenced &> /dev/null; then
+if [ "$rootfs" = "gfs" ] && [ ! pidof fenced &> /dev/null ]; then
 	fenced -c
 	fence_tool join -w -c
 	sleep 3
