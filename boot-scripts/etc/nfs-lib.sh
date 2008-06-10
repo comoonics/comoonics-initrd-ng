@@ -1,5 +1,5 @@
 #
-# $Id: nfs-lib.sh,v 1.2 2007-12-07 16:39:59 reiner Exp $
+# $Id: nfs-lib.sh,v 1.3 2008-06-10 09:59:09 marc Exp $
 #
 # @(#)$File$
 #
@@ -160,8 +160,25 @@ function nfs_checkhosts_alive {
 }
 #********* gfs_checkhosts_alive
 
+#****f* nfs-lib.sh/nfs_init
+#  NAME
+#    nfs_init
+#  SYNOPSIS
+#    function nfs_init(start|stop|restart)
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function nfs_init {
+	return 0
+}
+#********* nfs_init
+
 # $Log: nfs-lib.sh,v $
-# Revision 1.2  2007-12-07 16:39:59  reiner
+# Revision 1.3  2008-06-10 09:59:09  marc
+# - added empty nfs_init
+#
+# Revision 1.2  2007/12/07 16:39:59  reiner
 # Added GPL license and changed ATIX GmbH to AG.
 #
 # Revision 1.1  2007/03/09 17:56:33  mark
