@@ -1,5 +1,5 @@
 #
-# $Id: iscsi-lib.sh,v 1.11 2008-01-24 13:32:13 marc Exp $
+# $Id: iscsi-lib.sh,v 1.12 2008-06-10 09:58:43 marc Exp $
 #
 # @(#)$File$
 #
@@ -31,9 +31,9 @@
 #  DESCRIPTION
 #*******
 
-parser1="iscsi://([^:/]+)"
-parser2="iscsi://([^:]+):([[:digit:]]+)/"
-parser3="^iscsi"
+iscsiparser1="iscsi://([^:/]+)"
+iscsiparser2="iscsi://([^:]+):([[:digit:]]+)/"
+iscsiparser3="^iscsi"
 
 #****f* iscsi-lib.sh/getISCSIServerFromParam
 #  NAME
@@ -47,7 +47,7 @@ parser3="^iscsi"
 function getISCSIServerFromParam {
     echo $1 | awk '
 {
-   match($1, "'$parser1'", iscsiparms);
+   match($1, "'$iscsiparser1'", iscsiparms);
    print iscsiparms[1];
 }'
 }
@@ -66,7 +66,7 @@ function getISCSIServerFromParam {
 function getISCSIPortFromParam {
     echo $1 | awk '
 {
-   match($1, "'$parser2'", iscsiparms);
+   match($1, "'$iscsiparser2'", iscsiparms);
    print iscsiparms[2];
 }'
 }
@@ -126,7 +126,9 @@ function startISCSI {
 	return_code $?
 	if [ -n "$iscsiserver" ]; then
 	   echo_local -n "Importing from node $iscsiserver"
-	   iscsiadm --mode discovery --type sendtargets --portal $iscsiserver
+	   rm -rf /var/lib/iscsi
+	   iscsiadm --mode discovery --type sendtargets --portal $iscsiserver &&
+       iscsiadm -m node --loginall=automatic
 	else
 	   echo_local -n "Importing old nodes"
        iscsiadm -m node --loginall=automatic
@@ -149,7 +151,7 @@ function isISCSIRootsource {
 		return 1
 	else
       echo $1 | awk '
-/'$parser3'/ {
+/'$iscsiparser3'/ {
 	exit 0
   }
   {
@@ -162,7 +164,10 @@ function isISCSIRootsource {
 #************ isISCSIRootsource
 
 # $Log: iscsi-lib.sh,v $
-# Revision 1.11  2008-01-24 13:32:13  marc
+# Revision 1.12  2008-06-10 09:58:43  marc
+# - fixed bug with parser
+#
+# Revision 1.11  2008/01/24 13:32:13  marc
 # - rewrote iscsi configuration to be more generic
 #
 # Revision 1.10  2007/12/07 16:39:59  reiner

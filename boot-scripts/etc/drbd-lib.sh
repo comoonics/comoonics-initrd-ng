@@ -1,5 +1,5 @@
 #
-# $Id: drbd-lib.sh,v 1.1 2008-03-18 17:40:11 marc Exp $
+# $Id: drbd-lib.sh,v 1.2 2008-06-10 09:54:45 marc Exp $
 #
 # @(#)$File$
 #
@@ -29,7 +29,7 @@
 #  DESCRIPTION
 #*******
 
-parser3="^drbd"
+drbdparser3="^drbd"
 
 #****f* drbd-lib.sh/loadDRBD
 #  NAME
@@ -93,7 +93,7 @@ function isDRBDRootsource {
 		return 1
 	else
       echo $1 | awk '
-/'$parser3'/ {
+/'$drbdparser3'/ {
 	exit 0
   }
   {
@@ -106,7 +106,10 @@ function isDRBDRootsource {
 #************ isDRBDRootsource
 
 # $Log: drbd-lib.sh,v $
-# Revision 1.1  2008-03-18 17:40:11  marc
+# Revision 1.2  2008-06-10 09:54:45  marc
+# - fixed bug with parser
+#
+# Revision 1.1  2008/03/18 17:40:11  marc
 # initial revision
 #
 #
