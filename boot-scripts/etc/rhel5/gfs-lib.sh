@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.12 2008-06-10 10:00:10 marc Exp $
+# $Id: gfs-lib.sh,v 1.13 2008-06-11 15:02:31 marc Exp $
 #
 # @(#)$File$
 #
@@ -117,7 +117,7 @@ function gfs_services_stop {
   local lvm_sup=$3
 
   services="fenced cman"
-  if [ "$lvm_sup" -eq 0 ]; then
+  if [ -n "$lvm_sup" ] && [ "$lvm_sup" -eq 0 ]; then
   	services="fenced clvmd cman"
   fi
   for service in $services; do
@@ -209,7 +209,7 @@ function gfs_start_fenced {
   local chroot_path=$1
   start_service_chroot $chroot_path 'fenced -c'
   # fence_tool -c is not supported from RHEL5.2 up so we need to check (ABI compatibility)
-  fence_tool -h | grep -- -c > /dev/null 2>&1
+  fence_tool -h | grep -- '-c' > /dev/null 2>&1
   if [ $? -eq 0 ]; then
     start_service_chroot $chroot_path '/sbin/fence_tool -c -w join'
   else
