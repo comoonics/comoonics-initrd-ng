@@ -1,5 +1,5 @@
 #
-# $Id: ocfs2-lib.sh,v 1.1 2008-06-10 09:59:26 marc Exp $
+# $Id: ocfs2-lib.sh,v 1.2 2008-06-11 15:03:25 marc Exp $
 #
 # @(#)$File$
 #
@@ -162,6 +162,9 @@ function ocfs2_services_stop {
     echo_local -n "Stopping O2CB cluster ${CLUSTER}: "
     OUTPUT="`o2cb_ctl -H -n "${CLUSTER}" -t cluster -a online=no 2>&1`"
     return_c=$?
+    if [ $return_c -ne 0 ]; then
+    	echo_local "Error: $OUTPUT"
+    fi
     return_code
     
     return $return_c
@@ -228,7 +231,10 @@ function ocfs2_init {
 #********* ocfs2_init
 
 # $Log: ocfs2-lib.sh,v $
-# Revision 1.1  2008-06-10 09:59:26  marc
+# Revision 1.2  2008-06-11 15:03:25  marc
+# - more output when failing to leave cluster
+#
+# Revision 1.1  2008/06/10 09:59:26  marc
 # *** empty log message ***
 #
 # Revision 1.2  2007/12/07 16:39:59  reiner
