@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: com-realhalt.sh,v 1.6 2008-06-11 15:59:11 marc Exp $
+# $Id: com-realhalt.sh,v 1.7 2008-06-11 15:59:35 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/com-halt.sh
 #  NAME
 #    com-halt.sh
-#    $Id: com-realhalt.sh,v 1.6 2008-06-11 15:59:11 marc Exp $
+#    $Id: com-realhalt.sh,v 1.7 2008-06-11 15:59:35 marc Exp $
 #  DESCRIPTION
 #    script called from <chrootpath>/com-halt.sh
 #  USAGE
@@ -161,7 +161,7 @@ fi
 
 #nasty workaround for a bug that causes fenced to exit on sigstop sigcont
 # see also rh bz#318571
-if [ "$rootfs" = "gfs" ] && [ ! pidof fenced &> /dev/null ]; then
+if [ "$rootfs" = "gfs" ] && ! pidof fenced &> /dev/null; then
 	fenced -c
 	fence_tool join -w -c
 	sleep 3
