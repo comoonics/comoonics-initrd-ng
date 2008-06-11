@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: com-realhalt.sh,v 1.5 2008-06-10 09:52:53 marc Exp $
+# $Id: com-realhalt.sh,v 1.6 2008-06-11 15:59:11 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/com-halt.sh
 #  NAME
 #    com-halt.sh
-#    $Id: com-realhalt.sh,v 1.5 2008-06-10 09:52:53 marc Exp $
+#    $Id: com-realhalt.sh,v 1.6 2008-06-11 15:59:11 marc Exp $
 #  DESCRIPTION
 #    script called from <chrootpath>/com-halt.sh
 #  USAGE
@@ -76,6 +76,7 @@ fi
 
 . $(dirname $0)/etc/boot-lib.sh
 . $(dirname $0)/etc/chroot-lib.sh
+. $(dirname $0)/etc/hardware-lib.sh
 . $(dirname $0)/etc/stdfs-lib.sh
 . $(dirname $0)/etc/std-lib.sh
 . $(dirname $0)/etc/defaults.sh
@@ -83,6 +84,8 @@ fi
 
 distribution=$(getDistribution)
 clutype=$(getCluType)
+lvm_check $root
+lvm_sup=$?
 
 [ -e /etc/${distribution}/clusterfs-lib.sh ] && source /etc/${distribution}/clusterfs-lib.sh
 [ -e /etc/${distribution}/${clutype}-lib.sh ] && source /etc/${distribution}/${clutype}-lib.sh
@@ -192,7 +195,7 @@ return_code
 step
 
 echo_local -n "Umounting oldroot"
-exec_local /bin/umount $COM_OLDROOT 
+exec_local /bin/umount $COM_OLDROOT "lock_dlm" $lvm_sup
 
 step
 
@@ -202,9 +205,5 @@ sleep 2
 step
 
 $*
-
-
-
-
 
 

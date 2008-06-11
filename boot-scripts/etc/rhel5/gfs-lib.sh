@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.13 2008-06-11 15:02:31 marc Exp $
+# $Id: gfs-lib.sh,v 1.14 2008-06-11 15:59:02 marc Exp $
 #
 # @(#)$File$
 #
@@ -117,7 +117,7 @@ function gfs_services_stop {
   local lvm_sup=$3
 
   services="fenced cman"
-  if [ -n "$lvm_sup" ] && [ "$lvm_sup" -eq 0 ]; then
+  if [ -n "$lvm_sup" ] && [ $lvm_sup -eq 0 ]; then
   	services="fenced clvmd cman"
   fi
   for service in $services; do
