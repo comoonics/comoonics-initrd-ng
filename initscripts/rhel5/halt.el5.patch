@@ -1,10 +1,10 @@
 --- halt.orig	2008-06-05 21:09:31.453907988 +0200
-+++ halt	2008-06-03 13:47:07.000000000 +0200
++++ halt	2008-06-05 22:25:35.339146789 +0200
 @@ -8,6 +8,21 @@
  #               Modified for RHS Linux by Damien Neil
  #
  
-+# Patched for comoonics patch 1.1
++# Patched for comoonics patch 1.3
 +
 +
 +COM_KILLALL_OPTS="-x aisexec \
@@ -36,7 +36,18 @@
  
  # Write to wtmp file before unmounting /var
  /sbin/halt -w
-@@ -163,6 +180,7 @@
+@@ -129,7 +146,9 @@
+ [ -x /sbin/hwclock ] && action $"Syncing hardware clock to system time" /sbin/hwclock $CLOCKFLAGS
+ 
+ # Try to unmount tmpfs filesystems to avoid swapping them in.  Ignore failures.
+-tmpfs=$(awk '$2 ~ /^\/($|proc|dev)/ { next; }
++tmpfs=$(awk '
++$2 ~ /'$COM_CHROOT_PATH'/ || $2 ~/^\/cdsl.local/ {next}
++$2 ~ /^\/($|proc|dev)/ { next; }
+ 	     $3 == "tmpfs" { print $2; }' /proc/mounts | sort -r)
+ [ -n "$tmpfs" ] && fstab-decode umount $tmpfs 2>/dev/null
+ 
+@@ -163,6 +182,7 @@
      -f
  
  LANG=C __umount_loop '$2 ~ /^\/$|^\/proc|^\/dev/{next}
@@ -44,7 +55,31 @@
  	$3 == "tmpfs" || $3 == "proc" {print $2 ; next}
  	/(loopfs|autofs|nfs|cifs|smbfs|ncpfs|sysfs|^none|^\/dev\/ram|^\/dev\/root$)/ {next}
  	{print $2}' /proc/mounts \
-@@ -219,4 +237,5 @@
+@@ -180,7 +200,9 @@
+ 
+ # Try all file systems other than root, essential filesystems and RAM disks,
+ # one last time.
+-awk '$2 !~ /\/(|dev|proc|selinux)$/ && $1 !~ /^\/dev\/ram/ { print $2 }' \
++awk '
++$2 ~ /'$COM_CHROOT_PATH'/ || $2 ~/^\/cdsl.local/ {next}
++$2 !~ /\/(|dev|proc|selinux)$/ && $1 !~ /^\/dev\/ram/ { print $2 }' \
+     /proc/mounts | sort -r | \
+   while read line; do
+     fstab-decode umount -f $line
+@@ -192,9 +214,9 @@
+ 
+ # Remount read only anything that's left mounted.
+ # echo $"Remounting remaining filesystems readonly"
+-mount | awk '{ print $3 }' | while read line; do
+-    fstab-decode mount -n -o ro,remount $line
+-done
++#mount | awk '{ print $3 }' | while read line; do
++#fstab-decode mount -n -o ro,remount $line
++#done
+ 
+ # Now halt or reboot.
+ echo $"$message"
+@@ -219,4 +241,5 @@
  HALTARGS="-d"
  [ -f /poweroff -o ! -f /halt ] && HALTARGS="$HALTARGS -p"
  
