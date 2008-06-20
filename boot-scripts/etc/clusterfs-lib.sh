@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.21 2008-06-10 09:54:31 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.22 2008-06-20 13:42:46 mark Exp $
 #
 # @(#)$File$
 #
@@ -404,7 +404,7 @@ function cc_get_chroot_device {
    fi
 
 }
-#******** cc_get_chroot_fstype
+#******** cc_get_chroot_device
 
 #****f* clusterfs-lib.sh/cc_get_chroot_mountopts
 #  NAME
@@ -465,7 +465,7 @@ function cc_get_scsifailover {
 
    ${clutype}_get_scsifailover $cluster_conf $nodename
 }
-#******** cc_get_mountopts
+#******** cc_get_scsifailover
 
 #****f* clusterfs-lib.sh/cc_get_netdevs
 #  NAME
@@ -793,7 +793,10 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.21  2008-06-10 09:54:31  marc
+# Revision 1.22  2008-06-20 13:42:46  mark
+# fixes some comments
+#
+# Revision 1.21  2008/06/10 09:54:31  marc
 # - beautified syslog handling
 # - removed gfs dependencies towards more generic approach
 #
