@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.49 2008-06-10 09:57:05 marc Exp $
+# $Id: gfs-lib.sh,v 1.50 2008-06-20 15:50:11 mark Exp $
 #
 # @(#)$File$
 #
@@ -41,7 +41,7 @@
 #*******
 
 default_lockmethod="lock_dlm"
-default_mountopts="defaults,noatime,nodiratime"
+default_mountopts="noatime,nodiratime"
 #ccs_xml_query="/opt/atix/comoonics-cs/ccs_xml_query"
 ccs_xml_query="/usr/bin/com-queryclusterconf"
 cl_check_nodes="/usr/bin/cl_checknodes"
@@ -1010,7 +1010,10 @@ function gfs_init {
 #********* gfs_init
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.49  2008-06-10 09:57:05  marc
+# Revision 1.50  2008-06-20 15:50:11  mark
+# get defaukt mount opts right
+#
+# Revision 1.49  2008/06/10 09:57:05  marc
 # - added empty gfs_init
 # - rewrote gfs_get_rootfs
 #
