@@ -2,7 +2,7 @@
 #****h* comoonics-bootimage/bootsr
 #  NAME
 #    bootsr
-#    $Id: bootsr,v 1.7 2008-06-10 10:00:37 marc Exp $
+#    $Id: bootsr,v 1.8 2008-06-20 16:02:03 mark Exp $
 #  DESCRIPTION
 #    Comoonics Shared Root post boot settings
 #  AUTHOR
@@ -69,7 +69,7 @@ function get_runlevel {
 }
 #************ get_runlevel
 
-#****f* bootsr/patch_halt
+#****f* bootsr/patch_files
 #  NAME
 #    patch_halt
 #  SYNOPSIS
@@ -78,14 +78,26 @@ function get_runlevel {
 #  IDEAS
 #  SOURCE
 #
-function patch_halt {
+function patch_files {
 	# we patch all versions here
+	# halt
 	if ! grep "comoonics patch " /etc/init.d/halt > /dev/null; then
 		echo "Patching halt"
 		cd /etc/init.d/ && patch -f -r /tmp/halt.patch.rej > /dev/null < /opt/atix/comoonics-bootimage/patches/halt.patch
 	fi
+	# netfs
+	if ! grep "comoonics patch " /etc/init.d/netfs > /dev/null; then
+		echo "Patching netfs"
+		cd /etc/init.d/ && patch -f -r /tmp/netfs.patch.rej > /dev/null < /opt/atix/comoonics-bootimage/patches/netfs.patch
+	fi
+	# network
+	if ! grep "comoonics patch " /etc/init.d/network > /dev/null; then
+		echo "Patching network"
+		cd /etc/init.d/ && patch -f -r /tmp/network.patch.rej > /dev/null < /opt/atix/comoonics-bootimage/patches/network.patch
+	fi
+	
 }
-#************ patch_halt
+#************ patch_files
 
 #************ umount_chroot
 #****f* bootsr/umount_chroot
@@ -231,7 +243,10 @@ exit $RETVAL
 #************ main
 ###############
 # $Log: bootsr,v $
-# Revision 1.7  2008-06-10 10:00:37  marc
+# Revision 1.8  2008-06-20 16:02:03  mark
+# added netfs and network patch
+#
+# Revision 1.7  2008/06/10 10:00:37  marc
 # - rewrote files to be more filesystem independent
 #
 # Revision 1.6  2007/11/22 16:31:35  mark
