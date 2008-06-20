@@ -1,0 +1,16 @@
+--- network.orig	2008-06-20 14:58:45.000000000 +0200
++++ network	2008-06-20 17:55:23.000000000 +0200
+@@ -171,10 +171,10 @@
+   stop)
+   	# Don't shut the network down if root is on NFS or a network
+ 	# block device.
+-        rootfs=$(awk '{ if ($1 !~ /^[ \t]*#/ && $2 == "/") { print $3; }}' /etc/mtab)
+-        rootopts=$(awk '{ if ($1 !~ /^[ \t]*#/ && $2 == "/") { print $4; }}' /etc/mtab)
++        rootfs=$(awk '{ if ($1 !~ /^rootfs/ && $1 !~ /^[ \t]*#/ && $2 == "/") { print $3; }}' /etc/mtab)
++        rootopts=$(awk '{ if ($1 !~ /^rootfs/ && if ($1 !~ /^[ \t]*#/ && $2 == "/") { print $4; }}' /etc/mtab)
+ 	
+-	if [[ "$rootfs" =~ "^nfs" ]] || [[ "$rootopts" =~ "_netdev" ]] ; then
++	if [[ "$rootfs" =~ "^nfs|^gfs" ]] || [[ "$rootopts" =~ "_netdev" ]] ; then
+ 		exit 1
+ 	fi
+   
