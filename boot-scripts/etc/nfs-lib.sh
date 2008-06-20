@@ -1,5 +1,5 @@
 #
-# $Id: nfs-lib.sh,v 1.3 2008-06-10 09:59:09 marc Exp $
+# $Id: nfs-lib.sh,v 1.4 2008-06-20 15:50:36 mark Exp $
 #
 # @(#)$File$
 #
@@ -30,7 +30,7 @@
 #  DESCRIPTION
 #*******
 
-default_mountopts="defaults,noatime,nodiratime"
+default_mountopts="noatime,nodiratime"
 
 #****f* nfs-lib.sh/nfs_load
 #  NAME
@@ -175,7 +175,10 @@ function nfs_init {
 #********* nfs_init
 
 # $Log: nfs-lib.sh,v $
-# Revision 1.3  2008-06-10 09:59:09  marc
+# Revision 1.4  2008-06-20 15:50:36  mark
+# get default mount opts right
+#
+# Revision 1.3  2008/06/10 09:59:09  marc
 # - added empty nfs_init
 #
 # Revision 1.2  2007/12/07 16:39:59  reiner
