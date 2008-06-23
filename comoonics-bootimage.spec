@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.71 2008-06-10 10:10:57 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.72 2008-06-23 22:13:42 mark Exp $
 #
 ##
 ##
@@ -54,7 +54,7 @@ Version: 1.3
 BuildArch: noarch
 Requires: comoonics-cs-py >= 0.1-43 comoonics-cluster-py >= 0.1-2 comoonics-bootimage-initscripts >= 1.3 comoonics-bootimage-listfiles >= 1.3
 #Conflicts:
-Release: 33
+Release: 34
 Vendor: ATIX AG
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -476,6 +476,8 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Tue Jun 20 2008 Mark Hlawatschek <hlawatschek@atix.de> 1.3-34
+- revised default boot option
 * Tue Jun 10 2008 Marc Grimme <grimme@atix.de> 1.3-33
 - second ocfs2 devel version
 - iscsi/drbd/nfs bugfixes
@@ -630,7 +632,10 @@ rm -rf %{buildroot}
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.71  2008-06-10 10:10:57  marc
+# Revision 1.72  2008-06-23 22:13:42  mark
+# new release
+#
+# Revision 1.71  2008/06/10 10:10:57  marc
 # - new versions
 #
 # Revision 1.70  2008/05/28 14:54:46  mark

@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.7 2008-06-10 10:11:03 marc Exp $
+# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.8 2008-06-23 22:13:57 mark Exp $
 #
 ##
 ##
@@ -47,7 +47,7 @@ Version: 1.3
 BuildArch: noarch
 Requires: comoonics-bootimage >= 1.3-1 SysVinit-comoonics
 #Conflicts: 
-Release: 6.el5
+Release: 7.el5
 Vendor: ATIX AG
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -72,23 +72,47 @@ install -d -m 755 $RPM_BUILD_ROOT/%{INITDIR}
 install -m755 initscripts/rhel5/bootsr $RPM_BUILD_ROOT/%{INITDIR}/bootsr
 install -d -m 755 $RPM_BUILD_ROOT/%{APPDIR}/patches
 install -m600 initscripts/rhel5/halt.el5.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/halt.patch
+install -m600 initscripts/rhel5/netfs.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/netfs.patch
+install -m600 initscripts/rhel5/network.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/network.patch
 
 %preun
 
 if [ "$1" -eq 0 ]; then
   echo "Preuninstalling comoonics-bootimage-initscripts"
-  root_fstype=$(mount | grep "/ " | awk '
-BEGIN { exit_c=1; }
-{ if ($5) {  print $5; exit_c=0; } }
-END{ exit exit_c}')
-  if [ "$root_fstype" != "gfs" ]; then
+# root_fstype=$(awk '{ if ($1 !~ /^rootfs/ && $1 !~ /^[ \t]*#/ && $2 == "/") { print $3; }}' /etc/mtab)
 	/sbin/chkconfig --del bootsr
 	if grep "comoonics patch " /etc/init.d/halt > /dev/null; then
 		echo "Unpatching halt"
 		cd /etc/init.d/ && patch -R -f -r /tmp/halt.patch.rej > /dev/null < /opt/atix/comoonics-bootimage/patches/halt.patch
 	fi
-  fi
+	if grep "comoonics patch " /etc/init.d/netfs > /dev/null; then
+		echo "Unpatching netfs"
+		cd /etc/init.d/ && patch -R -f -r /tmp/netfs.patch.rej > /dev/null < /opt/atix/comoonics-bootimage/patches/netfs.patch
+	fi
+	if grep "comoonics patch " /etc/init.d/network > /dev/null; then
+		echo "Unpatching network"
+		cd /etc/init.d/ && patch -R -f -r /tmp/network.patch.rej > /dev/null < /opt/atix/comoonics-bootimage/patches/network.patch
+	fi
 fi
+
+
+%pre
+
+#if this is an upgrade we need to unpatch all files
+if [ "$1" -eq 2 ]; then
+	if grep "comoonics patch " /etc/init.d/halt > /dev/null; then
+		echo "Unpatching halt"
+		cd /etc/init.d/ && patch -R -f -r /tmp/halt.patch.rej > /dev/null < /opt/atix/comoonics-bootimage/patches/halt.patch
+	fi
+	if grep "comoonics patch " /etc/init.d/netfs > /dev/null; then
+		echo "Unpatching netfs"
+		cd /etc/init.d/ && patch -R -f -r /tmp/netfs.patch.rej > /dev/null < /opt/atix/comoonics-bootimage/patches/netfs.patch
+	fi
+	if grep "comoonics patch " /etc/init.d/network > /dev/null; then
+		echo "Unpatching network"
+		cd /etc/init.d/ && patch -R -f -r /tmp/network.patch.rej > /dev/null < /opt/atix/comoonics-bootimage/patches/network.patch
+	fi
+fi 
 
 %post
 
@@ -107,6 +131,8 @@ echo "Disabling services ($services)"
 for service in $services; do
    /sbin/chkconfig --del $service &> /dev/null
 done
+/etc/init.d/bootsr patch_files
+
 /bin/true
 
 
@@ -114,11 +140,15 @@ done
 
 %attr(750, root, root) %{INITDIR}/bootsr
 %attr(600, root, root) %{APPDIR}/patches/halt.patch
+%attr(600, root, root) %{APPDIR}/patches/netfs.patch
+%attr(600, root, root) %{APPDIR}/patches/network.patch
 
 %clean
 rm -rf %{buildroot}
 
 %changelog
+* Fri Jun 20 2008 Mark Hlawatschek <hlawatschek@atix.de> 1.3.7
+- added patch for netfs and network
 * Tue Jun 10 2008 Marc Grimme <grimme@atix.de> - 1.3-6
 - rewrote reboot concept
 * Wed Nov 28 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3.5
@@ -131,7 +161,10 @@ rm -rf %{buildroot}
 - first revision
 # ------
 # $Log: comoonics-bootimage-initscripts-el5.spec,v $
-# Revision 1.7  2008-06-10 10:11:03  marc
+# Revision 1.8  2008-06-23 22:13:57  mark
+# new release
+#
+# Revision 1.7  2008/06/10 10:11:03  marc
 # - new versions
 #
 # Revision 1.6  2007/12/07 16:39:59  reiner
