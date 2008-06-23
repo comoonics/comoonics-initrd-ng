@@ -2,7 +2,7 @@
 #****h* comoonics-bootimage/bootsr
 #  NAME
 #    bootsr
-#    $Id: bootsr,v 1.8 2008-06-20 16:02:03 mark Exp $
+#    $Id: bootsr,v 1.9 2008-06-23 12:12:41 mark Exp $
 #  DESCRIPTION
 #    Comoonics Shared Root post boot settings
 #  AUTHOR
@@ -71,9 +71,9 @@ function get_runlevel {
 
 #****f* bootsr/patch_files
 #  NAME
-#    patch_halt
+#    patch_files
 #  SYNOPSIS
-#    function patch_halt
+#    function patch_files
 #  MODIFICATION HISTORY
 #  IDEAS
 #  SOURCE
@@ -226,7 +226,7 @@ case "$1" in
  	  fi 
   	  [ -e /var/lock/subsys/bootsr ] && rm -f /var/lock/subsys/bootsr 
 	  action "Cleaning up chroot environment" $UMOUNT_CHROOT
-	  patch_halt
+  	  patch_files
         ;;
   status)
       exit 0
@@ -243,7 +243,10 @@ exit $RETVAL
 #************ main
 ###############
 # $Log: bootsr,v $
-# Revision 1.8  2008-06-20 16:02:03  mark
+# Revision 1.9  2008-06-23 12:12:41  mark
+# fixes typo
+#
+# Revision 1.8  2008/06/20 16:02:03  mark
 # added netfs and network patch
 #
 # Revision 1.7  2008/06/10 10:00:37  marc

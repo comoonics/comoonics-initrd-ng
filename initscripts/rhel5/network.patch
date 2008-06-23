@@ -1,5 +1,5 @@
 --- network.orig	2008-06-20 14:58:45.000000000 +0200
-+++ network	2008-06-20 18:00:20.000000000 +0200
++++ network	2008-06-23 14:11:19.000000000 +0200
 @@ -10,6 +10,8 @@
  # Provides: $network
  ### END INIT INFO
@@ -16,7 +16,7 @@
 -        rootfs=$(awk '{ if ($1 !~ /^[ \t]*#/ && $2 == "/") { print $3; }}' /etc/mtab)
 -        rootopts=$(awk '{ if ($1 !~ /^[ \t]*#/ && $2 == "/") { print $4; }}' /etc/mtab)
 +        rootfs=$(awk '{ if ($1 !~ /^rootfs/ && $1 !~ /^[ \t]*#/ && $2 == "/") { print $3; }}' /etc/mtab)
-+        rootopts=$(awk '{ if ($1 !~ /^rootfs/ && if ($1 !~ /^[ \t]*#/ && $2 == "/") { print $4; }}' /etc/mtab)
++        rootopts=$(awk '{ if ($1 !~ /^rootfs/ && $1 !~ /^[ \t]*#/ && $2 == "/") { print $4; }}' /etc/mtab)
  	
 -	if [[ "$rootfs" =~ "^nfs" ]] || [[ "$rootopts" =~ "_netdev" ]] ; then
 +	if [[ "$rootfs" =~ "^nfs|^gfs" ]] || [[ "$rootopts" =~ "_netdev" ]] ; then
