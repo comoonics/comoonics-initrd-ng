@@ -2,7 +2,7 @@
 #****h* comoonics-bootimage/bootsr
 #  NAME
 #    bootsr
-#    $Id: bootsr,v 1.9 2008-06-23 12:12:41 mark Exp $
+#    $Id: bootsr,v 1.10 2008-06-23 22:12:06 mark Exp $
 #  DESCRIPTION
 #    Comoonics Shared Root post boot settings
 #  AUTHOR
@@ -235,6 +235,13 @@ case "$1" in
   	 stop
   	 start 
       ;;
+  patch_files)
+  	 check_sharedroot $rootfs
+     sharedroot=$?
+     if  [ -n "$rootfs" ] && [ $sharedroot ]; then
+  	   patch_files
+     fi
+     ;;
   *)
         echo "Usage: bootsr {start|stop|status|restart|reload}"
         exit 1
@@ -243,7 +250,10 @@ exit $RETVAL
 #************ main
 ###############
 # $Log: bootsr,v $
-# Revision 1.9  2008-06-23 12:12:41  mark
+# Revision 1.10  2008-06-23 22:12:06  mark
+# apply patches at install time
+#
+# Revision 1.9  2008/06/23 12:12:41  mark
 # fixes typo
 #
 # Revision 1.8  2008/06/20 16:02:03  mark
@@ -255,7 +265,7 @@ exit $RETVAL
 # Revision 1.6  2007/11/22 16:31:35  mark
 # added automatic mount for gfs filesystems, fixes bz #150
 #
-# Revision 1.5  2007/10/05 13:38:09  mark
+# Revisin 1.5  2007/10/05 13:38:09  mark
 # bug fixes
 #
 # Revision 1.4  2007/10/05 10:04:06  mark
