@@ -1,6 +1,15 @@
---- netfs.orig	2008-06-05 21:23:18.945202828 +0200
-+++ netfs	2008-06-05 21:35:51.682703206 +0200
-@@ -30,7 +30,7 @@
+--- netfs.orig	2008-06-23 16:09:44.000000000 +0200
++++ netfs	2008-06-23 16:08:05.000000000 +0200
+@@ -13,6 +13,8 @@
+ # Provides: $local_fs $remote_fs
+ ### END INIT INFO
+ 
++# Patched for comoonics patch 1.0
++
+ [ -f /etc/sysconfig/network ] || exit 0
+ . /etc/init.d/functions
+ . /etc/sysconfig/network
+@@ -30,7 +32,7 @@
  SMBMTAB=`LC_ALL=C awk '$3 == "smbfs" { print $2 }' /proc/mounts`
  CIFSMTAB=`LC_ALL=C awk '$3 == "cifs" { print $2 }' /proc/mounts`
  NCPMTAB=`LC_ALL=C awk '$3 == "ncpfs" { print $2 }' /proc/mounts`
