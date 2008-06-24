@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.8 2008-06-23 22:13:57 mark Exp $
+# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.9 2008-06-24 12:31:01 mark Exp $
 #
 ##
 ##
@@ -47,7 +47,7 @@ Version: 1.3
 BuildArch: noarch
 Requires: comoonics-bootimage >= 1.3-1 SysVinit-comoonics
 #Conflicts: 
-Release: 7.el5
+Release: 8.el5
 Vendor: ATIX AG
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -147,6 +147,8 @@ done
 rm -rf %{buildroot}
 
 %changelog
+* Tue Jun 24 2008 Mark Hlawatschek <hlawatschek@atix.de> 1.3.8
+- changed kill level fro bootsr initscript
 * Fri Jun 20 2008 Mark Hlawatschek <hlawatschek@atix.de> 1.3.7
 - added patch for netfs and network
 * Tue Jun 10 2008 Marc Grimme <grimme@atix.de> - 1.3-6
@@ -161,7 +163,10 @@ rm -rf %{buildroot}
 - first revision
 # ------
 # $Log: comoonics-bootimage-initscripts-el5.spec,v $
-# Revision 1.8  2008-06-23 22:13:57  mark
+# Revision 1.9  2008-06-24 12:31:01  mark
+# changed kill level fro bootsr initscript
+#
+# Revision 1.8  2008/06/23 22:13:57  mark
 # new release
 #
 # Revision 1.7  2008/06/10 10:11:03  marc

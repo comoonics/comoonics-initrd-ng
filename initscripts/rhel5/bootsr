@@ -2,7 +2,7 @@
 #****h* comoonics-bootimage/bootsr
 #  NAME
 #    bootsr
-#    $Id: bootsr,v 1.10 2008-06-23 22:12:06 mark Exp $
+#    $Id: bootsr,v 1.11 2008-06-24 12:31:01 mark Exp $
 #  DESCRIPTION
 #    Comoonics Shared Root post boot settings
 #  AUTHOR
@@ -10,7 +10,7 @@
 #
 #*******
 #
-# chkconfig: 345 11 99
+# chkconfig: 345 11 40
 # description: do the post settings for Comoonics Shared Root
 # Author: hlawatschek@atix.de
 #
@@ -250,7 +250,10 @@ exit $RETVAL
 #************ main
 ###############
 # $Log: bootsr,v $
-# Revision 1.10  2008-06-23 22:12:06  mark
+# Revision 1.11  2008-06-24 12:31:01  mark
+# changed kill level fro bootsr initscript
+#
+# Revision 1.10  2008/06/23 22:12:06  mark
 # apply patches at install time
 #
 # Revision 1.9  2008/06/23 12:12:41  mark
