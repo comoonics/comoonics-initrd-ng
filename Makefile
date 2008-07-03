@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.38 2008-06-10 10:07:09 marc Exp $
+# $Id: Makefile,v 1.39 2008-07-03 12:47:47 mark Exp $
 #
 # @(#)$file$
 #
@@ -132,6 +132,7 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/network-lib.sh \
   boot-scripts/etc/nfs-lib.sh \
   boot-scripts/etc/ocfs2-lib.sh \
+  boot-scripts/etc/repository-lib.sh \
   boot-scripts/etc/stdfs-lib.sh \
   boot-scripts/etc/std-lib.sh \
   boot-scripts/etc/xen-lib.sh \
@@ -429,7 +430,10 @@ channel: rpm channelcopy channelbuild
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.38  2008-06-10 10:07:09  marc
+# Revision 1.39  2008-07-03 12:47:47  mark
+# added repository-lib.sh
+#
+# Revision 1.38  2008/06/10 10:07:09  marc
 # -added ocfs2 files
 #
 # Revision 1.37  2007/12/07 16:39:59  reiner
