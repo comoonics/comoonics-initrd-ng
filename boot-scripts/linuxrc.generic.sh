@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.58 2008-06-10 09:53:33 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.59 2008-07-03 12:45:27 mark Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.58 2008-06-10 09:53:33 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.59 2008-07-03 12:45:27 mark Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -68,6 +68,7 @@
 . /etc/stdfs-lib.sh
 . /etc/defaults.sh
 . /etc/xen-lib.sh
+. /etc/repository-lib.sh
 [ -e /etc/iscsi-lib.sh ] && source /etc/iscsi-lib.sh
 [ -e /etc/drbd-lib.sh ] && source /etc/drbd-lib.sh
 
@@ -89,7 +90,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.58 $ $Date: 2008-06-10 09:53:33 $'
+echo_local 'Internal Version $Revision: 1.59 $ $Date: 2008-07-03 12:45:27 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -103,60 +104,16 @@ else
   modules_conf="/etc/modprobe.conf"
 fi
 
+
 # boot parameters
 echo_local -n "Scanning for Bootparameters..."
-bootparms=$(getBootParameters)
-return_code=$?
-debug=$(getParm ${bootparms} 1)
-stepmode=$(getParm ${bootparms} 2)
-mount_opts=$(getParm ${bootparms} 3)
-tmpfix=$(getParm ${bootparms} 4)
-scsifailover=$(getParm ${bootparms} 5)
-dstepmode=$(getParm ${bootparms} 6)
-nousb=$(getParm ${bootparms} 7)
+debug=$(getParameter com-debug)
+stepmode=$(getParameter com-step)
+dstepmode=$(getParameter com-dstep)
+nousb=$(getParameter nousb)
 return_code 0
 
-# network parameters
-echo_local -n "Scanning for network parameters..."
-netparms=$(getNetParameters)
-ipConfig=$(getParm ${netparms} 1)
-return_code 0
 
-# clusterfs parameters
-echo_local -n "Scanning for clusterfs parameters..."
-cfsparams=$(getClusterFSParameters)
-rootsource=$(getParm ${cfsparams} 1)
-root=$(getParm ${cfsparams} 2)
-lockmethod=$(getParm ${cfsparams} 3)
-sourceserver=$(getParm ${cfsparams} 4)
-quorumack=$(getParm ${cfsparams} 5)
-nodeid=$(getParm ${cfsparams} 6)
-nodename=$(getParm ${cfsparams} 7)
-rootfs=$(getParm ${cfsparams} 8)
-return_code 0
-
-check_cmd_params $*
-
-echo_local_debug "*****************************"
-echo_local_debug "Debug: $debug"
-echo_local_debug "Stepmode: $stepmode"
-echo_local_debug "Debug-stepmode: $dstepmode"
-echo_local_debug "Clutype: $clutype"
-echo_local_debug "mount_opts: $mount_opts"
-echo_local_debug "tmpfix: $tmpfix"
-echo_local_debug "ip: $ipConfig"
-echo_local_debug "rootsource: $rootsource"
-echo_local_debug "root: $root"
-echo_local_debug "lockmethod: $lockmethod"
-echo_local_debug "sourceserver: $sourceserver"
-echo_local_debug "scsifailover: $scsifailover"
-echo_local_debug "quorumack: $quorumack"
-echo_local_debug "nodeid: $nodeid"
-echo_local_debug "nodename: $nodename"
-echo_local_debug "rootfs: $rootfs"
-echo_local_debug "clutype: $clutype"
-echo_local_debug "nousb: " $nousb
-echo_local_debug "*****************************"
 
 echo_local_debug "*****************************"
 # step
@@ -179,38 +136,70 @@ if [ "$confirm" = "i" ]; then
 fi
 wait
 
+echo -n "Scanning parameters..."
+
+#nodeid must be first
+nodeid=$(getParameter nodeid)
+nodename=$(getParameter nodename)
+
+#if we cant detect the nodename an error must be thrown
+if [ -z "$nodename" ]; then
+	echo_local ""
+	echo_local "ERROR:"
+	echo_local "  The node name of this cluster node could not be detected"
+	echo_local "HINTS: "
+	echo_local "  - Please verify that the mac address in your cluster configuration is correct."
+	echo_local "  - To be able to start the clusternode, the nodeid or nodename"
+	echo_local "    parameter can be defined as boot parameter."
+fi
+
+votes=$(getParameter votes)
+tmpfix=$(getParameter tmpfix)
+
+rootsource=$(getParameter rootsource scsi)
+sourceserver=$(getParameter sourceserver)
+lockmethod=$(getParameter lockmethod)
+root=$(getParameter root)
+
+rootvolume=$(getParameter rootvolume)
+[ -z "$root" ] || [ "$root" = "/dev/ram0" ] && root=$rootvolume
+
+rootfs=$(getParameter rootfs)
+mount_opts=$(getParameter mountopts defaults)
+
+quorumack=$(getParameter quorumack)
+
+scsifailover=$(getParameter scsifailover driver)
+
+ipConfig=$(getParameter ip cluster)
+_ipConfig=$(cluster_ip_config $cluster_conf $nodename)
+[ -n "$_ipConfig" ] && ( [ -z "$ipConfig" ] || [ "$ipConfig" = "cluster" ] ) && ipConfig=$_ipConfig
+
+check_cmd_params $*
+
+return_code 0
+
 step "Inialization started"
 
-# cluster_conf is set in clusterfs-lib.sh or overwritten in gfs-lib.sh
-# FIXME: This overrides boot setting !
-# BUG: bz#31
-
-cfsparams=( $(clusterfs_config $cluster_conf $ipConfig $nodeid $nodename ) )
-echo "cfsparams: $cfsparams"
-nodeid=${cfsparams[0]}
-nodename=${cfsparams[1]}
-rootvolume=${cfsparams[2]}
-_mount_opts=${cfsparams[3]}
-scsifailover=${cfsparams[4]}
-rootfs=${cfsparams[5]}
-_rootsource=${cfsparams[6]}
-_ipConfig=${cfsparams[@]:7}
-[ -n "$_ipConfig" ] && ( [ -z "$ipConfig" ] || [ "$ipConfig" = "cluster" ] ) && ipConfig=$_ipConfig
-[ -n "$_mount_opts" ] && [ -z "$mount_opts" ] && mount_opts=$_mount_opts
-[ -z "$mount_opts" ] && mount_opts="defaults" 
-[ -z "$scsifailover" ] && scsifailover="driver"
-[ -z "$root" ] || [ "$root" = "/dev/ram0" ] && root=$rootvolume
-[ -z "$rootsource" ] && rootsource=$_rootsource
-[ -z "$rootsource" ] && rootsource="scsi"
-
 echo_local_debug "*****************************"
+echo_local_debug "Debug: $debug"
+echo_local_debug "Stepmode: $stepmode"
+echo_local_debug "Debug-stepmode: $dstepmode"
+echo_local_debug "Clutype: $clutype"
+echo_local_debug "tmpfix: $tmpfix"
+echo_local_debug "rootsource: $rootsource"
+echo_local_debug "root: $root"
+echo_local_debug "lockmethod: $lockmethod"
+echo_local_debug "sourceserver: $sourceserver"
+echo_local_debug "scsifailover: $scsifailover"
+echo_local_debug "quorumack: $quorumack"
 echo_local_debug "nodeid: $nodeid"
 echo_local_debug "nodename: $nodename"
-echo_local_debug "rootvolume: $rootvolume"
-echo_local_debug "scsifailover: $scsifailover"
 echo_local_debug "rootfs: $rootfs"
+echo_local_debug "votes: $votes"
+echo_local_debug "nousb: " $nousb
+echo_local_debug "rootvolume: $rootvolume"
 echo_local_debug "mountopts: $mount_opts"
-echo_local_debug "rootsource: $rootsource"
 echo_local_debug "ipConfig: $ipConfig"
 echo_local_debug "*****************************"
 
@@ -293,20 +282,6 @@ if [ "$lvm_sup" -eq 0 ]; then
 	step "LVM subsystem started"
 fi
 
-
-# TODO:
-# - mount chroot from either
-#   - local disk defined in /etc/sysconfig/comoonics-chroot
-#   - cluster.conf
-#   - ramdisk
-# - create chroot environment in /comoonics by
-#   - copy everything from / except /lib/modules
-#   - mount --bind /dev /comoonics/dev
-#   - mount -t proc proc /comoonics/proc ?
-#   - mount -t sysfs none /comoonics/sys
-
-# TODO:
-# Put all things into a library function
 
 cc_auto_hosts $cluster_conf
 echo_local -n "Building comoonics chroot environment"
@@ -483,7 +458,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.58  2008-06-10 09:53:33  marc
+# Revision 1.59  2008-07-03 12:45:27  mark
+# rewrite of parameter collection to use new getParameter method
+#
+# Revision 1.58  2008/06/10 09:53:33  marc
 # - beautified syslog handling
 #
 # Revision 1.57  2008/05/17 08:32:18  marc
