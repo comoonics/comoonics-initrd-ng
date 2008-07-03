@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.50 2008-06-20 15:50:11 mark Exp $
+# $Id: gfs-lib.sh,v 1.51 2008-07-03 12:42:36 mark Exp $
 #
 # @(#)$File$
 #
@@ -95,7 +95,7 @@ function gfs_get_rootfs {
    local cluster_conf=$1
    local nodeid=$2
    local nodename=$3
-   [ -z "$nodename" ] && nodename=$(gfs_get_nodename $cluster_conf)
+   [ -z "$nodename" ] && nodename=$(getParameter nodename)
    local xml_cmd="${ccs_xml_query} -f $cluster_conf"
    $xml_cmd -q rootfs $nodename
 }
@@ -307,7 +307,7 @@ function gfs_get_chroot_dir {
 function gfs_get_scsifailover {
    local xml_file=$1
    local nodename=$2
-   [ -z "$nodename" ] && nodename=$(gfs_get_nodename $xml_file)
+   [ -z "$nodename" ] && nodename=$(getParameter nodename)
    local xml_cmd="${ccs_xml_query} -f $xml_file"
    local _scsifailover=$($xml_cmd -q scsifailover $nodename)
    if [ -z "$_scsifailover" ]; then
@@ -332,7 +332,7 @@ function gfs_get_scsifailover {
 function gfs_get_node_hostname {
    local xml_file=$1
    local nodename=$2
-   [ -z "$nodename" ] && nodename=$(gfs_get_nodename)
+   [ -z "$nodename" ] && nodename=$(getParameter nodename)
    local xml_cmd="${ccs_xml_query} -f $xml_file"
    $xml_cmd -q hostname $nodename 2>/dev/null
    return $?
@@ -355,6 +355,25 @@ function gfs_get_nodename {
 
     local xml_cmd="${ccs_xml_query}"
     $xml_cmd -f $ccs_file -q nodename $mac
+}
+#************ gfs_get_nodename
+
+#****f* gfs-lib.sh/gfs_get_nodename_by_id
+#  NAME
+#    gfs_get_nodename_by_id
+#  SYNOPSIS
+#    function gfs_get_nodename_by_id(cluster_conf, id)
+#  DESCRIPTION
+#    gets for this very host the nodename (identified by the nodeid)
+#  IDEAS
+#  SOURCE
+#
+function gfs_get_nodename_by_id {
+    local ccs_file=$1
+    local id=$2
+
+    local xml_cmd="${ccs_xml_query}"
+    $xml_cmd -f $ccs_file -q nodenamebyid $id
 }
 #************ gfs_get_nodename
 
@@ -665,10 +684,24 @@ function gfs_start_lock_dlm {
 #  SOURCE
 #
 function gfs_start_cman {
+  local repository="configparams"
+  local cmd="cman_tool join -w"
+  
+  if repository_has_key $repository votes; then
+  	local votes=$(repository_get_value $repository votes)
+  	cmd="$cmd -v $votes"
+	echo_local_debug "Votes value has been set to $votes"
+  fi
+
   echo_local -n "Joining the cluster manager"
   sleep 5
-  start_service_chroot $chroot_path cman_tool join -w
+  start_service_chroot $chroot_path $cmd
+  if [ -n "$votes" ]; then
+	start_service_chroot $chroot_path cman_tool votes -v $votes
+  fi
+
   return_code
+  
 }
 #************ gfs_start_cman
 
@@ -1010,7 +1043,11 @@ function gfs_init {
 #********* gfs_init
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.50  2008-06-20 15:50:11  mark
+# Revision 1.51  2008-07-03 12:42:36  mark
+# use new getParameter method
+# add support for votes parameter
+#
+# Revision 1.50  2008/06/20 15:50:11  mark
 # get defaukt mount opts right
 #
 # Revision 1.49  2008/06/10 09:57:05  marc
