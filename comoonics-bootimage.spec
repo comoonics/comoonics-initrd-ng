@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.72 2008-06-23 22:13:42 mark Exp $
+# $Id: comoonics-bootimage.spec,v 1.73 2008-07-03 13:04:17 mark Exp $
 #
 ##
 ##
@@ -54,7 +54,7 @@ Version: 1.3
 BuildArch: noarch
 Requires: comoonics-cs-py >= 0.1-43 comoonics-cluster-py >= 0.1-2 comoonics-bootimage-initscripts >= 1.3 comoonics-bootimage-listfiles >= 1.3
 #Conflicts:
-Release: 34
+Release: 35
 Vendor: ATIX AG
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -371,6 +371,7 @@ fi
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/hardware-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/inittab
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/network-lib.sh
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/repository-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/xen-lib.sh
 #%attr(640, root, root) %{APPDIR}/boot-scripts/etc/passwd
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/stdfs-lib.sh
@@ -632,7 +633,10 @@ rm -rf %{buildroot}
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.72  2008-06-23 22:13:42  mark
+# Revision 1.73  2008-07-03 13:04:17  mark
+# new release
+#
+# Revision 1.72  2008/06/23 22:13:42  mark
 # new release
 #
 # Revision 1.71  2008/06/10 10:10:57  marc
