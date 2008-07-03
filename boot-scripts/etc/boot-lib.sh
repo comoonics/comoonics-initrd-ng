@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.60 2008-05-28 10:12:27 mark Exp $
+# $Id: boot-lib.sh,v 1.61 2008-07-03 12:44:13 mark Exp $
 #
 # @(#)$File$
 #
@@ -283,6 +283,54 @@ function getDistribution {
 }
 #**** getDistribution
 
+#****f* boot-lib.sh/getParameter
+#  NAME
+#    getParameterValue
+#  SYNOPSIS
+#    function getParameter(name, default) {
+#  DESCRIPTION
+#    returns a parameter
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function getParameter() {
+	local repository="configparams"
+	local name=$1
+	local default=$2
+	local ret=""
+	
+	# check if parameter is already in repository
+	if repository_has_key $repository $name; then
+		repository_get_value $repository $name
+		return 0
+	fi
+	# first check for a boot parameter
+	if ret=$(getBootParm $name $default); then
+		repository_store_value $repository $name $ret
+		echo $ret
+		return 0
+	fi
+	# if we cannot find this one, try with a "com-"
+	if ret=$(getBootParm com-$name $default); then
+		repository_store_value $repository $name $ret
+		echo $ret
+		return 0
+	fi
+	# then we try to find a method to query the cluster configuration
+	if ret=$(getClusterParameter $name $default); then
+		repository_store_value $repository $name $ret
+		echo $ret
+		return 0
+	fi
+	echo $default
+	return 1		
+		
+}
+#************ getParameter
+
+
+
 #****f* boot-lib.sh/getBootParameters
 #  NAME
 #    getBootParameters
@@ -358,6 +406,10 @@ function initBootProcess() {
 
   echo_local_debug "/proc/cmdline"
   exec_local_debug cat /proc/cmdline
+
+  if [ ! -d /tmp ]; then
+  	mkdir /tmp
+  fi
 
   if [ ! -e /mnt/newroot ]; then
     mkdir -p /mnt/newroot
@@ -981,7 +1033,10 @@ function exec_local_stabilized() {
 
 
 # $Log: boot-lib.sh,v $
-# Revision 1.60  2008-05-28 10:12:27  mark
+# Revision 1.61  2008-07-03 12:44:13  mark
+# add new method getParameter
+#
+# Revision 1.60  2008/05/28 10:12:27  mark
 # added exec_local_stabilized
 # fix for bz 193
 #
