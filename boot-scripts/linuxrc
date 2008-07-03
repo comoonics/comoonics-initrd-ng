@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc,v 1.15 2007-12-07 16:39:59 reiner Exp $
+# $Id: linuxrc,v 1.16 2008-07-03 12:44:49 mark Exp $
 #
 # @(#)$File$
 #
@@ -34,7 +34,7 @@
 #****h* comoonics-bootimage/linuxrc
 #  NAME
 #    linuxrc
-#    $Id: linuxrc,v 1.15 2007-12-07 16:39:59 reiner Exp $
+#    $Id: linuxrc,v 1.16 2008-07-03 12:44:49 mark Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -129,6 +129,10 @@ if [ -n "$error_code" ] && [ $error_code -eq 0 ]; then
 elif [ -n "$error_code" ] && [ $error_code -eq 2 ]; then
   echo_local "Userquit falling back to bash.."
   exec 1>/dev/console 2>/dev/console /bin/bash
+elif [ -n "$error_code" ] && [ $error_code -eq 4 ]; then
+  echo_local "Error occured. Starting maintenance mode"
+  export PS1="comoonics \! > "
+  exec 1>/dev/console 2>/dev/console /bin/bash
 else
   echo_local "Error starting init-process falling back to bash."
 #  /rescue.sh
@@ -140,7 +144,10 @@ fi
 
 ################
 # $Log: linuxrc,v $
-# Revision 1.15  2007-12-07 16:39:59  reiner
+# Revision 1.16  2008-07-03 12:44:49  mark
+# added new maintenance mode
+#
+# Revision 1.15  2007/12/07 16:39:59  reiner
 # Added GPL license and changed ATIX GmbH to AG.
 #
 # Revision 1.14  2007/09/18 10:06:00  mark
