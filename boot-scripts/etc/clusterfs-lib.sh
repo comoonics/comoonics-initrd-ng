@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.22 2008-06-20 13:42:46 mark Exp $
+# $Id: clusterfs-lib.sh,v 1.23 2008-07-03 12:43:39 mark Exp $
 #
 # @(#)$File$
 #
@@ -61,6 +61,8 @@ if [ ! -e $cluster_conf ]; then
   error_local "Critical error could not find cluster configuration."
   exit_linuxrc 1
 fi
+
+clutype="gfs"
 
 #****f* boot-scripts/etc/clusterfs-lib.sh/getClusterFSParameters
 #  NAME
@@ -160,6 +162,55 @@ $2 == "'$root'" { print $3 }
 }
 #************ get_rootfs
 
+#****f* boot-scripts/etc/clusterfs-lib.sh/getClusterParameter
+#  NAME
+#    getClusterParameter
+#  SYNOPSIS
+#    getClusterParameter(parametername, cluster_conf)
+#  DESCRIPTION
+#    returns the parameter of the cluster configuration
+#  SOURCE
+function getClusterParameter() {
+	local name=$1
+	if [ -n "$2" ] && [ -e $2 ]; then
+		local cluster_conf=$2
+	fi
+	local repository="configparams"
+	# check for the existance of the helper function
+	if ! type -t cc_get_$name >/dev/null; then
+		return 1
+	fi
+	# first we need to find our nodeid
+	#maybe it is already in the repository
+	if repository_has_key $repository nodeid; then
+		local nodeid=$(repository_get_value $repository nodeid)
+	else
+		# we need to query it
+		local nodeid=$(cc_find_nodeid $cluster_conf)
+		if [ -n "$nodeid" ]; then
+			repository_store_value $repository nodeid $nodeid
+		else
+			return 1
+		fi
+	fi	
+	if repository_has_key $repository nodename; then
+		local nodename=$(repository_get_value $repository nodename)
+	else
+		local nodename=$(cc_get_nodename_by_id $cluster_conf $nodeid) 
+		if [ -n "$nodename" ]; then
+			repository_store_value $repository nodename $nodename
+		else
+			return 1
+		fi
+	fi
+	# maybe we can find the value in the repository
+	if repository_has_key $repository $name; then
+		repository_get_value $repository $name
+	else
+		cc_get_$name $cluster_conf $nodename
+	fi
+}
+
 #****f* boot-scripts/etc/clusterfs-lib.sh/cluster_config
 #  NAME
 #    cluster_config
@@ -208,6 +259,52 @@ function clusterfs_config {
   done
 }
 #******** cluster_config
+
+#****f* boot-scripts/etc/clusterfs-lib.sh/cluster_ip_config
+#  NAME
+#    cluster_ip_config
+#  SYNOPSIS
+#    cluster_ip_config(cluster_conf, nodename)
+#  DESCRIPTION
+#    returns the following parameters got from the cluster configuration
+#      * ipConfig: the ipConfiguration used to do locking
+#  SOURCE
+function cluster_ip_config {
+  local cluster_conf=$1
+  local nodename=$2
+
+  for _dev in $(cc_get_netdevs ${cluster_conf} $nodename); do
+    cc_auto_netconfig ${cluster_conf} $nodename $_dev
+  done
+}
+#******** cluster_ip_config
+
+
+#****f* clusterfs-lib.sh/cc_find_nodeid
+#  NAME
+#    cc_find_nodeid
+#  SYNOPSIS
+#    function cc_find_nodeid(cluster_conf)
+#  DESCRIPTION
+#    try to find the nodeid of this node 
+#  SOURCE
+function cc_find_nodeid {
+	local cluster_conf=$1
+	local macs=$(ifconfig -a | grep -i hwaddr | awk '{print $5;};')
+	for mac in $macs; do
+    	local nodeid=$(cc_get_nodeid ${cluster_conf} $mac 2>/dev/null)
+    	if [ -n "$nodeid" ]; then
+    		break
+    	fi
+  	done
+	if [ -z "$nodeid" ]; then
+		return 1
+	fi
+	echo $nodeid
+	return 0  
+}
+#******* cc_get_nodeid
+
 
 #****f* clusterfs-lib.sh/cc_get_nodeid
 #  NAME
@@ -270,6 +367,22 @@ function cc_get_nodename {
    ${clutype}_get_nodename $cluster_conf $mac
 }
 #******** cc_get_nodename
+
+#****f* clusterfs-lib.sh/cc_get_nodename_by_id
+#  NAME
+#    cc_get_nodename_by_id
+#  SYNOPSIS
+#    function cc_get_nodename_by_id(cluster_conf, id)
+#  DESCRIPTION
+#    gets the nodename of this node referenced by the nodeid
+#  SOURCE
+function cc_get_nodename_by_id {
+   local cluster_conf=$1
+   local id=$2
+
+   ${clutype}_get_nodename_by_id $cluster_conf $id
+}
+#******** cc_get_nodename_by_id
 
 #****f* clusterfs-lib.sh/cc_get_rootvolume
 #  NAME
@@ -793,7 +906,10 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.22  2008-06-20 13:42:46  mark
+# Revision 1.23  2008-07-03 12:43:39  mark
+# add new methods to support generic getParameter method
+#
+# Revision 1.22  2008/06/20 13:42:46  mark
 # fixes some comments
 #
 # Revision 1.21  2008/06/10 09:54:31  marc
