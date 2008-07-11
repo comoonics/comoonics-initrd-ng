@@ -7,7 +7,7 @@
 #  DESCRIPTION
 #*******
 #
-# $Id: manage_chroot.sh,v 1.5 2007-12-07 16:39:59 reiner Exp $
+# $Id: manage_chroot.sh,v 1.6 2008-07-11 13:28:31 mark Exp $
 #
 # @(#)$File$
 #
@@ -114,6 +114,14 @@ function log() {
 	else 
 		echo_out $*
 	fi 
+}
+
+function close_fds() {
+	exec 3>&-
+	exec 4>&-
+	exec 5>&-
+	exec 6>&-
+	exec 7>&-	
 }
 
 function umount_chroot() {
@@ -259,6 +267,7 @@ case "$action" in
 		mount_chroot
 	;;
 	"start_service")
+		close_fds
 		start_service_chroot $chrootdir $* &> /dev/null
 	;;
 	"stop_service_pid")
