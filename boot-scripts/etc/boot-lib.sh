@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.61 2008-07-03 12:44:13 mark Exp $
+# $Id: boot-lib.sh,v 1.62 2008-07-15 12:50:24 marc Exp $
 #
 # @(#)$File$
 #
@@ -276,6 +276,8 @@ function getDistribution {
    	 	elif cat /etc/redhat-release | grep -i "release 5" &> /dev/null; then
    	 		echo "rhel5"
     	fi
+    elif [ -e /etc/SuSE-release ]; then
+        awk -vdistribution=sles '/VERSION[[:space:]]*=[[:space:]]*[[:digit:]]+/ { print distribution$3;}' /etc/SuSE-release
 	else
 		echo "unknown"
     	return 2
@@ -306,19 +308,19 @@ function getParameter() {
 		return 0
 	fi
 	# first check for a boot parameter
-	if ret=$(getBootParm $name $default); then
+	if ret=$(getBootParm $name); then
 		repository_store_value $repository $name $ret
 		echo $ret
 		return 0
 	fi
 	# if we cannot find this one, try with a "com-"
-	if ret=$(getBootParm com-$name $default); then
+	if ret=$(getBootParm com-$name); then
 		repository_store_value $repository $name $ret
 		echo $ret
 		return 0
 	fi
 	# then we try to find a method to query the cluster configuration
-	if ret=$(getClusterParameter $name $default); then
+	if ret=$(getClusterParameter $name); then
 		repository_store_value $repository $name $ret
 		echo $ret
 		return 0
@@ -665,8 +667,8 @@ function switchRoot() {
   echo "Cleaning up..."
   #umount /dev
   [ -e /proc/bus/usb ] && umount /proc/bus/usb
-  umount /proc
   umount /sys
+  umount /proc
 
 
   #if type -t ${distribution}_switchRoot > /dev/null; then
@@ -1033,7 +1035,11 @@ function exec_local_stabilized() {
 
 
 # $Log: boot-lib.sh,v $
-# Revision 1.61  2008-07-03 12:44:13  mark
+# Revision 1.62  2008-07-15 12:50:24  marc
+# - changed getDistribution to also support Novell/SuSE LE
+# - fixed Bug#242
+#
+# Revision 1.61  2008/07/03 12:44:13  mark
 # add new method getParameter
 #
 # Revision 1.60  2008/05/28 10:12:27  mark
