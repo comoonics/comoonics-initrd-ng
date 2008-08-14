@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.5 2007-12-07 16:39:59 reiner Exp $
+# $Id: hardware-lib.sh,v 1.6 2008-08-14 13:32:46 marc Exp $
 #
 # @(#)$File$
 #
@@ -73,13 +73,17 @@ function rhel4_hardware_detect() {
 #  SOURCE
 #
 function rhel4_udev_start() {
-    /sbin/udevstart
+	killall -0 udevd || $(udevd &)
+    /sbin/udevstart.static
 }
 #************rhel4_udev_start
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.5  2007-12-07 16:39:59  reiner
+# Revision 1.6  2008-08-14 13:32:46  marc
+# - rewrote udevstart because would not work with kvm
+#
+# Revision 1.5  2007/12/07 16:39:59  reiner
 # Added GPL license and changed ATIX GmbH to AG.
 #
 # Revision 1.4  2007/09/07 07:58:35  mark
