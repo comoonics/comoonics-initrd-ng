@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.17 2008-06-10 09:57:50 marc Exp $
+# $Id: hardware-lib.sh,v 1.18 2008-08-14 14:33:27 marc Exp $
 #
 # @(#)$File$
 #
@@ -386,8 +386,8 @@ function hardware_detect() {
 #  udev_start
 #  return_code
 
-  echo_local_debug "File $modules_conf ***"
-  exec_local_debug cat $modules_conf
+#  echo_local_debug "File $modules_conf ***"
+#  exec_local_debug cat $modules_conf
 
   return $ret_c
 }
@@ -424,7 +424,10 @@ function add_scsi_device() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.17  2008-06-10 09:57:50  marc
+# Revision 1.18  2008-08-14 14:33:27  marc
+# - remove debug output of modules.conf which is not needed any more
+#
+# Revision 1.17  2008/06/10 09:57:50  marc
 # - added xen major for lvm_check
 #
 # Revision 1.16  2008/01/24 13:31:46  marc
