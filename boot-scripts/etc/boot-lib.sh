@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.62 2008-07-15 12:50:24 marc Exp $
+# $Id: boot-lib.sh,v 1.63 2008-08-14 13:34:58 marc Exp $
 #
 # @(#)$File$
 #
@@ -168,6 +168,7 @@ function exit_linuxrc() {
 #  SOURCE
 #
 function step() {
+   local __the_step=""
    if [ ! -z "$stepmode" ]; then
    	 echo $1
      echo -n "Press <RETURN> to continue (timeout in $step_timeout secs) [quit|break|continue]"
@@ -331,8 +332,6 @@ function getParameter() {
 }
 #************ getParameter
 
-
-
 #****f* boot-lib.sh/getBootParameters
 #  NAME
 #    getBootParameters
@@ -367,7 +366,44 @@ function getBootParameters() {
 }
 #************ getBootParameters
 
-
+#****f* boot-lib.sh/welcome
+#  NAME
+#    welcome
+#  SYNOPSIS
+#    function welcome() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#    Says hello distribution indenpendent
+#  SOURCE
+#
+function welcome() {
+	local _distro=$1
+	typeset -f ${_distro}_welcome >/dev/null 2>&1
+	if [ $? -eq 0 ]; then
+		${_distro}_welcome
+	else
+        echo -en $"\t\tWelcome to "
+		if [ -e /etc/redhat-release ]; then
+           if LC_ALL=C grep -q "Red Hat" /etc/redhat-release ; then
+              [ "$BOOTUP" = "color" ] && echo -en "\\033[0;31m"
+              echo -en "Red Hat"
+              [ "$BOOTUP" = "color" ] && echo -en "\\033[0;39m"
+              PRODUCT=`sed "s/Red Hat \(.*\) release.*/\1/" /etc/redhat-release`
+           elif LC_ALL=C grep -q "Fedora" /etc/redhat-release ; then
+              [ "$BOOTUP" = "color" ] && echo -en "\\033[0;31m"
+              echo -en "Fedora"
+              [ "$BOOTUP" = "color" ] && echo -en "\\033[0;39m"
+              PRODUCT=`sed "s/Fedora \(.*\) release.*/\1/" /etc/redhat-release`
+           else
+              PRODUCT=`sed "s/ release.*//g" /etc/redhat-release`
+           fi
+        else
+           PRODUCT=$(cat $(find /etc -name "*release" -not -name "lsb-release" -not -name "comoonics-release") | head -1)
+        fi
+        echo "$PRODUCT"
+	fi	
+}
+#****** welcome
 #****f* boot-lib.sh/initBootProcess
 #  NAME
 #    initBootProcess
@@ -667,8 +703,8 @@ function switchRoot() {
   echo "Cleaning up..."
   #umount /dev
   [ -e /proc/bus/usb ] && umount /proc/bus/usb
-  umount /sys
   umount /proc
+  umount /sys
 
 
   #if type -t ${distribution}_switchRoot > /dev/null; then
@@ -1035,7 +1071,12 @@ function exec_local_stabilized() {
 
 
 # $Log: boot-lib.sh,v $
-# Revision 1.62  2008-07-15 12:50:24  marc
+# Revision 1.63  2008-08-14 13:34:58  marc
+# - made _stepmode local
+# - added welcome
+# - changed order of umount because of problems with nfs
+#
+# Revision 1.62  2008/07/15 12:50:24  marc
 # - changed getDistribution to also support Novell/SuSE LE
 # - fixed Bug#242
 #
