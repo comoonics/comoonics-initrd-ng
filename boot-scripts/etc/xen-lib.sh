@@ -1,5 +1,5 @@
 #
-# $Id: xen-lib.sh,v 1.7 2008-03-18 17:41:02 marc Exp $
+# $Id: xen-lib.sh,v 1.8 2008-08-14 14:31:34 marc Exp $
 #
 # @(#)$File$
 #
@@ -42,6 +42,10 @@
 function xen_dom0_detect() {
   local _err=0
   if [ ! -e /proc/xen ]; then
+  	return 1
+  fi
+  xen_domx_detect
+  if [ $? -eq 0 ]; then
   	return 1
   fi
   dmesg | grep -i xen >/dev/null 2>&1
@@ -98,24 +102,6 @@ function xen_domx_hardware_detect() {
    echo "alias scsi_hostadapter xenblk") > ${modules_conf}
 }
 #************ xen_domx_hardware_detect
-
-#****f* boot-lib.sh/xen_nic_post
-#  NAME
-#    xen_nic_post
-#  SYNOPSIS
-#    function xen_nic_post()
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function xen_nic_post() {
-	local nic=$1
-	local number=${nic:3}
-	[ -z "$number" ] && number="0"
-	modprobe netloop &&
-	/etc/xen/scripts/network-bridge start vifnum=$number
-}
-#************ xen_nic_post
 
 #****f* boot-lib.sh/xen_ip2Config
 #  NAME
