@@ -1,5 +1,5 @@
 #
-# $Id: std-lib.sh,v 1.3 2007-12-07 16:39:59 reiner Exp $
+# $Id: std-lib.sh,v 1.4 2008-08-14 14:36:42 marc Exp $
 #
 # @(#)$File$
 #
@@ -50,7 +50,7 @@ function initEnv {
   # Get a sane screen width
   [ -z "${COLUMNS:-}" ] && COLUMNS=80
 
-  [ -z "${CONSOLETYPE:-}" ] && CONSOLETYPE="`/sbin/consoletype`"
+  [ -z "${CONSOLETYPE:-}" ] && [ -e "$CONSOLETYPE" ] && CONSOLETYPE="`/sbin/consoletype`"
 
   if [ -f /etc/sysconfig/i18n -a -z "${NOLOCALE:-}" ] ; then
     . /etc/sysconfig/i18n
