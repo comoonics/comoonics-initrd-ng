@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.7 2008-01-24 13:33:17 marc Exp $
+# $Id: network-lib.sh,v 1.8 2008-08-14 14:34:36 marc Exp $
 #
 # @(#)$File$
 #
@@ -106,16 +106,40 @@ function nicUp() {
    local dev=$1
    /sbin/ifup $dev
    _err=$?
-   if [ "${dev:0:2}" != "lo" ]; then
-     xen_dom0_detect
-     if [ $? -eq 0 ]; then
-       xen_nic_post $dev
-     fi
-   fi
    return $_err
 
 }
 #************ ifup
+#****f* boot-lib.sh/network_setup_bridge
+#  NAME
+#    network_setup_bridge
+#  SYNOPSIS
+#    function network_setup_bridge(bridgename, nodename, cluster_conf)
+#  DOCUMENTATION
+#    Powers up the network bridge
+#  SOURCE
+#
+function network_setup_bridge {
+   local bridgename=$1
+   local nodename=$2
+   local cluster_conf=$3
+   local repository="bridge"
+
+   _bridgename=$(getParameter bridgename)
+   if [ -n "$_bridgename" ]; then
+     bridgename=$_bridgename
+   fi
+   repository_store_value $repository bridgename $bridgename
+   local script=$(getParameter bridgescript "/etc/xen/scripts/network-bridge")
+   local vifnum=$(getParameter bridgevifnum)
+   local netdev=$(getParameter bridgenetdev)
+   local antispoof=$(getParameter bridgeantispoof no)
+
+   modprobe netloop
+   $script start vifnum=$vifnum netdev=$netdev bridge=$bridgename antispoof=$antispoof
+   repository_del_value $repository bridgename $bridgename
+}
+#************ network_setup_bridge
 
 #****f* boot-lib.sh/ip2Config
 #  NAME
@@ -140,10 +164,11 @@ function ip2Config() {
     else
       local master=$(getPosFromIPString 2, $1)
       local slave=$(getPosFromIPString 3, $1)
-      local bridge=$(getPosFromIPString 8, $1)
     fi
     local ipDevice=$(getPosFromIPString 6, $1)
     local ipMAC=$(getPosFromIPString 7, $1)
+    local type=$(getPosFromIPString 8, $1)
+    local bridge=$(getPosFromIPString 9, $1)
   else
     local ipAddr=$1
     local ipGate=$2
@@ -154,15 +179,16 @@ function ip2Config() {
     local master=$7
     local slave=$8
     local bridge=$9
+    local type=$10
   fi
 
   # Bonding
   if [ -n "$ipAddr" ]; then
   	echo_local -n "Generating ifcfg for ${distribution} ($ipAddr, $ipGate, $ipNetmask, $ipHostname, $ipDevice, $ipMAC)..."
-    ${distribution}_ip2Config "$ipDevice" "$ipAddr" "$ipNetmask" "$ipHostname" "$ipGate" "$ipMAC"
+    ${distribution}_ip2Config "$ipDevice" "$ipAddr" "$ipNetmask" "$ipHostname" "$ipGate" "$ipMAC" "$type" "$bridge"
   else
 	echo_local -n "Generating ifcfg for ${distribution} ($master, $slave, $bridge, $ipDevice, $ipMAC)..."
-    ${distribution}_ip2Config "$ipDevice" "" "$master" "$slave" "$bridge" "$ipMAC"
+    ${distribution}_ip2Config "$ipDevice" "" "$master" "$slave" "" "$ipMAC" "$type" "$bridge"
   fi
   return_code $?
 }
@@ -204,7 +230,11 @@ function getPosFromIPString() {
 
 #############
 # $Log: network-lib.sh,v $
-# Revision 1.7  2008-01-24 13:33:17  marc
+# Revision 1.8  2008-08-14 14:34:36  marc
+# - removed xen deps
+# - added bridging
+#
+# Revision 1.7  2008/01/24 13:33:17  marc
 # - RFE#145 macaddress will be generated in configuration files
 #
 # Revision 1.6  2007/12/07 16:39:59  reiner
