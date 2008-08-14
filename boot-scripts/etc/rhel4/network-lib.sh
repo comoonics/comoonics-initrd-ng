@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.7 2008-06-10 09:59:44 marc Exp $
+# $Id: network-lib.sh,v 1.8 2008-08-14 13:33:04 marc Exp $
 #
 # @(#)$File$
 #
@@ -52,16 +52,18 @@ function rhel4_ip2Config() {
     local ipNetmask=$3
     local ipHostname=$3
     local ipGate=$5
-    local ipMAC=$6
   else
     local master=$3
     local slave=$4
-    local ipMAC=$5
   fi
+  local ipMAC=$6
+  local type=$7
+  local bridge=$8
 
   # reformating MAC from - to :
   ipMAC=${ipMAC//-/:}
  
+  if [ -z "$type" ]; then type="Ethernet"; fi
   # just for testing
   #local $pref="/tmp"
 
@@ -73,7 +75,7 @@ function rhel4_ip2Config() {
 #    mv ${__prefix}/etc/sysconfig/network ${__prefix}/etc/sysconfig/network.com_back
 #  fi
   if [ -e ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice ]; then
-    mv ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice ${__prefix}/etc/sysconfig/network-scripts/ifcfg-${ipDevice}.com_back
+    mv -f ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice ${__prefix}/etc/sysconfig/network-scripts/ifcfg-${ipDevice}.com_back
   fi
   if [ -n "$ipAddr" ]; then
     if [ "$ipAddr" = "dhcp" -o "$ipAddr" = "DHCP" -o -z "$ipAddr" ]; then
@@ -85,8 +87,8 @@ function rhel4_ip2Config() {
     (echo "DEVICE=$ipDevice" &&
      echo "BOOTPROTO=$bootproto" &&
      echo "ONBOOT=no" &&
-     echo "TYPE=Ethernet") > ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
-    if [ -n "$ipMAC" ]; then
+     echo "TYPE=$type") > ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
+    if [ -n "$ipMAC" ] && [ "$ipMAC" != "00:00:00:00:00:00" ]; then
     	echo "HWADDR=$ipMAC" >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
     fi
     if [ "$bootproto" != "dhcp" ]; then
@@ -123,7 +125,11 @@ function rhel4_ip2Config() {
 
 #################
 # $Log: network-lib.sh,v $
-# Revision 1.7  2008-06-10 09:59:44  marc
+# Revision 1.8  2008-08-14 13:33:04  marc
+# - rewrote briding
+# - fix mac bug
+#
+# Revision 1.7  2008/06/10 09:59:44  marc
 # - fixed bug with macaddress
 #
 # Revision 1.6  2008/05/17 08:31:34  marc
