@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.59 2008-07-03 12:45:27 mark Exp $
+# $Id: linuxrc.generic.sh,v 1.60 2008-08-14 14:38:11 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.59 2008-07-03 12:45:27 mark Exp $
+#    $Id: linuxrc.generic.sh,v 1.60 2008-08-14 14:38:11 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -90,7 +90,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.59 $ $Date: 2008-07-03 12:45:27 $'
+echo_local 'Internal Version $Revision: 1.60 $ $Date: 2008-08-14 14:38:11 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -121,13 +121,7 @@ echo_local -en $"\t\tPress 'I' to enter interactive startup."
 echo_local
 
 {
- sleep 2
- hardware_detect
-
- echo_local "Starting network configuration for lo0"
- exec_local nicUp lo
- return_code
- auto_netconfig
+ sleep 5
 } &
 read -n1 -t5 confirm
 if [ "$confirm" = "i" ]; then
@@ -136,11 +130,24 @@ if [ "$confirm" = "i" ]; then
 fi
 wait
 
+echo_local -n "Starting udev "
+exec_local udev_start
+return_code
+step "Udev Started"
+
+hardware_detect
+step "Hardwaredetection finished"
+
+echo_local "Starting network configuration for lo0"
+exec_local nicUp lo
+return_code
+auto_netconfig
+
 echo -n "Scanning parameters..."
 
 #nodeid must be first
-nodeid=$(getParameter nodeid)
-nodename=$(getParameter nodename)
+nodeid=$(getParameter nodeid $(cc_getdefaults nodeid))
+nodename=$(getParameter nodename $(cc_getdefaults nodename))
 
 #if we cant detect the nodename an error must be thrown
 if [ -z "$nodename" ]; then
@@ -153,25 +160,31 @@ if [ -z "$nodename" ]; then
 	echo_local "    parameter can be defined as boot parameter."
 fi
 
-votes=$(getParameter votes)
-tmpfix=$(getParameter tmpfix)
+rootfs=$(getParameter rootfs $(cc_getdefaults rootfs))
 
-rootsource=$(getParameter rootsource scsi)
-sourceserver=$(getParameter sourceserver)
-lockmethod=$(getParameter lockmethod)
-root=$(getParameter root)
+if [ "$clutype" != "$rootfs" ]; then
+	source /etc/${rootfs}-lib.sh
+	[ -e /etc/${rootfs}-lib.sh ] && source /etc/${rootfs}-lib.sh
+	[ -e /etc/${distribution}/${rootfs}-lib.sh ] && source /etc/${distribution}/${rootfs}-lib.sh
+fi
 
-rootvolume=$(getParameter rootvolume)
+votes=$(getParameter votes $(cc_getdefaults votes))
+tmpfix=$(getParameter tmpfix $(cc_getdefaults tmpfix))
+rootsource=$(getParameter rootsource $(clusterfs_getdefaults rootsource))
+sourceserver=$(getParameter sourceserver $(clusterfs_getdefaults sourceserver))
+lockmethod=$(getParameter lockmethod $(clusterfs_getdefaults lockmethod))
+root=$(getParameter root $(clusterfs_getdefaults root))
+
+rootvolume=$(getParameter rootvolume $(clusterfs_getdefaults rootvolume))
 [ -z "$root" ] || [ "$root" = "/dev/ram0" ] && root=$rootvolume
 
-rootfs=$(getParameter rootfs)
-mount_opts=$(getParameter mountopts defaults)
+mount_opts=$(getParameter mountopts $(clusterfs_getdefaults mountopts))
 
-quorumack=$(getParameter quorumack)
+quorumack=$(getParameter quorumack $(cc_getdefaults quorumack))
 
-scsifailover=$(getParameter scsifailover driver)
+scsifailover=$(getParameter scsifailover $(clusterfs_getdefaults scsifailover))
 
-ipConfig=$(getParameter ip cluster)
+ipConfig=$(getParameter ip $(cc_getdefaults ip))
 _ipConfig=$(cluster_ip_config $cluster_conf $nodename)
 [ -n "$_ipConfig" ] && ( [ -z "$ipConfig" ] || [ "$ipConfig" = "cluster" ] ) && ipConfig=$_ipConfig
 
@@ -205,13 +218,8 @@ echo_local_debug "*****************************"
 
 step "Parameter loaded"
 
-if [ "$clutype" != "$rootfs" ]; then
-	source /etc/${rootfs}-lib.sh
-	[ -e /etc/${distribution}/${rootfs}-lib.sh ] && source /etc/${distribution}/${rootfs}-lib.sh
-fi
-
 xen_domx_detect
-if [ $? -ne 0 ] || [ -z "$nousb" ]; then
+if [ $? -ne 0 ] && [ -z "$nousb" ]; then
   echo_local -n "Loading USB Modules.."
   exec_local usbLoad
   return_code
@@ -233,7 +241,11 @@ for ipconfig in $ipConfig; do
     return_code $?
     depmod -a >/dev/null 2>&1
   fi
+done
+step "Network configuration created"
 
+for ipconfig in $ipConfig; do
+  dev=$(getPosFromIPString 6, $ipconfig)
   nicConfig $ipconfig
 
   echo_local -n "Powering up $dev.."
@@ -241,15 +253,23 @@ for ipconfig in $ipConfig; do
   return_code $?
   netdevs="$netdevs $dev"
 done
-
 step "Network configuration started"
 
+bridges=$(cc_auto_getbridges $cluster_conf $nodename)
+if [ -n $bridges ]; then
+  for bridge in $bridges; do
+     echo_local -e "Setting up network bridge $bridge"
+     network_setup_bridge $bridge $nodename $cluster_conf
+     return_code $?
+  done
+  step "Network bridges setup finished"
+fi
 
 dm_start
 scsi_start $scsifailover
 
 # start iscsi if apropriate
-isISCSIRootsource $rootsource
+typeset -f isISCSIRootsource >/dev/null 2>&1 && isISCSIRootsource $rootsource
 if [ $? -eq 0 ]; then
 	loadISCSI
 	startISCSI $rootsource $nodename
@@ -264,10 +284,6 @@ clusterfs_load $lockmethod
 return_code
 
 step "Hardware detected, modules loaded"
-
-echo_local -n "Starting udev "
-exec_local udev_start
-return_code
 
 if [ "$scsifailover" = "mapper" ] || [ "$scsifailover" = "devicemapper" ]; then
   dm_mp_start
@@ -313,7 +329,7 @@ fi
 # WARNING!
 # DRBD initialization doesn't seem possible before this point!
 # start drbd if appropriate
-isDRBDRootsource $rootsource
+typeset -f isDRBDRootsource >/dev/null 2>&1 && isDRBDRootsource $rootsource
 if [ $? -eq 0 ]; then
 	loadDRBD
 	startDRBD $rootsource $nodename
@@ -458,7 +474,12 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.59  2008-07-03 12:45:27  mark
+# Revision 1.60  2008-08-14 14:38:11  marc
+# - changed parameter orders first clustertype/rootfs then the rest
+# - hardware detection order (starting udev first)
+# - more small fixes
+#
+# Revision 1.59  2008/07/03 12:45:27  mark
 # rewrite of parameter collection to use new getParameter method
 #
 # Revision 1.58  2008/06/10 09:53:33  marc
