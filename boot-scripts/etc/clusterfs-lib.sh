@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.23 2008-07-03 12:43:39 mark Exp $
+# $Id: clusterfs-lib.sh,v 1.24 2008-08-14 13:37:35 marc Exp $
 #
 # @(#)$File$
 #
@@ -113,11 +113,23 @@ function getClusterFSParameters() {
 #  SOURCE
 #
 function getCluType {
+   local conf=$1
+   if [ -z "$conf" ]; then
+   	  conf=$cluster_conf
+   fi
+   clutype=$(com-queryclusterconf -f $conf clustertype 2>/dev/null)
+   if [ $? -eq 0 ]; then
+   	  echo "$clutype"
+   	  return 0
+   fi
+   clutype=$(com-queryclusterconf -f $conf query_value /cluster/@type 2>/dev/null)
+   if [ $? -eq 0 ] && [ -n "$clutype" ]; then
+   	  echo "$clutype"
+   	  return 0
+   fi
    echo "gfs"
 }
 #******** getCluType
-
-
 
 #****f* boot-scripts/etc/clusterfs-lib.sh/getRootFS
 #  NAME
@@ -305,6 +317,18 @@ function cc_find_nodeid {
 }
 #******* cc_get_nodeid
 
+#****f* boot-scripts/etc/clusterfs-lib.sh/cc_getdefaults
+#  NAME
+#    cc_getdefaults
+#  SYNOPSIS
+#    cc_getdefaults(parameter)
+#  DESCRIPTION
+#    returns defaults for the specified cluster. Parameter must be given to return the apropriate default
+#  SOURCE
+function cc_getdefaults {
+	${clutype}_getdefaults $*
+}
+#********** cc_getdefaults
 
 #****f* clusterfs-lib.sh/cc_get_nodeid
 #  NAME
@@ -665,6 +689,73 @@ function cc_auto_syslogconfig {
 }
 #******** cc_auto_syslogconfig
 
+#****f* clusterfs-lib.sh/cc_auto_getbridges
+#  NAME
+#    cc_auto_getbridges
+#  SYNOPSIS
+#    function cc_auto_getbridges(cluster_conf, nodename)
+#  DESCRIPTION
+#    gets all bridgenames defined for the cluster and need for the cluster
+#  SOURCE
+function cc_auto_getbridges {
+  local cluster_conf=$1
+  local nodename=$2
+
+  ${clutype}_get_bridges $cluster_conf $nodename
+}
+#******** cc_auto_getbridges
+
+function cc_get_bridgename {
+  local cluster_conf=$1
+  local nodename=$2
+  cc_auto_getbridges $cluster_conf $nodename
+}
+function cc_get_bridgescript {
+  local cluster_conf=$1
+  local nodename=$2
+  local repository="bridge"
+
+  bridgename=$(repository_get_value $repository bridgename)
+  ${clutype}_get_bridge_param $cluster_conf $nodename $bridgename script
+}
+function cc_get_bridgevifnum {
+  local cluster_conf=$1
+  local nodename=$2
+  local repository="bridge"
+
+  bridgename=$(repository_get_value $repository bridgename)
+  ${clutype}_get_bridge_param $cluster_conf $nodename $bridgename vifnum
+}
+function cc_get_bridgenetdev {
+  local cluster_conf=$1
+  local nodename=$2
+  local repository="bridge"
+
+  bridgename=$(repository_get_value $repository bridgename)
+  ${clutype}_get_bridge_param $cluster_conf $nodename $bridgename netdev
+}
+function cc_get_bridgeantispoof {
+  local cluster_conf=$1
+  local nodename=$2
+  local repository="bridge"
+
+  bridgename=$(repository_get_value $repository bridgename)
+  ${clutype}_get_bridge_param $cluster_conf $nodename $bridgename antispoof
+}
+
+#****f* boot-scripts/etc/clusterfs-lib.sh/clusterfs_getdefaults
+#  NAME
+#    clusterfs_getdefaults
+#  SYNOPSIS
+#    clusterfs_getdefaults(parameter)
+#  DESCRIPTION
+#    returns defaults for the specified filesystem. Parameter must be given to return the apropriate default
+#  SOURCE
+function clusterfs_getdefaults {
+	${rootfs}_getdefaults $*
+}
+#********** clusterfs_getdefaults
+
 #****f* clusterfs-lib.sh/clusterfs_load
 #  NAME
 #    clusterfs_load
@@ -906,7 +997,12 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.23  2008-07-03 12:43:39  mark
+# Revision 1.24  2008-08-14 13:37:35  marc
+# - added bridge functions
+# - added cc_getdefaults
+# - rewrote getCluType
+#
+# Revision 1.23  2008/07/03 12:43:39  mark
 # add new methods to support generic getParameter method
 #
 # Revision 1.22  2008/06/20 13:42:46  mark
