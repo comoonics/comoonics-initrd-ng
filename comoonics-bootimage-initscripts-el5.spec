@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.9 2008-06-24 12:31:01 mark Exp $
+# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.10 2008-08-14 14:41:08 marc Exp $
 #
 ##
 ##
@@ -45,7 +45,11 @@ Name: comoonics-bootimage-initscripts
 Summary: Comoonics Bootimage initscripts. Initscripts used by the comoonics shared root cluster environment.
 Version: 1.3
 BuildArch: noarch
-Requires: comoonics-bootimage >= 1.3-1 SysVinit-comoonics
+Requires: comoonics-bootimage >= 1.3-1 
+Requires: SysVinit-comoonics
+Requires: comoonics-bootimage-listfiles-all
+Requires: comoonics-bootimage-listfiles-rhel
+Requires: comoonics-bootimage-listfiles-rhel5
 #Conflicts: 
 Release: 8.el5
 Vendor: ATIX AG
@@ -163,7 +167,10 @@ rm -rf %{buildroot}
 - first revision
 # ------
 # $Log: comoonics-bootimage-initscripts-el5.spec,v $
-# Revision 1.9  2008-06-24 12:31:01  mark
+# Revision 1.10  2008-08-14 14:41:08  marc
+# removed listfiles
+#
+# Revision 1.9  2008/06/24 12:31:01  mark
 # changed kill level fro bootsr initscript
 #
 # Revision 1.8  2008/06/23 22:13:57  mark
