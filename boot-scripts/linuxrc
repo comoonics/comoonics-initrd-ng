@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc,v 1.16 2008-07-03 12:44:49 mark Exp $
+# $Id: linuxrc,v 1.17 2008-08-14 14:37:10 marc Exp $
 #
 # @(#)$File$
 #
@@ -34,7 +34,7 @@
 #****h* comoonics-bootimage/linuxrc
 #  NAME
 #    linuxrc
-#    $Id: linuxrc,v 1.16 2008-07-03 12:44:49 mark Exp $
+#    $Id: linuxrc,v 1.17 2008-08-14 14:37:10 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -57,7 +57,7 @@ source /etc/chroot-lib.sh
 source /etc/std-lib.sh
 
 mkdir -p /proc
-mount -t proc proc /proc
+mount -t proc proc /proc 2>/dev/null
 if cat /proc/cmdline | grep com-expert; then
 	export PS1="comoonics \! > "
 	/bin/bash
@@ -77,25 +77,9 @@ initEnv
 #debug=$(getParm ${bootparms} 1)
 #stepmode=$(getParm ${bootparms} 2)
 
-# Print a text banner.
-echo_local -en $"\t\tWelcome to "
-if LC_ALL=C grep -q "Red Hat" /etc/redhat-release ; then
- [ "$BOOTUP" = "color" ] && echo -en "\\033[0;31m"
- echo_local -en "Red Hat"
- [ "$BOOTUP" = "color" ] && echo -en "\\033[0;39m"
- PRODUCT=`sed "s/Red Hat \(.*\) release.*/\1/" /etc/redhat-release`
- echo_local " $PRODUCT"
-elif LC_ALL=C grep -q "Fedora" /etc/redhat-release ; then
- [ "$BOOTUP" = "color" ] && echo -en "\\033[0;31m"
- echo_local -en "Fedora"
- [ "$BOOTUP" = "color" ] && echo -en "\\033[0;39m"
- PRODUCT=`sed "s/Fedora \(.*\) release.*/\1/" /etc/redhat-release`
- echo_local " $PRODUCT"
-else
- PRODUCT=`sed "s/ release.*//g" /etc/redhat-release`
- echo_local "$PRODUCT"
-fi
+welcome $distribution
 
+# Print a text banner.
 if [ -e "$build_file" ]; then
   cat ${build_file}
 fi
@@ -144,7 +128,10 @@ fi
 
 ################
 # $Log: linuxrc,v $
-# Revision 1.16  2008-07-03 12:44:49  mark
+# Revision 1.17  2008-08-14 14:37:10  marc
+# - changed to welcome
+#
+# Revision 1.16  2008/07/03 12:44:49  mark
 # added new maintenance mode
 #
 # Revision 1.15  2007/12/07 16:39:59  reiner
