@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.5 2008-01-24 13:34:56 marc Exp $
+# $Id: hardware-lib.sh,v 1.6 2008-08-14 13:31:23 marc Exp $
 #
 # @(#)$File$
 #
@@ -38,17 +38,17 @@ function rhel5_hardware_detect() {
   local KUDZU="/sbin/kudzu"
   cp ${modules_conf} ${modules_conf}.tmpl
   exec_local $KUDZU -t 30 -c SCSI -q
-  mv ${modules_conf} ${modules_conf}.scsi
-  cp ${modules_conf}.tmpl ${modules_conf}
+#  mv ${modules_conf} ${modules_conf}.scsi
+#  cp ${modules_conf}.tmpl ${modules_conf}
   #exec_local $KUDZU -t 30 -c RAID -q
   #mv ${modules_conf} ${modules_conf}.raid
   exec_local $KUDZU -t 30 -c USB -q
-  mv ${modules_conf} ${modules_conf}.usb
-  cp ${modules_conf}.tmpl ${modules_conf}
+#  mv ${modules_conf} ${modules_conf}.usb
+#  cp ${modules_conf}.tmpl ${modules_conf}
   exec_local $KUDZU -t 30 -c NETWORK -q
-  cat ${modules_conf}.scsi >> ${modules_conf}
+#  cat ${modules_conf}.scsi >> ${modules_conf}
   #	cat ${modules_conf}.raid >> ${modules_conf}
-  cat ${modules_conf}.usb >> ${modules_conf}
+#  cat ${modules_conf}.usb >> ${modules_conf}
   cp ${modules_conf} ${modules_conf}.tmpl
   cat ${modules_conf}.tmpl | sort -u > ${modules_conf}
 
@@ -78,7 +78,10 @@ function rhel5_udev_start() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.5  2008-01-24 13:34:56  marc
+# Revision 1.6  2008-08-14 13:31:23  marc
+# - modified hardware detection
+#
+# Revision 1.5  2008/01/24 13:34:56  marc
 # - BUG#170, udev with dm-multipath and RHEL5 is not working. reviewed the udev and stabilized more often
 #
 # Revision 1.4  2007/12/18 08:43:35  mark
