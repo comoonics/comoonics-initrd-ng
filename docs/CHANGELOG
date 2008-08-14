@@ -7,6 +7,16 @@ IDEAS:
 CHANGES:
 
 comoonics-bootimage:
+- 11.08.2008 Release 1.3-37
+  * cleanups for introduced changes
+  * small bugfixes
+  * removed xen-lib.sh to extras-xen
+  * introduced *_getdefaults to be used with getParameter
+- 06.08.2008 Release 1.3-36
+  * intermediate release to get things upstream
+  * rewrote bridging no xenbr scripts are directly supported
+  * rewrote hwdetection (start udev before kudzu) RHEL5
+  * minor bugfixes 
 - 03.07.2008 Release 1.3-35
   * added several new boot options
     - e.g. votes and nodeid
@@ -146,6 +156,8 @@ comoonics-bootimage-extras-network:
     * initial release
 
 comoonics-bootimage-extras-nfs:
+- 06.08.2008 Release 0.1-3
+  * moved bugfixes upstream
 - 10.06.2008 Release 0.1-2
   * added nfs-lib file
 - 2007-09-15 Release 0.1.1
@@ -156,6 +168,9 @@ comoonics-bootimage-extras-rdac-multipath:
     * initial release
 
 comoonics-bootimage-extras-xen
+- 2008-08-11 Release 0.1-4
+  * removed xen-lib.sh back to comoonics-bootimage as this extras are only needed for dom0 not domu
+  * bugfixes and removed default bridging to no bridging
 - 2007-10-18 Release 0.1-2
    * added nss rpm for fence_xvm
 - 2007-10-03 Release 0.1-1
@@ -237,7 +252,10 @@ TODO:
 ########################################
 # CVS-Log
 # $Log: CHANGELOG,v $
-# Revision 1.40  2008-07-03 13:04:07  mark
+# Revision 1.41  2008-08-14 14:38:23  marc
+# new versions
+#
+# Revision 1.40  2008/07/03 13:04:07  mark
 # new release
 #
 # Revision 1.39  2008/06/24 12:31:01  mark
