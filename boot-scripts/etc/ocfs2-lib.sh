@@ -1,5 +1,5 @@
 #
-# $Id: ocfs2-lib.sh,v 1.2 2008-06-11 15:03:25 marc Exp $
+# $Id: ocfs2-lib.sh,v 1.3 2008-08-14 14:36:21 marc Exp $
 #
 # @(#)$File$
 #
@@ -57,6 +57,43 @@ set_timeouts()
         fi
     fi
 }
+
+#****f* boot-scripts/etc/clusterfs-lib.sh/ocfs2_getdefaults
+#  NAME
+#    ocfs2_getdefaults
+#  SYNOPSIS
+#    ocfs2_getdefaults(parameter)
+#  DESCRIPTION
+#    returns defaults for the specified filesystem. Parameter must be given to return the apropriate default
+#  SOURCE
+function ocfs2_getdefaults {
+	local param=$1
+	case "$param" in
+		lock_method|lockmethod)
+		    echo "ocfs2_dlm"
+		    ;;
+		mount_opts|mountopts)
+		    echo "noatime,nodiratime"
+		    ;;
+		root_source|rootsource)
+		    echo "scsi"
+		    ;;
+		rootfs|root_fs)
+		    echo "ocfs2"
+		    ;;
+	    scsi_failover|scsifailover)
+	        echo "mapper"
+	        ;;
+	    ip)
+	        echo "cluster"
+	        ;;
+	    *)
+	        return 0
+	        ;;
+	esac
+}
+#********** ocfs2_getdefaults
+
 #****f* ocfs2-lib.sh/ocfs2_load
 #  NAME
 #    ocfs2_load
@@ -101,7 +138,8 @@ function ocfs2_services_start {
     local CLUSTER=$(com-queryclusterconf query_value /cluster/@name)
     
     echo_local -n "Creating $CLUSTERCONF ..."
-    mkdir /etc/ocfs2
+    mkdir $(dirname $CLUSTERCONF)
+    mkdir ${chroot_path}/$(dirname $CLUSTERCONF)
     com-queryclusterconf convert ocfs2 > $CLUSTERCONF &&
     com-queryclusterconf convert ocfs2 > ${chroot_path}/$CLUSTERCONF
     return_code $?
@@ -117,6 +155,10 @@ function ocfs2_services_start {
         echo_local -n "Could not find O2CB cluster configuration : "
         return 1
     fi
+
+	echo_local -n "Setting nodename as hostname (hostname=$nodename)"
+	exec_local hostname $nodename
+	return_code
 
     echo_local -n "Mounting configfs"
     exec_local mount -t configfs none /sys/kernel/config
@@ -231,7 +273,12 @@ function ocfs2_init {
 #********* ocfs2_init
 
 # $Log: ocfs2-lib.sh,v $
-# Revision 1.2  2008-06-11 15:03:25  marc
+# Revision 1.3  2008-08-14 14:36:21  marc
+# - added getdefaults
+# - bugfix when a cluster.conf could not be created
+# - setting of hostname as ocfs2 will not come up without hostname set
+#
+# Revision 1.2  2008/06/11 15:03:25  marc
 # - more output when failing to leave cluster
 #
 # Revision 1.1  2008/06/10 09:59:26  marc
