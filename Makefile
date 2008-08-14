@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.39 2008-07-03 12:47:47 mark Exp $
+# $Id: Makefile,v 1.40 2008-08-14 14:40:41 marc Exp $
 #
 # @(#)$file$
 #
@@ -145,7 +145,10 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/rhel5/hardware-lib.sh \
   boot-scripts/etc/rhel5/network-lib.sh \
   boot-scripts/etc/sles8/hardware-lib.sh \
-  boot-scripts/etc/sles8/network-lib.sh
+  boot-scripts/etc/sles8/network-lib.sh \
+  boot-scripts/etc/sles10/boot-lib.sh \
+  boot-scripts/etc/sles10/hardware-lib.sh \
+  boot-scripts/etc/sles10/network-lib.sh
 #************ LIB_FILES 
 #****d* Makefile/SYSTEM_CFG_DIR
 #  NAME
@@ -182,18 +185,67 @@ CFG_DIR=$(SYSTEM_CFG_DIR)/bootimage
 #  IDEAS
 #  SOURCE
 #
-CFG_FILES=files.initrd.d/rdac_multipath.list \
-	files.initrd.d/drbd.list \
-	files.initrd.d/iscsi.list \
-	files.initrd.d/user_edit.list \
-	files.initrd.d/vlan.list \
-	files.initrd.d/xen.list \
-	rpms.initrd.d/dm_multipath.list \
-	rpms.initrd.d/drbd.list \
-	rpms.initrd.d/iscsi.list \
-	rpms.initrd.d/nfs.list \
-	rpms.initrd.d/ocfs2.list \
-	rpms.initrd.d/xen.list \
+CFG_FILES=basefiles.list \
+    files.initrd.d/rdac_multipath.list \
+    files.initrd.d/configs.list \
+    files.initrd.d/locales.list \
+    files.initrd.d/drbd.list \
+    files.initrd.d/scsi.list \
+    files.initrd.d/base.list \
+    files.initrd.d/iscsi.list \
+    files.initrd.d/bonding.list \
+    files.initrd.d/grub.list \
+    files.initrd.d/comoonics.list \
+    files.initrd.d/vlan.list \
+    files.initrd.d/ext2.list \
+    files.initrd.d/xen.list \
+    files.initrd.d/rdac_multipath.list \
+    files.initrd.d/network.list \
+    files.initrd.d/user_edit.list \
+	files.initrd.d/rhel/empty.list \
+    files.initrd.d/rhel/base.list \
+    files.initrd.d/rhel/configs.list \
+    files.initrd.d/rhel/grub.list \
+    files.initrd.d/rhel/gfs.list \
+    files.initrd.d/rhel/empty.list \
+    files.initrd.d/rhel/network.list \
+	files.initrd.d/rhel4/empty.list \
+	files.initrd.d/rhel5/empty.list \
+    files.initrd.d/rhel5/rhcs.list \
+    files.initrd.d/sles/base.list \
+    files.initrd.d/sles/empty.list \
+    files.initrd.d/sles/network.list \
+    rpms.list \
+    rpms.initrd.d/python.list \
+    rpms.initrd.d/drbd.list \
+    rpms.initrd.d/baselibs.list \
+    rpms.initrd.d/iscsi.list \
+    rpms.initrd.d/hardware.list \
+    rpms.initrd.d/lvm.list \
+    rpms.initrd.d/comoonics.list \
+    rpms.initrd.d/ext2.list \
+    rpms.initrd.d/xen.list \
+    rpms.initrd.d/ocfs2.list \
+    rpms.initrd.d/nfs.list \
+    rpms.initrd.d/rhel/dm_multipath.list \
+	rpms.initrd.d/rhel/empty.list \
+    rpms.initrd.d/rhel/dm_multipath.list \
+    rpms.initrd.d/rhel/hardware.list \
+    rpms.initrd.d/rhel/python.list \
+	rpms.initrd.d/rhel4/empty.list \
+    rpms.initrd.d/rhel4/rhcs.list \
+    rpms.initrd.d/rhel4/gfs1.list \
+    rpms.initrd.d/rhel5/base.list \
+	rpms.initrd.d/rhel5/empty.list \
+    rpms.initrd.d/rhel5/gfs1.list \
+    rpms.initrd.d/rhel5/rhcs.list \
+    rpms.initrd.d/sles/python.list \
+    rpms.initrd.d/sles/base.list \
+    rpms.initrd.d/sles/hardware.list \
+    rpms.initrd.d/sles/empty.list \
+    rpms.initrd.d/sles/dm_multipath.list \
+    rpms.initrd.d/sles/network.list
+    
 	
 #************ CFG_FILES 
 
@@ -268,7 +320,7 @@ RPM_PACKAGE_DIR=/usr/src/redhat
 
 
 CHANNELBASEDIR=/atix/dist-mirrors
-CHANNELDIRS=comoonics/redhat-el4/preview comoonics/redhat-el5/preview
+CHANNELDIRS=comoonics/rhel4/preview comoonics/rhel5/preview comoonics/sles10/preview
 CHANNELSUBDIRS=i386 x86_64 noarch SRPMS
 
 .PHONY: install
@@ -319,6 +371,9 @@ install:
                install -d  -g $(INSTALL_GRP) -o $(INSTALL_OWN) $(PREFIX)/$(CFG_DIR)/rpms.initrd.d/; \
              fi; \
 	     for cfgfile in $(CFG_FILES); do \
+               if [ ! -e $(PREFIX)/$(CFG_DIR)/rpms.initrd.d/`dirname $$cfgfile` ]; then \
+                 install -d  -g $(INSTALL_GRP) -o $(INSTALL_OWN) $(PREFIX)/$(CFG_DIR)/`dirname $$cfgfile`; \
+               fi; \
                install -g $(INSTALL_GRP) -o $(INSTALL_OWN) $$cfgfile $(PREFIX)/$(CFG_DIR)/`dirname $$cfgfile`; \
 	     done && \
 	     echo "DONE") || \
@@ -337,6 +392,9 @@ install:
                install -d  -g $(INSTALL_GRP) -o $(INSTALL_OWN) $(PREFIX)/$(CFG_DIR_CHROOT)/rpms.initrd.d/; \
              fi; \
 	     for cfgfile in $(CFG_FILES_CHROOT); do \
+               if [ ! -e $(PREFIX)/$(CFG_DIR)/rpms.initrd.d/`dirname $$cfgfile` ]; then \
+                 install -d  -g $(INSTALL_GRP) -o $(INSTALL_OWN) $(PREFIX)/$(CFG_DIR)/`dirname $$cfgfile`; \
+               fi; \
                install -g $(INSTALL_GRP) -o $(INSTALL_OWN) $$cfgfile $(PREFIX)/$(CFG_DIR_CHROOT)/`dirname $$cfgfile`; \
 	     done && \
 	     echo "DONE") || \
@@ -400,18 +458,27 @@ rpmsign:
 .PHONY: channelcopy
 channelcopy:
 	@for channeldir in $(CHANNELDIRS); do \
-		echo "Copying rpms to channel $$channeldir.."; \
+		TMPFILE="$(CHANNELBASEDIR)/$$channeldir/.channelcopy"$$$$; \
+		touch $$TMPFILE; \
+		echo "Copying rpms to channel $$channeldir..$$TMPFILE"; \
+		# Create an array of all CHANNELDIRS distros (second dir in path) and one without numbers at the end ready to be feeded in find \
+		excludeddistros=`echo -n $(CHANNELDIRS) | awk -F/ 'BEGIN { RS=" "; } $$0=="'$$channeldir'" { next; } { print "-not -name \"*"$$2"-*\" -and -not -name \"*"gensub("[0-9]+$$","","",$$2)"-*\" -and "; }'`; \
+		includeddistros=`echo -n $$channeldir | awk -F/ '{ print "-name \"*"$$2"-*\" -or -name \"*"gensub("[0-9]+$$","","",$$2)"-*\" -or "; }'`; \
 		for subdir in $(CHANNELSUBDIRS); do \
 			if [ $$subdir == "SRPMS" ]; then \
 				type="src"; \
 			else \
 				type=$$subdir; \
 			fi; \
-			find $(RPM_PACKAGE_DIR) -name "$(PACKAGE_NAME)*.$$type.rpm" -exec cp {} $(CHANNELBASEDIR)/$$channeldir/$$subdir \; ;\
-			find $(CHANNELBASEDIR)/$$channeldir -name "$(PACKAGE_NAME)*.rpm"; \
+			echo 'find $(RPM_PACKAGE_DIR) -name "$(PACKAGE_NAME)*.'$$type'.rpm" -and -not -name "*.el?.*" -and '$$excludeddistros' -true -exec cp -f {} $(CHANNELBASEDIR)/'$$channeldir'/'$$subdir'/RPMS \;' ;\
+			echo 'find $(RPM_PACKAGE_DIR) -name "$(PACKAGE_NAME)*.'$$type'.rpm" -and -not -name "*.el?.*" -and '$$excludeddistros' -true -exec cp -f {} $(CHANNELBASEDIR)/'$$channeldir'/'$$subdir'/RPMS \;' | bash ;\
+			echo 'find $(RPM_PACKAGE_DIR) -name "$(PACKAGE_NAME)*.'$$type'.rpm" -and -not -name "*.el?.*" -and \( '$$includeddistros' -false \) -exec cp -f {} $(CHANNELBASEDIR)/'$$channeldir'/'$$subdir'/RPMS \;' ;\
+			echo 'find $(RPM_PACKAGE_DIR) -name "$(PACKAGE_NAME)*.'$$type'.rpm" -and -not -name "*.el?.*" -and \( '$$includeddistros' -false \) -exec cp -f {} $(CHANNELBASEDIR)/'$$channeldir'/'$$subdir'/RPMS \;' | bash ;\
 		done; \
+		echo find $(CHANNELBASEDIR)/$$channeldir -name "$(PACKAGE_NAME)*.rpm" -newer $$TMPFILE; \
+		find $(CHANNELBASEDIR)/$$channeldir -name "$(PACKAGE_NAME)*.rpm" -newer $$TMPFILE; \
 	done;
-
+	
 .PHONY: channelbuild
 channelbuild:
 	@echo "Rebuilding channels.."
@@ -430,7 +497,11 @@ channel: rpm channelcopy channelbuild
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.39  2008-07-03 12:47:47  mark
+# Revision 1.40  2008-08-14 14:40:41  marc
+# -added channel option which will build channel
+# - added new versions
+#
+# Revision 1.39  2008/07/03 12:47:47  mark
 # added repository-lib.sh
 #
 # Revision 1.38  2008/06/10 10:07:09  marc
