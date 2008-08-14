@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.51 2008-07-03 12:42:36 mark Exp $
+# $Id: gfs-lib.sh,v 1.52 2008-08-14 14:32:45 marc Exp $
 #
 # @(#)$File$
 #
@@ -81,6 +81,50 @@ function getGFSMinorVersion {
 }'
 }
 #********* getGFSMinorVersion
+
+#****f* boot-scripts/etc/clusterfs-lib.sh/gfs_getdefaults
+#  NAME
+#    gfs_getdefaults
+#  SYNOPSIS
+#    gfs_getdefaults(parameter)
+#  DESCRIPTION
+#    returns defaults for the specified filesystem. Parameter must be given to return the apropriate default
+#  SOURCE
+function gfs_getdefaults {
+	local param=$1
+	case "$param" in
+		lock_method|lockmethod)
+		    echo "lock_dlm"
+		    ;;
+		mount_opts|mountopts)
+		    echo "noatime,nodiratime"
+		    ;;
+		root_source|rootsource)
+		    echo "scsi"
+		    ;;
+		rootfs|root_fs)
+			if [ -n "$distribution" ]; then
+	          if [ ${distribution:0:4} = "sles" ]; then
+	            echo "ocfs2"
+			  else
+			    echo "gfs"
+	          fi
+            else 
+		      echo "gfs"
+            fi
+		    ;;
+	    scsi_failover|scsifailover)
+	        echo "driver"
+	        ;;
+	    ip)
+	        echo "cluster"
+	        ;;
+	    *)
+	        return 0
+	        ;;
+	esac
+}
+#********** clusterfs_getdefaults
 
 #****f* boot-scripts/etc/clusterfs-lib.sh/gfs_get_rootfs
 #  NAME
@@ -478,7 +522,9 @@ function gfs_auto_netconfig {
   if [ -z "$netdev" ]; then netdev="eth0"; fi
 
   local ip_addr=$($xml_cmd -f $xml_file -q ip $nodename $netdev 2>/dev/null)
-  local mac_addr=$($xml_cmd -f $xml_file -q query_value /cluster/clusternodes/clusternode[@name=\"$nodename\"]/com_info/eth[@name=\"$netdev\"]/mac 2>/dev/null)
+  local mac_addr=$($xml_cmd -f $xml_file -q query_value /cluster/clusternodes/clusternode[@name=\"$nodename\"]/com_info/eth[@name=\"$netdev\"]/@mac 2>/dev/null)
+  local type=$($xml_cmd -f $xml_file -q query_value /cluster/clusternodes/clusternode[@name=\"$nodename\"]/com_info/eth[@name=\"$netdev\"]/@type 2>/dev/null)
+  local bridge=$($xml_cmd -f $xml_file -q query_value /cluster/clusternodes/clusternode[@name=\"$nodename\"]/com_info/eth[@name=\"$netdev\"]/@bridge 2>/dev/null)
   if [ -z "$mac_addr" ]; then
   	local mac_addr=$(ifconfig $netdev | grep -i hwaddr | awk '{print $5;};')
   fi
@@ -486,11 +532,11 @@ function gfs_auto_netconfig {
   if [ $? -eq 0 ] && [ "$ip_addr" != "" ]; then
     local gateway=$($xml_cmd -f $xml_file -q gateway $nodename $netdev) || local gateway=""
     local netmask=$($xml_cmd -f $xml_file -q mask $nodename $netdev)
-    echo ${ip_addr}"::"${gateway}":"${netmask}"::"$netdev":"$mac_addr
+    echo ${ip_addr}"::"${gateway}":"${netmask}"::"$netdev":"$mac_addr":"$type":"$bridge
   else
     local master=$($xml_cmd -f $xml_file -q master $nodename $netdev 2>/dev/null)
     local slave=$($xml_cmd -f $xml_file -q slave $nodename $netdev 2>/dev/null)
-    echo ":${master}:${slave}:::${netdev}:${mac_addr}"
+    echo ":${master}:${slave}:::${netdev}:${mac_addr}:${type}:${bridge}"
   fi
 
 #  if [ -n "$debug" ]; then set +x; fi
@@ -514,6 +560,43 @@ function gfs_get_syslogserver {
   $xml_cmd -f $xml_file -q syslog $nodename
 }
 #************ gfs_get_syslogserver
+
+#****f* gfs-lib.sh/gfs_get_bridges
+#  NAME
+#    gfs_get_bridges
+#  SYNOPSIS
+#    function gfs_get_bridges(cluster_conf)
+#  DESCRIPTION
+#    This function returns all names of defined bridges
+#  IDEAS
+#  SOURCE
+#
+function gfs_get_bridges {
+  local xml_file=$1
+  local nodename=$2
+  local xml_cmd="${ccs_xml_query}"
+  local out=$($xml_cmd -f $xml_file query_value '/cluster/clusternodes/clusternode[@name="'$nodename'"]/com_info/bridge/@name')
+  if [ -z "$out" ]; then
+    return 1
+  else
+    echo $out
+  fi
+}
+#************ gfs_get_bridges
+
+function gfs_get_bridge_param {
+  local xml_file=$1
+  local nodename=$2
+  local bridge=$3
+  local param=$4
+  local xml_cmd="${ccs_xml_query}"
+  local out=$($xml_cmd -f $xml_file query_value '/cluster/clusternodes/clusternode[@name="'$nodename'"]/com_info/bridge[@name="'$bridge'"]/@'$param'')
+  if [ -z "$out" ]; then
+    return 1
+  else
+    echo $out
+  fi
+}
 
 #****f* gfs-lib.sh/gfs_load
 #  NAME
@@ -573,7 +656,7 @@ function gfs_services_start {
   local lvm_sup=$3
 
   services="ccsd $lock_method cman qdiskd fenced"
-  if [ "$lvm_sup" -eq 0 ]; then
+  if [ -n "$lvm_sup" ] && [ $lvm_sup -eq 0 ]; then
   	services="$services clvmd"
   fi
   for service in $services; do
@@ -669,6 +752,7 @@ function gfs_start_lock_gulm {
 #  SOURCE
 #
 function gfs_start_lock_dlm {
+  udev_start
   return 0
 }
 #************ gfs_start_lock_dlm
@@ -1043,7 +1127,12 @@ function gfs_init {
 #********* gfs_init
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.51  2008-07-03 12:42:36  mark
+# Revision 1.52  2008-08-14 14:32:45  marc
+# - added get_defaults
+# - added bridging
+# - fixed an bug with lvm_sup (cosmetic)
+#
+# Revision 1.51  2008/07/03 12:42:36  mark
 # use new getParameter method
 # add support for votes parameter
 #
