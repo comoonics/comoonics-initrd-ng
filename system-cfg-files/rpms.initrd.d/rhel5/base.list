@@ -1,0 +1,5 @@
+libtermcap
+tcp_wrappers	\.so
+krb5-libs		\.so
+nss_db			\.so
+nss_ldap		\.so
