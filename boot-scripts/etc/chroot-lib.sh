@@ -1,5 +1,5 @@
 #
-# $Id: chroot-lib.sh,v 1.5 2007-12-07 16:39:59 reiner Exp $
+# $Id: chroot-lib.sh,v 1.6 2008-08-14 13:36:37 marc Exp $
 #
 # @(#)$File$
 #
@@ -118,8 +118,10 @@ function get_filelist_from_installed_rpm() {
   #for filename in $(rpm -ql $qopt $rpm | grep -e "$filter"); do
   # get all rpms that match filter without docs
   for filename in $(rpm -q $qopt $rpm --dump | grep -e "$filter" | awk ' $9~0 {print $1}'); do
-  	echo $filename
-  	get_dependent_files $filename
+  	if [ -n "$filename" ] && [ ${filename:0:5} != "/proc" ] && [ ${filename:0:4} != "proc" ]; then
+  	   echo $filename
+  	   get_dependent_files $filename
+  	fi
   done
 }
 #************ extract_installed_rpm
@@ -262,34 +264,40 @@ function get_all_rpms_dependent {
 #
 function get_dependent_files() {
   filename=$1
-  # file is a symbolic link
-  if [ -L $filename ]; then
-    local newfile=`ls -l $filename | sed -e "s/.* -> //"`
-    if [ "${newfile:0:1}" != "/" ]; then
-       echo `dirname $filename`/$newfile
-    else
-       echo $newfile
-    fi
-  # file is executable and not directory
-  elif [ -x $filename -a ! -d $filename ]; then
-    ldd $filename > /dev/null 2>&1
-    if [ $? = 0 ]; then
+  if [ -n "$filename" ] && [ ${filename:0:5} != "/proc" ] && [ ${filename:0:4} != "proc" ]; then
+    # file is a symbolic link
+    if [ -L $filename ]; then
+      local newfile=`ls -l $filename | sed -e "s/.* -> //"`
+      if [ -n "$newfile" ] && [ ${newfile:0:5} != "/proc" ] && [ ${newfile:0:4} != "proc" ]; then
+        if [ "${newfile:0:1}" != "/" ]; then
+          echo `dirname $filename`/$newfile
+        else
+          echo $newfile
+        fi
+      fi
+    # file is executable and not directory
+    elif [ -x $filename -a ! -d $filename ]; then
+      ldd $filename > /dev/null 2>&1
+      if [ $? = 0 ]; then
 #      local newfiles=`ldd $filename | sed -e "s/^.*=> \(.*\) (.*).*$/\1/" | sed -e "s/^.*statically linked.*$//"`
-      local newfiles=$(ldd $filename | awk '
+        local newfiles=$(ldd $filename | awk '
 $3 ~ /^\// { print $3; }
 $1 ~ /^\// && $3 == "" { print $1; }
 ')
-      for newfile in $newfiles; do
-         echo $newfile
-         if [ -L $newfile ]; then
-           local _newfile=$(ls -l $newfile | awk '$11 != "" { print $11; }')
-           if [ "${_newfile:0:1}" != "/" ]; then
-             echo $(dirname $newfile)/$_newfile
-           else
-             echo $_newfile
+        for newfile in $newfiles; do
+           echo $newfile
+           if [ -L $newfile ]; then
+             local _newfile=$(ls -l $newfile | awk '$11 != "" { print $11; }')
+             if [ -n "$newfile" ] && [ ${newfile:0:5} != "/proc" ] && [ ${newfile:0:4} != "proc" ]; then
+               if [ "${_newfile:0:1}" != "/" ]; then
+                 echo $(dirname $newfile)/$_newfile
+               else
+                 echo $_newfile
+               fi
+             fi
            fi
-         fi
-      done
+        done
+      fi
     fi
   fi
 }
