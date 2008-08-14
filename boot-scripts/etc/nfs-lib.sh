@@ -1,5 +1,5 @@
 #
-# $Id: nfs-lib.sh,v 1.4 2008-06-20 15:50:36 mark Exp $
+# $Id: nfs-lib.sh,v 1.5 2008-08-14 14:35:24 marc Exp $
 #
 # @(#)$File$
 #
@@ -30,7 +30,29 @@
 #  DESCRIPTION
 #*******
 
-default_mountopts="noatime,nodiratime"
+#****f* boot-scripts/etc/clusterfs-lib.sh/nfs_getdefaults
+#  NAME
+#    nfs_getdefaults
+#  SYNOPSIS
+#    nfs_getdefaults(parameter)
+#  DESCRIPTION
+#    returns defaults for the specified filesystem. Parameter must be given to return the apropriate default
+#  SOURCE
+function nfs_getdefaults {
+	local param=$1
+	case "$param" in
+		lock_method|lockmethod)
+		    echo ""
+		    ;;
+		mount_opts|mountopts)
+		    echo "nolock"
+		    ;;
+	    *)
+	        return 0
+	        ;;
+	esac
+}
+#********** clusterfs_getdefaults
 
 #****f* nfs-lib.sh/nfs_load
 #  NAME
@@ -44,7 +66,7 @@ default_mountopts="noatime,nodiratime"
 #
 function nfs_load {
 
-  NFS_MODULES="nfs"
+  NFS_MODULES="nfs nfslock"
 
   echo_local -n "Loading NFS modules ($NFS_MODULES)..."
   for module in ${NFS_MODULES}; do
@@ -70,14 +92,11 @@ function nfs_load {
 #  SOURCE
 #
 function nfs_services_start {
-  services="portmap rpc_lockd rpc_statd"
+  services=""
   for service in $services; do
     nfs_start_$service
-    if [ $? -ne 0 ]; then
-      return $?
-    fi
   done
-  return $return_c
+  return 0
 }
 #************ nfs_services_start
 
@@ -151,9 +170,31 @@ function nfs_services_restart {
     fi
     step
   done
+  
   return $return_c
 }
 #************ nfs_services_restart
+
+#****f* nfs-lib.sh/nfs_services_restart_newroot
+#  NAME
+#    nfs_services_restart_newroot
+#  SYNOPSIS
+#    function nfs_services_restart_newroot(lockmethod)
+#  DESCRIPTION
+#    This function loads all relevant gfs modules
+#  IDEAS
+#  SOURCE
+#
+function nfs_services_restart_newroot {
+  local chroot_path=$1
+  local lock_method=$2
+  local lvm_sup=$3
+
+  echo "Umounting $chroot_path/proc"
+  exec_local umount $chroot_path/proc
+  return_code
+}
+#************ nfs_services_restart_newroot
 
 function nfs_checkhosts_alive {
 	return 0
@@ -175,7 +216,12 @@ function nfs_init {
 #********* nfs_init
 
 # $Log: nfs-lib.sh,v $
-# Revision 1.4  2008-06-20 15:50:36  mark
+# Revision 1.5  2008-08-14 14:35:24  marc
+# - optimized to more modern version
+# - added getdefaults
+# - other minor bugfixes
+#
+# Revision 1.4  2008/06/20 15:50:36  mark
 # get default mount opts right
 #
 # Revision 1.3  2008/06/10 09:59:09  marc
