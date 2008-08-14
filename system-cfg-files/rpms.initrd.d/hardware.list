@@ -1,4 +1,2 @@
 # rpms needed for hardware installation
 udev
-initscripts
-kudzu

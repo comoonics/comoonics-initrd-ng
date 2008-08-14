@@ -7,7 +7,6 @@ bash
 cat
 chmod
 chroot
-consoletype
 cp
 date
 dd
@@ -22,7 +21,6 @@ fdisk
 find
 fuser
 grep
-grubby
 gunzip
 gzip
 head
@@ -31,10 +29,8 @@ hostname
 hwclock
 init
 insmod
-ipcalc
 killall
 killall5
-kudzu
 ldd
 less
 ln
@@ -51,7 +47,6 @@ modprobe
 more
 mount
 mv
-nash
 pidof
 ping
 pivot_root
