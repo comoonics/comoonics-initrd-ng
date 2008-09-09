@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.74 2008-08-14 14:40:41 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.74.2.1 2008-09-09 15:09:45 mark Exp $
 #
 ##
 ##
@@ -57,7 +57,7 @@ Requires: comoonics-cluster-py >= 0.1-2
 Requires: comoonics-bootimage-initscripts >= 1.3 
 Requires: comoonics-bootimage-listfiles-all
 #Conflicts:
-Release: 37
+Release: 38
 Vendor: ATIX AG
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -467,6 +467,7 @@ fi
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/std-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/sysconfig/comoonics
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/rhel4/boot-lib.sh
+%attr(640, root, root) %{APPDIR}/boot-scripts/etc/rhel4/gfs-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/rhel4/hardware-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/rhel4/network-lib.sh
 %attr(640, root, root) %{APPDIR}/boot-scripts/etc/rhel5/boot-lib.sh
@@ -826,7 +827,10 @@ rm -rf %{buildroot}
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.74  2008-08-14 14:40:41  marc
+# Revision 1.74.2.1  2008-09-09 15:09:45  mark
+# added comoonics-bootimage-1.3.38
+#
+# Revision 1.74  2008/08/14 14:40:41  marc
 # -added channel option which will build channel
 # - added new versions
 #
