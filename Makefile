@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.40 2008-08-14 14:40:41 marc Exp $
+# $Id: Makefile,v 1.40.2.1 2008-09-09 15:09:19 mark Exp $
 #
 # @(#)$file$
 #
@@ -138,6 +138,7 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/xen-lib.sh \
   boot-scripts/etc/sysconfig/comoonics \
   boot-scripts/etc/rhel4/boot-lib.sh \
+  boot-scripts/etc/rhel4/gfs-lib.sh \
   boot-scripts/etc/rhel4/hardware-lib.sh \
   boot-scripts/etc/rhel4/network-lib.sh \
   boot-scripts/etc/rhel5/boot-lib.sh \
@@ -497,7 +498,10 @@ channel: rpm channelcopy channelbuild
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.40  2008-08-14 14:40:41  marc
+# Revision 1.40.2.1  2008-09-09 15:09:19  mark
+# added etc/rhel4/gfs-lib.sh
+#
+# Revision 1.40  2008/08/14 14:40:41  marc
 # -added channel option which will build channel
 # - added new versions
 #
