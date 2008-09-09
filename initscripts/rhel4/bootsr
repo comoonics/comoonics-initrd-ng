@@ -2,7 +2,7 @@
 #****h* comoonics-bootimage/bootsr
 #  NAME
 #    bootsr
-#    $Id: bootsr,v 1.3 2007-11-22 16:31:04 mark Exp $
+#    $Id: bootsr,v 1.3.2.1 2008-09-09 15:15:08 mark Exp $
 #  DESCRIPTION
 #    Comoonics Shared Root post boot settings
 #  AUTHOR
@@ -133,6 +133,11 @@ case "$1" in
 #      runlevel=$(get_runlevel)
       echo  "Doing the Comoonics Shared Root post settings "
       touch /var/lock/subsys/bootsr
+      mkdir -p /var/run/cluster
+      for file in ccsd.pid ccsd.sock; do
+            ln -s $(/opt/atix/comoonics-bootimage/manage_chroot.sh -p)/var/run/cluster/$file /var/run/cluster
+      done
+      
 #      echo `date` Doing the Comoonics Shared Root post settings | tee -a /var/log/bootsr | logger -t com-bootsr
 #      /sbin/lvm vgscan --ignorelockingfailure --mknodes 2>&1 | tee -a /var/log/bootsr | logger -t com-bootsr
 #      /sbin/lvm vgchange --ignorelockingfailure -ay 2>&1 | tee -a /var/log/bootsr | logger -t com-bootsr
@@ -177,7 +182,10 @@ exit $RETVAL
 #************ main
 ###############
 # $Log: bootsr,v $
-# Revision 1.3  2007-11-22 16:31:04  mark
+# Revision 1.3.2.1  2008-09-09 15:15:08  mark
+# fix for bug #251
+#
+# Revision 1.3  2007/11/22 16:31:04  mark
 # added automatic mount for gfs filesystems, fixes bz #150
 #
 # Revision 1.2  2007/10/11 08:46:43  mark
