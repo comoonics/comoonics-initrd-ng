@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.60 2008-08-14 14:38:11 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.60.2.1 2008-09-09 15:07:01 mark Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.60 2008-08-14 14:38:11 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.60.2.1 2008-09-09 15:07:01 mark Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -90,7 +90,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.60 $ $Date: 2008-08-14 14:38:11 $'
+echo_local 'Internal Version $Revision: 1.60.2.1 $ $Date: 2008-09-09 15:07:01 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -285,6 +285,10 @@ return_code
 
 step "Hardware detected, modules loaded"
 
+echo_local -n "Starting udev "
+exec_local udev_start
+return_code
+
 if [ "$scsifailover" = "mapper" ] || [ "$scsifailover" = "devicemapper" ]; then
   dm_mp_start
 fi
@@ -474,7 +478,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.60  2008-08-14 14:38:11  marc
+# Revision 1.60.2.1  2008-09-09 15:07:01  mark
+# add a missing udev_start after device initialization
+#
+# Revision 1.60  2008/08/14 14:38:11  marc
 # - changed parameter orders first clustertype/rootfs then the rest
 # - hardware detection order (starting udev first)
 # - more small fixes
