@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.60.2.1 2008-09-09 15:07:01 mark Exp $
+# $Id: linuxrc.generic.sh,v 1.60.2.2 2008-09-09 15:08:12 mark Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.60.2.1 2008-09-09 15:07:01 mark Exp $
+#    $Id: linuxrc.generic.sh,v 1.60.2.2 2008-09-09 15:08:12 mark Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -90,7 +90,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.60.2.1 $ $Date: 2008-09-09 15:07:01 $'
+echo_local 'Internal Version $Revision: 1.60.2.2 $ $Date: 2008-09-09 15:08:12 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -466,7 +466,16 @@ echo
 #TODO umount $newroot/proc again
 echo_local -n "start services in newroot ..."
 exec_local prepare_newroot $newroot
-exec_local clusterfs_services_restart_newroot $newroot "$lockmethod" "$lvm_sup"
+
+/usr/bin/killall clvmd
+sleep 2
+/usr/sbin/chroot $newroot /usr/sbin/clvmd
+sleep 2
+/usr/sbin/chroot $newroot /sbin/lvm vgscan --mknodes >/dev/null 2>&1
+sleep 2
+/usr/sbin/chroot $newroot /sbin/lvm vgchange -ay >/dev/null 2>&1
+sleep 2
+#exec_local clusterfs_services_restart_newroot $newroot "$lockmethod" "$lvm_sup"
 return_code $?
 
 step "Initialization completed."
@@ -478,7 +487,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.60.2.1  2008-09-09 15:07:01  mark
+# Revision 1.60.2.2  2008-09-09 15:08:12  mark
+# first implementation for starting clvmd in newroot
+#
+# Revision 1.60.2.1  2008/09/09 15:07:01  mark
 # add a missing udev_start after device initialization
 #
 # Revision 1.60  2008/08/14 14:38:11  marc
