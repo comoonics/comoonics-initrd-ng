@@ -7,7 +7,7 @@
 #  DESCRIPTION
 #*******
 #
-# $Id: comhf-sysreport.sh,v 1.5 2007-12-07 16:40:00 reiner Exp $
+# $Id: comhf-sysreport.sh,v 1.5.2.1 2008-09-10 07:32:21 mark Exp $
 #
 # @(#)$File$
 #
@@ -79,8 +79,8 @@ function do_pre() {
 
 function do_post() {
 	log "cleaning up"
-	log " - umounting /proc"
-	umount /proc
+	#log " - umounting /proc"
+	#umount /proc
 
 }
 

@@ -7,7 +7,7 @@
 #  DESCRIPTION
 #*******
 #
-# $Id: comhf-update_fenced_chroot.sh,v 1.2 2007-12-07 16:40:00 reiner Exp $
+# $Id: comhf-update_fenced_chroot.sh,v 1.2.2.1 2008-09-10 07:32:21 mark Exp $
 #
 # @(#)$File$
 #
@@ -40,10 +40,13 @@ basedir="/opt/atix/comoonics-bootimage"
 
 # include libraries
 . $basedir/create-gfs-initrd-lib.sh
-if [ -e $basedir/boot-scripts/etc/boot-lib.sh ]; then
-  source $basedir/boot-scripts/etc/boot-lib.sh
-  initEnv
-fi
+. $basedir/boot-scripts/etc/std-lib.sh
+. $basedir/boot-scripts/etc/stdfs-lib.sh
+. $basedir/boot-scripts/etc/chroot-lib.sh
+. $basedir/boot-scripts/etc/boot-lib.sh
+
+initEnv
+
 
 
 function usage() {
@@ -121,7 +124,7 @@ fi
 
 # defauts
 # directory, where the chroot environment lives
-FENCE_CHROOT=/tmp/fence_tool
+FENCE_CHROOT=$(/opt/atix/comoonics-bootimage/manage_chroot.sh -p)
 
 #include /etc/sysconfig/cluster
 
@@ -140,7 +143,7 @@ fi
 
 log "Retreiving dependent files"
 
-files=( $(get_all_files_dependent $dep_filename $verbose | sort -u | grep -v "^.$" | grep -v "^..$") )
+files=( $(get_all_files_dependent $dep_filename $verbose | sort -u | grep -v "^.$" | grep -v "^..$"| tr '&' '\n') )
 rc=$?
 
 log "found ${#files[@]}: $(rc2str $rc)"
