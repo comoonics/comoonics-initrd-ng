@@ -2,7 +2,7 @@
 #****h* comoonics-bootimage/bootsr
 #  NAME
 #    bootsr
-#    $Id: bootsr,v 1.11 2008-06-24 12:31:01 mark Exp $
+#    $Id: bootsr,v 1.12 2008-09-10 12:55:31 marc Exp $
 #  DESCRIPTION
 #    Comoonics Shared Root post boot settings
 #  AUTHOR
@@ -231,9 +231,13 @@ case "$1" in
   status)
       exit 0
       ;;
-  restart|reload)
-  	 stop
-  	 start 
+  reload)
+      if [ check_sharedroot ]; then
+	    action "Updating chroot environment" $UPDATE_CHROOT
+	  fi
+  restart)
+  	 $0 stop
+  	 $0 start 
       ;;
   patch_files)
   	 check_sharedroot $rootfs
@@ -250,7 +254,10 @@ exit $RETVAL
 #************ main
 ###############
 # $Log: bootsr,v $
-# Revision 1.11  2008-06-24 12:31:01  mark
+# Revision 1.12  2008-09-10 12:55:31  marc
+# Fixed bug#265 where reload and restart will not work on rhels
+#
+# Revision 1.11  2008/06/24 12:31:01  mark
 # changed kill level fro bootsr initscript
 #
 # Revision 1.10  2008/06/23 22:12:06  mark
