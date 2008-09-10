@@ -1,5 +1,5 @@
 %define version 0.1
-%define release 04
+%define release 5
 
 %define COM_ROOT /opt/atix/comoonics-hf-sysreport
 
@@ -68,6 +68,8 @@ chkconfig comhf_update_chroot off
 
 
 %changelog
+* Wed Sep 09 2008 Mark Hlawatschek <hlawatschek@atix.de> 0.1-5
+  fixed some minor bugs
 * Wed Jun 06 2007 Marc Grimme <grimme@atix.de> 0.1-04
   Moved dlm lock generation as last step so that everything else is generated and can be used.
 * Mon May 07 2007 Mark Hlawatschek <hlawatschek at atix.de> 0.1.03
