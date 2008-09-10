@@ -3,5 +3,6 @@
 /etc/mpp.conf
 /usr/sbin/hot_add
 /usr/sbin/mppUtil
+/usr/bin/awk
 #############
 # $Log$
