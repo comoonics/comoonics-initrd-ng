@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.74 2008-08-14 14:40:41 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.75 2008-09-10 13:12:10 marc Exp $
 #
 ##
 ##
@@ -136,7 +136,7 @@ Extra listfiles for device mapper multipath sharedroot configurations for RedHat
 
 %package extras-rdac-multipath
 Version: 0.1
-Release: 1
+Release: 2
 Requires: comoonics-bootimage >= 1.3-8
 Summary: listfiles for rdac multipath sharedroot configurations
 Group:   Storage/Management
@@ -238,13 +238,28 @@ Release: 1
 Requires: comoonics-bootimage >= 1.3-37
 Requires: /etc/SuSE-release
 Requires: comoonics-bootimage-listfiles
-Group: Storage/Mannagement
+Group: Storage/Management
 Summary: Extrafiles for Novell SuSE Enterprise Server
 Conflicts: comoonics-bootimage-listfiles-rhel 
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description listfiles-sles
 Extra files that are only relevant for Novell SuSE Enterprise Server 10 and above
+
+%package listfiles-fenceacksv-plugins
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage >= 1.3-20
+Requires: comoonics-cs-sysreport-templates
+Requires: comoonics-fenceacksv-py
+Requires: comoonics-fenceacksv-plugins-py
+Summary: Extrafiles for plugins in fenceacksv
+Group: Storage/Management
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description listfiles-fenceacksv-plugins
+Extrafiles for plugins in fenceacksv.
+Sysreport or sysinfo can be used from fenceacksv
 
 %package compat
 Version: 0.1
@@ -589,6 +604,9 @@ fi
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/dm_multipath.list
 %attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/network.list
 
+%files listfiles-fenceacksv-plugins
+%attr(644, root, root) %dir %{CONFIGDIR}/bootimage-chroot/rpms.initrd.d/fenceacksv-plugins.list
+
 %files fenceacksv
 %attr(755, root, root) %{FENCEACKSV_DIR}/fence_ack_server.py*
 #%attr(755, root, root) %{FENCEACKSV_DIR}/fence_ack_server.pyc
@@ -826,7 +844,10 @@ rm -rf %{buildroot}
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.74  2008-08-14 14:40:41  marc
+# Revision 1.75  2008-09-10 13:12:10  marc
+# Fixed bugs #267, #265, #264
+#
+# Revision 1.74  2008/08/14 14:40:41  marc
 # -added channel option which will build channel
 # - added new versions
 #

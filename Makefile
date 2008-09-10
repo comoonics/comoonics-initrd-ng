@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.40 2008-08-14 14:40:41 marc Exp $
+# $Id: Makefile,v 1.41 2008-09-10 13:12:19 marc Exp $
 #
 # @(#)$file$
 #
@@ -266,7 +266,9 @@ CFG_DIR_CHROOT=$(SYSTEM_CFG_DIR)/bootimage-chroot
 #  SOURCE
 #
 CFG_FILES_CHROOT=files.list \
-	rpms.list 	
+	rpms.list \
+	rpms.initrd.d/fenceacksv-plugins.list
+	
 #************ CFG_FILES 
 #****d* Makefile/EMPTY_DIRS
 #  NAME
@@ -392,8 +394,8 @@ install:
                install -d  -g $(INSTALL_GRP) -o $(INSTALL_OWN) $(PREFIX)/$(CFG_DIR_CHROOT)/rpms.initrd.d/; \
              fi; \
 	     for cfgfile in $(CFG_FILES_CHROOT); do \
-               if [ ! -e $(PREFIX)/$(CFG_DIR)/rpms.initrd.d/`dirname $$cfgfile` ]; then \
-                 install -d  -g $(INSTALL_GRP) -o $(INSTALL_OWN) $(PREFIX)/$(CFG_DIR)/`dirname $$cfgfile`; \
+               if [ ! -e $(PREFIX)/$(CFG_DIR_CHROOT)/rpms.initrd.d/`dirname $$cfgfile` ]; then \
+                 install -d  -g $(INSTALL_GRP) -o $(INSTALL_OWN) $(PREFIX)/$(CFG_DIR_CHROOT)/rpms.initrd.d/`dirname $$cfgfile`; \
                fi; \
                install -g $(INSTALL_GRP) -o $(INSTALL_OWN) $$cfgfile $(PREFIX)/$(CFG_DIR_CHROOT)/`dirname $$cfgfile`; \
 	     done && \
@@ -497,7 +499,10 @@ channel: rpm channelcopy channelbuild
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.40  2008-08-14 14:40:41  marc
+# Revision 1.41  2008-09-10 13:12:19  marc
+# Fixed bugs #267, #265, #264
+#
+# Revision 1.40  2008/08/14 14:40:41  marc
 # -added channel option which will build channel
 # - added new versions
 #
