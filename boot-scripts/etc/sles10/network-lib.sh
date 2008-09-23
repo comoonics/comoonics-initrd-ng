@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.1 2008-08-14 13:30:52 marc Exp $
+# $Id: network-lib.sh,v 1.2 2008-09-23 18:24:38 marc Exp $
 #
 # @(#)$File$
 #
@@ -87,8 +87,8 @@ function sles10_ip2Config() {
 
     echo 'BOOTPROTO="'$bootproto'"' >> ${__prefix}/etc/sysconfig/network/ifcfg-$ipDevice
     if [ "$bootproto" != "dhcp" ]; then
-      (echo 'IPADDR="$ipAddr"' &&
-       if [ -n "$ipNetmask" ]; then echo 'NETMASK="'$ipNetmask'"'; fi) >> ${__prefix}/etc/sysconfig/network/ifcfg-$ipDevice
+      (echo 'IPADDR="'$ipAddr'"' &&
+      if [ -n "$ipNetmask" ]; then echo 'NETMASK="'$ipNetmask'"'; fi) >> ${__prefix}/etc/sysconfig/network/ifcfg-$ipDevice
       if [ -n "$ipGate" ]; then
 	    echo 'GATEWAY="'$ipGate'"' >> ${__prefix}/etc/sysconfig/network/ifcfg-$ipDevice
       fi
@@ -105,7 +105,10 @@ function sles10_ip2Config() {
 
 #################
 # $Log: network-lib.sh,v $
-# Revision 1.1  2008-08-14 13:30:52  marc
+# Revision 1.2  2008-09-23 18:24:38  marc
+# fixed bug#272 where static ips would not be specified in network configuration.
+#
+# Revision 1.1  2008/08/14 13:30:52  marc
 # initial revision
 #
 # Revision 1.2  2007/12/07 16:40:00  reiner
