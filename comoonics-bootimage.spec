@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.76 2008-09-24 08:12:43 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.77 2008-09-24 08:14:25 marc Exp $
 #
 ##
 ##
@@ -654,7 +654,6 @@ rm -rf %{buildroot}
 %changelog
 * Wed Sep 24 2008 Marc Grimme <grimme@atix.de> 1.3-38
 - Bugfix #272 where static ipaddress will not be set in sles10
-- Replaced dependency listfiles to listfiles-all in listfiles-sles
 * Mon Aug 11 2008 Marc Grimme <grimme@atix.de> 1.3-37
 - cleanups for introduced changes
 - small bugfixes
@@ -817,6 +816,8 @@ rm -rf %{buildroot}
   - initial revision 
 
 %changelog listfiles-sles
+* Wed Sep 24 2008 Marc Grimme <grimme@atix.de> - 0.1-2
+- Replaced dependency listfiles to listfiles-all in listfiles-sles
 * Thu Aug 14 2008 Marc Grimme <grimme@atix.de - 0.1-1
   - initial revision 
 
@@ -847,7 +848,11 @@ rm -rf %{buildroot}
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.76  2008-09-24 08:12:43  marc
+# Revision 1.77  2008-09-24 08:14:25  marc
+# - Bugfix #272 where static ipaddress will not be set in sles10
+# - Replaced dependency listfiles to listfiles-all in listfiles-sles
+#
+# Revision 1.76  2008/09/24 08:12:43  marc
 # - Bugfix #272 where static ipaddress will not be set in sles10
 # - Replaced dependency listfiles to listfiles-all in listfiles-sles
 #
