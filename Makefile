@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.41 2008-09-10 13:12:19 marc Exp $
+# $Id: Makefile,v 1.42 2008-09-24 08:13:20 marc Exp $
 #
 # @(#)$file$
 #
@@ -452,6 +452,10 @@ rpmbuild-initscripts-el5: archive
 	cp ../$(ARCHIVE_FILE) /usr/src/redhat/SOURCES/
 	rpmbuild -ba  --target=noarch ./comoonics-bootimage-initscripts-el5.spec
 	
+rpmbuild-initscripts-sles10: archive
+	cp ../$(ARCHIVE_FILE) /usr/src/redhat/SOURCES/
+	rpmbuild -ba  --target=noarch ./comoonics-bootimage-initscripts-sles10.spec
+	
 .PHONY:rpmsign
 rpmsign:
 	@echo "Signing packages"
@@ -489,7 +493,7 @@ channelbuild:
 	done 
 
 .PHONY:rpm	
-rpm: rpmbuild rpmbuild-initscripts-el4 rpmbuild-initscripts-el5 \
+rpm: rpmbuild rpmbuild-initscripts-el4 rpmbuild-initscripts-el5 rpmbuild-initscripts-sles10 \
 rpmbuild-listfiles-el4 rpmbuild-listfiles-el5 \
 rpmsign
 
@@ -499,7 +503,11 @@ channel: rpm channelcopy channelbuild
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.41  2008-09-10 13:12:19  marc
+# Revision 1.42  2008-09-24 08:13:20  marc
+# upstream commit
+# - added sles deps
+#
+# Revision 1.41  2008/09/10 13:12:19  marc
 # Fixed bugs #267, #265, #264
 #
 # Revision 1.40  2008/08/14 14:40:41  marc
