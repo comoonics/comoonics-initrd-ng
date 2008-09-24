@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.42 2008-09-24 08:13:20 marc Exp $
+# $Id: Makefile,v 1.43 2008-09-24 08:21:40 marc Exp $
 #
 # @(#)$file$
 #
@@ -322,7 +322,7 @@ RPM_PACKAGE_DIR=/usr/src/redhat
 
 
 CHANNELBASEDIR=/atix/dist-mirrors
-CHANNELDIRS=comoonics/rhel4/preview comoonics/rhel5/preview comoonics/sles10/preview
+CHANNELDIRS=comoonics/rhel5/preview comoonics/sles10/preview
 CHANNELSUBDIRS=i386 x86_64 noarch SRPMS
 
 .PHONY: install
@@ -503,7 +503,10 @@ channel: rpm channelcopy channelbuild
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.42  2008-09-24 08:13:20  marc
+# Revision 1.43  2008-09-24 08:21:40  marc
+# removed rhel4 as upstream
+#
+# Revision 1.42  2008/09/24 08:13:20  marc
 # upstream commit
 # - added sles deps
 #
