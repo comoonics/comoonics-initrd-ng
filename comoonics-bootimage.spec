@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.75 2008-09-10 13:12:10 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.76 2008-09-24 08:12:43 marc Exp $
 #
 ##
 ##
@@ -57,7 +57,7 @@ Requires: comoonics-cluster-py >= 0.1-2
 Requires: comoonics-bootimage-initscripts >= 1.3 
 Requires: comoonics-bootimage-listfiles-all
 #Conflicts:
-Release: 37
+Release: 38
 Vendor: ATIX AG
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -234,10 +234,10 @@ Extra files that are only relevant for RedHat Enterprise Linux Versions4
 
 %package listfiles-sles
 Version: 0.1
-Release: 1
+Release: 2
 Requires: comoonics-bootimage >= 1.3-37
 Requires: /etc/SuSE-release
-Requires: comoonics-bootimage-listfiles
+Requires: comoonics-bootimage-listfiles-all
 Group: Storage/Management
 Summary: Extrafiles for Novell SuSE Enterprise Server
 Conflicts: comoonics-bootimage-listfiles-rhel 
@@ -652,6 +652,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Wed Sep 24 2008 Marc Grimme <grimme@atix.de> 1.3-38
+- Bugfix #272 where static ipaddress will not be set in sles10
+- Replaced dependency listfiles to listfiles-all in listfiles-sles
 * Mon Aug 11 2008 Marc Grimme <grimme@atix.de> 1.3-37
 - cleanups for introduced changes
 - small bugfixes
@@ -844,7 +847,11 @@ rm -rf %{buildroot}
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.75  2008-09-10 13:12:10  marc
+# Revision 1.76  2008-09-24 08:12:43  marc
+# - Bugfix #272 where static ipaddress will not be set in sles10
+# - Replaced dependency listfiles to listfiles-all in listfiles-sles
+#
+# Revision 1.75  2008/09/10 13:12:10  marc
 # Fixed bugs #267, #265, #264
 #
 # Revision 1.74  2008/08/14 14:40:41  marc
