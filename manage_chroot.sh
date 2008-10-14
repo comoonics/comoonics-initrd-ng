@@ -7,7 +7,7 @@
 #  DESCRIPTION
 #*******
 #
-# $Id: manage_chroot.sh,v 1.6 2008-07-11 13:28:31 mark Exp $
+# $Id: manage_chroot.sh,v 1.7 2008-10-14 10:57:07 marc Exp $
 #
 # @(#)$File$
 #
@@ -65,7 +65,23 @@ fi
 . $(dirname $0)/boot-scripts/etc/std-lib.sh
 . $(dirname $0)/boot-scripts/etc/defaults.sh
 . $(dirname $0)/boot-scripts/etc/clusterfs-lib.sh
+. $(dirname $0)/boot-scripts/etc/repository-lib.sh
 clutype=$(getCluType)
+rootfs=$(get_mounted_rootfs)
+distribution=$(getDistribution)
+[ "$clutype" != "$rootfs" ] && . $(dirname $0)/boot-scripts/etc/${rootfs}-lib.sh
+[ -e /etc/${distribution}/boot-lib.sh ] && source /etc/${distribution}/boot-lib.sh
+[ -e /etc/${distribution}/hardware-lib.sh ] && source /etc/${distribution}/hardware-lib.sh
+[ -e /etc/${distribution}/network-lib.sh ] && source /etc/${distribution}/network-lib.sh
+[ -e /etc/${distribution}/clusterfs-lib.sh ] && source /etc/${distribution}/clusterfs-lib.sh
+[ -e /etc/${distribution}/${clutype}-lib.sh ] && source /etc/${distribution}/${clutype}-lib.sh
+[ -e /etc/${distribution}/${rootfs}-lib.sh ] && source /etc/${distribution}/${rootfs}-lib.sh
+
+
+clusterfs_chroot_needed init
+__default=$?
+chrootneeded=$(getParameter chroot $__default)
+
  if ! [ -e $(dirname $0)/boot-scripts/etc/$clutype-lib.sh ]; then
   echo "Cannot find $(dirname $0)/boot-scripts/etc/$clutype-lib.sh"
   exit 1
@@ -102,6 +118,7 @@ function usage() {
      stop_service_cmd <command>  - kills all services with name <command> TODO: in chroot
      status_service_pid <pidfile>  - returns status of service with pidfile in chroot
      status_service_cmd <command>  - returns status of service with name <command> TODO: in chroot
+     mount_cdsl [<cdslpath>] [<cdsllocal>] - mounts the cdsl environment again
      
 EOF
 }
@@ -198,6 +215,19 @@ function update_chroot() {
 	log "copy files: $(return_code $rc)"
 }
 
+function mount_cdsl {
+	local cdsl_path=$1
+	local cdsl_local=$2
+
+	local nodeid=$(getParameter nodeid $(cc_getdefaults nodeid))
+	local newroot="/"
+	
+	[ -z "$cdsl_path" ] && cdsl_path=$cdsl_prefix
+	[ -z "$cdsl_local" ] && cdsl_local=$cdsl_local_dir 
+	
+	clusterfs_mount_cdsl $newroot $cdsl_local $nodeid $cdsl_path	
+}
+
 #include /etc/sysconfig/cluster
 
 if [ -e /etc/sysconfig/cluster ]; then
@@ -209,17 +239,20 @@ fi
 # - fallback /comoonics
 # - test /comoonics or die
 
-if ! [ -e /var/comoonics/chrootpath ]; then
-	echo "Error: cannot find /var/comoonics/chrootpath"
+if [ $chrootneeded -eq 0 ] && ! [ -e /var/comoonics/chrootpath ]; then
+	echo "Error: cannot find /var/comoonics/chrootpath" >&2
 	exit 1
 fi
 
-chrootdir=$(cat /var/comoonics/chrootpath)
+if [ $chrootneeded -eq 0 ]; then
+  chrootdir=$(cat /var/comoonics/chrootpath)
 
-# Test for chrootdir
-if ! [ -e $chrootdir ]; then
-	echo "Error chroot dir $chrootdir does not exist."
-	exit 1
+
+  # Test for chrootdir
+  if ! [ -e $chrootdir ]; then
+	  echo "Error chroot dir $chrootdir does not exist."
+	  exit 1
+  fi
 fi
 
 while getopts vdhpVa: option ; do
@@ -246,7 +279,7 @@ while getopts vdhpVa: option ; do
 		action=$OPTARG
 		;;
 	    *)
-		echo "Error wrong option."
+		echo "Error wrong option." >&2
 		usage
 		exit 1
 		;;
@@ -258,13 +291,13 @@ case "$action" in
 	"")
 	;;
 	"update")
-		update_chroot
+		[ $chrootneeded -eq 0 ] && update_chroot
 	;;
 	"umount")
-		umount_chroot
+		[ $chrootneeded -eq 0 ] && umount_chroot
 	;;
 	"mount")
-		mount_chroot
+		[ $chrootneeded -eq 0 ] && mount_chroot
 	;;
 	"start_service")
 		close_fds
@@ -281,6 +314,9 @@ case "$action" in
 	;;
 	"status_service_cmd")
 		status_service_cmd $1
+		;;
+	"mount_cdsl")
+	    mount_cdsl $*
 	;;
 	*)
 		usage

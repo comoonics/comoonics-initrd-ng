@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.2 2008-09-23 18:24:38 marc Exp $
+# $Id: network-lib.sh,v 1.3 2008-10-14 10:57:07 marc Exp $
 #
 # @(#)$File$
 #
@@ -55,6 +55,11 @@ function sles10_ip2Config() {
   local MAC=$6
   local type=$7
   local bridge=$8
+  local onboot=$9
+  
+  if [ "$onboot" = "yes" ]; then
+  	onboot="auto"
+  fi
 
   # reformating MAC from - to :
   MAC=${MAC//-/:}
@@ -68,7 +73,7 @@ function sles10_ip2Config() {
   fi
 
   (echo 'DEVICE="'$ipDevice'"' &&
-   echo 'STARTMODE="auto"' &&
+   echo 'STARTMODE="'$onboot'"' &&
    echo 'TYPE="'$type'"') > ${__prefix}/etc/sysconfig/network/ifcfg-$ipDevice
 
   #[ -n "$MAC" ] && [ "$MAC" != "00:00:00:00:00:00" ] && echo "HWADDR=$MAC" >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
@@ -105,7 +110,10 @@ function sles10_ip2Config() {
 
 #################
 # $Log: network-lib.sh,v $
-# Revision 1.2  2008-09-23 18:24:38  marc
+# Revision 1.3  2008-10-14 10:57:07  marc
+# Enhancement #273 and dependencies implemented (flexible boot of local fs systems)
+#
+# Revision 1.2  2008/09/23 18:24:38  marc
 # fixed bug#272 where static ips would not be specified in network configuration.
 #
 # Revision 1.1  2008/08/14 13:30:52  marc

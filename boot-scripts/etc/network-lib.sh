@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.8 2008-08-14 14:34:36 marc Exp $
+# $Id: network-lib.sh,v 1.9 2008-10-14 10:57:07 marc Exp $
 #
 # @(#)$File$
 #
@@ -92,6 +92,26 @@ function nicConfig {
 }
 #******** nicConfig
 
+#****f* boot-lib.sh/nicAutoUp
+#  NAME
+#    nicAutoUp
+#  SYNOPSIS
+#    function nicAutoUp ipconfig
+#  DOCUMENTATION
+#    Returns 0 if nic should be taken up configurated
+#  SOURCE
+#
+function nicAutoUp() {
+   local _err=0
+   local onboot=$(getPosFromIPString 10, $ipconfig)
+   if [ "$onboot" = "yes" ]; then
+   	return 0
+   else
+    return 1
+   fi
+}
+#************ nicAutoUp
+
 #****f* boot-lib.sh/nicUp
 #  NAME
 #    nicUp
@@ -169,6 +189,7 @@ function ip2Config() {
     local ipMAC=$(getPosFromIPString 7, $1)
     local type=$(getPosFromIPString 8, $1)
     local bridge=$(getPosFromIPString 9, $1)
+    local onboot=$(getPosFromIPString 10, $1)
   else
     local ipAddr=$1
     local ipGate=$2
@@ -180,15 +201,17 @@ function ip2Config() {
     local slave=$8
     local bridge=$9
     local type=$10
+    local onboot=$11
+    [ -z "$onboot" ] && onboot="yes"
   fi
 
   # Bonding
   if [ -n "$ipAddr" ]; then
   	echo_local -n "Generating ifcfg for ${distribution} ($ipAddr, $ipGate, $ipNetmask, $ipHostname, $ipDevice, $ipMAC)..."
-    ${distribution}_ip2Config "$ipDevice" "$ipAddr" "$ipNetmask" "$ipHostname" "$ipGate" "$ipMAC" "$type" "$bridge"
+    ${distribution}_ip2Config "$ipDevice" "$ipAddr" "$ipNetmask" "$ipHostname" "$ipGate" "$ipMAC" "$type" "$bridge" "$onboot"
   else
 	echo_local -n "Generating ifcfg for ${distribution} ($master, $slave, $bridge, $ipDevice, $ipMAC)..."
-    ${distribution}_ip2Config "$ipDevice" "" "$master" "$slave" "" "$ipMAC" "$type" "$bridge"
+    ${distribution}_ip2Config "$ipDevice" "" "$master" "$slave" "" "$ipMAC" "$type" "$bridge" "$onboot"
   fi
   return_code $?
 }
@@ -212,6 +235,7 @@ function auto_netconfig {
    return_code
 }
 #******** auto_netconfig
+
 #****f* boot-lib.sh/getPosFromIPString
 #  NAME
 #    getPosFromIPString
@@ -230,7 +254,10 @@ function getPosFromIPString() {
 
 #############
 # $Log: network-lib.sh,v $
-# Revision 1.8  2008-08-14 14:34:36  marc
+# Revision 1.9  2008-10-14 10:57:07  marc
+# Enhancement #273 and dependencies implemented (flexible boot of local fs systems)
+#
+# Revision 1.8  2008/08/14 14:34:36  marc
 # - removed xen deps
 # - added bridging
 #

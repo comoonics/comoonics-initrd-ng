@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.24 2008-08-14 13:37:35 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.25 2008-10-14 10:57:07 marc Exp $
 #
 # @(#)$File$
 #
@@ -925,6 +925,25 @@ function clusterfs_mount_cdsl {
 }
 #***** clusterfs__mount_cdsl
 
+#****f* clusterfs-lib.sh/clusterfs_chroot_needed
+#  NAME
+#    clusterfs_chroot_needed
+#  SYNOPSIS
+#    clusterfs_chroot_needed "initrd"*|"init"
+#  IDEAS
+#    Should just cascade to ${rootfs_chroot_needed} $* and return 0 to indicate that
+#    by a chroot is always needed. Defaults to 0
+function clusterfs_chroot_needed {
+	typeset -f ${rootfs}_chroot_needed >/dev/null
+	if [ $? -eq 0 ]; then
+		${rootfs}_chroot_needed $*
+		return $?
+	else
+		return 0
+	fi
+}
+#***** clusterfs_chroot_needed
+
 #****f* clusterfs-lib.sh/copy_relevant_files
 #  NAME
 #    copy_relevant_files
@@ -997,7 +1016,10 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.24  2008-08-14 13:37:35  marc
+# Revision 1.25  2008-10-14 10:57:07  marc
+# Enhancement #273 and dependencies implemented (flexible boot of local fs systems)
+#
+# Revision 1.24  2008/08/14 13:37:35  marc
 # - added bridge functions
 # - added cc_getdefaults
 # - rewrote getCluType

@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.77 2008-09-24 08:14:25 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.78 2008-10-14 10:57:07 marc Exp $
 #
 ##
 ##
@@ -57,7 +57,7 @@ Requires: comoonics-cluster-py >= 0.1-2
 Requires: comoonics-bootimage-initscripts >= 1.3 
 Requires: comoonics-bootimage-listfiles-all
 #Conflicts:
-Release: 38
+Release: 39
 Vendor: ATIX AG
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -652,6 +652,8 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Tue Oct 14 2008 Marc Grimme <grimme@atix.de> 1.3-39
+- Enhancement #273 and dependencies implemented (flexible boot of local fs systems)
 * Wed Sep 24 2008 Marc Grimme <grimme@atix.de> 1.3-38
 - Bugfix #272 where static ipaddress will not be set in sles10
 * Mon Aug 11 2008 Marc Grimme <grimme@atix.de> 1.3-37
@@ -848,7 +850,10 @@ rm -rf %{buildroot}
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.77  2008-09-24 08:14:25  marc
+# Revision 1.78  2008-10-14 10:57:07  marc
+# Enhancement #273 and dependencies implemented (flexible boot of local fs systems)
+#
+# Revision 1.77  2008/09/24 08:14:25  marc
 # - Bugfix #272 where static ipaddress will not be set in sles10
 # - Replaced dependency listfiles to listfiles-all in listfiles-sles
 #

@@ -1,5 +1,5 @@
 #
-# $Id: ext3-lib.sh,v 1.2 2007-12-07 16:39:59 reiner Exp $
+# $Id: ext3-lib.sh,v 1.3 2008-10-14 10:57:07 marc Exp $
 #
 # @(#)$File$
 #
@@ -114,8 +114,57 @@ function ext3_checkhosts_alive {
 }
 #********* ext3_checkhosts_alive
 
+#************* ext3_chroot_needed
+#  NAME
+#    ext3_chroot_needed
+#  SYNOPSIS
+#    function ext3_chroot_needed(initrd|init|..)
+#  DESCRIPTION
+#    Returns 0 if this rootfilesystem needs a chroot inside initrd or init. Otherwise not 0
+#  IDEAS
+#  SOURCE
+#
+function ext3_chroot_needed {
+	return 1
+}
+#*********** ext3_chroot_needed
+
+#****f* boot-scripts/etc/ext3-lib.sh/ext3_getdefaults
+#  NAME
+#    ext3_getdefaults
+#  SYNOPSIS
+#    ext3_getdefaults(parameter)
+#  DESCRIPTION
+#    returns defaults for the specified filesystem. Parameter must be given to return the apropriate default
+#  SOURCE
+function ext3_getdefaults {
+	local param=$1
+	case "$param" in
+		lock_method|lockmethod)
+		    echo ""
+		    ;;
+		mount_opts|mountopts)
+		    echo ""
+		    ;;
+		root_source|rootsource)
+		    echo "scsi"
+		    ;;
+	    scsi_failover|scsifailover)
+	        echo "driver"
+	        ;;
+	    *)
+	        return 0
+	        ;;
+	esac
+}
+#********** ext3_getdefaults
+
+
 # $Log: ext3-lib.sh,v $
-# Revision 1.2  2007-12-07 16:39:59  reiner
+# Revision 1.3  2008-10-14 10:57:07  marc
+# Enhancement #273 and dependencies implemented (flexible boot of local fs systems)
+#
+# Revision 1.2  2007/12/07 16:39:59  reiner
 # Added GPL license and changed ATIX GmbH to AG.
 #
 # Revision 1.1  2007/03/09 17:57:01  mark

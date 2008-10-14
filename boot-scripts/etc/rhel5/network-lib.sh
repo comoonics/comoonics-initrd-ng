@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.3 2008-08-14 13:32:01 marc Exp $
+# $Id: network-lib.sh,v 1.4 2008-10-14 10:57:07 marc Exp $
 #
 # @(#)$File$
 #
@@ -47,6 +47,7 @@ function rhel5_ip2Config() {
   local MAC=$6
   local type=$7
   local bridge=$8
+  local onboot=$9
 
   # reformating MAC from - to :
   MAC=${MAC//-/:}
@@ -60,7 +61,7 @@ function rhel5_ip2Config() {
   fi
 
   (echo "DEVICE=$ipDevice" &&
-   echo "ONBOOT=no" &&
+   echo "ONBOOT=$onboot" &&
    echo "TYPE=$type") > ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
 
   [ -n "$MAC" ] && [ "$MAC" != "00:00:00:00:00:00" ] && echo "HWADDR=$MAC" >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
@@ -96,7 +97,10 @@ function rhel5_ip2Config() {
 
 #################
 # $Log: network-lib.sh,v $
-# Revision 1.3  2008-08-14 13:32:01  marc
+# Revision 1.4  2008-10-14 10:57:07  marc
+# Enhancement #273 and dependencies implemented (flexible boot of local fs systems)
+#
+# Revision 1.3  2008/08/14 13:32:01  marc
 # - rewrote briding
 # - fix mac bug
 #

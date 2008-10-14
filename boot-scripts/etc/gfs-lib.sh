@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.52 2008-08-14 14:32:45 marc Exp $
+# $Id: gfs-lib.sh,v 1.53 2008-10-14 10:57:07 marc Exp $
 #
 # @(#)$File$
 #
@@ -525,6 +525,10 @@ function gfs_auto_netconfig {
   local mac_addr=$($xml_cmd -f $xml_file -q query_value /cluster/clusternodes/clusternode[@name=\"$nodename\"]/com_info/eth[@name=\"$netdev\"]/@mac 2>/dev/null)
   local type=$($xml_cmd -f $xml_file -q query_value /cluster/clusternodes/clusternode[@name=\"$nodename\"]/com_info/eth[@name=\"$netdev\"]/@type 2>/dev/null)
   local bridge=$($xml_cmd -f $xml_file -q query_value /cluster/clusternodes/clusternode[@name=\"$nodename\"]/com_info/eth[@name=\"$netdev\"]/@bridge 2>/dev/null)
+  local onboot=$($xml_cmd -f $xml_file -q query_value /cluster/clusternodes/clusternode[@name=\"$nodename\"]/com_info/eth[@name=\"$netdev\"]/@onboot 2>/dev/null)
+  if [ -z "$onboot" ]; then
+  	onboot="yes"
+  fi 
   if [ -z "$mac_addr" ]; then
   	local mac_addr=$(ifconfig $netdev | grep -i hwaddr | awk '{print $5;};')
   fi
@@ -532,11 +536,11 @@ function gfs_auto_netconfig {
   if [ $? -eq 0 ] && [ "$ip_addr" != "" ]; then
     local gateway=$($xml_cmd -f $xml_file -q gateway $nodename $netdev) || local gateway=""
     local netmask=$($xml_cmd -f $xml_file -q mask $nodename $netdev)
-    echo ${ip_addr}"::"${gateway}":"${netmask}"::"$netdev":"$mac_addr":"$type":"$bridge
+    echo ${ip_addr}"::"${gateway}":"${netmask}"::"$netdev":"$mac_addr":"$type":"$bridge":"$onboot
   else
     local master=$($xml_cmd -f $xml_file -q master $nodename $netdev 2>/dev/null)
     local slave=$($xml_cmd -f $xml_file -q slave $nodename $netdev 2>/dev/null)
-    echo ":${master}:${slave}:::${netdev}:${mac_addr}:${type}:${bridge}"
+    echo ":${master}:${slave}:::${netdev}:${mac_addr}:${type}:${bridge}:$onboot"
   fi
 
 #  if [ -n "$debug" ]; then set +x; fi
@@ -1127,7 +1131,10 @@ function gfs_init {
 #********* gfs_init
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.52  2008-08-14 14:32:45  marc
+# Revision 1.53  2008-10-14 10:57:07  marc
+# Enhancement #273 and dependencies implemented (flexible boot of local fs systems)
+#
+# Revision 1.52  2008/08/14 14:32:45  marc
 # - added get_defaults
 # - added bridging
 # - fixed an bug with lvm_sup (cosmetic)

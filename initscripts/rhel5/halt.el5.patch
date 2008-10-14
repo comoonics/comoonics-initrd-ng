@@ -83,5 +83,5 @@
  HALTARGS="-d"
  [ -f /poweroff -o ! -f /halt ] && HALTARGS="$HALTARGS -p"
  
-+$COM_CHROOT_PATH_REAL/com-halt.sh "$command $HALTARGS"
++[ -e $COM_CHROOT_PATH_REAL/com-halt.sh ] && $COM_CHROOT_PATH_REAL/com-halt.sh "$command $HALTARGS"
  exec $command $HALTARGS

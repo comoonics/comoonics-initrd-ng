@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: com-halt.sh,v 1.2 2007-12-07 16:39:59 reiner Exp $
+# $Id: com-halt.sh,v 1.3 2008-10-14 10:57:07 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/com-halt.sh
 #  NAME
 #    com-halt.sh
-#    $Id: com-halt.sh,v 1.2 2007-12-07 16:39:59 reiner Exp $
+#    $Id: com-halt.sh,v 1.3 2008-10-14 10:57:07 marc Exp $
 #  DESCRIPTION
 #    script called from /etc/init.d/halt
 #  USAGE
@@ -37,7 +37,13 @@ CHROOT_PATH=$(dirname $0)
 
 cd $CHROOT_PATH
 #mkdir -p $CHROOT_PATH/mnt/newroot
-/sbin/pivot_root . ./mnt/newroot
-chroot . ./com-realhalt.sh -r /mnt/newroot $*
+if [ -d ./mnt/newroot ]; then
+  /sbin/pivot_root . ./mnt/newroot
+  chroot . ./com-realhalt.sh -r /mnt/newroot $*
+fi
 
-
+####################
+# $Log: com-halt.sh,v $
+# Revision 1.3  2008-10-14 10:57:07  marc
+# Enhancement #273 and dependencies implemented (flexible boot of local fs systems)
+#

@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.60 2008-08-14 14:38:11 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.61 2008-10-14 10:57:07 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.60 2008-08-14 14:38:11 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.61 2008-10-14 10:57:07 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -90,7 +90,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.60 $ $Date: 2008-08-14 14:38:11 $'
+echo_local 'Internal Version $Revision: 1.61 $ $Date: 2008-10-14 10:57:07 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -188,6 +188,10 @@ ipConfig=$(getParameter ip $(cc_getdefaults ip))
 _ipConfig=$(cluster_ip_config $cluster_conf $nodename)
 [ -n "$_ipConfig" ] && ( [ -z "$ipConfig" ] || [ "$ipConfig" = "cluster" ] ) && ipConfig=$_ipConfig
 
+clusterfs_chroot_needed initrd
+__default=$?
+chrootneeded=$(getParameter chroot $__default)
+
 check_cmd_params $*
 
 return_code 0
@@ -214,6 +218,7 @@ echo_local_debug "nousb: " $nousb
 echo_local_debug "rootvolume: $rootvolume"
 echo_local_debug "mountopts: $mount_opts"
 echo_local_debug "ipConfig: $ipConfig"
+echo_local_debug "chroot_needed: $chrootneeded"
 echo_local_debug "*****************************"
 
 step "Parameter loaded"
@@ -248,9 +253,11 @@ for ipconfig in $ipConfig; do
   dev=$(getPosFromIPString 6, $ipconfig)
   nicConfig $ipconfig
 
-  echo_local -n "Powering up $dev.."
-  exec_local nicUp $dev >/dev/null 2>&1
-  return_code $?
+  if [ nicAutoUp $ipconfig ]; then
+    echo_local -n "Powering up $dev.."
+    exec_local nicUp $dev >/dev/null 2>&1
+    return_code $?
+  fi
   netdevs="$netdevs $dev"
 done
 step "Network configuration started"
@@ -298,18 +305,20 @@ if [ "$lvm_sup" -eq 0 ]; then
 	step "LVM subsystem started"
 fi
 
-
 cc_auto_hosts $cluster_conf
-echo_local -n "Building comoonics chroot environment"
-res=( $(build_chroot $cluster_conf $nodename) )
-chroot_mount=${res[0]}
-chroot_path=${res[1]}
-return_code $?
 
-echo_local_debug "res: $res -> chroot_mount=$chroot_mount, chroot_path=$chroot_path"
-
-
-step "chroot environment created"
+# FIXME:
+# Do we have to build it in any case?
+# For ext3?
+if [ $chrootneeded -eq 0 ]; then
+  echo_local -n "Building comoonics chroot environment"
+  res=( $(build_chroot $cluster_conf $nodename) )
+  chroot_mount=${res[0]}
+  chroot_path=${res[1]}
+  return_code $?
+  echo_local_debug "res: $res -> chroot_mount=$chroot_mount, chroot_path=$chroot_path"
+  step "chroot environment created"
+fi
 
 cc_auto_syslogconfig $cluster_conf $nodename
 is_syslog=$?
@@ -335,6 +344,7 @@ if [ $? -eq 0 ]; then
 	startDRBD $rootsource $nodename
 fi
 
+# or nodes more then one
 if [ -z "$quorumack" ]; then
   echo_local -n "Checking for all nodes to be available"
   exec_local cluster_checkhosts_alive
@@ -372,15 +382,17 @@ if  [ $? -ne 0 ]; then
   setHWClock
 fi
 
-clusterfs_services_start $chroot_path "$lockmethod" "$lvm_sup"
+if [ $chrootneeded -eq 0 ]; then
+  clusterfs_services_start $chroot_path "$lockmethod" "$lvm_sup"
 
-if [ $return_c -ne 0 ]; then
-   echo_local "Could not start all cluster services. Exiting"
-   exit_linuxrc 1
+  if [ $return_c -ne 0 ]; then
+     echo_local "Could not start all cluster services. Exiting"
+     exit_linuxrc 1
+  fi
+  sleep 5
+
+  step "Cluster services started"
 fi
-sleep 5
-
-step "Cluster services started"
 
 clusterfs_mount $rootfs $root $newroot $mount_opts 3 5
 if [ $return_c -ne 0 ]; then
@@ -390,6 +402,7 @@ fi
 
 step "RootFS mounted"
 
+#FIXME: should somehow detect if we are a cluster if not don't mount cdsl
 clusterfs_mount_cdsl $newroot $cdsl_local_dir $nodeid $cdsl_prefix
 if [ $return_c -ne 0 ]; then
    echo_local "Could not mount cdsl $cdsl_local_dir to ${cdsl_prefix}/$nodeid. Exiting"
@@ -445,14 +458,16 @@ if [ $is_syslog -eq 0 ]; then
   return_code
 fi
 
-echo_local -n "Moving chroot environment to $newroot"
-move_chroot $chroot_mount $newroot/$chroot_mount
-return_code
+if [ $chrootneeded -eq 0 ]; then
+  echo_local -n "Moving chroot environment to $newroot"
+  move_chroot $chroot_mount $newroot/$chroot_mount
+  return_code
 
-echo_local -n "Writing information ..."
-exec_local mkdir -p $newroot/var/comoonics
-echo $chroot_path > $newroot/var/comoonics/chrootpath
-return_code
+  echo_local -n "Writing information ..."
+  exec_local mkdir -p $newroot/var/comoonics
+  echo $chroot_path > $newroot/var/comoonics/chrootpath
+  return_code
+fi
 
 echo_local -n "cleaning up initrd ..."
 exec_local clean_initrd
@@ -460,12 +475,15 @@ success
 echo
 
 #TODO umount $newroot/proc again
-echo_local -n "start services in newroot ..."
-exec_local prepare_newroot $newroot
-exec_local clusterfs_services_restart_newroot $newroot "$lockmethod" "$lvm_sup"
-return_code $?
 
-step "Initialization completed."
+if [ $chrootneeded -eq 0 ]; then
+  echo_local -n "start services in newroot ..."
+  exec_local prepare_newroot $newroot
+  exec_local clusterfs_services_restart_newroot $newroot "$lockmethod" "$lvm_sup"
+  return_code $?
+
+  step "Initialization completed."
+fi
 
 echo_local "Starting init-process ($init_cmd)..."
 exit_linuxrc 0 "$init_cmd" "$newroot"
@@ -474,7 +492,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.60  2008-08-14 14:38:11  marc
+# Revision 1.61  2008-10-14 10:57:07  marc
+# Enhancement #273 and dependencies implemented (flexible boot of local fs systems)
+#
+# Revision 1.60  2008/08/14 14:38:11  marc
 # - changed parameter orders first clustertype/rootfs then the rest
 # - hardware detection order (starting udev first)
 # - more small fixes
