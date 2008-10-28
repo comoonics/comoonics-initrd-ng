@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.61 2008-10-14 10:57:07 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.62 2008-10-28 12:25:47 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.61 2008-10-14 10:57:07 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.62 2008-10-28 12:25:47 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -90,7 +90,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat /etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.61 $ $Date: 2008-10-14 10:57:07 $'
+echo_local 'Internal Version $Revision: 1.62 $ $Date: 2008-10-28 12:25:47 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -253,7 +253,8 @@ for ipconfig in $ipConfig; do
   dev=$(getPosFromIPString 6, $ipconfig)
   nicConfig $ipconfig
 
-  if [ nicAutoUp $ipconfig ]; then
+  nicAutoUp $ipconfig
+  if [ $? -eq 0 ]; then
     echo_local -n "Powering up $dev.."
     exec_local nicUp $dev >/dev/null 2>&1
     return_code $?
@@ -492,7 +493,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.61  2008-10-14 10:57:07  marc
+# Revision 1.62  2008-10-28 12:25:47  marc
+# bugfix
+#
+# Revision 1.61  2008/10/14 10:57:07  marc
 # Enhancement #273 and dependencies implemented (flexible boot of local fs systems)
 #
 # Revision 1.60  2008/08/14 14:38:11  marc
