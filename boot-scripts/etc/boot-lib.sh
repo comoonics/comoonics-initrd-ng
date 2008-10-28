@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.63 2008-08-14 13:34:58 marc Exp $
+# $Id: boot-lib.sh,v 1.64 2008-10-28 12:53:28 marc Exp $
 #
 # @(#)$File$
 #
@@ -91,9 +91,12 @@ function usage() {
 #  SOURCE
 #
 function check_cmd_params() {
-    while getopts "Rsd" Option
+    while getopts "RsdS" Option
       do
       case $Option in
+          S ) # executed from simulator mode
+              simulation=1
+              ;; 
 	  R ) # running non recursive for nfs-mounts
 	      non_recursive=1
 	      ;;
@@ -1071,7 +1074,10 @@ function exec_local_stabilized() {
 
 
 # $Log: boot-lib.sh,v $
-# Revision 1.63  2008-08-14 13:34:58  marc
+# Revision 1.64  2008-10-28 12:53:28  marc
+# - implemented bug#289 to have more debug and analysistools. Added -S as option to call linux.generic.sh directly
+#
+# Revision 1.63  2008/08/14 13:34:58  marc
 # - made _stepmode local
 # - added welcome
 # - changed order of umount because of problems with nfs
