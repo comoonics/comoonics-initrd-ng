@@ -1,5 +1,5 @@
 #
-# $Id: repository-lib.sh,v 1.1 2008-07-03 12:41:27 mark Exp $
+# $Id: repository-lib.sh,v 1.2 2008-10-28 12:53:50 marc Exp $
 #
 # @(#)$File$
 #
@@ -136,3 +136,20 @@ function repository_del_value() {
 	fi
 }
 #******* repository_del_value
+
+#*****f* repository-lib.sh/repository_clear
+#  NAME
+#    repository_clear
+#  SYNOPSIS
+#    function repository_clear(repository_name)
+#  DESCRIPTION
+#    clears the given repository from disk
+#  IDEAS
+#  SOURCE
+#
+function repository_clear {
+        if [ -e /tmp/$REPOSITORY_PREFIX$1 ]; then
+                rm -f /tmp/$REPOSITORY_PREFIX$1
+        fi
+}
+#******** repository_clear
