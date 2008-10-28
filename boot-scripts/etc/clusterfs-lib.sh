@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.25 2008-10-14 10:57:07 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.26 2008-10-28 12:52:07 marc Exp $
 #
 # @(#)$File$
 #
@@ -468,7 +468,12 @@ function cc_get_mountopts {
    local cluster_conf=$1
    local nodename=$2
 
-   ${clutype}_get_mountopts $cluster_conf $nodename
+   typeset -f ${rootfs}_get_mountopts >/dev/null 2>/dev/null
+   if [ $? -eq 0 ]; then
+     ${rootfs}_get_mountopts $cluster_conf $nodename
+   else
+     ${rootfs}_getdefaults mountopts
+   fi
 }
 #******** cc_get_mountopts
 
@@ -1016,7 +1021,10 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.25  2008-10-14 10:57:07  marc
+# Revision 1.26  2008-10-28 12:52:07  marc
+# fixed bug#288 where default mountoptions would always include noatime,nodiratime
+#
+# Revision 1.25  2008/10/14 10:57:07  marc
 # Enhancement #273 and dependencies implemented (flexible boot of local fs systems)
 #
 # Revision 1.24  2008/08/14 13:37:35  marc

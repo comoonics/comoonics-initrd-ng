@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.62 2008-10-28 12:25:47 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.63 2008-10-28 12:51:48 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.62 2008-10-28 12:25:47 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.63 2008-10-28 12:51:48 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -57,40 +57,44 @@
 #
 # initstuff is done in here
 
-. /etc/sysconfig/comoonics
+predir=$(dirname $0)
+. ${predir}/etc/sysconfig/comoonics
 
-. /etc/chroot-lib.sh
-. /etc/boot-lib.sh
-. /etc/hardware-lib.sh
-. /etc/network-lib.sh
-. /etc/clusterfs-lib.sh
-. /etc/std-lib.sh
-. /etc/stdfs-lib.sh
-. /etc/defaults.sh
-. /etc/xen-lib.sh
-. /etc/repository-lib.sh
-[ -e /etc/iscsi-lib.sh ] && source /etc/iscsi-lib.sh
-[ -e /etc/drbd-lib.sh ] && source /etc/drbd-lib.sh
+. ${predir}/etc/chroot-lib.sh
+. ${predir}/etc/boot-lib.sh
+. ${predir}/etc/hardware-lib.sh
+. ${predir}/etc/network-lib.sh
+. ${predir}/etc/clusterfs-lib.sh
+. ${predir}/etc/std-lib.sh
+. ${predir}/etc/stdfs-lib.sh
+. ${predir}/etc/defaults.sh
+. ${predir}/etc/xen-lib.sh
+. ${predir}/etc/repository-lib.sh
+[ -e ${predir}/etc/iscsi-lib.sh ] && source ${predir}/etc/iscsi-lib.sh
+[ -e ${predir}/etc/drbd-lib.sh ] && source ${predir}/etc/drbd-lib.sh
 
 clutype=$(getCluType)
-. /etc/${clutype}-lib.sh
+. ${predir}/etc/${clutype}-lib.sh
 
 # including all distribution dependent files
 distribution=$(getDistribution)
-[ -e /etc/${distribution}/boot-lib.sh ] && source /etc/${distribution}/boot-lib.sh
-[ -e /etc/${distribution}/hardware-lib.sh ] && source /etc/${distribution}/hardware-lib.sh
-[ -e /etc/${distribution}/network-lib.sh ] && source /etc/${distribution}/network-lib.sh
-[ -e /etc/${distribution}/clusterfs-lib.sh ] && source /etc/${distribution}/clusterfs-lib.sh
-[ -e /etc/${distribution}/${clutype}-lib.sh ] && source /etc/${distribution}/${clutype}-lib.sh
-[ -e /etc/${distribution}/xen-lib.sh ] && source /etc/${distribution}/xen-lib.sh
-[ -e /etc/${distribution}/iscsi-lib.sh ] && source /etc/${distribution}/iscsi-lib.sh
-[ -e /etc/${distribution}/drbd-lib.sh ] && source /etc/${distribution}/drbd-lib.sh
+[ -e ${predir}/etc/${distribution}/boot-lib.sh ] && source ${predir}/etc/${distribution}/boot-lib.sh
+[ -e ${predir}/etc/${distribution}/hardware-lib.sh ] && source ${predir}/etc/${distribution}/hardware-lib.sh
+[ -e ${predir}/etc/${distribution}/network-lib.sh ] && source ${predir}/etc/${distribution}/network-lib.sh
+[ -e ${predir}/etc/${distribution}/clusterfs-lib.sh ] && source ${predir}/etc/${distribution}/clusterfs-lib.sh
+[ -e ${predir}/etc/${distribution}/${clutype}-lib.sh ] && source ${predir}/etc/${distribution}/${clutype}-lib.sh
+[ -e ${predir}/etc/${distribution}/xen-lib.sh ] && source ${predir}/etc/${distribution}/xen-lib.sh
+[ -e ${predir}/etc/${distribution}/iscsi-lib.sh ] && source ${predir}/etc/${distribution}/iscsi-lib.sh
+[ -e ${predir}/etc/${distribution}/drbd-lib.sh ] && source ${predir}/etc/${distribution}/drbd-lib.sh
+
+check_cmd_params $*
+return_code 0
 
 echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
-release=$(cat /etc/comoonics-release)
+release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.62 $ $Date: 2008-10-28 12:25:47 $'
+echo_local 'Internal Version $Revision: 1.63 $ $Date: 2008-10-28 12:51:48 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -107,9 +111,9 @@ fi
 
 # boot parameters
 echo_local -n "Scanning for Bootparameters..."
-debug=$(getParameter com-debug)
-stepmode=$(getParameter com-step)
-dstepmode=$(getParameter com-dstep)
+debug=$(getParameter com-debug $debug)
+stepmode=$(getParameter com-step $stepmode)
+dstepmode=$(getParameter com-dstep $dstepmode)
 nousb=$(getParameter nousb)
 return_code 0
 
@@ -143,7 +147,7 @@ exec_local nicUp lo
 return_code
 auto_netconfig
 
-echo -n "Scanning parameters..."
+echo "Scanning parameters..."
 
 #nodeid must be first
 nodeid=$(getParameter nodeid $(cc_getdefaults nodeid))
@@ -163,9 +167,8 @@ fi
 rootfs=$(getParameter rootfs $(cc_getdefaults rootfs))
 
 if [ "$clutype" != "$rootfs" ]; then
-	source /etc/${rootfs}-lib.sh
-	[ -e /etc/${rootfs}-lib.sh ] && source /etc/${rootfs}-lib.sh
-	[ -e /etc/${distribution}/${rootfs}-lib.sh ] && source /etc/${distribution}/${rootfs}-lib.sh
+	[ -e ${predir}/etc/${rootfs}-lib.sh ] && source ${predir}/etc/${rootfs}-lib.sh
+	[ -e ${predir}/etc/${distribution}/${rootfs}-lib.sh ] && source ${predir}/etc/${distribution}/${rootfs}-lib.sh
 fi
 
 votes=$(getParameter votes $(cc_getdefaults votes))
@@ -178,7 +181,23 @@ root=$(getParameter root $(clusterfs_getdefaults root))
 rootvolume=$(getParameter rootvolume $(clusterfs_getdefaults rootvolume))
 [ -z "$root" ] || [ "$root" = "/dev/ram0" ] && root=$rootvolume
 
+
+filesystem_ro=$(getParameter ro $(clusterfs_getdefaults readonly))
+filesystem_rw=$(getParameter rw $filesystem_ro)
 mount_opts=$(getParameter mountopts $(clusterfs_getdefaults mountopts))
+if [ $filesystem_ro ]; then
+  if [ -z "$mount_opts" ]; then
+    mount_opts="ro"
+  else
+    mount_opts="$mount_opts,ro"
+  fi
+elif [ $filesystem_rw ]; then
+  if [ -z "$mount_opts" ]; then
+    mount_opts="rw"
+  else
+    mount_opts="$mount_opts,rw"
+  fi
+fi
 
 quorumack=$(getParameter quorumack $(cc_getdefaults quorumack))
 
@@ -192,9 +211,6 @@ clusterfs_chroot_needed initrd
 __default=$?
 chrootneeded=$(getParameter chroot $__default)
 
-check_cmd_params $*
-
-return_code 0
 
 step "Inialization started"
 
@@ -493,7 +509,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.62  2008-10-28 12:25:47  marc
+# Revision 1.63  2008-10-28 12:51:48  marc
+# fixed bug#288 where default mountoptions would always include noatime,nodiratime
+#
+# Revision 1.62  2008/10/28 12:25:47  marc
 # bugfix
 #
 # Revision 1.61  2008/10/14 10:57:07  marc

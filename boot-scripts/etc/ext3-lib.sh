@@ -1,5 +1,5 @@
 #
-# $Id: ext3-lib.sh,v 1.3 2008-10-14 10:57:07 marc Exp $
+# $Id: ext3-lib.sh,v 1.4 2008-10-28 12:52:07 marc Exp $
 #
 # @(#)$File$
 #
@@ -144,11 +144,14 @@ function ext3_getdefaults {
 		    echo ""
 		    ;;
 		mount_opts|mountopts)
-		    echo ""
+		    echo "defaults"
 		    ;;
 		root_source|rootsource)
 		    echo "scsi"
 		    ;;
+                readonly)
+                    echo 1
+                    ;;
 	    scsi_failover|scsifailover)
 	        echo "driver"
 	        ;;
@@ -161,7 +164,10 @@ function ext3_getdefaults {
 
 
 # $Log: ext3-lib.sh,v $
-# Revision 1.3  2008-10-14 10:57:07  marc
+# Revision 1.4  2008-10-28 12:52:07  marc
+# fixed bug#288 where default mountoptions would always include noatime,nodiratime
+#
+# Revision 1.3  2008/10/14 10:57:07  marc
 # Enhancement #273 and dependencies implemented (flexible boot of local fs systems)
 #
 # Revision 1.2  2007/12/07 16:39:59  reiner

@@ -1,5 +1,5 @@
 #
-# $Id: nfs-lib.sh,v 1.5 2008-08-14 14:35:24 marc Exp $
+# $Id: nfs-lib.sh,v 1.6 2008-10-28 12:52:07 marc Exp $
 #
 # @(#)$File$
 #
@@ -47,6 +47,9 @@ function nfs_getdefaults {
 		mount_opts|mountopts)
 		    echo "nolock"
 		    ;;
+                readonly)
+                    echo 0
+                    ;;
 	    *)
 	        return 0
 	        ;;
@@ -216,7 +219,10 @@ function nfs_init {
 #********* nfs_init
 
 # $Log: nfs-lib.sh,v $
-# Revision 1.5  2008-08-14 14:35:24  marc
+# Revision 1.6  2008-10-28 12:52:07  marc
+# fixed bug#288 where default mountoptions would always include noatime,nodiratime
+#
+# Revision 1.5  2008/08/14 14:35:24  marc
 # - optimized to more modern version
 # - added getdefaults
 # - other minor bugfixes
