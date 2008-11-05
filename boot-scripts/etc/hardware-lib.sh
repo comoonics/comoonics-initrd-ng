@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.18 2008-08-14 14:33:27 marc Exp $
+# $Id: hardware-lib.sh,v 1.19 2008-11-05 16:01:48 reiner Exp $
 #
 # @(#)$File$
 #
@@ -378,7 +378,7 @@ function hardware_detect() {
   fi
   return_code
 
-  echo_local -n "Module-depency"
+  echo_local -n "Module-dependency"
   exec_local /sbin/depmod -a
   return_code
 
@@ -424,7 +424,10 @@ function add_scsi_device() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.18  2008-08-14 14:33:27  marc
+# Revision 1.19  2008-11-05 16:01:48  reiner
+# Fixed small typo.
+#
+# Revision 1.18  2008/08/14 14:33:27  marc
 # - remove debug output of modules.conf which is not needed any more
 #
 # Revision 1.17  2008/06/10 09:57:50  marc
