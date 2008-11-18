@@ -1,5 +1,5 @@
 #
-# $Id: stdfs-lib.sh,v 1.3 2007-12-07 16:39:59 reiner Exp $
+# $Id: stdfs-lib.sh,v 1.4 2008-11-18 08:48:28 marc Exp $
 #
 # @(#)$File$
 #
@@ -226,3 +226,31 @@ function copy_filelist() {
   		i=$(( $i+1 ))
 	done
 }
+#************ copy_filelist
+
+#****f* std-lib.sh/is_mounted
+#  NAME
+#    is_mounted
+#  SYNOPSIS
+#    function is_mounted( path) {
+#  DESCRIPTION
+#    return 0 if path is mounted (means is a mountpoint) 1 otherwise
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function is_mounted {
+	if [ -f /proc/mounts ]; then
+	  output=$(awk -vmountpoint="$1" 'BEGIN {found=1;}$2==mountpoint {found=0;} END { print found; }' /proc/mounts)
+	  return $output
+	else
+	  return 1
+    fi
+}
+#*********** is_mounted
+######################
+# $Log: stdfs-lib.sh,v $
+# Revision 1.4  2008-11-18 08:48:28  marc
+# - implemented RFE-BUG 289
+#   - possiblilty to execute initrd from shell or insite initrd to analyse behaviour
+#

@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.63 2008-10-28 12:51:48 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.64 2008-11-18 08:48:28 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.63 2008-10-28 12:51:48 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.64 2008-11-18 08:48:28 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -87,14 +87,17 @@ distribution=$(getDistribution)
 [ -e ${predir}/etc/${distribution}/iscsi-lib.sh ] && source ${predir}/etc/${distribution}/iscsi-lib.sh
 [ -e ${predir}/etc/${distribution}/drbd-lib.sh ] && source ${predir}/etc/${distribution}/drbd-lib.sh
 
-check_cmd_params $*
-return_code 0
+if [ $# -gt 0 ]; then
+  echo_local -n "Checking commandline parmeters"
+  check_cmd_params $*
+  return_code 0
+fi
 
 echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.63 $ $Date: 2008-10-28 12:51:48 $'
+echo_local 'Internal Version $Revision: 1.64 $ $Date: 2008-11-18 08:48:28 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -116,8 +119,6 @@ stepmode=$(getParameter com-step $stepmode)
 dstepmode=$(getParameter com-dstep $dstepmode)
 nousb=$(getParameter nousb)
 return_code 0
-
-
 
 echo_local_debug "*****************************"
 # step
@@ -142,12 +143,12 @@ step "Udev Started"
 hardware_detect
 step "Hardwaredetection finished"
 
-echo_local "Starting network configuration for lo0"
+echo_local -n "Starting network configuration for lo0"
 exec_local nicUp lo
 return_code
 auto_netconfig
 
-echo "Scanning parameters..."
+echo_local -n "Scanning parameters..."
 
 #nodeid must be first
 nodeid=$(getParameter nodeid $(cc_getdefaults nodeid))
@@ -155,6 +156,7 @@ nodename=$(getParameter nodename $(cc_getdefaults nodename))
 
 #if we cant detect the nodename an error must be thrown
 if [ -z "$nodename" ]; then
+	failed
 	echo_local ""
 	echo_local "ERROR:"
 	echo_local "  The node name of this cluster node could not be detected"
@@ -203,14 +205,14 @@ quorumack=$(getParameter quorumack $(cc_getdefaults quorumack))
 
 scsifailover=$(getParameter scsifailover $(clusterfs_getdefaults scsifailover))
 
-ipConfig=$(getParameter ip $(cc_getdefaults ip))
-_ipConfig=$(cluster_ip_config $cluster_conf $nodename)
-[ -n "$_ipConfig" ] && ( [ -z "$ipConfig" ] || [ "$ipConfig" = "cluster" ] ) && ipConfig=$_ipConfig
-
 clusterfs_chroot_needed initrd
 __default=$?
 chrootneeded=$(getParameter chroot $__default)
+success
 
+ipConfig=$(getParameter ip $(cc_getdefaults ip))
+_ipConfig=$(cluster_ip_config $cluster_conf $nodename)
+[ -n "$_ipConfig" ] && ( [ -z "$ipConfig" ] || [ "$ipConfig" = "cluster" ] ) && ipConfig=$_ipConfig
 
 step "Inialization started"
 
@@ -509,7 +511,11 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.63  2008-10-28 12:51:48  marc
+# Revision 1.64  2008-11-18 08:48:28  marc
+# - implemented RFE-BUG 289
+#   - possiblilty to execute initrd from shell or insite initrd to analyse behaviour
+#
+# Revision 1.63  2008/10/28 12:51:48  marc
 # fixed bug#288 where default mountoptions would always include noatime,nodiratime
 #
 # Revision 1.62  2008/10/28 12:25:47  marc

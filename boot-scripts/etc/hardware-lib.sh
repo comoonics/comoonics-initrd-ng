@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.19 2008-11-05 16:01:48 reiner Exp $
+# $Id: hardware-lib.sh,v 1.20 2008-11-18 08:48:28 marc Exp $
 #
 # @(#)$File$
 #
@@ -44,7 +44,6 @@
 #
 function hardware_start_services() {
     ${distribution}_hardware_start_services
-    return_code
 }
 #************hardware_start_services
 
@@ -59,9 +58,7 @@ function hardware_start_services() {
 #  SOURCE
 #
 function udev_start() {
-	echo_local -n "Starting udev ..."
 	${distribution}_udev_start
-    return_code
 }
 #************udev_start
 
@@ -76,15 +73,20 @@ function udev_start() {
 #
 function dev_start() {
     echo_local -n "Mounting dev "
-    exec_local mount -o mode=0755 -t tmpfs none /dev
-    return_code
+    is_mounted /dev
+    if [ $? -ne 0 ]; then 
+      exec_local mount -o mode=0755 -t tmpfs none /dev
+      return_code
+    else
+      passed
+    fi
 
     echo_local -n "Creating devices "
-    exec_local mknod /dev/console c 5 1 &&
-    exec_local mknod /dev/null c 1 3 &&
-    exec_local mknod /dev/zero c 1 5 &&
-    exec_local mkdir /dev/pts &&
-    exec_local mkdir /dev/shm
+    test -e /dev/console || exec_local mknod /dev/console c 5 1 &&
+    test -e /dev/null || exec_local mknod /dev/null c 1 3 &&
+    test -e /dev/zero || exec_local mknod /dev/zero c 1 5 &&
+    test -d /dev/pts || exec_local mkdir /dev/pts &&
+    test -d /dev/shm || exec_local mkdir /dev/shm
     return_code
 }
 #************dev_start
@@ -216,9 +218,13 @@ function dm_mp_start() {
 function usbLoad() {
 	modules="ehci_hcd ohci_hcd uhci_hcd hidp"
 	for module in modules; do
-		modprobe $module
+		grep $module /proc/modules >/dev/null 2>/dev/null && modprobe $module
 	done
-	mount -t usbfs /proc/bus/usb /proc/bus/usb
+	is_mounted /proc/bus/usb
+	if [ $? -eq 1 ]; then
+	  mount -t usbfs /proc/bus/usb /proc/bus/usb
+	fi
+	return 0
 }
 #************ dm_mp_start
 
@@ -424,7 +430,11 @@ function add_scsi_device() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.19  2008-11-05 16:01:48  reiner
+# Revision 1.20  2008-11-18 08:48:28  marc
+# - implemented RFE-BUG 289
+#   - possiblilty to execute initrd from shell or insite initrd to analyse behaviour
+#
+# Revision 1.19  2008/11/05 16:01:48  reiner
 # Fixed small typo.
 #
 # Revision 1.18  2008/08/14 14:33:27  marc

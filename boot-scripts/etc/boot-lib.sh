@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.64 2008-10-28 12:53:28 marc Exp $
+# $Id: boot-lib.sh,v 1.65 2008-11-18 08:48:28 marc Exp $
 #
 # @(#)$File$
 #
@@ -173,7 +173,7 @@ function exit_linuxrc() {
 function step() {
    local __the_step=""
    if [ ! -z "$stepmode" ]; then
-   	 echo $1
+   	 echo -n "$1: "
      echo -n "Press <RETURN> to continue (timeout in $step_timeout secs) [quit|break|continue]"
      read -t$step_timeout __the_step
      case "$__the_step" in
@@ -185,7 +185,11 @@ function step() {
          ;;
        "break")
          echo_local "Break detected forking a shell"
-         /bin/sh &>/dev/console
+         if [ -n "$simulation" ] && [ $simulation ]; then
+         	/bin/sh
+         else
+            /bin/sh &>/dev/console
+         fi
          echo_local "Back to work.."
          ;;
      esac
@@ -423,7 +427,7 @@ function initBootProcess() {
 
   echo_local "***********************************"
   # Print a text banner.
-  release=$(cat /etc/comoonics-release)
+  release=$(cat ${predir}/etc/comoonics-release)
   echo_local -en $"\t\tWelcome to "
   [ "$BOOTUP" = "color" ] && echo -en "\\033[0;34m"
   echo_local $release
@@ -434,16 +438,24 @@ function initBootProcess() {
 
   echo_local_debug "*****************************"
   echo_local -n "Mounting Proc-FS"
-  exec_local /bin/mount -t proc proc /proc
-  return_code
+  is_mounted /proc
+  if [ $? -ne 0 ]; then 
+    exec_local /bin/mount -t proc proc /proc
+    return_code
+  else
+    passed  
+  fi
 
   echo_local -n "Mounting Sys-FS"
-  exec_local /bin/mount -t sysfs none /sys
-  return_code
+  is_mounted /sys
+  if [ $? -ne 0 ]; then 
+    exec_local /bin/mount -t sysfs none /sys
+    return_code
+  else
+    passed
+  fi
 
-  echo_local -n "Mounting Dev"
   exec_local dev_start
-  return_code
 
   echo_local_debug "/proc/cmdline"
   exec_local_debug cat /proc/cmdline
@@ -1074,7 +1086,11 @@ function exec_local_stabilized() {
 
 
 # $Log: boot-lib.sh,v $
-# Revision 1.64  2008-10-28 12:53:28  marc
+# Revision 1.65  2008-11-18 08:48:28  marc
+# - implemented RFE-BUG 289
+#   - possiblilty to execute initrd from shell or insite initrd to analyse behaviour
+#
+# Revision 1.64  2008/10/28 12:53:28  marc
 # - implemented bug#289 to have more debug and analysistools. Added -S as option to call linux.generic.sh directly
 #
 # Revision 1.63  2008/08/14 13:34:58  marc
