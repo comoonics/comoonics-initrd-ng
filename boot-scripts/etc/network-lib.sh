@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.9 2008-10-14 10:57:07 marc Exp $
+# $Id: network-lib.sh,v 1.10 2008-11-18 08:41:59 marc Exp $
 #
 # @(#)$File$
 #
@@ -227,7 +227,7 @@ function ip2Config() {
 #  SOURCE
 #
 function auto_netconfig {
-   echo_local "Loading modules for all found network cards"
+   echo_local -n "Loading modules for all found network cards"
    modules=$(cat $modules_conf | grep "alias eth[0-9]" | awk '{print $2;}')
    for module in $modules; do
       exec_local modprobe $module
@@ -254,7 +254,10 @@ function getPosFromIPString() {
 
 #############
 # $Log: network-lib.sh,v $
-# Revision 1.9  2008-10-14 10:57:07  marc
+# Revision 1.10  2008-11-18 08:41:59  marc
+# cosmetic change
+#
+# Revision 1.9  2008/10/14 10:57:07  marc
 # Enhancement #273 and dependencies implemented (flexible boot of local fs systems)
 #
 # Revision 1.8  2008/08/14 14:34:36  marc
