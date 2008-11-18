@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.11 2008-10-14 10:57:07 marc Exp $
+# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.12 2008-11-18 15:59:37 marc Exp $
 #
 ##
 ##
@@ -51,7 +51,7 @@ Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-rhel
 Requires: comoonics-bootimage-listfiles-rhel5
 #Conflicts: 
-Release: 9.el5
+Release: 10.el5
 Vendor: ATIX AG
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -151,7 +151,9 @@ done
 rm -rf %{buildroot}
 
 %changelog
-* Tue Oct 14 2008 Marc Grimme <grimme@atix.de> 1.3-9
+* Tue Nov 18 2008 Marc Grimme <grimme@atix.de> 1.3-10el5
+- Clean up of old repository caches (Bug #289)
+* Tue Oct 14 2008 Marc Grimme <grimme@atix.de> 1.3-9el5
 - Enhancement #273 and dependencies implemented (flexible boot of local fs systems)
 * Tue Jun 24 2008 Mark Hlawatschek <hlawatschek@atix.de> 1.3.8
 - changed kill level fro bootsr initscript
@@ -169,7 +171,10 @@ rm -rf %{buildroot}
 - first revision
 # ------
 # $Log: comoonics-bootimage-initscripts-el5.spec,v $
-# Revision 1.11  2008-10-14 10:57:07  marc
+# Revision 1.12  2008-11-18 15:59:37  marc
+# - implemented RFE-BUG 289 (level up/down)
+#
+# Revision 1.11  2008/10/14 10:57:07  marc
 # Enhancement #273 and dependencies implemented (flexible boot of local fs systems)
 #
 # Revision 1.10  2008/08/14 14:41:08  marc
