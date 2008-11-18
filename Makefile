@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.43 2008-09-24 08:21:40 marc Exp $
+# $Id: Makefile,v 1.44 2008-11-18 14:28:36 marc Exp $
 #
 # @(#)$file$
 #
@@ -104,7 +104,7 @@ EXEC_FILES=create-gfs-initrd-generic.sh \
   boot-scripts/linuxrc \
   boot-scripts/linuxrc.generic.sh \
   boot-scripts/linuxrc.bash \
-  boot-scripts/exec_part_from_bash.sh \
+  boot-scripts/linuxrc.sim.sh \
   boot-scripts/detectHardware.sh \
   boot-scripts/rescue.sh
 #************ EXEC_FILES 
@@ -503,7 +503,10 @@ channel: rpm channelcopy channelbuild
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.43  2008-09-24 08:21:40  marc
+# Revision 1.44  2008-11-18 14:28:36  marc
+# - implemented RFE-BUG 289 (level up/down)
+#
+# Revision 1.43  2008/09/24 08:21:40  marc
 # removed rhel4 as upstream
 #
 # Revision 1.42  2008/09/24 08:13:20  marc

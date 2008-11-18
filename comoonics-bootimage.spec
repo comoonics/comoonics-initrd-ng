@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.78 2008-10-14 10:57:07 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.79 2008-11-18 14:28:26 marc Exp $
 #
 ##
 ##
@@ -57,7 +57,7 @@ Requires: comoonics-cluster-py >= 0.1-2
 Requires: comoonics-bootimage-initscripts >= 1.3 
 Requires: comoonics-bootimage-listfiles-all
 #Conflicts:
-Release: 39
+Release: 40
 Vendor: ATIX AG
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -459,7 +459,7 @@ fi
 %attr(750, root, root) %{APPDIR}/boot-scripts/com-halt.sh
 %attr(750, root, root) %{APPDIR}/boot-scripts/com-realhalt.sh
 %attr(750, root, root) %{APPDIR}/boot-scripts/linuxrc.generic.sh
-%attr(750, root, root) %{APPDIR}/boot-scripts/exec_part_from_bash.sh
+%attr(750, root, root) %{APPDIR}/boot-scripts/linuxrc.sim.sh
 %attr(750, root, root) %{APPDIR}/boot-scripts/detectHardware.sh
 %attr(750, root, root) %{APPDIR}/boot-scripts/rescue.sh
 %attr(750, root, root) %{APPDIR}/boot-scripts/linuxrc
@@ -652,6 +652,10 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Tue Nov 18 2008 Marc Grimme <grimme@atix.de> 1.3-40
+- Enhancement #289 implemented so that we now have a script linux.sim.sh to be executed within initrd or from outside.
+- Cosmetic changes looks much better!
+- Pulled all other changes upstream
 * Tue Oct 14 2008 Marc Grimme <grimme@atix.de> 1.3-39
 - Enhancement #273 and dependencies implemented (flexible boot of local fs systems)
 * Wed Sep 24 2008 Marc Grimme <grimme@atix.de> 1.3-38
@@ -850,7 +854,10 @@ rm -rf %{buildroot}
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.78  2008-10-14 10:57:07  marc
+# Revision 1.79  2008-11-18 14:28:26  marc
+# - implemented RFE-BUG 289 (level up/down)
+#
+# Revision 1.78  2008/10/14 10:57:07  marc
 # Enhancement #273 and dependencies implemented (flexible boot of local fs systems)
 #
 # Revision 1.77  2008/09/24 08:14:25  marc
