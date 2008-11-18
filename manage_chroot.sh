@@ -7,7 +7,7 @@
 #  DESCRIPTION
 #*******
 #
-# $Id: manage_chroot.sh,v 1.7 2008-10-14 10:57:07 marc Exp $
+# $Id: manage_chroot.sh,v 1.8 2008-11-18 14:19:43 marc Exp $
 #
 # @(#)$File$
 #
@@ -119,6 +119,7 @@ function usage() {
      status_service_pid <pidfile>  - returns status of service with pidfile in chroot
      status_service_cmd <command>  - returns status of service with name <command> TODO: in chroot
      mount_cdsl [<cdslpath>] [<cdsllocal>] - mounts the cdsl environment again
+     clean - clean all cached items
      
 EOF
 }
@@ -318,6 +319,9 @@ case "$action" in
 	"mount_cdsl")
 	    mount_cdsl $*
 	;;
+	"clean")
+	    repository_clear '*'
+	    ;;
 	*)
 		usage
 		exit 1
