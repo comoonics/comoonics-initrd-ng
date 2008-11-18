@@ -1,5 +1,5 @@
 #
-# $Id: std-lib.sh,v 1.4 2008-08-14 14:36:42 marc Exp $
+# $Id: std-lib.sh,v 1.5 2008-11-18 08:43:06 marc Exp $
 #
 # @(#)$File$
 #
@@ -167,7 +167,7 @@ function return_code_passed() {
   if [ -n "$return_c" ] && [ $return_c -eq 0 ]; then
     success
   else
-    warning
+    passed
   fi
 }
 #************ return_code_passed
