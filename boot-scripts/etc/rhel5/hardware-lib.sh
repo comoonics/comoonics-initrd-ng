@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.6 2008-08-14 13:31:23 marc Exp $
+# $Id: hardware-lib.sh,v 1.7 2008-11-18 08:37:56 marc Exp $
 #
 # @(#)$File$
 #
@@ -66,7 +66,7 @@ function rhel5_hardware_detect() {
 #  SOURCE
 #
 function rhel5_udev_start() {
-	if ! /sbin/pidof udevd; then
+	if ! /sbin/pidof udevd > /dev/null; then
 		udevd -d &&
 		udevtrigger
 	else
@@ -78,7 +78,10 @@ function rhel5_udev_start() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.6  2008-08-14 13:31:23  marc
+# Revision 1.7  2008-11-18 08:37:56  marc
+# cosmetic change.
+#
+# Revision 1.6  2008/08/14 13:31:23  marc
 # - modified hardware detection
 #
 # Revision 1.5  2008/01/24 13:34:56  marc
