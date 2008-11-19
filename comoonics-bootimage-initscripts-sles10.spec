@@ -48,7 +48,7 @@ BuildArch: noarch
 Requires: comoonics-bootimage >= 1.3-1
 Requires: comoonics-bootimage-listfiles-sles
 #Conflicts:
-Release: 1.sles10
+Release: 2.sles10
 Vendor: ATIX AG
 Packager: Marc Grimme (grimme (at) atix.de)
 ExclusiveArch: noarch
@@ -112,6 +112,8 @@ done
 
 %attr(750, root, root) %{INITDIR}/bootsr
 %changelog
+* Wed Nov 19 2008 Marc Grimme <grimme@atix.de> 1.3-2-sles10
+- Merged with upstream
 * Fri Sep 18 2008 Marc Grimme <grimme@atix.de> 1.3-1
 - first revision
 # ------
