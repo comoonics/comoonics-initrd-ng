@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.65 2008-11-18 08:48:28 marc Exp $
+# $Id: boot-lib.sh,v 1.66 2008-11-30 19:17:35 marc Exp $
 #
 # @(#)$File$
 #
@@ -209,22 +209,50 @@ function step() {
 #    function getBootParm(param, [default])
 #  DESCRIPTION
 #    Gets the given parameter from the bootloader command line. If not
-#    found default or the empty string is returned.
+#    found default or the empty string is echoed.
+#    If the parameter has been found or default is given 0 is returned 1 otherwise.
 #  SOURCE
 #
 function getBootParm() {
-   parm="$1"
-   default="$2"
-   cmdline=`cat /proc/cmdline`
-   out=`expr "$cmdline" : ".*$parm=\([^ ]*\)" 2>/dev/null`
-   if [ $(expr "$cmdline" : ".*$parm" 2>/dev/null) -gt 0 ] && [ -z "$out" ]; then out=1; fi
-   if [ -z "$out" ]; then out="$default"; fi
-   echo -n "$out"
-   if [ -z "$out" ]; then
-       return 1
+   local parm="$1"
+   local default="$2"
+   if [ -z "$3" ]; then
+     local cmdline=`cat /proc/cmdline`
    else
-       return 0
+     local cmdline="$3"
    fi
+   local found=1
+   local out=""
+
+   for param in $cmdline; do
+     local name=$(echo $param | cut -f1 -d=)
+     local value=$(echo $param | cut -f2- -d=)
+     
+     if [ -n "$name" ] && [ "$name" = "$parm" ]; then
+     	if [ "$name" = "$value" ]; then
+     	  out=""
+        else
+          out=$value
+        fi
+    	found=0
+     fi 
+   done
+   if [ -z "$out" ] && [ -n "$default" ]; then 
+   	 out="$default"
+   	 found=0
+   fi
+   #out=`expr "$cmdline" : ".*$parm=\([^ ]*\)" 2>/dev/null`
+   #if [ -z "$out" ]; then
+   #	  if [ $(expr "$cmdline" : ".*$parm" 2>/dev/null) -gt 0 ]; then out=1; fi
+   #   if [ -z "$out" ]; then out="$default"; fi
+   #fi
+   echo -n "$out"
+   #if [ -z "$out" ]; then
+   #    return 1
+   #else
+   #    return 0
+   #fi
+   return $found
 }
 #************ getBootParm
 
@@ -1086,7 +1114,11 @@ function exec_local_stabilized() {
 
 
 # $Log: boot-lib.sh,v $
-# Revision 1.65  2008-11-18 08:48:28  marc
+# Revision 1.66  2008-11-30 19:17:35  marc
+# Fixed Bug #299
+# Bootparameters might have been interpreted wrongly
+#
+# Revision 1.65  2008/11/18 08:48:28  marc
 # - implemented RFE-BUG 289
 #   - possiblilty to execute initrd from shell or insite initrd to analyse behaviour
 #
