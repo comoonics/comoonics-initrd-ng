@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.44 2008-11-18 14:28:36 marc Exp $
+# $Id: Makefile,v 1.45 2008-12-01 12:30:41 marc Exp $
 #
 # @(#)$file$
 #
@@ -325,8 +325,10 @@ CHANNELBASEDIR=/atix/dist-mirrors
 CHANNELDIRS=comoonics/rhel5/preview comoonics/sles10/preview
 CHANNELSUBDIRS=i386 x86_64 noarch SRPMS
 
+TEST_DIR=tests
+
 .PHONY: install
-install:
+install: test
 	@echo -n "Installing executables..."
 	@if [ -n "$(EXEC_FILES)" ]; then \
 	  ((install -d $(PREFIX)/$(INSTALL_DIR) && \
@@ -430,6 +432,10 @@ archive:
 	tar -c -z --exclude="*~" --exclude="*CVS*" -f $(ARCHIVE_FILE) $(TAR_PATH) && \
 	echo "(OK)") || echo "(FAILED)"
 	
+test:
+	@echo "Testing source..."
+	bash ./$(TEST_DIR)/do_testing.sh
+
 rpmbuild: archive
 	@echo -n "Creating RPM"
 	cp ../$(ARCHIVE_FILE) /usr/src/redhat/SOURCES/
@@ -503,7 +509,10 @@ channel: rpm channelcopy channelbuild
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.44  2008-11-18 14:28:36  marc
+# Revision 1.45  2008-12-01 12:30:41  marc
+# implemented test
+#
+# Revision 1.44  2008/11/18 14:28:36  marc
 # - implemented RFE-BUG 289 (level up/down)
 #
 # Revision 1.43  2008/09/24 08:21:40  marc
