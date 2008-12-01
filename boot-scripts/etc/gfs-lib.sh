@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.55 2008-12-01 09:52:33 marc Exp $
+# $Id: gfs-lib.sh,v 1.56 2008-12-01 11:22:47 marc Exp $
 #
 # @(#)$File$
 #
@@ -45,6 +45,21 @@ default_mountopts="noatime,nodiratime"
 #ccs_xml_query="/opt/atix/comoonics-cs/ccs_xml_query"
 ccs_xml_query="/usr/bin/com-queryclusterconf"
 cl_check_nodes="/usr/bin/cl_checknodes"
+
+#****d* boot-scripts/etc/gfs-lib.sh/cluster_conf
+#  NAME
+#    cluster_conf
+#  DESCRIPTION
+#    clusterconfig file defaults to /etc/cluster/cluster.conf
+cluster_conf="/etc/cluster/cluster.conf"
+#******** cluster_conf
+
+#if [ ! -e $cluster_conf ]; then
+#  error_local "Critical error could not find cluster configuration."
+#  exit_linuxrc 1
+#fi
+
+#clutype="gfs"
 
 #****f* gfs-lib.sh/getGFSMajorVersion
 #  NAME
@@ -1134,7 +1149,10 @@ function gfs_init {
 #********* gfs_init
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.55  2008-12-01 09:52:33  marc
+# Revision 1.56  2008-12-01 11:22:47  marc
+# fixed Bug #300 that clutype is setup where it should not
+#
+# Revision 1.55  2008/12/01 09:52:33  marc
 # cosmetic.
 #
 # Revision 1.54  2008/10/28 12:52:07  marc

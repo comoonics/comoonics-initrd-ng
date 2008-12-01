@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.26 2008-10-28 12:52:07 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.27 2008-12-01 11:22:47 marc Exp $
 #
 # @(#)$File$
 #
@@ -48,21 +48,6 @@ cdsl_local_dir="/cdsl.local"
 #    where the local dir for cdsls can be found
 cdsl_prefix="/cluster/cdsl"
 #******** cdsl_prefix
-
-#****d* boot-scripts/etc/clusterfs-lib.sh/cluster_conf
-#  NAME
-#    cluster_conf
-#  DESCRIPTION
-#    clusterconfig file defaults to /etc/cluster/cluster.conf
-cluster_conf="/etc/cluster/cluster.conf"
-#******** cluster_conf
-
-if [ ! -e $cluster_conf ]; then
-  error_local "Critical error could not find cluster configuration."
-  exit_linuxrc 1
-fi
-
-clutype="gfs"
 
 #****f* boot-scripts/etc/clusterfs-lib.sh/getClusterFSParameters
 #  NAME
@@ -1021,7 +1006,10 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.26  2008-10-28 12:52:07  marc
+# Revision 1.27  2008-12-01 11:22:47  marc
+# fixed Bug #300 that clutype is setup where it should not
+#
+# Revision 1.26  2008/10/28 12:52:07  marc
 # fixed bug#288 where default mountoptions would always include noatime,nodiratime
 #
 # Revision 1.25  2008/10/14 10:57:07  marc
