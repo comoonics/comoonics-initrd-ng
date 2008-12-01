@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.54 2008-10-28 12:52:07 marc Exp $
+# $Id: gfs-lib.sh,v 1.55 2008-12-01 09:52:33 marc Exp $
 #
 # @(#)$File$
 #
@@ -102,9 +102,9 @@ function gfs_getdefaults {
 		root_source|rootsource)
 		    echo "scsi"
 		    ;;
-                readonly)
-                    echo 0
-                    ;;
+        readonly)
+            echo 0
+            ;;
 		rootfs|root_fs)
 			if [ -n "$distribution" ]; then
 	          if [ ${distribution:0:4} = "sles" ]; then
@@ -1134,7 +1134,10 @@ function gfs_init {
 #********* gfs_init
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.54  2008-10-28 12:52:07  marc
+# Revision 1.55  2008-12-01 09:52:33  marc
+# cosmetic.
+#
+# Revision 1.54  2008/10/28 12:52:07  marc
 # fixed bug#288 where default mountoptions would always include noatime,nodiratime
 #
 # Revision 1.53  2008/10/14 10:57:07  marc
