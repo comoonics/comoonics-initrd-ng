@@ -1,0 +1,8 @@
+This directory is ment to be a place to put code tests. As of now every new functionality should have a testcase of some kind. 
+
+Those cases if scritable should be organized in this directory. Basically the concept is very straight forward. 
+In the main directory every file ending with a ".sh" at the end is executed. If the script returns a 0 this test is expected to be
+successfully. If not the testing terminates until the test/bug is fixed.
+
+If tests are made for the different root filesystems or clustertypes they should reside in the apropriate directories. 
+Everything else is the same as in the main directory.   
