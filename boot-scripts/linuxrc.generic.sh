@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.64 2008-11-18 08:48:28 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.65 2008-12-01 12:31:54 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.64 2008-11-18 08:48:28 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.65 2008-12-01 12:31:54 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -97,7 +97,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.64 $ $Date: 2008-11-18 08:48:28 $'
+echo_local 'Internal Version $Revision: 1.65 $ $Date: 2008-12-01 12:31:54 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -140,13 +140,15 @@ exec_local udev_start
 return_code
 step "Udev Started"
 
-hardware_detect
-step "Hardwaredetection finished"
+if [ -z "$simulation" ] || [ "$simulation" -ne 1 ]; then
+  hardware_detect
+  step "Hardwaredetection finished"
 
-echo_local -n "Starting network configuration for lo0"
-exec_local nicUp lo
-return_code
-auto_netconfig
+  echo_local -n "Starting network configuration for lo0"
+  exec_local nicUp lo
+  return_code
+  auto_netconfig
+fi
 
 echo_local -n "Scanning parameters..."
 
@@ -185,15 +187,15 @@ rootvolume=$(getParameter rootvolume $(clusterfs_getdefaults rootvolume))
 
 
 filesystem_ro=$(getParameter ro $(clusterfs_getdefaults readonly))
-filesystem_rw=$(getParameter rw $filesystem_ro)
+filesystem_rw=$(getParameter rw)
 mount_opts=$(getParameter mountopts $(clusterfs_getdefaults mountopts))
-if [ $filesystem_ro ]; then
+if [ -n "$filesystem_ro" ]; then
   if [ -z "$mount_opts" ]; then
     mount_opts="ro"
   else
     mount_opts="$mount_opts,ro"
   fi
-elif [ $filesystem_rw ]; then
+elif [ -n "$filesystem_rw" ]; then
   if [ -z "$mount_opts" ]; then
     mount_opts="rw"
   else
@@ -511,7 +513,11 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.64  2008-11-18 08:48:28  marc
+# Revision 1.65  2008-12-01 12:31:54  marc
+# - more simulation stuff
+# - fixed Bugs within filesystem_ro/filesystem_rw
+#
+# Revision 1.64  2008/11/18 08:48:28  marc
 # - implemented RFE-BUG 289
 #   - possiblilty to execute initrd from shell or insite initrd to analyse behaviour
 #
