@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage-listfiles-el5.spec,v 1.9 2008-08-14 14:41:08 marc Exp $
+# $Id: comoonics-bootimage-listfiles-el5.spec,v 1.10 2008-12-01 14:46:24 marc Exp $
 #
 ##
 ##
@@ -98,27 +98,27 @@ install -d -m 755 $RPM_BUILD_ROOT
 %post
 
 %files
-#%attr(640, root, root) %{CONFIGDIR}/bootimage/basefiles.list
-#%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.list
-#%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/base.list
-#%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/bonding.list
-#%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/comoonics.list
-#%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/configs.list
-#%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/ext2.list
-#%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/gfs.list
-#%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/grub.list
-#%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/locales.list
-#%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/network.list
-#%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhcs5.list
-#%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/scsi.list
-#%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/baselibs.list
-#%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/comoonics.list
-#%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/ext2.list
-#%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/gfs1-el5.list
-#%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/hardware.list
-#%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/python.list
-#%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhcs5.list
-#%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5-base.list
+#%attr(644, root, root) %{CONFIGDIR}/bootimage/basefiles.list
+#%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.list
+#%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/base.list
+#%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/bonding.list
+#%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/comoonics.list
+#%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/configs.list
+#%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/ext2.list
+#%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/gfs.list
+#%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/grub.list
+#%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/locales.list
+#%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/network.list
+#%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhcs5.list
+#%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/scsi.list
+#%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/baselibs.list
+#%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/comoonics.list
+#%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/ext2.list
+#%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/gfs1-el5.list
+#%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/hardware.list
+#%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/python.list
+#%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhcs5.list
+#%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5-base.list
 
 %clean
 rm -rf %{buildroot}
@@ -135,7 +135,10 @@ rm -rf %{buildroot}
 - first revision
 # ------
 # $Log: comoonics-bootimage-listfiles-el5.spec,v $
-# Revision 1.9  2008-08-14 14:41:08  marc
+# Revision 1.10  2008-12-01 14:46:24  marc
+# changed file attributes (Bug #290)
+#
+# Revision 1.9  2008/08/14 14:41:08  marc
 # removed listfiles
 #
 # Revision 1.8  2007/12/07 16:39:59  reiner

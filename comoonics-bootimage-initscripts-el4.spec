@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage-initscripts-el4.spec,v 1.8 2008-02-29 09:10:41 mark Exp $
+# $Id: comoonics-bootimage-initscripts-el4.spec,v 1.9 2008-12-01 14:46:24 marc Exp $
 #
 ##
 ##
@@ -116,9 +116,9 @@ done
 
 %files
 
-%attr(750, root, root) %{INITDIR}/bootsr
-%attr(750, root, root) %{INITDIR}/fenced-chroot
-%attr(750, root, root) %{INITDIR}/ccsd-chroot
+%attr(755, root, root) %{INITDIR}/bootsr
+%attr(755, root, root) %{INITDIR}/fenced-chroot
+%attr(755, root, root) %{INITDIR}/ccsd-chroot
 %changelog
 * Fri Feb 29 2008 Mark Hlawatschek <hlawatschek@atix.de> 1.3.5
 - Fixed BZ 203, support FENCE_OPTS from /etc/sysconfig/cluster during boot
@@ -132,7 +132,10 @@ done
 - first revision
 # ------
 # $Log: comoonics-bootimage-initscripts-el4.spec,v $
-# Revision 1.8  2008-02-29 09:10:41  mark
+# Revision 1.9  2008-12-01 14:46:24  marc
+# changed file attributes (Bug #290)
+#
+# Revision 1.8  2008/02/29 09:10:41  mark
 # increased release number ;-)
 #
 # Revision 1.7  2008/02/29 08:49:32  mark

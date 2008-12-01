@@ -110,7 +110,7 @@ done
 
 %files
 
-%attr(750, root, root) %{INITDIR}/bootsr
+%attr(755, root, root) %{INITDIR}/bootsr
 %changelog
 * Wed Nov 19 2008 Marc Grimme <grimme@atix.de> 1.3-2-sles10
 - Merged with upstream

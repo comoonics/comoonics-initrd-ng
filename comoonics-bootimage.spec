@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.79 2008-11-18 14:28:26 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.80 2008-12-01 14:44:28 marc Exp $
 #
 ##
 ##
@@ -453,50 +453,50 @@ fi
 %dir %{APPDIR}/boot-scripts/var/run/netreport
 %dir %{APPDIR}/boot-scripts/proc
 %dir %{APPDIR}/boot-scripts/dev
-%attr(750, root, root) %{APPDIR}/create-gfs-initrd-generic.sh
-%attr(640, root, root) %{APPDIR}/create-gfs-initrd-lib.sh
-%attr(750, root, root) %{APPDIR}/manage_chroot.sh
-%attr(750, root, root) %{APPDIR}/boot-scripts/com-halt.sh
-%attr(750, root, root) %{APPDIR}/boot-scripts/com-realhalt.sh
-%attr(750, root, root) %{APPDIR}/boot-scripts/linuxrc.generic.sh
-%attr(750, root, root) %{APPDIR}/boot-scripts/linuxrc.sim.sh
-%attr(750, root, root) %{APPDIR}/boot-scripts/detectHardware.sh
-%attr(750, root, root) %{APPDIR}/boot-scripts/rescue.sh
-%attr(750, root, root) %{APPDIR}/boot-scripts/linuxrc
-%attr(750, root, root) %{APPDIR}/boot-scripts/linuxrc.bash
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/atix.txt
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/boot-lib.sh
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/chroot-lib.sh
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/clusterfs-lib.sh
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/comoonics-release
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/defaults.sh
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/ext3-lib.sh
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/gfs-lib.sh
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/hardware-lib.sh
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/inittab
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/network-lib.sh
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/repository-lib.sh
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/xen-lib.sh
-#%attr(640, root, root) %{APPDIR}/boot-scripts/etc/passwd
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/stdfs-lib.sh
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/std-lib.sh
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/sysconfig/comoonics
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/rhel4/boot-lib.sh
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/rhel4/hardware-lib.sh
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/rhel4/network-lib.sh
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/rhel5/boot-lib.sh
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/rhel5/gfs-lib.sh
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/rhel5/hardware-lib.sh
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/rhel5/network-lib.sh
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/sles8/hardware-lib.sh
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/sles8/network-lib.sh
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/sles10/boot-lib.sh
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/sles10/hardware-lib.sh
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/sles10/network-lib.sh
+%attr(755, root, root) %{APPDIR}/create-gfs-initrd-generic.sh
+%attr(644, root, root) %{APPDIR}/create-gfs-initrd-lib.sh
+%attr(755, root, root) %{APPDIR}/manage_chroot.sh
+%attr(755, root, root) %{APPDIR}/boot-scripts/com-halt.sh
+%attr(755, root, root) %{APPDIR}/boot-scripts/com-realhalt.sh
+%attr(755, root, root) %{APPDIR}/boot-scripts/linuxrc.generic.sh
+%attr(755, root, root) %{APPDIR}/boot-scripts/linuxrc.sim.sh
+%attr(755, root, root) %{APPDIR}/boot-scripts/detectHardware.sh
+%attr(755, root, root) %{APPDIR}/boot-scripts/rescue.sh
+%attr(755, root, root) %{APPDIR}/boot-scripts/linuxrc
+%attr(755, root, root) %{APPDIR}/boot-scripts/linuxrc.bash
+%attr(644, root, root) %{APPDIR}/boot-scripts/etc/atix.txt
+%attr(644, root, root) %{APPDIR}/boot-scripts/etc/boot-lib.sh
+%attr(644, root, root) %{APPDIR}/boot-scripts/etc/chroot-lib.sh
+%attr(644, root, root) %{APPDIR}/boot-scripts/etc/clusterfs-lib.sh
+%attr(644, root, root) %{APPDIR}/boot-scripts/etc/comoonics-release
+%attr(644, root, root) %{APPDIR}/boot-scripts/etc/defaults.sh
+%attr(644, root, root) %{APPDIR}/boot-scripts/etc/ext3-lib.sh
+%attr(644, root, root) %{APPDIR}/boot-scripts/etc/gfs-lib.sh
+%attr(644, root, root) %{APPDIR}/boot-scripts/etc/hardware-lib.sh
+%attr(644, root, root) %{APPDIR}/boot-scripts/etc/inittab
+%attr(644, root, root) %{APPDIR}/boot-scripts/etc/network-lib.sh
+%attr(644, root, root) %{APPDIR}/boot-scripts/etc/repository-lib.sh
+%attr(644, root, root) %{APPDIR}/boot-scripts/etc/xen-lib.sh
+#%attr(644, root, root) %{APPDIR}/boot-scripts/etc/passwd
+%attr(644, root, root) %{APPDIR}/boot-scripts/etc/stdfs-lib.sh
+%attr(644, root, root) %{APPDIR}/boot-scripts/etc/std-lib.sh
+%attr(644, root, root) %{APPDIR}/boot-scripts/etc/sysconfig/comoonics
+%attr(644, root, root) %{APPDIR}/boot-scripts/etc/rhel4/boot-lib.sh
+%attr(644, root, root) %{APPDIR}/boot-scripts/etc/rhel4/hardware-lib.sh
+%attr(644, root, root) %{APPDIR}/boot-scripts/etc/rhel4/network-lib.sh
+%attr(644, root, root) %{APPDIR}/boot-scripts/etc/rhel5/boot-lib.sh
+%attr(644, root, root) %{APPDIR}/boot-scripts/etc/rhel5/gfs-lib.sh
+%attr(644, root, root) %{APPDIR}/boot-scripts/etc/rhel5/hardware-lib.sh
+%attr(644, root, root) %{APPDIR}/boot-scripts/etc/rhel5/network-lib.sh
+%attr(644, root, root) %{APPDIR}/boot-scripts/etc/sles8/hardware-lib.sh
+%attr(644, root, root) %{APPDIR}/boot-scripts/etc/sles8/network-lib.sh
+%attr(644, root, root) %{APPDIR}/boot-scripts/etc/sles10/boot-lib.sh
+%attr(644, root, root) %{APPDIR}/boot-scripts/etc/sles10/hardware-lib.sh
+%attr(644, root, root) %{APPDIR}/boot-scripts/etc/sles10/network-lib.sh
 
 %dir %{CONFIGDIR}/bootimage-chroot
-%attr(640, root, root) %{CONFIGDIR}/bootimage-chroot/files.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage-chroot/rpms.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage-chroot/files.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage-chroot/rpms.list
 %dir %{CONFIGDIR}/bootimage-chroot/files.initrd.d
 %dir %{CONFIGDIR}/bootimage-chroot/rpms.initrd.d
 
@@ -506,103 +506,103 @@ fi
 %doc CHANGELOG
 
 %files compat
-%attr(640, root, root) %{SYSCONFIGDIR}/comoonics-chroot
+%attr(644, root, root) %{SYSCONFIGDIR}/comoonics-chroot
 
 %files extras-network
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/vlan.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/vlan.list
 
 %files extras-nfs
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/nfs-lib.sh
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/nfs.list
+%attr(644, root, root) %{APPDIR}/boot-scripts/etc/nfs-lib.sh
+%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/nfs.list
 
 %files extras-ocfs2
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/ocfs2-lib.sh
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/ocfs2.list
+%attr(644, root, root) %{APPDIR}/boot-scripts/etc/ocfs2-lib.sh
+%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/ocfs2.list
 
 %files extras-dm-multipath
 
 %files extras-dm-multipath-rhel
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/dm_multipath.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/dm_multipath.list
 
 %files extras-rdac-multipath
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rdac_multipath.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rdac_multipath.list
 
 %files extras-xen
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/xen.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/xen.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/xen.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/xen.list
 
 %files extras-iscsi
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/iscsi-lib.sh
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/iscsi.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/iscsi.list
+%attr(644, root, root) %{APPDIR}/boot-scripts/etc/iscsi-lib.sh
+%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/iscsi.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/iscsi.list
 
 %files extras-drbd
-%attr(640, root, root) %{APPDIR}/boot-scripts/etc/drbd-lib.sh
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/drbd.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/drbd.list
+%attr(644, root, root) %{APPDIR}/boot-scripts/etc/drbd-lib.sh
+%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/drbd.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/drbd.list
 
 %files listfiles-all
-%attr(640, root, root) %{CONFIGDIR}/bootimage/basefiles.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/base.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/bonding.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/comoonics.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/configs.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/ext2.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/grub.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/locales.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/network.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/scsi.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/baselibs.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/comoonics.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/ext2.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/hardware.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/lvm.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/python.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/basefiles.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/base.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/bonding.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/comoonics.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/configs.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/ext2.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/grub.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/locales.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/network.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/scsi.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/baselibs.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/comoonics.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/ext2.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/hardware.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/lvm.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/python.list
 
 %files listfiles-rhel
 %dir %{CONFIGDIR}/bootimage/files.initrd.d/rhel
 %dir %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/empty.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/base.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/configs.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/gfs.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/grub.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/network.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/empty.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/hardware.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/python.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/empty.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/base.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/configs.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/gfs.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/grub.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/network.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/empty.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/hardware.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/python.list
 
 %files listfiles-rhel4
 %dir %{CONFIGDIR}/bootimage/files.initrd.d/rhel4
 %dir %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel4
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel4/empty.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel4/empty.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel4/gfs1.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel4/rhcs.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel4/empty.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel4/empty.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel4/gfs1.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel4/rhcs.list
 
 %files listfiles-rhel5
 %dir %{CONFIGDIR}/bootimage/files.initrd.d/rhel5
 %dir %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel5/empty.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel5/rhcs.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/empty.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/base.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/gfs1.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/rhcs.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel5/empty.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel5/rhcs.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/empty.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/base.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/gfs1.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/rhcs.list
 
 %files listfiles-sles
 %dir %{CONFIGDIR}/bootimage/files.initrd.d/sles
 %dir %{CONFIGDIR}/bootimage/rpms.initrd.d/sles
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/sles/base.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/sles/empty.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/sles/network.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/python.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/base.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/hardware.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/empty.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/dm_multipath.list
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/network.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/sles/base.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/sles/empty.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/sles/network.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/python.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/base.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/hardware.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/empty.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/dm_multipath.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/network.list
 
 %files listfiles-fenceacksv-plugins
 %attr(644, root, root) %dir %{CONFIGDIR}/bootimage-chroot/rpms.initrd.d/fenceacksv-plugins.list
@@ -614,10 +614,10 @@ fi
 %attr(644, root, root) %{FENCEACKSV_DIR}/shell.py*
 #%attr(644, root, root) %{FENCEACKSV_DIR}/shell.pyc
 #%attr(644, root, root) %{FENCEACKSV_DIR}/shell.pyo
-%attr(640, root, root) %{FENCEACKSV_DIR}/server.pkey
-%attr(640, root, root) %{FENCEACKSV_DIR}/server.cert
-%attr(640, root, root) %{FENCEACKSV_DIR}/CA.pkey
-%attr(640, root, root) %{FENCEACKSV_DIR}/CA.cert
+%attr(644, root, root) %{FENCEACKSV_DIR}/server.pkey
+%attr(644, root, root) %{FENCEACKSV_DIR}/server.cert
+%attr(644, root, root) %{FENCEACKSV_DIR}/CA.pkey
+%attr(644, root, root) %{FENCEACKSV_DIR}/CA.cert
 %attr(755, root, root) %{INITDIR}/fenceacksv
 %attr(644, root, root) %{CONFIGDIR}/bootimage-chroot/files.initrd.d/fenceacksv.list
 %attr(644, root, root) %{CONFIGDIR}/bootimage-chroot/rpms.initrd.d/fenceacksv.list
@@ -626,19 +626,19 @@ fi
 
 %files fenceclient-ilo
 %attr(755, root, root) %{FENCECLIENTS_DIR}/fence_ilo
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fence_ilo.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fence_ilo.list
 %doc CHANGELOG
 
 %files fenceclient-ilomp
 %attr(755, root, root) %{FENCECLIENTS_DIR}/fence_ilomp
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fence_ilomp.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fence_ilomp.list
 %doc CHANGELOG
 
 %files fenceclient-vmware
 %attr(755, root, root) %{FENCECLIENTS_DIR}/fence_vmware_client
 %doc %{FENCECLIENTS_DOC}/INSTALL.fence_vmware
 %doc %{FENCECLIENTS_DOC}/README.fence_vmware
-%attr(640, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fence_vmware_client.list
+%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fence_vmware_client.list
 %doc CHANGELOG
 
 %files fencemaster-vmware
@@ -854,7 +854,10 @@ rm -rf %{buildroot}
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.79  2008-11-18 14:28:26  marc
+# Revision 1.80  2008-12-01 14:44:28  marc
+# changed file attributes (Bug #290)
+#
+# Revision 1.79  2008/11/18 14:28:26  marc
 # - implemented RFE-BUG 289 (level up/down)
 #
 # Revision 1.78  2008/10/14 10:57:07  marc

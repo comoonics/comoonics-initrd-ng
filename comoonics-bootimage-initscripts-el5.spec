@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.12 2008-11-18 15:59:37 marc Exp $
+# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.13 2008-12-01 14:46:24 marc Exp $
 #
 ##
 ##
@@ -142,10 +142,10 @@ done
 
 %files
 
-%attr(750, root, root) %{INITDIR}/bootsr
-%attr(600, root, root) %{APPDIR}/patches/halt.patch
-%attr(600, root, root) %{APPDIR}/patches/netfs.patch
-%attr(600, root, root) %{APPDIR}/patches/network.patch
+%attr(755, root, root) %{INITDIR}/bootsr
+%attr(644, root, root) %{APPDIR}/patches/halt.patch
+%attr(644, root, root) %{APPDIR}/patches/netfs.patch
+%attr(644, root, root) %{APPDIR}/patches/network.patch
 
 %clean
 rm -rf %{buildroot}
@@ -171,7 +171,10 @@ rm -rf %{buildroot}
 - first revision
 # ------
 # $Log: comoonics-bootimage-initscripts-el5.spec,v $
-# Revision 1.12  2008-11-18 15:59:37  marc
+# Revision 1.13  2008-12-01 14:46:24  marc
+# changed file attributes (Bug #290)
+#
+# Revision 1.12  2008/11/18 15:59:37  marc
 # - implemented RFE-BUG 289 (level up/down)
 #
 # Revision 1.11  2008/10/14 10:57:07  marc
