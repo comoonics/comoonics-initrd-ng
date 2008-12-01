@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.66 2008-11-30 19:17:35 marc Exp $
+# $Id: boot-lib.sh,v 1.67 2008-12-01 11:23:25 marc Exp $
 #
 # @(#)$File$
 #
@@ -216,15 +216,17 @@ function step() {
 function getBootParm() {
    local parm="$1"
    local default="$2"
-   if [ -z "$3" ]; then
-     local cmdline=`cat /proc/cmdline`
+   if [ -z "$3" ] && [ -z "$cmdline" ]; then
+     local _cmdline=`cat /proc/cmdline`
+   elif [ -n "$cmdline" ]; then
+     local _cmdline="$cmdline" 
    else
-     local cmdline="$3"
+     local _cmdline="$3"
    fi
    local found=1
    local out=""
 
-   for param in $cmdline; do
+   for param in $_cmdline; do
      local name=$(echo $param | cut -f1 -d=)
      local value=$(echo $param | cut -f2- -d=)
      
@@ -1114,7 +1116,10 @@ function exec_local_stabilized() {
 
 
 # $Log: boot-lib.sh,v $
-# Revision 1.66  2008-11-30 19:17:35  marc
+# Revision 1.67  2008-12-01 11:23:25  marc
+# fix for testing in getBootParm
+#
+# Revision 1.66  2008/11/30 19:17:35  marc
 # Fixed Bug #299
 # Bootparameters might have been interpreted wrongly
 #
