@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage-listfiles-el5.spec,v 1.10 2008-12-01 14:46:24 marc Exp $
+# $Id: comoonics-bootimage-listfiles-el5.spec,v 1.11 2008-12-05 16:12:58 marc Exp $
 #
 ##
 ##
@@ -42,7 +42,7 @@
 %define SYSCONFIGDIR /%{_sysconfdir}/sysconfig
 
 Name: comoonics-bootimage-listfiles
-Summary: Comoonics Bootimage listfiles. Listfiles for mkinitrd used by the comoonics shared root cluster environment.
+Summary: Listfiles for mkinitrd used by the OSR environment.
 Version: 1.3
 BuildArch: noarch
 Requires: comoonics-bootimage >= 1.3-1
@@ -51,16 +51,16 @@ Requires: comoonics-bootimage-listfiles-rhel5
 #Conflicts:
 Release: 8.el5
 Vendor: ATIX AG
-Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
+Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
 URL:     http://www.atix.de/
 Source:  http://www.atix.de/software/downloads/comoonics/comoonics-bootimage-%{version}.tar.gz
 License: GPL
-Group:   Storage/Management
+Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description
-Comoonics Bootimage listfiles. Listfiles for mkinitrd used by the comoonics shared root cluster environment.
+Listfiles for mkinitrd used by the OSR Cluster environment.
 
 %prep
 %setup -n comoonics-bootimage-%{version}
@@ -135,7 +135,10 @@ rm -rf %{buildroot}
 - first revision
 # ------
 # $Log: comoonics-bootimage-listfiles-el5.spec,v $
-# Revision 1.10  2008-12-01 14:46:24  marc
+# Revision 1.11  2008-12-05 16:12:58  marc
+# First step to go rpmlint compat BUG#230
+#
+# Revision 1.10  2008/12/01 14:46:24  marc
 # changed file attributes (Bug #290)
 #
 # Revision 1.9  2008/08/14 14:41:08  marc

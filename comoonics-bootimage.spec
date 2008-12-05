@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.80 2008-12-01 14:44:28 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.81 2008-12-05 16:12:58 marc Exp $
 #
 ##
 ##
@@ -36,6 +36,7 @@
 %define _user root
 %define CONFIGDIR /%{_sysconfdir}/comoonics
 %define APPDIR    /opt/atix/%{name}
+%define LIBDIR    /opt/atix/%{name}
 %define ENVDIR    /etc/profile.d
 %define ENVFILE   %{ENVDIR}/%{name}.sh
 %define INITDIR   /etc/rc.d/init.d
@@ -49,7 +50,7 @@
 %define FENCECLIENTS_DOC /usr/share/doc/comoonics-fencing
 
 Name: comoonics-bootimage
-Summary: Comoonics Bootimage. Scripts for creating an initrd in a gfs shared root environment
+Summary: Scripts for creating an initrd in a OSR Cluster environment
 Version: 1.3
 BuildArch: noarch
 Requires: comoonics-cs-py >= 0.1-43 
@@ -57,25 +58,25 @@ Requires: comoonics-cluster-py >= 0.1-2
 Requires: comoonics-bootimage-initscripts >= 1.3 
 Requires: comoonics-bootimage-listfiles-all
 #Conflicts:
-Release: 40
+Release: 41
 Vendor: ATIX AG
-Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
+Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
 URL:     http://www.atix.de/
 Source:  http://www.atix.de/software/downloads/comoonics/comoonics-bootimage-%{version}.tar.gz
 License: GPL
-Group:   Storage/Management
+Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description
-Comoonics Bootimage. Scripts for creating an initrd in a gfs shared root environment
+Scripts for creating an initrd in a OSR cluster environment
 
 %package extras-network
 Version: 0.1
-Release: 1
+Release: 2
 Requires: comoonics-bootimage >= 1.3-1
 Summary: listfiles for special network configurations (vlan)
-Group:   Storage/Management
+Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description extras-network
@@ -83,10 +84,10 @@ Extra listfiles for special network configurations
 
 %package extras-nfs
 Version: 0.1
-Release: 4
+Release: 5
 Requires: comoonics-bootimage >= 1.3-33
 Summary: listfiles for nfs sharedroot configurations
-Group:   Storage/Management
+Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description extras-nfs
@@ -94,10 +95,10 @@ Extra listfiles for nfs sharedroot configurations
 
 %package extras-ocfs2
 Version: 0.1
-Release: 1
+Release: 2
 Requires: comoonics-bootimage >= 1.3-33
 Summary: listfiles for ocfs2 sharedroot configurations
-Group:   Storage/Management
+Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description extras-ocfs2
@@ -106,94 +107,91 @@ Extra listfiles for ocfs2 sharedroot configurations
 # Overwritten by extras-dm-multipath-rhel so we add deps
 %package extras-dm-multipath
 Version: 0.1
-Release: 2
+Release: 3
 Requires: comoonics-bootimage >= 1.3-36
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-rhel
 Requires: comoonics-bootimage-extras-dm-multipath-rhel
 Summary: listfiles for device mapper multipath sharedroot configurations for RedHat Enterprise Linux
-Group:   Storage/Management
+Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 Distribution: RedHat Enterprise Linux
 
 %description extras-dm-multipath
-Extra listfiles for device mapper multipath sharedroot configurations for RedHat Enterprise Linux
-This RPM is obsolete and is replaced by comoonics-bootimage-extras-dm-multipath-rhel
+Extra listfiles for device mapper multipath OSR configurations
 
 %package extras-dm-multipath-rhel
 Version: 0.1
-Release: 1
+Release: 2
 Requires: comoonics-bootimage >= 1.3-36
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-rhel
 Summary: listfiles for device mapper multipath sharedroot configurations for RedHat Enterprise Linux
-Group:   Storage/Management
+Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 Distribution: RedHat Enterprise Linux
 
 %description extras-dm-multipath-rhel
-Extra listfiles for device mapper multipath sharedroot configurations for RedHat Enterprise Linux
+Extra listfiles for device mapper multipath OSR configurations for RHEL
 
 %package extras-rdac-multipath
 Version: 0.1
-Release: 2
+Release: 3
 Requires: comoonics-bootimage >= 1.3-8
 Summary: listfiles for rdac multipath sharedroot configurations
-Group:   Storage/Management
+Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description extras-rdac-multipath
-Extra listfiles for rdac multipath sharedroot configurations
+Extra listfiles for rdac multipath OSR configurations
 
 %package extras-xen
 Version: 0.1
-Release: 4
+Release: 5
 Requires: comoonics-bootimage >= 1.3-14
 Summary: listfiles for xen support in the open-sharedroot cluster
-Group:   Storage/Management
+Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description extras-xen
-listfiles for xen support in the open-sharedroot cluster
+listfiles for xen support in the OSR cluster
 
 %package extras-iscsi
 Version: 0.1
-Release: 2
+Release: 3
 Requires: comoonics-bootimage >= 1.3-33
 Summary: listfiles for iscsi support in the open-sharedroot cluster
-Group:   Storage/Management
+Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description extras-iscsi
-support in the open-sharedroot cluster
-PREVIEW VERSION
+ISCSI support in the OSR cluster
 
 %package extras-drbd
 Version: 0.1
-Release: 2
+Release: 3
 Requires: comoonics-bootimage >= 1.3-33
 Summary: listfiles for drbd support in the open-sharedroot cluster
-Group:   Storage/Management
+Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description extras-drbd
-support in the open-sharedroot cluster
-PREVIEW VERSION
+DRBD support in the OSR cluster
 
 %package listfiles-all
 Version: 0.1
-Release: 1
+Release: 2
 Requires: comoonics-bootimage >= 1.3-36
 Group: Storage/Mannagement
-Summary: Listfilesfiles for all distributions 
+Summary: OSR listfilesfiles for all distributions 
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description listfiles-all
-Listfiles that are only relevant for all linux distributions
+OSR Listfiles that are only relevant for all linux distributions
 
 %package listfiles-rhel
 Version: 0.1
-Release: 1
+Release: 2
 Requires: comoonics-bootimage >= 1.3-36
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-all
@@ -202,11 +200,11 @@ Summary: Extrafiles for RedHat Enterprise Linux
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description listfiles-rhel
-Extra files that are only relevant for RedHat Enterprise Linux Versions
+OSR extra files that are only relevant for RHEL Versions
 
 %package listfiles-rhel4
 Version: 0.1
-Release: 1
+Release: 2
 Requires: comoonics-bootimage >= 1.3-36
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-rhel
@@ -216,11 +214,11 @@ Conflicts: comoonics-bootimage-listfiles-rhel5
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description listfiles-rhel4
-Extra files that are only relevant for RedHat Enterprise Linux Versions4
+OSR extra files that are only relevant for RHEL4
 
 %package listfiles-rhel5
 Version: 0.1
-Release: 1
+Release: 2
 Requires: comoonics-bootimage >= 1.3-36
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-rhel
@@ -230,58 +228,54 @@ Conflicts: comoonics-bootimage-listfiles-rhel4
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description listfiles-rhel5
-Extra files that are only relevant for RedHat Enterprise Linux Versions4
+OSR extra files that are only relevant for RHEL4
 
 %package listfiles-sles
 Version: 0.1
-Release: 2
+Release: 3
 Requires: comoonics-bootimage >= 1.3-37
 Requires: /etc/SuSE-release
 Requires: comoonics-bootimage-listfiles-all
-Group: Storage/Management
+Group: System Environment/Base
 Summary: Extrafiles for Novell SuSE Enterprise Server
 Conflicts: comoonics-bootimage-listfiles-rhel 
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description listfiles-sles
-Extra files that are only relevant for Novell SuSE Enterprise Server 10 and above
+OSR extra files that are only relevant for Novell SLES 10
 
 %package listfiles-fenceacksv-plugins
 Version: 0.1
-Release: 1
+Release: 2
 Requires: comoonics-bootimage >= 1.3-20
 Requires: comoonics-cs-sysreport-templates
 Requires: comoonics-fenceacksv-py
 Requires: comoonics-fenceacksv-plugins-py
 Summary: Extrafiles for plugins in fenceacksv
-Group: Storage/Management
+Group: System Environment/Servers
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description listfiles-fenceacksv-plugins
-Extrafiles for plugins in fenceacksv.
-Sysreport or sysinfo can be used from fenceacksv
+OSR extrafiles for plugins in fenceacksv.
 
 %package compat
 Version: 0.1
-Release: 1
+Release: 2
 Requires: comoonics-bootimage >= 1.3-1
 Summary: files needed for compatibility to 1.2 releases
-Group:   Storage/Management
+Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description compat
-Files needed for the compatibility to 1.2 releases
-installes the file /etc/sysconfig/comoonics-chroot
-This will mount vg_local-lv_tmp on /tmp during initrd
-process
+OSR files needed for the compatibility to 1.2 releases
 
 %package fenceacksv
 Version: 0.3
-Release: 1
+Release: 2
 Requires: comoonics-cs-py >= 0.1-43
 Requires: comoonics-bootimage >= 1.3-1
-Summary: The Fence ackserver is a service running in the fencedchroot and managing manual fenced nodes
-Group:   Storage/Management
+Summary: The Fenceackserver is a service for last resort actions
+Group:   System Environment/Servers
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description fenceacksv
@@ -289,29 +283,29 @@ The Fence ackserver is a service running in the fencedchroot and managing manual
 
 %package fenceclient-ilo
 Version: 0.1
-Release: 18
-Summary: An alternative fence client for ilo cards of HP servers. Written in python.
-Group:   Storage/Management
+Release: 19
+Summary: An alternative fence client for ilo cards of HP servers.
+Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description fenceclient-ilo
-An alternative fence client for ilo cards of HP servers. Written in python.
+An alternative fence client for ilo cards of HP servers.
 
 %package fenceclient-ilomp
 Version: 0.1
-Release: 1
-Summary: A fence client for iloMP cards of HP inegrity servers. Written in python.
-Group:   Storage/Management
+Release: 2
+Summary: A fence client for iloMP cards of HP inegrity servers.
+Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description fenceclient-ilomp
-A fence client for iloMP cards of HP inegrity servers. Written in python.
+A fence client for iloMP cards of HP inegrity servers.
 
 %package fenceclient-vmware
 Version: 0.1
-Release: 4
+Release: 5
 Summary: Fencing for vmware
-Group:   Storage/Management
+Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description fenceclient-vmware
@@ -319,9 +313,9 @@ Fencing for vmware client
 
 %package fencemaster-vmware
 Version: 0.1
-Release: 1
+Release: 2
 Summary: Fencing for vmware
-Group:   Storage/Management
+Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 AutoReqProv: no
 
@@ -447,56 +441,56 @@ fi
 
 %files
 
-%dir %{APPDIR}/boot-scripts/sys
-%dir %{APPDIR}/boot-scripts/var/log
-%dir %{APPDIR}/boot-scripts/var/lib/dhcp
-%dir %{APPDIR}/boot-scripts/var/run/netreport
-%dir %{APPDIR}/boot-scripts/proc
-%dir %{APPDIR}/boot-scripts/dev
+%dir %{LIBDIR}/boot-scripts/sys
+%dir %{LIBDIR}/boot-scripts/var/log
+%dir %{LIBDIR}/boot-scripts/var/lib/dhcp
+%dir %{LIBDIR}/boot-scripts/var/run/netreport
+%dir %{LIBDIR}/boot-scripts/proc
+%dir %{LIBDIR}/boot-scripts/dev
 %attr(755, root, root) %{APPDIR}/create-gfs-initrd-generic.sh
 %attr(644, root, root) %{APPDIR}/create-gfs-initrd-lib.sh
 %attr(755, root, root) %{APPDIR}/manage_chroot.sh
-%attr(755, root, root) %{APPDIR}/boot-scripts/com-halt.sh
-%attr(755, root, root) %{APPDIR}/boot-scripts/com-realhalt.sh
-%attr(755, root, root) %{APPDIR}/boot-scripts/linuxrc.generic.sh
-%attr(755, root, root) %{APPDIR}/boot-scripts/linuxrc.sim.sh
-%attr(755, root, root) %{APPDIR}/boot-scripts/detectHardware.sh
-%attr(755, root, root) %{APPDIR}/boot-scripts/rescue.sh
-%attr(755, root, root) %{APPDIR}/boot-scripts/linuxrc
-%attr(755, root, root) %{APPDIR}/boot-scripts/linuxrc.bash
-%attr(644, root, root) %{APPDIR}/boot-scripts/etc/atix.txt
-%attr(644, root, root) %{APPDIR}/boot-scripts/etc/boot-lib.sh
-%attr(644, root, root) %{APPDIR}/boot-scripts/etc/chroot-lib.sh
-%attr(644, root, root) %{APPDIR}/boot-scripts/etc/clusterfs-lib.sh
-%attr(644, root, root) %{APPDIR}/boot-scripts/etc/comoonics-release
-%attr(644, root, root) %{APPDIR}/boot-scripts/etc/defaults.sh
-%attr(644, root, root) %{APPDIR}/boot-scripts/etc/ext3-lib.sh
-%attr(644, root, root) %{APPDIR}/boot-scripts/etc/gfs-lib.sh
-%attr(644, root, root) %{APPDIR}/boot-scripts/etc/hardware-lib.sh
-%attr(644, root, root) %{APPDIR}/boot-scripts/etc/inittab
-%attr(644, root, root) %{APPDIR}/boot-scripts/etc/network-lib.sh
-%attr(644, root, root) %{APPDIR}/boot-scripts/etc/repository-lib.sh
-%attr(644, root, root) %{APPDIR}/boot-scripts/etc/xen-lib.sh
-#%attr(644, root, root) %{APPDIR}/boot-scripts/etc/passwd
-%attr(644, root, root) %{APPDIR}/boot-scripts/etc/stdfs-lib.sh
-%attr(644, root, root) %{APPDIR}/boot-scripts/etc/std-lib.sh
-%attr(644, root, root) %{APPDIR}/boot-scripts/etc/sysconfig/comoonics
-%attr(644, root, root) %{APPDIR}/boot-scripts/etc/rhel4/boot-lib.sh
-%attr(644, root, root) %{APPDIR}/boot-scripts/etc/rhel4/hardware-lib.sh
-%attr(644, root, root) %{APPDIR}/boot-scripts/etc/rhel4/network-lib.sh
-%attr(644, root, root) %{APPDIR}/boot-scripts/etc/rhel5/boot-lib.sh
-%attr(644, root, root) %{APPDIR}/boot-scripts/etc/rhel5/gfs-lib.sh
-%attr(644, root, root) %{APPDIR}/boot-scripts/etc/rhel5/hardware-lib.sh
-%attr(644, root, root) %{APPDIR}/boot-scripts/etc/rhel5/network-lib.sh
-%attr(644, root, root) %{APPDIR}/boot-scripts/etc/sles8/hardware-lib.sh
-%attr(644, root, root) %{APPDIR}/boot-scripts/etc/sles8/network-lib.sh
-%attr(644, root, root) %{APPDIR}/boot-scripts/etc/sles10/boot-lib.sh
-%attr(644, root, root) %{APPDIR}/boot-scripts/etc/sles10/hardware-lib.sh
-%attr(644, root, root) %{APPDIR}/boot-scripts/etc/sles10/network-lib.sh
+%attr(755, root, root) %{LIBDIR}/boot-scripts/com-halt.sh
+%attr(755, root, root) %{LIBDIR}/boot-scripts/com-realhalt.sh
+%attr(755, root, root) %{LIBDIR}/boot-scripts/linuxrc.generic.sh
+%attr(755, root, root) %{LIBDIR}/boot-scripts/linuxrc.sim.sh
+%attr(755, root, root) %{LIBDIR}/boot-scripts/detectHardware.sh
+%attr(755, root, root) %{LIBDIR}/boot-scripts/rescue.sh
+%attr(755, root, root) %{LIBDIR}/boot-scripts/linuxrc
+%attr(755, root, root) %{LIBDIR}/boot-scripts/linuxrc.bash
+%attr(644, root, root) %{LIBDIR}/boot-scripts/etc/atix.txt
+%attr(644, root, root) %{LIBDIR}/boot-scripts/etc/boot-lib.sh
+%attr(644, root, root) %{LIBDIR}/boot-scripts/etc/chroot-lib.sh
+%attr(644, root, root) %{LIBDIR}/boot-scripts/etc/clusterfs-lib.sh
+%attr(644, root, root) %{LIBDIR}/boot-scripts/etc/comoonics-release
+%attr(644, root, root) %{LIBDIR}/boot-scripts/etc/defaults.sh
+%attr(644, root, root) %{LIBDIR}/boot-scripts/etc/ext3-lib.sh
+%attr(644, root, root) %{LIBDIR}/boot-scripts/etc/gfs-lib.sh
+%attr(644, root, root) %{LIBDIR}/boot-scripts/etc/hardware-lib.sh
+%attr(644, root, root) %{LIBDIR}/boot-scripts/etc/inittab
+%attr(644, root, root) %{LIBDIR}/boot-scripts/etc/network-lib.sh
+%attr(644, root, root) %{LIBDIR}/boot-scripts/etc/repository-lib.sh
+%attr(644, root, root) %{LIBDIR}/boot-scripts/etc/xen-lib.sh
+#%attr(644, root, root) %{LIBDIR}/boot-scripts/etc/passwd
+%attr(644, root, root) %{LIBDIR}/boot-scripts/etc/stdfs-lib.sh
+%attr(644, root, root) %{LIBDIR}/boot-scripts/etc/std-lib.sh
+%attr(644, root, root) %{LIBDIR}/boot-scripts/etc/sysconfig/comoonics
+%attr(644, root, root) %{LIBDIR}/boot-scripts/etc/rhel4/boot-lib.sh
+%attr(644, root, root) %{LIBDIR}/boot-scripts/etc/rhel4/hardware-lib.sh
+%attr(644, root, root) %{LIBDIR}/boot-scripts/etc/rhel4/network-lib.sh
+%attr(644, root, root) %{LIBDIR}/boot-scripts/etc/rhel5/boot-lib.sh
+%attr(644, root, root) %{LIBDIR}/boot-scripts/etc/rhel5/gfs-lib.sh
+%attr(644, root, root) %{LIBDIR}/boot-scripts/etc/rhel5/hardware-lib.sh
+%attr(644, root, root) %{LIBDIR}/boot-scripts/etc/rhel5/network-lib.sh
+%attr(644, root, root) %{LIBDIR}/boot-scripts/etc/sles8/hardware-lib.sh
+%attr(644, root, root) %{LIBDIR}/boot-scripts/etc/sles8/network-lib.sh
+%attr(644, root, root) %{LIBDIR}/boot-scripts/etc/sles10/boot-lib.sh
+%attr(644, root, root) %{LIBDIR}/boot-scripts/etc/sles10/hardware-lib.sh
+%attr(644, root, root) %{LIBDIR}/boot-scripts/etc/sles10/network-lib.sh
 
 %dir %{CONFIGDIR}/bootimage-chroot
-%attr(644, root, root) %{CONFIGDIR}/bootimage-chroot/files.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage-chroot/rpms.list
+%config %{CONFIGDIR}/bootimage-chroot/files.list
+%config %{CONFIGDIR}/bootimage-chroot/rpms.list
 %dir %{CONFIGDIR}/bootimage-chroot/files.initrd.d
 %dir %{CONFIGDIR}/bootimage-chroot/rpms.initrd.d
 
@@ -506,103 +500,103 @@ fi
 %doc CHANGELOG
 
 %files compat
-%attr(644, root, root) %{SYSCONFIGDIR}/comoonics-chroot
+%config(noreplace) %{SYSCONFIGDIR}/comoonics-chroot
 
 %files extras-network
-%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/vlan.list
+%config %{CONFIGDIR}/bootimage/files.initrd.d/vlan.list
 
 %files extras-nfs
-%attr(644, root, root) %{APPDIR}/boot-scripts/etc/nfs-lib.sh
-%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/nfs.list
+%attr(644, root, root) %{LIBDIR}/boot-scripts/etc/nfs-lib.sh
+%config %{CONFIGDIR}/bootimage/rpms.initrd.d/nfs.list
 
 %files extras-ocfs2
-%attr(644, root, root) %{APPDIR}/boot-scripts/etc/ocfs2-lib.sh
-%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/ocfs2.list
+%attr(644, root, root) %{LIBDIR}/boot-scripts/etc/ocfs2-lib.sh
+%config %{CONFIGDIR}/bootimage/rpms.initrd.d/ocfs2.list
 
 %files extras-dm-multipath
 
 %files extras-dm-multipath-rhel
-%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/dm_multipath.list
+%config %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/dm_multipath.list
 
 %files extras-rdac-multipath
-%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rdac_multipath.list
+%config %{CONFIGDIR}/bootimage/files.initrd.d/rdac_multipath.list
 
 %files extras-xen
-%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/xen.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/xen.list
+%config %{CONFIGDIR}/bootimage/files.initrd.d/xen.list
+%config %{CONFIGDIR}/bootimage/rpms.initrd.d/xen.list
 
 %files extras-iscsi
-%attr(644, root, root) %{APPDIR}/boot-scripts/etc/iscsi-lib.sh
-%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/iscsi.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/iscsi.list
+%attr(644, root, root) %{LIBDIR}/boot-scripts/etc/iscsi-lib.sh
+%config %{CONFIGDIR}/bootimage/files.initrd.d/iscsi.list
+%config %{CONFIGDIR}/bootimage/rpms.initrd.d/iscsi.list
 
 %files extras-drbd
-%attr(644, root, root) %{APPDIR}/boot-scripts/etc/drbd-lib.sh
-%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/drbd.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/drbd.list
+%attr(644, root, root) %{LIBDIR}/boot-scripts/etc/drbd-lib.sh
+%config %{CONFIGDIR}/bootimage/files.initrd.d/drbd.list
+%config %{CONFIGDIR}/bootimage/rpms.initrd.d/drbd.list
 
 %files listfiles-all
-%attr(644, root, root) %{CONFIGDIR}/bootimage/basefiles.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/base.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/bonding.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/comoonics.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/configs.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/ext2.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/grub.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/locales.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/network.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/scsi.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/baselibs.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/comoonics.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/ext2.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/hardware.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/lvm.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/python.list
+%config %{CONFIGDIR}/bootimage/basefiles.list
+%config %{CONFIGDIR}/bootimage/rpms.list
+%config %{CONFIGDIR}/bootimage/files.initrd.d/base.list
+%config %{CONFIGDIR}/bootimage/files.initrd.d/bonding.list
+%config %{CONFIGDIR}/bootimage/files.initrd.d/comoonics.list
+%config %{CONFIGDIR}/bootimage/files.initrd.d/configs.list
+%config %{CONFIGDIR}/bootimage/files.initrd.d/ext2.list
+%config %{CONFIGDIR}/bootimage/files.initrd.d/grub.list
+%config %{CONFIGDIR}/bootimage/files.initrd.d/locales.list
+%config %{CONFIGDIR}/bootimage/files.initrd.d/network.list
+%config %{CONFIGDIR}/bootimage/files.initrd.d/scsi.list
+%config %{CONFIGDIR}/bootimage/rpms.initrd.d/baselibs.list
+%config %{CONFIGDIR}/bootimage/rpms.initrd.d/comoonics.list
+%config %{CONFIGDIR}/bootimage/rpms.initrd.d/ext2.list
+%config %{CONFIGDIR}/bootimage/rpms.initrd.d/hardware.list
+%config %{CONFIGDIR}/bootimage/rpms.initrd.d/lvm.list
+%config %{CONFIGDIR}/bootimage/rpms.initrd.d/python.list
 
 %files listfiles-rhel
 %dir %{CONFIGDIR}/bootimage/files.initrd.d/rhel
 %dir %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel
-%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/empty.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/base.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/configs.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/gfs.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/grub.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/network.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/empty.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/hardware.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/python.list
+%config %{CONFIGDIR}/bootimage/files.initrd.d/rhel/empty.list
+%config %{CONFIGDIR}/bootimage/files.initrd.d/rhel/base.list
+%config %{CONFIGDIR}/bootimage/files.initrd.d/rhel/configs.list
+%config %{CONFIGDIR}/bootimage/files.initrd.d/rhel/gfs.list
+%config %{CONFIGDIR}/bootimage/files.initrd.d/rhel/grub.list
+%config %{CONFIGDIR}/bootimage/files.initrd.d/rhel/network.list
+%config %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/empty.list
+%config %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/hardware.list
+%config %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/python.list
 
 %files listfiles-rhel4
 %dir %{CONFIGDIR}/bootimage/files.initrd.d/rhel4
 %dir %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel4
-%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel4/empty.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel4/empty.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel4/gfs1.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel4/rhcs.list
+%config %{CONFIGDIR}/bootimage/files.initrd.d/rhel4/empty.list
+%config %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel4/empty.list
+%config %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel4/gfs1.list
+%config %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel4/rhcs.list
 
 %files listfiles-rhel5
 %dir %{CONFIGDIR}/bootimage/files.initrd.d/rhel5
 %dir %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5
-%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel5/empty.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel5/rhcs.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/empty.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/base.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/gfs1.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/rhcs.list
+%config %{CONFIGDIR}/bootimage/files.initrd.d/rhel5/empty.list
+%config %{CONFIGDIR}/bootimage/files.initrd.d/rhel5/rhcs.list
+%config %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/empty.list
+%config %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/base.list
+%config %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/gfs1.list
+%config %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/rhcs.list
 
 %files listfiles-sles
 %dir %{CONFIGDIR}/bootimage/files.initrd.d/sles
 %dir %{CONFIGDIR}/bootimage/rpms.initrd.d/sles
-%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/sles/base.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/sles/empty.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/sles/network.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/python.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/base.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/hardware.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/empty.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/dm_multipath.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/network.list
+%config %{CONFIGDIR}/bootimage/files.initrd.d/sles/base.list
+%config %{CONFIGDIR}/bootimage/files.initrd.d/sles/empty.list
+%config %{CONFIGDIR}/bootimage/files.initrd.d/sles/network.list
+%config %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/python.list
+%config %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/base.list
+%config %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/hardware.list
+%config %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/empty.list
+%config %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/dm_multipath.list
+%config %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/network.list
 
 %files listfiles-fenceacksv-plugins
 %attr(644, root, root) %dir %{CONFIGDIR}/bootimage-chroot/rpms.initrd.d/fenceacksv-plugins.list
@@ -619,26 +613,26 @@ fi
 %attr(644, root, root) %{FENCEACKSV_DIR}/CA.pkey
 %attr(644, root, root) %{FENCEACKSV_DIR}/CA.cert
 %attr(755, root, root) %{INITDIR}/fenceacksv
-%attr(644, root, root) %{CONFIGDIR}/bootimage-chroot/files.initrd.d/fenceacksv.list
-%attr(644, root, root) %{CONFIGDIR}/bootimage-chroot/rpms.initrd.d/fenceacksv.list
+%config %{CONFIGDIR}/bootimage-chroot/files.initrd.d/fenceacksv.list
+%config %{CONFIGDIR}/bootimage-chroot/rpms.initrd.d/fenceacksv.list
 #%config(noreplace)     %{SYSCONFIGDIR}/fenceacksv
 %doc CHANGELOG
 
 %files fenceclient-ilo
 %attr(755, root, root) %{FENCECLIENTS_DIR}/fence_ilo
-%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fence_ilo.list
+%config %{CONFIGDIR}/bootimage/rpms.initrd.d/fence_ilo.list
 %doc CHANGELOG
 
 %files fenceclient-ilomp
 %attr(755, root, root) %{FENCECLIENTS_DIR}/fence_ilomp
-%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fence_ilomp.list
+%config %{CONFIGDIR}/bootimage/rpms.initrd.d/fence_ilomp.list
 %doc CHANGELOG
 
 %files fenceclient-vmware
 %attr(755, root, root) %{FENCECLIENTS_DIR}/fence_vmware_client
 %doc %{FENCECLIENTS_DOC}/INSTALL.fence_vmware
 %doc %{FENCECLIENTS_DOC}/README.fence_vmware
-%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fence_vmware_client.list
+%config %{CONFIGDIR}/bootimage/rpms.initrd.d/fence_vmware_client.list
 %doc CHANGELOG
 
 %files fencemaster-vmware
@@ -652,6 +646,8 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Fri Dec 05 2008 Marc Grimme <grimme@atix.de> 1.3-41
+- First version on the way to rpmlint BUG#290
 * Tue Nov 18 2008 Marc Grimme <grimme@atix.de> 1.3-40
 - Enhancement #289 implemented so that we now have a script linux.sim.sh to be executed within initrd or from outside.
 - Cosmetic changes looks much better!
@@ -775,10 +771,14 @@ rm -rf %{buildroot}
 - first offical rpm version
 
 %changelog extras-rdac-multipath
+* Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-2
+- First version on the way to rpmlint BUG#290
 * Fri Sep 14 2007 Marc Grimme <grimme@atix.de> - 0.1-1
 - first release
 
 %changelog extras-xen
+* Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-5
+- First version on the way to rpmlint BUG#290
 * Wed Aug 06 2008 Marc Grimme <grimme@atix.de> - 0.1-4
 - removed xen-lib.sh back to comoonics-bootimage as this extras are only needed for dom0 not domu
 - bugfixes and removed default bridging to no bridging
@@ -788,46 +788,64 @@ rm -rf %{buildroot}
 - first release
 
 %changelog extras-iscsi
+* Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-3
+- First version on the way to rpmlint BUG#290
 * Tue Jun 10 2008 Marc Grimme <grimme@atix.de> - 0.1-2
 - added iscsi-lib.sh file
 * Fri Oct 12 2007 Marc Grimme <grimme@atix.de> - 0.1-1
 - first release
 
 %changelog extras-drbd
+* Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-3
+- First version on the way to rpmlint BUG#290
 * Tue Jun 10 2008 Marc Grimme <grimme@atix.de> - 0.1-2
 - added drbd-lib.sh file
 * Mon Feb 11 2008 Marc Grimme <grimme@atix.de> - 0.1-1
 - first release
 
 %changelog extras-nfs
+* Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-4
+- First version on the way to rpmlint BUG#290
 * Wed Aug 06 2008 Marc Grimme <grimme@atix.de> - 0.1-3
 - bugfixes upstream
 * Tue Jun 10 2008 Marc Grimme <grimme@atix.de> - 0.1-2
 - added nfs-lib.sh file
 
 %changelog listfiles-all
+* Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-2
+- First version on the way to rpmlint BUG#290
 * Thu Aug 14 2008 Marc Grimme <grimme@atix.de - 0.1-1
   - initial revision 
 
 %changelog listfiles-rhel
+* Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-2
+- First version on the way to rpmlint BUG#290
 * Thu Aug 14 2008 Marc Grimme <grimme@atix.de - 0.1-1
   - initial revision 
 
 %changelog listfiles-rhel4
+* Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-2
+- First version on the way to rpmlint BUG#290
 * Thu Aug 14 2008 Marc Grimme <grimme@atix.de - 0.1-1
   - initial revision 
 
 %changelog listfiles-rhel5
+* Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-2
+- First version on the way to rpmlint BUG#290
 * Thu Aug 14 2008 Marc Grimme <grimme@atix.de - 0.1-1
   - initial revision 
 
 %changelog listfiles-sles
+* Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-3
+- First version on the way to rpmlint BUG#290
 * Wed Sep 24 2008 Marc Grimme <grimme@atix.de> - 0.1-2
 - Replaced dependency listfiles to listfiles-all in listfiles-sles
 * Thu Aug 14 2008 Marc Grimme <grimme@atix.de - 0.1-1
   - initial revision 
 
 %changelog fenceacksv
+* Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.3-2
+- First version on the way to rpmlint BUG#290
 * Mon Sep 10 2007 Marc Grimme <grimme@atix.de> - 0.3-1
   - Fixed Bug BZ#107, fixed problems with not installed plugins
   - Fixed Bug BZ#29, output of ackmanual
@@ -839,22 +857,31 @@ rm -rf %{buildroot}
 - introducted changelog
 
 %changelog fenceclient-ilo
+* Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-18
+- First version on the way to rpmlint BUG#290
 * Mon Jul 30 2007 Marc Grimme <grimme@atix.de> - 0.1-17
 - added help for -x|--xmlfile (#BZ 39)
 * Wed Feb 07 2007 Marc Grimme <grimme@atix.de - 0.1-16
 - introducted changelog
 
 %changelog fenceclient-vmware
+* Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-5
+- First version on the way to rpmlint BUG#290
 * Wed Feb 07 2007 Marc Grimme <grimme@atix.de - 0.1-4
 - introducted changelog
 
 %changelog fencemaster-vmware
+* Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-2
+- First version on the way to rpmlint BUG#290
 * Wed Feb 07 2007 Marc Grimme <grimme@atix.de - 0.1-1
 - introducted changelog
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.80  2008-12-01 14:44:28  marc
+# Revision 1.81  2008-12-05 16:12:58  marc
+# First step to go rpmlint compat BUG#230
+#
+# Revision 1.80  2008/12/01 14:44:28  marc
 # changed file attributes (Bug #290)
 #
 # Revision 1.79  2008/11/18 14:28:26  marc

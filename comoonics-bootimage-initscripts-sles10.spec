@@ -36,13 +36,14 @@
 %define _user root
 %define CONFIGDIR /%{_sysconfdir}/comoonics
 %define APPDIR    /opt/atix/%{name}
+%define LIBDIR    /opt/atix/%{name}
 %define ENVDIR    /etc/profile.d
 %define ENVFILE   %{ENVDIR}/%{name}.sh
 %define INITDIR   /etc/rc.d/init.d
 %define SYSCONFIGDIR /%{_sysconfdir}/sysconfig
 
 Name: comoonics-bootimage-initscripts
-Summary: Comoonics Bootimage initscripts. Initscripts used by the comoonics shared root cluster environment for Novell SLES10.
+Summary: Initscripts used by the OSR cluster environment for Novell SLES10.
 Version: 1.3
 BuildArch: noarch
 Requires: comoonics-bootimage >= 1.3-1
@@ -50,17 +51,16 @@ Requires: comoonics-bootimage-listfiles-sles
 #Conflicts:
 Release: 2.sles10
 Vendor: ATIX AG
-Packager: Marc Grimme (grimme (at) atix.de)
+Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
 URL:     http://www.atix.de/
 Source:  http://www.atix.de/software/downloads/comoonics/comoonics-bootimage-%{version}.tar.gz
 License: GPL
-Group:   Storage/Management
+Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description
-Comoonics Bootimage initscripts. Initscripts used by the comoonics shared root cluster environment.
-These are for Novell SLES10.
+Initscripts used by the OSR cluster environment. These are for Novell SLES10.
 
 
 %prep
@@ -107,10 +107,12 @@ for service in $services; do
 done
 /bin/true
 
+%preun
+chkconfig --del bootsr
 
 %files
-
 %attr(755, root, root) %{INITDIR}/bootsr
+
 %changelog
 * Wed Nov 19 2008 Marc Grimme <grimme@atix.de> 1.3-2-sles10
 - Merged with upstream

@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.13 2008-12-01 14:46:24 marc Exp $
+# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.14 2008-12-05 16:12:58 marc Exp $
 #
 ##
 ##
@@ -42,7 +42,7 @@
 %define SYSCONFIGDIR /%{_sysconfdir}/sysconfig
 
 Name: comoonics-bootimage-initscripts
-Summary: Comoonics Bootimage initscripts. Initscripts used by the comoonics shared root cluster environment.
+Summary: Initscripts used by the OSR cluster environment.
 Version: 1.3
 BuildArch: noarch
 Requires: comoonics-bootimage >= 1.3-1 
@@ -53,16 +53,16 @@ Requires: comoonics-bootimage-listfiles-rhel5
 #Conflicts: 
 Release: 10.el5
 Vendor: ATIX AG
-Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
+Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
 URL:     http://www.atix.de/
 Source:  http://www.atix.de/software/downloads/comoonics/comoonics-bootimage-%{version}.tar.gz
 License: GPL
-Group:   Storage/Management
+Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description
-Comoonics Bootimage initscripts. Initscripts used by the comoonics shared root cluster environment.
+Initscripts used by the OSR cluster environment.
  
 
 %prep
@@ -80,7 +80,6 @@ install -m600 initscripts/rhel5/netfs.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/ne
 install -m600 initscripts/rhel5/network.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/network.patch
 
 %preun
-
 if [ "$1" -eq 0 ]; then
   echo "Preuninstalling comoonics-bootimage-initscripts"
 # root_fstype=$(awk '{ if ($1 !~ /^rootfs/ && $1 !~ /^[ \t]*#/ && $2 == "/") { print $3; }}' /etc/mtab)
@@ -139,7 +138,6 @@ done
 
 /bin/true
 
-
 %files
 
 %attr(755, root, root) %{INITDIR}/bootsr
@@ -171,7 +169,10 @@ rm -rf %{buildroot}
 - first revision
 # ------
 # $Log: comoonics-bootimage-initscripts-el5.spec,v $
-# Revision 1.13  2008-12-01 14:46:24  marc
+# Revision 1.14  2008-12-05 16:12:58  marc
+# First step to go rpmlint compat BUG#230
+#
+# Revision 1.13  2008/12/01 14:46:24  marc
 # changed file attributes (Bug #290)
 #
 # Revision 1.12  2008/11/18 15:59:37  marc
