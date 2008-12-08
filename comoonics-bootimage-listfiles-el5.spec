@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage-listfiles-el5.spec,v 1.11 2008-12-05 16:12:58 marc Exp $
+# $Id: comoonics-bootimage-listfiles-el5.spec,v 1.12 2008-12-08 15:43:04 marc Exp $
 #
 ##
 ##
@@ -42,7 +42,7 @@
 %define SYSCONFIGDIR /%{_sysconfdir}/sysconfig
 
 Name: comoonics-bootimage-listfiles
-Summary: Listfiles for mkinitrd used by the OSR environment.
+Summary: Listfiles for mkinitrd used by the OSR.
 Version: 1.3
 BuildArch: noarch
 Requires: comoonics-bootimage >= 1.3-1
@@ -60,13 +60,13 @@ Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description
-Listfiles for mkinitrd used by the OSR Cluster environment.
+Listfiles for mkinitrd used by the OSR Cluster.
 
 %prep
 %setup -n comoonics-bootimage-%{version}
 
-%build
-
+#%build
+#
 %install
 install -d -m 755 $RPM_BUILD_ROOT
 #install -d -m 755 $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage
@@ -93,10 +93,10 @@ install -d -m 755 $RPM_BUILD_ROOT
 #install -m644 system-cfg-files/rpms.initrd.d/python.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/rpms.initrd.d/python.list
 #install -m644 system-cfg-files/rpms.initrd.d/rhcs5.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/rpms.initrd.d/rhcs5.list
 
-%postun
-
-%post
-
+#%postun
+#
+#%post
+#
 %files
 #%attr(644, root, root) %{CONFIGDIR}/bootimage/basefiles.list
 #%attr(644, root, root) %{CONFIGDIR}/bootimage/rpms.list
@@ -135,7 +135,10 @@ rm -rf %{buildroot}
 - first revision
 # ------
 # $Log: comoonics-bootimage-listfiles-el5.spec,v $
-# Revision 1.11  2008-12-05 16:12:58  marc
+# Revision 1.12  2008-12-08 15:43:04  marc
+# rpmlint Bug#290
+#
+# Revision 1.11  2008/12/05 16:12:58  marc
 # First step to go rpmlint compat BUG#230
 #
 # Revision 1.10  2008/12/01 14:46:24  marc

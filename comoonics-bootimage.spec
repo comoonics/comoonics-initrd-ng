@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.82 2008-12-08 15:05:25 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.83 2008-12-08 15:43:04 marc Exp $
 #
 ##
 ##
@@ -75,7 +75,7 @@ Scripts for creating an initrd in a OSR cluster environment
 Version: 0.1
 Release: 2
 Requires: comoonics-bootimage >= 1.3-1
-Summary: listfiles for special network configurations (vlan)
+Summary: Listfiles for special network configurations (vlan)
 Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
@@ -86,7 +86,7 @@ Extra listfiles for special network configurations
 Version: 0.1
 Release: 5
 Requires: comoonics-bootimage >= 1.3-33
-Summary: listfiles for nfs sharedroot configurations
+Summary: Listfiles for nfs sharedroot configurations
 Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
@@ -97,7 +97,7 @@ Extra listfiles for nfs sharedroot configurations
 Version: 0.1
 Release: 2
 Requires: comoonics-bootimage >= 1.3-33
-Summary: listfiles for ocfs2 sharedroot configurations
+Summary: Listfiles for ocfs2 sharedroot configurations
 Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
@@ -112,10 +112,9 @@ Requires: comoonics-bootimage >= 1.3-36
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-rhel
 Requires: comoonics-bootimage-extras-dm-multipath-rhel
-Summary: listfiles for device mapper multipath sharedroot configurations for RedHat Enterprise Linux
+Summary: Listfiles for device mapper in OSR
 Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
-Distribution: RedHat Enterprise Linux
 
 %description extras-dm-multipath
 Extra listfiles for device mapper multipath OSR configurations
@@ -126,10 +125,9 @@ Release: 2
 Requires: comoonics-bootimage >= 1.3-36
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-rhel
-Summary: listfiles for device mapper multipath sharedroot configurations for RedHat Enterprise Linux
+Summary: Listfiles for device mapper multipath OSR configurations for RHEL
 Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
-Distribution: RedHat Enterprise Linux
 
 %description extras-dm-multipath-rhel
 Extra listfiles for device mapper multipath OSR configurations for RHEL
@@ -138,7 +136,7 @@ Extra listfiles for device mapper multipath OSR configurations for RHEL
 Version: 0.1
 Release: 3
 Requires: comoonics-bootimage >= 1.3-8
-Summary: listfiles for rdac multipath sharedroot configurations
+Summary: Listfiles for rdac multipath sharedroot configurations
 Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
@@ -149,7 +147,7 @@ Extra listfiles for rdac multipath OSR configurations
 Version: 0.1
 Release: 5
 Requires: comoonics-bootimage >= 1.3-14
-Summary: listfiles for xen support in the open-sharedroot cluster
+Summary: Listfiles for xen support in the open-sharedroot cluster
 Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
@@ -160,7 +158,7 @@ listfiles for xen support in the OSR cluster
 Version: 0.1
 Release: 3
 Requires: comoonics-bootimage >= 1.3-33
-Summary: listfiles for iscsi support in the open-sharedroot cluster
+Summary: Listfiles for iscsi support in the open-sharedroot cluster
 Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
@@ -171,7 +169,7 @@ ISCSI support in the OSR cluster
 Version: 0.1
 Release: 3
 Requires: comoonics-bootimage >= 1.3-33
-Summary: listfiles for drbd support in the open-sharedroot cluster
+Summary: Listfiles for drbd support in the open-sharedroot cluster
 Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
@@ -182,7 +180,7 @@ DRBD support in the OSR cluster
 Version: 0.1
 Release: 2
 Requires: comoonics-bootimage >= 1.3-36
-Group: Storage/Mannagement
+Group:   System Environment/Base
 Summary: OSR listfilesfiles for all distributions 
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
@@ -195,7 +193,7 @@ Release: 2
 Requires: comoonics-bootimage >= 1.3-36
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-all
-Group: Storage/Mannagement
+Group: System Environment/Base
 Summary: Extrafiles for RedHat Enterprise Linux 
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
@@ -208,7 +206,7 @@ Release: 2
 Requires: comoonics-bootimage >= 1.3-36
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-rhel
-Group: Storage/Mannagement
+Group: System Environment/Base
 Summary: Extrafiles for RedHat Enterprise Linux Version 4 
 Conflicts: comoonics-bootimage-listfiles-rhel5 
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
@@ -222,7 +220,7 @@ Release: 2
 Requires: comoonics-bootimage >= 1.3-36
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-rhel
-Group: Storage/Mannagement
+Group: System Environment/Base
 Summary: Extrafiles for RedHat Enterprise Linux Version 5
 Conflicts: comoonics-bootimage-listfiles-rhel4 
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
@@ -252,7 +250,7 @@ Requires: comoonics-cs-sysreport-templates
 Requires: comoonics-fenceacksv-py
 Requires: comoonics-fenceacksv-plugins-py
 Summary: Extrafiles for plugins in fenceacksv
-Group: System Environment/Servers
+Group: System Environment/Server
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description listfiles-fenceacksv-plugins
@@ -262,7 +260,7 @@ OSR extrafiles for plugins in fenceacksv.
 Version: 0.1
 Release: 2
 Requires: comoonics-bootimage >= 1.3-1
-Summary: files needed for compatibility to 1.2 releases
+Summary: Files needed for compatibility to 1.2 releases
 Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
@@ -279,7 +277,7 @@ Group:   System Environment/Servers
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description fenceacksv
-The Fence ackserver is a service running in the fencedchroot and managing manual fenced nodes
+The Fenceackserver is a service for last resort actions
 
 %package fenceclient-ilo
 Version: 0.1
@@ -301,26 +299,26 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 %description fenceclient-ilomp
 A fence client for iloMP cards of HP inegrity servers.
 
-%package fenceclient-vmware
-Version: 0.1
-Release: 5
-Summary: Fencing for vmware
-Group:   System Environment/Base
-BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
-
-%description fenceclient-vmware
-Fencing for vmware client
-
-%package fencemaster-vmware
-Version: 0.1
-Release: 2
-Summary: Fencing for vmware
-Group:   System Environment/Base
-BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
-AutoReqProv: no
-
-%description fencemaster-vmware
-Fencing for the vmware master server
+#%package fenceclient-vmware
+#Version: 0.1
+#Release: 5
+#Summary: Fencing for vmware
+#Group:   System Environment/Base
+#BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+#
+#%description fenceclient-vmware
+#Fencing for vmware client
+#
+#%package fencemaster-vmware
+#Version: 0.1
+#Release: 2
+#Summary: Fencing for vmware
+#Group:   System Environment/Base
+#BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+#AutoReqProv: no
+#
+#%description fencemaster-vmware
+#Fencing for the vmware master server
 
 %prep
 %setup -q
@@ -362,11 +360,11 @@ install -m755 %{FENCECLIENTS_SOURCE}/fence_ilomp.py  $RPM_BUILD_ROOT/%{FENCECLIE
 install -m755 %{FENCECLIENTS_SOURCE}/rpms-fence_ilomp.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/rpms.initrd.d/fence_ilomp.list
 
 # Files for fence-vmware
-install -m755 %{FENCECLIENTS_SOURCE}/fence_vmware_client  $RPM_BUILD_ROOT/%{FENCECLIENTS_DIR}
-install -m755 %{FENCECLIENTS_SOURCE}/rpms-fence_vmware_client.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/rpms.initrd.d/fence_vmware_client.list
-install -m755 %{FENCECLIENTS_SOURCE}/fence_vmware_master  $RPM_BUILD_ROOT/%{FENCECLIENTS_DIR}
-install -m755 %{FENCECLIENTS_SOURCE}/README.fence_vmware  $RPM_BUILD_ROOT/%{FENCECLIENTS_DOC}
-install -m755 %{FENCECLIENTS_SOURCE}/INSTALL.fence_vmware  $RPM_BUILD_ROOT/%{FENCECLIENTS_DOC}
+#install -m755 %{FENCECLIENTS_SOURCE}/fence_vmware_client  $RPM_BUILD_ROOT/%{FENCECLIENTS_DIR}
+#install -m755 %{FENCECLIENTS_SOURCE}/rpms-fence_vmware_client.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/rpms.initrd.d/fence_vmware_client.list
+#install -m755 %{FENCECLIENTS_SOURCE}/fence_vmware_master  $RPM_BUILD_ROOT/%{FENCECLIENTS_DIR}
+#install -m755 %{FENCECLIENTS_SOURCE}/README.fence_vmware  $RPM_BUILD_ROOT/%{FENCECLIENTS_DOC}
+#install -m755 %{FENCECLIENTS_SOURCE}/INSTALL.fence_vmware  $RPM_BUILD_ROOT/%{FENCECLIENTS_DOC}
 
 %postun
 
@@ -592,7 +590,7 @@ fi
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/network.list
 
 %files listfiles-fenceacksv-plugins
-%attr(0644, root, root) %dir %{CONFIGDIR}/bootimage-chroot/rpms.initrd.d/fenceacksv-plugins.list
+%config %attr(0644, root, root) %dir %{CONFIGDIR}/bootimage-chroot/rpms.initrd.d/fenceacksv-plugins.list
 
 %files fenceacksv
 %attr(0755, root, root) %{FENCEACKSV_DIR}/fence_ack_server.py*
@@ -605,7 +603,7 @@ fi
 %attr(0644, root, root) %{FENCEACKSV_DIR}/server.cert
 %attr(0644, root, root) %{FENCEACKSV_DIR}/CA.pkey
 %attr(0644, root, root) %{FENCEACKSV_DIR}/CA.cert
-%attr(0755, root, root) %{INITDIR}/fenceacksv
+%config %attr(0755, root, root) %{INITDIR}/fenceacksv
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage-chroot/files.initrd.d/fenceacksv.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage-chroot/rpms.initrd.d/fenceacksv.list
 #%config(noreplace)     %{SYSCONFIGDIR}/fenceacksv
@@ -621,18 +619,18 @@ fi
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fence_ilomp.list
 %doc %attr(0644, root, root) CHANGELOG
 
-%files fenceclient-vmware
-%attr(0755, root, root) %{FENCECLIENTS_DIR}/fence_vmware_client
-%doc %attr(0644, root, root) %{FENCECLIENTS_DOC}/INSTALL.fence_vmware
-%doc %attr(0644, root, root) %{FENCECLIENTS_DOC}/README.fence_vmware
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fence_vmware_client.list
-%doc %attr(0644, root, root) CHANGELOG
-
-%files fencemaster-vmware
-%attr(0755, root, root) %{FENCECLIENTS_DIR}/fence_vmware_master
-%doc %attr(0644, root, root) %{FENCECLIENTS_DOC}/INSTALL.fence_vmware
-%doc %attr(0644, root, root) %{FENCECLIENTS_DOC}/README.fence_vmware
-%doc %attr(0644, root, root) CHANGELOG
+#%files fenceclient-vmware
+#%attr(0755, root, root) %{FENCECLIENTS_DIR}/fence_vmware_client
+#%doc %attr(0644, root, root) %{FENCECLIENTS_DOC}/INSTALL.fence_vmware
+#%doc %attr(0644, root, root) %{FENCECLIENTS_DOC}/README.fence_vmware
+#%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fence_vmware_client.list
+#%doc %attr(0644, root, root) CHANGELOG
+#
+#%files fencemaster-vmware
+#%attr(0755, root, root) %{FENCECLIENTS_DIR}/fence_vmware_master
+#%doc %attr(0644, root, root) %{FENCECLIENTS_DOC}/INSTALL.fence_vmware
+#%doc %attr(0644, root, root) %{FENCECLIENTS_DOC}/README.fence_vmware
+#%doc %attr(0644, root, root) CHANGELOG
 
 %clean
 rm -rf %{buildroot}
@@ -857,21 +855,24 @@ rm -rf %{buildroot}
 * Wed Feb 07 2007 Marc Grimme <grimme@atix.de - 0.1-16
 - introducted changelog
 
-%changelog fenceclient-vmware
-* Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-5
-- First version on the way to rpmlint BUG#290
-* Wed Feb 07 2007 Marc Grimme <grimme@atix.de - 0.1-4
-- introducted changelog
-
-%changelog fencemaster-vmware
-* Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-2
-- First version on the way to rpmlint BUG#290
-* Wed Feb 07 2007 Marc Grimme <grimme@atix.de - 0.1-1
-- introducted changelog
-
+#%changelog fenceclient-vmware
+#* Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-5
+#- First version on the way to rpmlint BUG#290
+#* Wed Feb 07 2007 Marc Grimme <grimme@atix.de - 0.1-4
+#- introducted changelog
+#
+#%changelog fencemaster-vmware
+#* Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-2
+#- First version on the way to rpmlint BUG#290
+#* Wed Feb 07 2007 Marc Grimme <grimme@atix.de - 0.1-1
+#- introducted changelog
+#
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.82  2008-12-08 15:05:25  marc
+# Revision 1.83  2008-12-08 15:43:04  marc
+# rpmlint Bug#290
+#
+# Revision 1.82  2008/12/08 15:05:25  marc
 # rpmlint Bug#290
 #
 # Revision 1.81  2008/12/05 16:12:58  marc
