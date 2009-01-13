@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.63 2008-08-14 13:34:58 marc Exp $
+# $Id: boot-lib.sh,v 1.63.2.1 2009-01-13 14:41:10 marc Exp $
 #
 # @(#)$File$
 #
@@ -50,7 +50,8 @@ init_cmd_file="/var/init_cmd"
 init_chroot_file="/var/init_chroot_file"
 # the disk where the bootlog should be written to (default /dev/fd0).
 diskdev="/dev/fd0"
-[ -e /usr/bin/logger ] && logger="/usr/bin/logger -t com-bootlog"
+which logger &>/dev/null
+[ $? -eq 0 ] && logger="logger -t com-bootlog"
 modules_conf="/etc/modprobe.conf"
 
 # Default init cmd is bash
@@ -1071,7 +1072,10 @@ function exec_local_stabilized() {
 
 
 # $Log: boot-lib.sh,v $
-# Revision 1.63  2008-08-14 13:34:58  marc
+# Revision 1.63.2.1  2009-01-13 14:41:10  marc
+# Bugfix for Bug #313 (/usr/bin/logger in /bin/logger)
+#
+# Revision 1.63  2008/08/14 13:34:58  marc
 # - made _stepmode local
 # - added welcome
 # - changed order of umount because of problems with nfs
