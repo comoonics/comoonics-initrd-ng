@@ -72,3 +72,5 @@ uname
 wget
 which
 xargs
+/etc/passwd
+/etc/group
