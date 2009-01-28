@@ -1,2 +1,5 @@
 portmap
 nfs-utils
+libevent
+nfs-utils-lib
+cyrus-sasl-lib
