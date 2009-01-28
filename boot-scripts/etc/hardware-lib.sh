@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.20 2008-11-18 08:48:28 marc Exp $
+# $Id: hardware-lib.sh,v 1.21 2009-01-28 12:54:18 marc Exp $
 #
 # @(#)$File$
 #
@@ -43,7 +43,8 @@
 #  SOURCE
 #
 function hardware_start_services() {
-    ${distribution}_hardware_start_services
+  local distribution=$(repository_get_value distribution)
+  ${distribution}_hardware_start_services
 }
 #************hardware_start_services
 
@@ -58,7 +59,8 @@ function hardware_start_services() {
 #  SOURCE
 #
 function udev_start() {
-	${distribution}_udev_start
+  local distribution=$(repository_get_value distribution)
+  ${distribution}_udev_start
 }
 #************udev_start
 
@@ -136,7 +138,6 @@ function scsi_start() {
     done
     return_code
   fi
-  step
 
   if [ -n "$scsifailover" ] && [ "$scsifailover" = "rdac" ]; then
     echo_local "Loading mppVhba module"
@@ -188,20 +189,20 @@ function dm_mp_start() {
   echo_local -n "Setting up Multipath"
   exec_local multipath
   return_code
-  stabilized -g 5 -t hash /proc/partitions
+  [ -e /proc/partitions ] && stabilized --type=hash --interval=600 --good=5 /proc/partitions
 
   exec_local_debug multipath -l
 
   echo_local -n "Restarting udev "
   exec_local udev_start
   return_code
-  stabilized -g 5 -t hash /proc/partitions
+  [ -e /proc/partitions ] && stabilized --type=hash --interval=600 --good=5 /proc/partitions
 
   echo_local -n "Setting up devicemapper partitions"
   if [ -x /sbin/kpartx ]; then
     /sbin/dmsetup ls --target multipath --exec "/sbin/kpartx -a"
   fi
-  stabilized -g 5 -t hash /proc/partitions
+  [ -e /proc/partitions ] && stabilized --type=hash --interval=600 --good=5 /proc/partitions
   return_code
 }
 #************ dm_mp_start
@@ -373,6 +374,7 @@ function setHWClock() {
 #  SOURCE
 #
 function hardware_detect() {
+  local distribution=$(repository_get_value distribution)
   echo_local -n "Detecting Hardware "
   # detecting xen
   xen_domx_detect
@@ -428,9 +430,53 @@ function add_scsi_device() {
 }
 #************ add_scsi_device
 
+#****f* boot-lib.sh/validate_storage
+#  NAME
+#    validate_storage
+#  SYNOPSIS
+#    function validate_storage() {
+#  DESCRIPTION
+#    Validates the storage setup
+#  SOURCE
+#
+function validate_storage() {
+	return 0
+}
+
+#****f* boot-lib.sh/sysctl_load
+#  NAME
+#    sysctl_load
+#  SYNOPSIS
+#    function sysctl_load() {
+#  DESCRIPTION
+#    Loads the sysctls if available
+#  SOURCE
+#
+function sysctl_load() {
+	local sysctlconf="$1"
+	[ -z "$sysctlconf" ] && sysctlconf="/etc/sysctl.conf" 
+	if [ -e "$sysctlconf" ]; then
+		echo_local "Loading sysctl.."
+		echo_local_debug "sysctl.conf: $sysctlconf"
+		exec_local "sysctl -p $sysctlconf > /dev/null"
+		return_code
+	fi
+}
+#**************** sysctl_load
+
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.20  2008-11-18 08:48:28  marc
+# Revision 1.21  2009-01-28 12:54:18  marc
+# Many changes:
+# - moved some functions to std-lib.sh
+# - no "global" variables but repository
+# - bugfixes
+# - support for step with breakpoints
+# - errorhandling
+# - little clean up
+# - better seperation from cc and rootfs functions
+#
+# Revision 1.20  2008/11/18 08:48:28  marc
 # - implemented RFE-BUG 289
 #   - possiblilty to execute initrd from shell or insite initrd to analyse behaviour
 #

@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.56 2008-12-01 11:22:47 marc Exp $
+# $Id: gfs-lib.sh,v 1.57 2009-01-28 12:53:53 marc Exp $
 #
 # @(#)$File$
 #
@@ -107,6 +107,8 @@ function getGFSMinorVersion {
 #  SOURCE
 function gfs_getdefaults {
 	local param=$1
+	local distribution=$(repository_get_value distribution)
+	
 	case "$param" in
 		lock_method|lockmethod)
 		    echo "lock_dlm"
@@ -117,9 +119,6 @@ function gfs_getdefaults {
 		root_source|rootsource)
 		    echo "scsi"
 		    ;;
-        readonly)
-            echo 0
-            ;;
 		rootfs|root_fs)
 			if [ -n "$distribution" ]; then
 	          if [ ${distribution:0:4} = "sles" ]; then
@@ -143,6 +142,32 @@ function gfs_getdefaults {
 	esac
 }
 #********** clusterfs_getdefaults
+
+#****f* clusterfs-lib.sh/gfs_validate
+#  NAME
+#    gfs_validate
+#  SYNOPSIS
+#    function gfs_validate(cluster_conf)
+#  DESCRIPTION
+#    validates the cluster configuration. 
+#  SOURCE
+function gfs_validate {
+  local cluster_conf=$1
+  local xml_cmd=$2
+  
+  [ -z "$cluster_conf" ] && cluster_conf="/etc/cluster/cluster.conf"
+
+  [ -z "$xml_cmd" ] && xml_cmd="${ccs_xml_query} -f $cluster_conf"
+
+  errors=$($xml_cmd -q nodeids 2>&1 >&3)
+  if [ -n "$errors" ]; then
+  	return 1
+  else
+    return 0
+  fi
+}
+#*********** cc_validate
+
 
 #****f* boot-scripts/etc/clusterfs-lib.sh/gfs_get_rootfs
 #  NAME
@@ -728,7 +753,6 @@ function gfs_services_restart {
       echo $service > $new_root/${cdsl_local_dir}/FAILURE_$service
 #      return $?
     fi
-    step
   done
   return $return_c
 }
@@ -790,11 +814,10 @@ function gfs_start_lock_dlm {
 #  SOURCE
 #
 function gfs_start_cman {
-  local repository="configparams"
   local cmd="cman_tool join -w"
   
-  if repository_has_key $repository votes; then
-  	local votes=$(repository_get_value $repository votes)
+  if repository_has_key votes; then
+  	local votes=$(repository_get_value votes)
   	cmd="$cmd -v $votes"
 	echo_local_debug "Votes value has been set to $votes"
   fi
@@ -935,7 +958,7 @@ function gfs_restart_ccsd {
 function gfs_start_clvmd {
    chroot_path=$1
 
-   echo_local -n "Starting clvmd ($chroot_path) "
+   #echo_local -n "Starting clvmd ($chroot_path) "
    start_service_chroot $chroot_path /usr/sbin/clvmd
    return_code $?
    sleep 10
@@ -966,6 +989,7 @@ function gfs_stop_clvmd {
    if pidof clvmd > /dev/null; then
        killall -9 clvmd
    fi
+   sleep 10
    return_code $?
 }
 #******gfs_stop_clvmd
@@ -1148,8 +1172,51 @@ function gfs_init {
 }
 #********* gfs_init
 
+#****f* gfs-lib.sh/gfs_fsck_needed
+#  NAME
+#    gfs_fsck_needed
+#  SYNOPSIS
+#    function gfs_fsck_needed(root, rootfs)
+#  DESCRIPTION
+#    Will always return 1 for no fsck needed. This can only be triggered by rootfsck 
+#    bootoption.
+#
+function gfs_fsck_needed {
+	return 1
+}
+#********* gfs_fsck_needed
+
+#****f* gfs-lib.sh/gfs_fsck
+#  NAME
+#    gfs_fsck
+#  SYNOPSIS
+#    function gfs_fsck_needed(root, rootfs)
+#  DESCRIPTION
+#    If this function is called. It will always execute an gfsfsck on the given root.
+#    Be very very carefull with this function!!
+#
+function gfs_fsck {
+	local root="$1"
+	local fsck="fsck.gfs"
+	local options="-y"
+	echo_local -n "Calling $fsck on filesystem $root"
+	exec_local $fsck $options $root
+	return_code
+}
+#********* gfs_fsck
+
 # $Log: gfs-lib.sh,v $
-# Revision 1.56  2008-12-01 11:22:47  marc
+# Revision 1.57  2009-01-28 12:53:53  marc
+# Many changes:
+# - moved some functions to std-lib.sh
+# - no "global" variables but repository
+# - bugfixes
+# - support for step with breakpoints
+# - errorhandling
+# - little clean up
+# - better seperation from cc and rootfs functions
+#
+# Revision 1.56  2008/12/01 11:22:47  marc
 # fixed Bug #300 that clutype is setup where it should not
 #
 # Revision 1.55  2008/12/01 09:52:33  marc

@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc,v 1.17 2008-08-14 14:37:10 marc Exp $
+# $Id: linuxrc,v 1.18 2009-01-28 12:57:32 marc Exp $
 #
 # @(#)$File$
 #
@@ -34,7 +34,7 @@
 #****h* comoonics-bootimage/linuxrc
 #  NAME
 #    linuxrc
-#    $Id: linuxrc,v 1.17 2008-08-14 14:37:10 marc Exp $
+#    $Id: linuxrc,v 1.18 2009-01-28 12:57:32 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -52,23 +52,37 @@
 
 # TODO
 
+mkdir /tmp /proc /sys 2>/dev/null
+
+source /etc/std-lib.sh
 source /etc/boot-lib.sh
 source /etc/chroot-lib.sh
-source /etc/std-lib.sh
-
-mkdir -p /proc
-mount -t proc proc /proc 2>/dev/null
-if cat /proc/cmdline | grep com-expert; then
-	export PS1="comoonics \! > "
-	/bin/bash
-fi
-umount /proc
-
-distribution=$(getDistribution)
-[ -e /etc/${distribution}/boot-lib.sh ] && source /etc/${distribution}/boot-lib.sh
+source /etc/repository-lib.sh
 
 exec 3>/dev/console
 exec 4>/dev/console
+
+mkdir -p /proc
+mount -t proc proc /proc 2>/dev/null
+
+repository_store_value shellrcfile /etc/bashrc
+repository_store_value shellissue /etc/issue
+repository_store_value shellissuetmp /tmp/issue
+repository_store_value shell "/bin/bash --rcfile $(repository_get_value shellrcfile)"
+repository_store_value logo "$atixlogofile"
+
+shell=$(repository_get_value shell)
+[ -z "$shell" ] && shell="/bin/sh" 
+if cat /proc/cmdline | grep com-expert; then
+    echo -e "Expertshell started. Change anything you like here." > $(repository_get_value shellissuetmp)
+	echo "Type exit to continue work.." >> $(repository_get_value shellissuetmp)
+	$shell
+fi
+umount /proc
+unset shell
+
+distribution=$(getDistribution)
+[ -e /etc/${distribution}/boot-lib.sh ] && source /etc/${distribution}/boot-lib.sh
 
 initEnv
 
@@ -84,15 +98,20 @@ if [ -e "$build_file" ]; then
   cat ${build_file}
 fi
 
+TERM=xterm
+export TERM
+mkdir -p $(dirname $bootlog)
 if [ -n "$logger" ]; then
-  exec 3>$bootlog 4>$bootlog 5>/dev/null
+  exec 3>>$bootlog 4>>$bootlog 5>/dev/null
 #  exec 3>/dev/console 4>/dev/console
 #  exec 5> $bootlog
-  ./linuxrc.generic.sh 2>$bootlog | tee /dev/console | $logger
+  exec 2> >(tee -a $bootlog | tee /dev/console | $logger)
+  ./linuxrc.generic.sh | tee -a $bootlog | tee /dev/console | $logger
 else
-  exec 3>/dev/null 4>$bootlog
-  exec 3>$bootlog
-  ./linuxrc.generic.sh 2> $bootlog
+  exec 3>/dev/null 4>>$bootlog
+  exec 3>>$bootlog
+  exec 2> >(tee -a $bootlog | tee /dev/console)
+  ./linuxrc.generic.sh >> $bootlog
 fi
 
 echo "Returned from linuxrc.generic.sh."
@@ -105,30 +124,40 @@ error_code=0
 
 
 #echo "Init_cmd: $init_cmd, newroot: $newroot"
-
+shell=$(repository_get_value shell)
+[ -z "$shell" ] && shell="/bin/sh" 
 if [ -n "$error_code" ] && [ $error_code -eq 0 ]; then
   exec 1>&- 2>&- 3>&- 4>&- 5>&-
   exec 1>/dev/console 2>/dev/console
   switchRoot $newroot
 elif [ -n "$error_code" ] && [ $error_code -eq 2 ]; then
-  echo_local "Userquit falling back to bash.."
-  exec 1>/dev/console 2>/dev/console /bin/bash
+  echo "Userquit falling back to bash.." > $(repository_get_value shell_issuetmp)
+  exec 1>/dev/console 2>/dev/console $shell
 elif [ -n "$error_code" ] && [ $error_code -eq 4 ]; then
-  echo_local "Error occured. Starting maintenance mode"
-  export PS1="comoonics \! > "
-  exec 1>/dev/console 2>/dev/console /bin/bash
+  echo_local "Error occured. Starting maintenance mode" > $(repository_get_value shell_issuetmp)
+  exec 1>/dev/console 2>/dev/console $shell
 else
-  echo_local "Error starting init-process falling back to bash."
+  echo "Error starting init-process falling back to bash." > $(repository_get_value shell_issuetmp)
 #  /rescue.sh
   exec 1>&- 2>&- 3>&- 4>&- 5>&-
   exec 1>/dev/console 2>/dev/console
-  exec /bin/bash
+  exec $shell
 fi
 #********** main
 
 ################
 # $Log: linuxrc,v $
-# Revision 1.17  2008-08-14 14:37:10  marc
+# Revision 1.18  2009-01-28 12:57:32  marc
+# Many changes:
+# - moved some functions to std-lib.sh
+# - no "global" variables but repository
+# - bugfixes
+# - support for step with breakpoints
+# - errorhandling
+# - little clean up
+# - better seperation from cc and rootfs functions
+#
+# Revision 1.17  2008/08/14 14:37:10  marc
 # - changed to welcome
 #
 # Revision 1.16  2008/07/03 12:44:49  mark

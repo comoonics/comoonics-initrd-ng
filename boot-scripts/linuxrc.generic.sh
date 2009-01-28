@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.65 2008-12-01 12:31:54 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.66 2009-01-28 12:57:44 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.65 2008-12-01 12:31:54 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.66 2009-01-28 12:57:44 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -58,37 +58,19 @@
 # initstuff is done in here
 
 predir=$(dirname $0)
-. ${predir}/etc/sysconfig/comoonics
+source ${predir}/etc/std-lib.sh
+sourceLibs $predir
 
-. ${predir}/etc/chroot-lib.sh
-. ${predir}/etc/boot-lib.sh
-. ${predir}/etc/hardware-lib.sh
-. ${predir}/etc/network-lib.sh
-. ${predir}/etc/clusterfs-lib.sh
-. ${predir}/etc/std-lib.sh
-. ${predir}/etc/stdfs-lib.sh
-. ${predir}/etc/defaults.sh
-. ${predir}/etc/xen-lib.sh
-. ${predir}/etc/repository-lib.sh
-[ -e ${predir}/etc/iscsi-lib.sh ] && source ${predir}/etc/iscsi-lib.sh
-[ -e ${predir}/etc/drbd-lib.sh ] && source ${predir}/etc/drbd-lib.sh
+export predir
+repository_store_value shellrcfile ${predir}/etc/bashrc
+repository_store_value shellissue ${predir}/etc/issue
+repository_store_value shellissuetmp ${predir}/tmp/issue
+repository_store_value shell "/bin/bash --rcfile $(repository_get_value shellrcfile)"
+repository_store_value logo "${predir}/$atixlogofile"
+repository_store_value sysctlfile "${predir}/etc/sysctl.conf"
 
-clutype=$(getCluType)
-. ${predir}/etc/${clutype}-lib.sh
-
-# including all distribution dependent files
-distribution=$(getDistribution)
-[ -e ${predir}/etc/${distribution}/boot-lib.sh ] && source ${predir}/etc/${distribution}/boot-lib.sh
-[ -e ${predir}/etc/${distribution}/hardware-lib.sh ] && source ${predir}/etc/${distribution}/hardware-lib.sh
-[ -e ${predir}/etc/${distribution}/network-lib.sh ] && source ${predir}/etc/${distribution}/network-lib.sh
-[ -e ${predir}/etc/${distribution}/clusterfs-lib.sh ] && source ${predir}/etc/${distribution}/clusterfs-lib.sh
-[ -e ${predir}/etc/${distribution}/${clutype}-lib.sh ] && source ${predir}/etc/${distribution}/${clutype}-lib.sh
-[ -e ${predir}/etc/${distribution}/xen-lib.sh ] && source ${predir}/etc/${distribution}/xen-lib.sh
-[ -e ${predir}/etc/${distribution}/iscsi-lib.sh ] && source ${predir}/etc/${distribution}/iscsi-lib.sh
-[ -e ${predir}/etc/${distribution}/drbd-lib.sh ] && source ${predir}/etc/${distribution}/drbd-lib.sh
-
-if [ $# -gt 0 ]; then
-  echo_local -n "Checking commandline parmeters"
+if [ $# -gt 1 ]; then
+  echo_local -n "Checking commandline parmeters \"$*\""
   check_cmd_params $*
   return_code 0
 fi
@@ -97,10 +79,12 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.65 $ $Date: 2008-12-01 12:31:54 $'
+echo_local 'Internal Version $Revision: 1.66 $ $Date: 2009-01-28 12:57:44 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
+getParameter newroot "/mnt/newroot" &>/dev/null
+getParameter cluster_conf $cluster_conf &>/dev/null
 
 x=`cat /proc/version`;
 KERNEL_VERSION=`expr "$x" : 'Linux version \([^ ]*\)'`
@@ -111,17 +95,15 @@ else
   modules_conf="/etc/modprobe.conf"
 fi
 
-
 # boot parameters
 echo_local -n "Scanning for Bootparameters..."
-debug=$(getParameter com-debug $debug)
-stepmode=$(getParameter com-step $stepmode)
-dstepmode=$(getParameter com-dstep $dstepmode)
-nousb=$(getParameter nousb)
+getParameter debug $debug &>/dev/null
+getParameter step $stepmode &>/dev/null
+getParameter dstep $dstepmode &>/dev/null
+getParameter nousb &>/dev/null
 return_code 0
 
 echo_local_debug "*****************************"
-# step
 echo_local -en $"\t\tPress 'I' to enter interactive startup."
 echo_local
 
@@ -131,128 +113,104 @@ echo_local
 read -n1 -t5 confirm
 if [ "$confirm" = "i" ]; then
   echo_local -e "\t\tInteractivemode recognized. Switching step_mode to on"
-  stepmode=1
+  repository_store_value step 1
 fi
 wait
+
+echo_local "Validating cluster configuration."
+exec_local cc_validate
+return_code || breakp $(errormsg err_cc_validate)
+step "Successfully validated cluster configuration" "ccvalidate"
 
 echo_local -n "Starting udev "
 exec_local udev_start
 return_code
-step "Udev Started"
+step "Udev Started" "udev"
 
 if [ -z "$simulation" ] || [ "$simulation" -ne 1 ]; then
   hardware_detect
-  step "Hardwaredetection finished"
+  step "Hardwaredetection finished" "hwdetect"
 
   echo_local -n "Starting network configuration for lo0"
   exec_local nicUp lo
   return_code
+  # Just load nic drivers
   auto_netconfig
+  found_nics && breakp $(errormsg err_hw_nicdriver)
 fi
+step "NIC modules loaded." "autonetconfig"
 
-echo_local -n "Scanning parameters..."
+echo_local -n "Detecting nodeid & nodename ..."
 
 #nodeid must be first
 nodeid=$(getParameter nodeid $(cc_getdefaults nodeid))
+[ -z "$nodeid" ] && breakp $(errormsg err_cc_nodeid)
 nodename=$(getParameter nodename $(cc_getdefaults nodename))
+[ -z "$nodename" ] && breakp $(errormsg err_cc_nodename)
+echo_local -n "nodeid: $nodeid, nodename: $nodename "
 
-#if we cant detect the nodename an error must be thrown
-if [ -z "$nodename" ]; then
-	failed
-	echo_local ""
-	echo_local "ERROR:"
-	echo_local "  The node name of this cluster node could not be detected"
-	echo_local "HINTS: "
-	echo_local "  - Please verify that the mac address in your cluster configuration is correct."
-	echo_local "  - To be able to start the clusternode, the nodeid or nodename"
-	echo_local "    parameter can be defined as boot parameter."
+sourceRootfsLibs ${predir}
+success
+
+cc_auto_syslogconfig $(repository_get_value cluster_conf) $(repository_get_value nodename)
+is_syslog=$?
+if [ $is_syslog -eq 0 ]; then
+  cc_syslog_start
 fi
 
-rootfs=$(getParameter rootfs $(cc_getdefaults rootfs))
+echo_local -n "Scanning other parameters"
+_ccparameters="votes tmpfix quorumack ip rootvolume rootsource"
+_fsparameters="sourceserver lockmethod root mountopts scsifailover rootfsck mounttimes mountwait"
+echo_local_debug -n "cc: $_ccparameters fs: $_fsparameters "
 
-if [ "$clutype" != "$rootfs" ]; then
-	[ -e ${predir}/etc/${rootfs}-lib.sh ] && source ${predir}/etc/${rootfs}-lib.sh
-	[ -e ${predir}/etc/${distribution}/${rootfs}-lib.sh ] && source ${predir}/etc/${distribution}/${rootfs}-lib.sh
+for _parameter in $_ccparameters; do
+  getParameter $_parameter $(cc_getdefaults $_parameter) &>/dev/null
+done 
+
+for _parameter in $_fsparameters; do
+  getParameter $_parameter $(clusterfs_getdefaults $_parameter) &>/dev/null
+done 
+[ -z "$(repository_get_value root)" ] || [ "$(repository_get_value root)" = "/dev/ram0" ] && repository_set_value rootvolume $rootvolume
+getParameter ro $(clusterfs_getdefaults readonly) &>/dev/null
+getParameter rw &>/dev/null
+if [ -n "$(repository_get_value ro)" ]; then
+  repository_append_value mount_opts "ro"
+elif [ -n "$(repository_get_value rw)" ]; then
+  repository_append_value mount_opts "rw"
 fi
-
-votes=$(getParameter votes $(cc_getdefaults votes))
-tmpfix=$(getParameter tmpfix $(cc_getdefaults tmpfix))
-rootsource=$(getParameter rootsource $(clusterfs_getdefaults rootsource))
-sourceserver=$(getParameter sourceserver $(clusterfs_getdefaults sourceserver))
-lockmethod=$(getParameter lockmethod $(clusterfs_getdefaults lockmethod))
-root=$(getParameter root $(clusterfs_getdefaults root))
-
-rootvolume=$(getParameter rootvolume $(clusterfs_getdefaults rootvolume))
-[ -z "$root" ] || [ "$root" = "/dev/ram0" ] && root=$rootvolume
-
-
-filesystem_ro=$(getParameter ro $(clusterfs_getdefaults readonly))
-filesystem_rw=$(getParameter rw)
-mount_opts=$(getParameter mountopts $(clusterfs_getdefaults mountopts))
-if [ -n "$filesystem_ro" ]; then
-  if [ -z "$mount_opts" ]; then
-    mount_opts="ro"
-  else
-    mount_opts="$mount_opts,ro"
-  fi
-elif [ -n "$filesystem_rw" ]; then
-  if [ -z "$mount_opts" ]; then
-    mount_opts="rw"
-  else
-    mount_opts="$mount_opts,rw"
-  fi
-fi
-
-quorumack=$(getParameter quorumack $(cc_getdefaults quorumack))
-
-scsifailover=$(getParameter scsifailover $(clusterfs_getdefaults scsifailover))
 
 clusterfs_chroot_needed initrd
 __default=$?
-chrootneeded=$(getParameter chroot $__default)
+getParameter chrootneeded $__default &>/dev/null
 success
 
-ipConfig=$(getParameter ip $(cc_getdefaults ip))
-_ipConfig=$(cluster_ip_config $cluster_conf $nodename)
-[ -n "$_ipConfig" ] && ( [ -z "$ipConfig" ] || [ "$ipConfig" = "cluster" ] ) && ipConfig=$_ipConfig
+_ipConfig=$(cluster_ip_config $(repository_get_value cluster_conf) $(repository_get_value nodename))
+[ -n "$_ipConfig" ] && ( [ -z "$(repository_get_value ipConfig)" ] || [ "$(repository_get_value ipConfig)" = "cluster" ] ) && repository_store_value ipConfig $_ipConfig
 
-step "Inialization started"
+step "Inialization started" "init"
 
-echo_local_debug "*****************************"
-echo_local_debug "Debug: $debug"
-echo_local_debug "Stepmode: $stepmode"
-echo_local_debug "Debug-stepmode: $dstepmode"
-echo_local_debug "Clutype: $clutype"
-echo_local_debug "tmpfix: $tmpfix"
-echo_local_debug "rootsource: $rootsource"
-echo_local_debug "root: $root"
-echo_local_debug "lockmethod: $lockmethod"
-echo_local_debug "sourceserver: $sourceserver"
-echo_local_debug "scsifailover: $scsifailover"
-echo_local_debug "quorumack: $quorumack"
-echo_local_debug "nodeid: $nodeid"
-echo_local_debug "nodename: $nodename"
-echo_local_debug "rootfs: $rootfs"
-echo_local_debug "votes: $votes"
-echo_local_debug "nousb: " $nousb
-echo_local_debug "rootvolume: $rootvolume"
-echo_local_debug "mountopts: $mount_opts"
-echo_local_debug "ipConfig: $ipConfig"
-echo_local_debug "chroot_needed: $chrootneeded"
-echo_local_debug "*****************************"
+echo_local_debug "*****<REPOSITORY>***************"
+repository_list_items ":"
+echo_local_debug "*****<REPOSITORY>**********"
 
-step "Parameter loaded"
+step "Parameter loaded" "parameter"
+
+if [ -z "$(repository_get_value ipConfig)" ]; then
+  breakp $(errormsg err_nic_config)
+fi
 
 xen_domx_detect
-if [ $? -ne 0 ] && [ -z "$nousb" ]; then
+if [ $? -ne 0 ] && [ -z "$(repository_get_value nousb)" ]; then
   echo_local -n "Loading USB Modules.."
   exec_local usbLoad
   return_code
   [ -e /proc/bus/usb/devices ] && stabilized --type=hash --interval=300 /proc/bus/usb/devices
 fi
 
+sysctl_load $(repository_get_value sysctlfile)
+
 netdevs=""
-for ipconfig in $ipConfig; do
+for ipconfig in $(repository_get_value ipConfig); do
   dev=$(getPosFromIPString 6, $ipconfig)
 
 #  echo_local "Device $dev"
@@ -267,40 +225,54 @@ for ipconfig in $ipConfig; do
     depmod -a >/dev/null 2>&1
   fi
 done
-step "Network configuration created"
+step "Network configuration created" "netconfig"
 
-for ipconfig in $ipConfig; do
+for ipconfig in $(repository_get_value ipConfig); do
   dev=$(getPosFromIPString 6, $ipconfig)
   nicConfig $ipconfig
 
-  nicAutoUp $ipconfig
+  nicAutoUp $ipconfig || breakp $(errormsg err_nic_load)
   if [ $? -eq 0 ]; then
     echo_local -n "Powering up $dev.."
-    exec_local nicUp $dev >/dev/null 2>&1
+    exec_local nicUp $dev >/dev/null 2>&1 || breakp $(errormsg err_nic_ifup)
     return_code $?
   fi
   netdevs="$netdevs $dev"
 done
-step "Network configuration started"
+step "Network configuration started" "netstart"
 
-bridges=$(cc_auto_getbridges $cluster_conf $nodename)
+bridges=$(cc_auto_getbridges $(repository_get_value cluster_conf) $(repository_get_value nodename))
 if [ -n $bridges ]; then
   for bridge in $bridges; do
      echo_local -e "Setting up network bridge $bridge"
-     network_setup_bridge $bridge $nodename $cluster_conf
+     network_setup_bridge $bridge $(repository_get_value nodename) $(repository_get_value cluster_conf)
      return_code $?
   done
-  step "Network bridges setup finished"
+  step "Network bridges setup finished" "netbridge"
 fi
 
 dm_start
-scsi_start $scsifailover
+scsi_start $(repository_get_value scsi_failover)
 
 # start iscsi if apropriate
-typeset -f isISCSIRootsource >/dev/null 2>&1 && isISCSIRootsource $rootsource
+typeset -f isISCSIRootsource >/dev/null 2>&1 && isISCSIRootsource $(repository_get_value rootsource)
 if [ $? -eq 0 ]; then
 	loadISCSI
-	startISCSI $rootsource $nodename
+	startISCSI $(repository_get_value rootsource) $(repository_get_value nodename)
+fi
+[ -e /proc/scsi/scsi ]  && stabilized --type=hash --interval=600 /proc/scsi/scsi
+if [ "$(repository_get_value scsifailover)" = "mapper" ] || [ "$(repository_get_value scsifailover)" = "devicemapper" ]; then
+  dm_mp_start
+fi
+validate_storage || breakp $(errormsg err_storage_config)
+step "Storage environment started" "storage"
+
+lvm_check $(repository_get_value root)
+lvm_sup=$?
+repository_store_value lvm_sup $lvm_sup
+if [ "$lvm_sup" -eq 0 ]; then
+	lvm_start || breakp $(errormsg err_storage_lvm)
+	step "LVM subsystem started" "lvm"
 fi
 
 # loads kernel modules for cluster stack
@@ -308,65 +280,43 @@ fi
 #       - add cluster_kernel_load
 #       - move below ?
 # 1.3.+ ?
-clusterfs_load $lockmethod
+clusterfs_load $(repository_get_value lockmethod)
 return_code
+step "Cluster, modules loaded" "clusterload"
 
-step "Hardware detected, modules loaded"
-
-if [ "$scsifailover" = "mapper" ] || [ "$scsifailover" = "devicemapper" ]; then
-  dm_mp_start
-fi
-[ -e /proc/scsi/scsi ] && stabilized --type=hash --interval=600 /proc/scsi/scsi
-step "UDEV started"
-
-lvm_check $root
-lvm_sup=$?
-if [ "$lvm_sup" -eq 0 ]; then
-	lvm_start
-	step "LVM subsystem started"
-fi
-
-cc_auto_hosts $cluster_conf
+cc_auto_hosts $(repository_get_value cluster_conf)
 
 # FIXME:
 # Do we have to build it in any case?
 # For ext3?
-if [ $chrootneeded -eq 0 ]; then
+if [ $(repository_get_value chrootneeded) -eq 0 ]; then
   echo_local -n "Building comoonics chroot environment"
-  res=( $(build_chroot $cluster_conf $nodename) )
-  chroot_mount=${res[0]}
-  chroot_path=${res[1]}
+  res=( $(build_chroot $(repository_get_value cluster_conf) $(repository_get_value nodename)) )
+  repository_store_value chroot_mount ${res[0]}
+  repository_store_value chroot_path ${res[1]}
   return_code $?
-  echo_local_debug "res: $res -> chroot_mount=$chroot_mount, chroot_path=$chroot_path"
-  step "chroot environment created"
+  echo_local_debug "res: $res -> chroot_mount="$(repository_get_value chroot_mount)", chroot_path="$(repository_get_value chroot_path)
+  step "chroot environment created" "chroot"
 fi
 
-cc_auto_syslogconfig $cluster_conf $nodename
-is_syslog=$?
-if [ $is_syslog -eq 0 ]; then
-  start_service /sbin/syslogd no_chroot -m 0
-  
-  # start syslog in $chroot_path
-  # but only if /dev is not the same inode as $chroot_path /dev
-  if ! is_same_inode /dev $chroot_path/dev; then
-	cc_auto_syslogconfig $cluster_conf $nodename $chroot_path no
-	start_service_chroot $chroot_path /sbin/syslogd -m 0
-  fi
-
-  step "Syslog services started"
+# but only if /dev is not the same inode as $chroot_path /dev
+if [ $is_syslog -eq 0 ] && ! is_same_inode /dev $(repository_get_value chroot_path)/dev; then
+  cc_auto_syslogconfig $(repository_get_value cluster_conf) $(repository_get_value nodename) $(repository_get_value chroot_path) yes
+  cc_syslog_start $(repository_get_value chroot_path)
+  step "Syslog services started in chroot $(repository_get_value chroot_path)" "syslogchroot"
 fi
 
 # WARNING!
 # DRBD initialization doesn't seem possible before this point!
 # start drbd if appropriate
-typeset -f isDRBDRootsource >/dev/null 2>&1 && isDRBDRootsource $rootsource
+typeset -f isDRBDRootsource >/dev/null 2>&1 && isDRBDRootsource $(repository_get_value rootsource)
 if [ $? -eq 0 ]; then
 	loadDRBD
-	startDRBD $rootsource $nodename
+	startDRBD $(repository_get_value rootsource) $(repository_get_value nodename)
 fi
 
 # or nodes more then one
-if [ -z "$quorumack" ]; then
+if [ -z "$(repository_get_value quorumack)" ]; then
   echo_local -n "Checking for all nodes to be available"
   exec_local cluster_checkhosts_alive
   return_code
@@ -384,17 +334,14 @@ if [ -z "$quorumack" ]; then
 	echo_local "         Otherwise you'll risk split brain with data inconsistency !!!"
 
 	confirm="XXX"
-	if [ $debug ]; then set -x; fi
 	until [ $confirm == "YES" ] || [ $confirm == "NO" ]; do
   		echo_local "USER INPUT: (YES|NO): "
   		read confirm
   		echo_local_debug "confirm: $confirm"
   		if [ $confirm == "NO" ]; then
-  			echo_local "Cluster not acknowledged. Falling back to shell"
-  			exit_linuxrc 1
+  			breakp "Cluster not acknowledged. Falling back to shell"
   		fi
   	done
-  	if [ $debug ]; then set +x; fi
   fi
 fi
 
@@ -403,71 +350,62 @@ if  [ $? -ne 0 ]; then
   setHWClock
 fi
 
-if [ $chrootneeded -eq 0 ]; then
-  clusterfs_services_start $chroot_path "$lockmethod" "$lvm_sup"
-
-  if [ $return_c -ne 0 ]; then
-     echo_local "Could not start all cluster services. Exiting"
-     exit_linuxrc 1
-  fi
-  sleep 5
-
-  step "Cluster services started"
-fi
-
-clusterfs_mount $rootfs $root $newroot $mount_opts 3 5
+# This function starts all services that have to be started prior to mounting the rootfs
+# If need be they should be started in the chroot_path.
+clusterfs_services_start $(repository_get_value chroot_path) "$(repository_get_value lockmethod)" "$(repository_get_value lvm_sup)"
 if [ $return_c -ne 0 ]; then
-   echo_local "Could not mount cluster filesystem $rootfs $root to $mount_point. Exiting ($mount_opts)"
+  breakp $(errormsg err_cc_setup)
+fi
+step "Cluster services started" "clusterstart"
+# sleep 5
+
+if repository_has_key rootfsck || clusterfs_fsck_needed $(repository_get_value root) $(repository_get_value rootfs); then
+	clusterfs_fsck $(repository_get_value root) $(repository_get_value rootfs)
+	if [ $? -ne 0 ]; then
+		errormsgissue err_clusterfs_fsck
+		breakp "Please try to check the rootfilesystem on $(repository_get_value root) manually." 
+	fi
+fi 
+
+clusterfs_mount "$(repository_get_value rootfs)" "$(repository_get_value root)" "$(repository_get_value newroot)" "$(repository_get_value mountopts)" "$(repository_get_value mounttimes)" "$(repository_get_value mountwait)"
+if [ $return_c -ne 0 ]; then
+   breakp $(errormsg err_rootfs_mount)
    exit_linuxrc 1
 fi
-
-step "RootFS mounted"
+step "RootFS mounted return_c ${return_c}" "rootfsmount"
 
 #FIXME: should somehow detect if we are a cluster if not don't mount cdsl
-clusterfs_mount_cdsl $newroot $cdsl_local_dir $nodeid $cdsl_prefix
+clusterfs_mount_cdsl "$(repository_get_value newroot)" "$(repository_get_value cdsl_local_dir)" "$(repository_get_value nodeid)" "$(repository_get_value cdsl_prefix)"
 if [ $return_c -ne 0 ]; then
-   echo_local "Could not mount cdsl $cdsl_local_dir to ${cdsl_prefix}/$nodeid. Exiting"
-   exit_linuxrc 1
+	breakp $(errormsg err_rootfs_mount_cdsl)
 fi
-
-step "CDSL tree mounted"
+step "CDSL tree mounted" "cdsl"
 
 #if [ -n "$debug" ]; then set -x; fi
 #TODO clean up method
 #copy_relevant_files $cdsl_local_dir $newroot $netdevs
 #if [ -n "$debug" ]; then set +x; fi
-step
-
-
-# TODO:
-# remove tmpfix as this is replaced with /comoonics
-if [ -n "$tmpfix" ]; then
-  echo_local -n "Setting up tmp..."
-  exec_local createTemp /dev/ram1
-  return_code
-fi
-
 
 echo_local -n "Mounting the device file system"
 #TODO
 # try an exec_local mount --move /dev $newroot/dev
-exec_local mount --move /dev $newroot/dev
+exec_local mount --move /dev $(repository_get_value newroot)/dev
 _error=$?
-exec_local cp -a $newroot/dev/console /dev/
+exec_local cp -a $(repository_get_value newroot)/dev/console /dev/
 #exec_local mount --bind /dev $newroot/dev
 return_code $_error
 
-echo_local -n "Copying logfile to $newroot/${bootlog}..."
-exec_local cp -f ${bootlog} ${newroot}/${bootlog} || cp -f ${bootlog} ${newroot}/$(basename $bootlog)
-if [ -f ${newroot}/$bootlog ]; then
-  bootlog=${newroot}/$bootlog
+echo_local -n "Copying logfile to "$(repository_get_value newroot)"/${bootlog}..."
+exec_local cp -f ${bootlog} $(repository_get_value newroot)/${bootlog} || cp -f ${bootlog} $(repository_get_value newroot)/$(basename $bootlog)
+if [ -f $(repository_get_value newroot)/$bootlog ]; then
+  repository_store_value bootlog $(repository_get_value newroot)/$bootlog
 else
-  bootlog=${newroot}/$(basename $bootlog)
+  repository_store_value bootlog $(repository_get_value newroot)/$(basename bootlog)
 fi
 return_code_warning
 exec 3>> $bootlog
 exec 4>> $bootlog
-step "Logfiles copied"
+step "Logfiles copied" "logfiles"
 
 # FIXME: Remove line
 #bootlog="/var/log/comoonics-boot.log"
@@ -475,37 +413,37 @@ step "Logfiles copied"
 if [ $is_syslog -eq 0 ]; then
   #TODO: remove lines as syslog can will stay in /comoonics
   echo_local -n "Stopping syslogd..."
-  exec_local stop_service "syslogd" / &&
+  exec_local stop_service "syslogd" /
   return_code
 fi
 
-if [ $chrootneeded -eq 0 ]; then
-  echo_local -n "Moving chroot environment to $newroot"
-  move_chroot $chroot_mount $newroot/$chroot_mount
+if [ $(repository_get_value chrootneeded) -eq 0 ]; then
+  echo_local -n "Moving chroot environment $chroot_mount to $newroot"
+  move_chroot $(repository_get_value chroot_mount) $(repository_get_value newroot)/$(repository_get_value chroot_mount)
   return_code
 
   echo_local -n "Writing information ..."
-  exec_local mkdir -p $newroot/var/comoonics
-  echo $chroot_path > $newroot/var/comoonics/chrootpath
+  exec_local mkdir -p $(repository_get_value newroot)/var/comoonics
+  echo $(repository_get_value chroot_path) > $(repository_get_value newroot)/var/comoonics/chrootpath
   return_code
+  step "Moving chroot successfully done." "movechroot"
 fi
 
 echo_local -n "cleaning up initrd ..."
 exec_local clean_initrd
 success
 echo
+set "Cleaned up initrd" "cleanup"
 
 #TODO umount $newroot/proc again
 
-if [ $chrootneeded -eq 0 ]; then
-  echo_local -n "start services in newroot ..."
-  exec_local prepare_newroot $newroot
-  exec_local clusterfs_services_restart_newroot $newroot "$lockmethod" "$lvm_sup"
-  return_code $?
+echo_local -n "Restart services in newroot ..."
+exec_local prepare_newroot $(repository_get_value newroot)
+exec_local clusterfs_services_restart_newroot $(repository_get_value newroot) "$(repository_get_value lockmethod)" "$(repository_get_value lvm_sup)" "$(repository_get_value chrootpath)" || breakp $(errormsg err_cc_restart_service)
+return_code
+step "Initialization completed." "initcomplete"
 
-  step "Initialization completed."
-fi
-
+newroot=$(repository_get_value newroot)
 echo_local "Starting init-process ($init_cmd)..."
 exit_linuxrc 0 "$init_cmd" "$newroot"
 
@@ -513,7 +451,17 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.65  2008-12-01 12:31:54  marc
+# Revision 1.66  2009-01-28 12:57:44  marc
+# Many changes:
+# - moved some functions to std-lib.sh
+# - no "global" variables but repository
+# - bugfixes
+# - support for step with breakpoints
+# - errorhandling
+# - little clean up
+# - better seperation from cc and rootfs functions
+#
+# Revision 1.65  2008/12/01 12:31:54  marc
 # - more simulation stuff
 # - fixed Bugs within filesystem_ro/filesystem_rw
 #

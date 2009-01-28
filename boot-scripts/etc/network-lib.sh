@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.10 2008-11-18 08:41:59 marc Exp $
+# $Id: network-lib.sh,v 1.11 2009-01-28 12:54:42 marc Exp $
 #
 # @(#)$File$
 #
@@ -143,13 +143,12 @@ function network_setup_bridge {
    local bridgename=$1
    local nodename=$2
    local cluster_conf=$3
-   local repository="bridge"
 
    _bridgename=$(getParameter bridgename)
    if [ -n "$_bridgename" ]; then
      bridgename=$_bridgename
    fi
-   repository_store_value $repository bridgename $bridgename
+   repository_store_value bridgename $bridgename
    local script=$(getParameter bridgescript "/etc/xen/scripts/network-bridge")
    local vifnum=$(getParameter bridgevifnum)
    local netdev=$(getParameter bridgenetdev)
@@ -157,7 +156,6 @@ function network_setup_bridge {
 
    modprobe netloop
    $script start vifnum=$vifnum netdev=$netdev bridge=$bridgename antispoof=$antispoof
-   repository_del_value $repository bridgename $bridgename
 }
 #************ network_setup_bridge
 
@@ -172,6 +170,8 @@ function network_setup_bridge {
 #  SOURCE
 #
 function ip2Config() {
+  local distribution=$(repository_get_value distribution)
+
   if [ $# -eq 1 ]; then
     local ipAddr=$(getPosFromIPString 1, $1)
 
@@ -236,6 +236,20 @@ function auto_netconfig {
 }
 #******** auto_netconfig
 
+#****f* boot-lib.sh/found_nics
+#  NAME
+#    found_nics
+#  SYNOPSIS
+#    function found_nics
+#  DESCRIPTION
+#    Just returns how many NICs were found on this system
+#
+function found_nics {
+  local nics=$(ifconfig -a | grep -v -i "Link encap: Local" | grep -v -i "Link encap:UNSPEC" | grep -i hwaddr | awk '{print $5;};' | wc -l)
+  return $nics
+}
+	
+
 #****f* boot-lib.sh/getPosFromIPString
 #  NAME
 #    getPosFromIPString
@@ -254,7 +268,17 @@ function getPosFromIPString() {
 
 #############
 # $Log: network-lib.sh,v $
-# Revision 1.10  2008-11-18 08:41:59  marc
+# Revision 1.11  2009-01-28 12:54:42  marc
+# Many changes:
+# - moved some functions to std-lib.sh
+# - no "global" variables but repository
+# - bugfixes
+# - support for step with breakpoints
+# - errorhandling
+# - little clean up
+# - better seperation from cc and rootfs functions
+#
+# Revision 1.10  2008/11/18 08:41:59  marc
 # cosmetic change
 #
 # Revision 1.9  2008/10/14 10:57:07  marc

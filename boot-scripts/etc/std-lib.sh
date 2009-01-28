@@ -1,5 +1,5 @@
 #
-# $Id: std-lib.sh,v 1.5 2008-11-18 08:43:06 marc Exp $
+# $Id: std-lib.sh,v 1.6 2009-01-28 12:56:01 marc Exp $
 #
 # @(#)$File$
 #
@@ -29,6 +29,91 @@
 #  DESCRIPTION
 #    Library for std operations
 #*******
+
+#****f* boot-lib.sh/sourceLibs
+#  NAME
+#    sourceLibs
+#  SYNOPSIS
+#    function sourceLibs(predir) {
+#  DESCRIPTION
+#    Sources the libraries needed. Sets up clutype and distribution in repository.
+#  IDEAS
+#  SOURCE
+#
+function sourceLibs {
+	local predir=$1
+	[ -e ${predir}/etc/sysconfig/comoonics ] && . ${predir}/etc/sysconfig/comoonics
+
+    . ${predir}/etc/repository-lib.sh
+    . ${predir}/etc/errors.sh
+    . ${predir}/etc/chroot-lib.sh
+    . ${predir}/etc/boot-lib.sh
+    . ${predir}/etc/hardware-lib.sh
+    . ${predir}/etc/network-lib.sh
+    . ${predir}/etc/clusterfs-lib.sh
+    . ${predir}/etc/stdfs-lib.sh
+    . ${predir}/etc/defaults.sh
+    . ${predir}/etc/xen-lib.sh
+    [ -e ${predir}/etc/iscsi-lib.sh ] && source ${predir}/etc/iscsi-lib.sh
+    [ -e ${predir}/etc/drbd-lib.sh ] && source ${predir}/etc/drbd-lib.sh
+
+    local clutype=$(getCluType)
+    . ${predir}/etc/${clutype}-lib.sh
+
+    # including all distribution dependent files
+    local distribution=$(getDistribution)
+    local temp=( $(getDistributionList) )
+    local shortdistribution=${temp[0]}
+    unset temp
+
+    for _distribution in $shortdistribution $distribution; do
+      [ -e ${predir}/etc/${_distribution}/boot-lib.sh ] && source ${predir}/etc/${_distribution}/boot-lib.sh
+      [ -e ${predir}/etc/${_distribution}/hardware-lib.sh ] && source ${predir}/etc/${_distribution}/hardware-lib.sh
+      [ -e ${predir}/etc/${_distribution}/network-lib.sh ] && source ${predir}/etc/${_distribution}/network-lib.sh
+      [ -e ${predir}/etc/${_distribution}/clusterfs-lib.sh ] && source ${predir}/etc/${_distribution}/clusterfs-lib.sh
+      [ -e ${predir}/etc/${_distribution}/${clutype}-lib.sh ] && source ${predir}/etc/${_distribution}/${clutype}-lib.sh
+      [ -e ${predir}/etc/${_distribution}/xen-lib.sh ] && source ${predir}/etc/${_distribution}/xen-lib.sh
+      [ -e ${predir}/etc/${_distribution}/iscsi-lib.sh ] && source ${predir}/etc/${_distribution}/iscsi-lib.sh
+      [ -e ${predir}/etc/${_distribution}/drbd-lib.sh ] && source ${predir}/etc/${_distribution}/drbd-lib.sh
+    done
+    unset _distribution
+    
+    # store the data to repository
+    repository_store_value distribution $distribution
+    repository_store_value shortdistribution $shortdistribution
+    repository_store_value clutype $clutype 
+}
+#********** sourceLibs
+#****f* boot-lib.sh/sourceRootfsLibs
+#  NAME
+#    sourceLibs
+#  SYNOPSIS
+#    function sourceRootfsLibs(predir) {
+#  DESCRIPTION
+#    Sources the libraries needed for the specific roots. Sets up rootfs in repository.
+#  IDEAS
+#  SOURCE
+#
+function sourceRootfsLibs {
+	local predir=$1
+    local rootfs=$(getParameter rootfs $(cc_getdefaults rootfs))
+    local clutype=$(repository_get_value clutype)
+    local shortdistribution=$(repository_get_value shortdistribution)
+    local distribution=$(repository_get_value distribution)
+
+    if [ "$clutype" != "$rootfs" ]; then
+	  [ -e ${predir}/etc/${rootfs}-lib.sh ] && source ${predir}/etc/${rootfs}-lib.sh
+	  [ -e ${predir}/etc/${shortdistribution}/${rootfs}-lib.sh ] && source ${predir}/etc/${shortdistribution}/${rootfs}-lib.sh
+	  [ -e ${predir}/etc/${distribution}/${rootfs}-lib.sh ] && source ${predir}/etc/${distribution}/${rootfs}-lib.sh
+	  # special case for nfs4
+	  if [ "${rootfs:0:3}" = "nfs" ]; then
+	     [ -e ${predir}/etc/nfs-lib.sh ] && source ${predir}/etc/nfs-lib.sh
+	     [ -e ${predir}/etc/${shortdistribution}/nfs-lib.sh ] && source ${predir}/etc/${shortdistribution}/nfs-lib.sh
+	     [ -e ${predir}/etc/${distribution}/nfs-lib.sh ] && source ${predir}/etc/${distribution}/nfs-lib.sh
+	  fi
+    fi
+}
+#********** sourceRootfsLibs
 
 #****f* boot-lib.sh/initEnv
 #  NAME
@@ -279,3 +364,427 @@ function passed {
   return 1
 }
 #********** passed
+
+#****f* boot-lib.sh/echo_out
+#  NAME
+#    echo_out
+#  SYNOPSIS
+#    function echo_out() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function echo_out() {
+    echo ${*:0:$#-1} "${*:$#}" >&2
+}
+#************ echo_out
+
+#****f* boot-lib.sh/echo_local
+#  NAME
+#    echo_local
+#  SYNOPSIS
+#    function echo_local() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function echo_local() {
+   echo ${*:0:$#-1} "${*:$#}"
+   echo ${*:0:$#-1} "${*:$#}" >&3
+#   echo ${*:0:$#-1} "${*:$#}" >&5
+#   echo ${*:0:$#-1} "${*:$#}" >> $bootlog
+#   [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
+}
+#************ echo_local
+
+#****f* boot-lib.sh/echo_local_debug
+#  NAME
+#    echo_local_debug
+#  SYNOPSIS
+#    function echo_local_debug() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function echo_local_debug() {
+  local debug=$(repository_get_value debug)
+   if [ ! -z "$debug" ]; then
+     echo ${*:0:$#-1} "${*:$#}"
+     echo ${*:0:$#-1} "${*:$#}" >&3
+#     echo ${*:0:$#-1} "${*:$#}" >&5
+#     echo ${*:0:$#-1} "${*:$#}" >> $bootlog
+#     [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
+   fi
+}
+#************ echo_local_debug
+
+#****f* boot-lib.sh/error_out
+#  NAME
+#    error_out
+#  SYNOPSIS
+#    function error_out() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function error_out() {
+    echo ${*:0:$#-1} "${*:$#}" >&4
+    echo ${*:0:$#-1} "${*:$#}" >&2
+}
+#************ error_out
+
+#****f* boot-lib.sh/error_local
+#  NAME
+#    error_local
+#  SYNOPSIS
+#    function error_local() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function error_local() {
+   echo ${*:0:$#-1} "${*:$#}" >&2
+   echo ${*:0:$#-1} "${*:$#}" >&4
+#   echo ${*:0:$#-1} "${*:$#}" >&5
+#   echo ${*:0:$#-1} "${*:$#}" >> $bootlog
+#   [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
+}
+#************ error_local
+
+#****f* boot-lib.sh/error_local_debug
+#  NAME
+#    error_local_debug
+#  SYNOPSIS
+#    function error_local_debug() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function error_local_debug() {
+  local debug=$(repository_get_value debug)
+   if [ ! -z "$debug" ]; then
+     echo ${*:0:$#-1} "${*:$#}" >&2
+     echo ${*:0:$#-1} "${*:$#}" >&4
+#     echo ${*:0:$#-1} "${*:$#}" >&5
+#     echo ${*:0:$#-1} "${*:$#}" >> $bootlog
+#     [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
+   fi
+}
+
+#************ error_local_debug
+
+#****f* boot-lib.sh/exec_local
+#  NAME
+#    exec_local
+#  SYNOPSIS
+#    function exec_local() {
+#  DESCRIPTION
+#    execs the given parameters in a subshell and returns the
+#    error_code
+#  IDEAS
+#
+#  SOURCE
+#
+function exec_local() {
+  local debug=$(repository_get_value debug)
+  local do_exec=1
+  if [ -n "$(repository_get_value dstep)" ]; then
+  	echo -n "$* (Y|n|c)? " >&2
+  	read dstep_ans
+  	[ "$dstep_ans" == "n" ] && do_exec=0
+  	[ "$dstep_ans" == "c" ] && dstepmode=""
+  fi
+  if [ $do_exec -eq 1 ]; then
+  	output=$($*)
+  else
+  	output="skipped"
+  fi
+  return_c=$?
+  if [ ! -z "$debug" ]; then
+    echo "cmd: $*" >&2
+    echo "OUTPUT: $output" >&2
+  fi
+#  echo "cmd: $*" >> $bootlog
+  echo -n "$output"
+  return $return_c
+}
+#************ exec_local
+
+#****f* boot-lib.sh/exec_local_debug
+#  NAME
+#    exec_local_debug
+#  SYNOPSIS
+#    function exec_local_debug() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function exec_local_debug() {
+  local debug=$(repository_get_value debug)
+  if [ ! -z "$debug" ]; then
+    exec_local $*
+  fi
+}
+#************ exec_local_debug
+
+#****f* boot-lib.sh/exec_local_stabilized
+#  NAME
+#    exec_local_stabilized
+#  SYNOPSIS
+#    function exec_local_stabilized(reps, sleeptime, command ...) {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+#  used to call a function until it succeded
+
+function exec_local_stabilized() {
+  local debug=$(repository_get_value debug)
+	reps=$1
+	stime=$2
+ 	shift 2
+	ret=1
+
+ 	for i in $(seq $reps); do
+ 		if [ ! -z "$debug" ]; then
+ 			echo "start_service_chroot run: $i, sleeptime: $stime"
+ 		fi
+   		output=$($exec_local $*) 
+   		if [ $? -eq 0 ]; then
+   			ret=0
+   			break
+   		fi 
+   		sleep $stime
+ 	done	
+ 	echo $output
+ 	return $ret
+}
+#************ exec_local_stabilized
+
+#****f* boot-lib.sh/exec_nondefault_boot_source
+#  NAME
+#    exec_nondefault_boot_source
+#  SYNOPSIS
+#    function exec_nondefault_boot_source() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function exec_nondefault_boot_source() {
+    local boot_source=$1
+    local mount_dir=$2
+    local init=$3
+    if [ -z "$mount_dir" ]; then mount_dir="/mnt"; fi
+    if [ -z "$init" ]; then init=$(getBootParm init); fi
+    echo_local "Mounting nfs from \"$boot_source\" to \"$mount_dir\"..."
+    exec_local mount -t nfs $boot_source $mount_dir
+
+    echo_local "Executing \"$mnt/$init\"..."
+    exec_local $mnt/$init
+}
+#************ exec_nondefault_boot_source
+
+#****f* boot-lib.sh/step
+#  NAME
+#    step
+#  SYNOPSIS
+#    function step( info ) {
+#  MODIFICATION HISTORY
+#  IDEAS
+#    Modify or debug a running skript
+#  DESCRIPTION
+#    If stepmode step asks for input.
+#  SOURCE
+#
+function step() {
+   local __the_step=""
+   local __message="$1"
+   local __name="$2"
+   local __stepmode=$(repository_get_value step)
+   local steps
+   if [ -n "$__stepmode" ] && [ "$__stepmode" == "__set__" ]; then
+   	 echo -n "$__message: "
+     echo -n "Press <RETURN> to continue (timeout in $step_timeout secs) [quit|break|continue|list]"
+     read -t$step_timeout __the_step
+     case "$__the_step" in
+       "quit")
+         exit_linuxrc 2
+         ;;
+       "continue")
+         __stepmode=""
+         ;;
+       "break")
+         echo_local "Break detected forking a shell"
+         breakp
+         repository_load
+         return 0
+         ;;
+       "list")
+         echo_local "List of breakpoints:"
+         listBreakpoints
+         echo
+         step "List done!" "$__name"
+         return 0
+         ;;
+       *)
+         if [ -n "$__the_step" ]; then
+         	for _pb in $(listBreakpoints); do
+         		if [ $__the_step = $_pb ]; then
+         			echo_local "Setting breakpoint to \"$__the_step\".."
+         			__stepmode=$__the_step
+         			break
+         		fi
+         	done
+         	echo
+         fi
+         ;;
+     esac
+     if [ -z "$__the_step" ]; then
+       echo
+     fi
+     if [ -n "$__the_step" ] && [ "$__the_step" != "$(repository_get_value step)" ]; then
+       repository_store_value step "$__stepmode"
+     fi
+   elif [ -n "$__stepmode" ] && [ -n "$__name" ] && [ "$__name" == "$__stepmode" ]; then
+     # reseting if came from a breakpoint.
+     __stepmode="__set__"
+     repository_store_value step "$__stepmode"
+     echo_local "Breakpoint \"$__name\" detected forking a shell"
+     breakp
+   else
+     return 0
+   fi
+}
+#************ step
+
+#****f* boot-lib.sh/listBreakpoints
+#  NAME
+#    listBreakpoints
+#  SYNOPSIS
+#    function listBreakpoints() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function listBreakpoints {
+	for file in $(find ./ -name "*.sh"); do 
+		awk '
+/step[[:space:]]+"/ && $0 !~ /__name/ { 
+	step=$0; 
+	sub(/step[[:space:]]+/, "", step); 
+	gsub(/"/, "", step); split(step, steps); 
+	print steps[NF-1];
+}' < $file; done
+}
+#************ listBreakpoints
+
+#****f* boot-lib.sh/breakp
+#  NAME
+#    break
+#  SYNOPSIS
+#    function breakp( info ) {
+#  MODIFICATION HISTORY
+#  IDEAS
+#    Modify or debug a running skript
+#  DESCRIPTION
+#  SOURCE
+#
+function breakp() {
+    local shell=$(repository_get_value shell)
+    local issuetmp=$(repository_get_value shellissuetmp)
+    [ -z "$shell" ] && shell="/bin/sh" 
+    echo -e "$*" >  $issuetmp
+	echo "Type exit to continue work.." >> $issuetmp
+	if [ -n "$simulation" ] && [ $simulation ]; then
+	  $shell
+	else
+	  TERM=xterm $shell &>/dev/console
+    fi
+    echo_local "Back to work.."
+    rm -f $rcfile
+}
+#*********** breakp
+
+#****f* boot-lib.sh/check_cmd_params
+#  NAME
+#    check_cmd_params
+#  SYNOPSIS
+#    function check_cmd_params() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function check_cmd_params() {
+    local __stepmode=$(repository_get_value step)
+    while getopts "RsdShb:B" Option
+      do
+      case $Option in
+          S ) # executed from simulator mode
+              simulation=1
+              ;; 
+	  R ) # running non recursive for nfs-mounts
+	      non_recursive=1
+	      ;;
+          s) # stepmode
+              __stepmode=1
+	      ;;
+	  d) # debug
+	      debug=1
+	      ;;
+	  h) # help
+	      usage
+	      exit 0
+	      ;;
+	  b) # break
+	      __stepmode=$OPTARG
+	      echo "Breakpoint set to $__stepmode"
+	      ;;
+	  B) # list all breakpoints
+	      listBreakpoints
+	      exit 0
+	      ;;
+	  *)
+	      echo "Wrong option."
+	      usage
+	      exit 1
+	      ;;
+      esac
+    done
+    repository_store_value step "$__stepmode"
+    return $OPTIND;
+}
+#************ check_cmd_params
+
+#****f* boot-lib.sh/usage
+#  NAME
+#    usage
+#  SYNOPSIS
+#    function usage() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function usage() {
+    echo "$0 [-R] [-s|S] [-d|D] [-h]"
+    echo -e "\t-R: non recursive for nfs-mounts (experimental or obsolete)"
+    echo -e "\t-s: set stepmode (s) or unset stepmode (S)"
+    echo -e "\t-b: break at the given parameter"
+    echo -e "\t-d: set debugmode (d) or unset stepmode (D)"
+    echo -e "\t-h:   this usage."
+    echo -e "\t-S: set simulator mode to on."
+    echo -e "\t-B: output all breakpoints"
+}
+#************ usage
+
+#################
+# $Log: std-lib.sh,v $
+# Revision 1.6  2009-01-28 12:56:01  marc
+# Many changes:
+# - moved some functions to std-lib.sh
+# - no "global" variables but repository
+# - bugfixes
+# - support for step with breakpoints
+# - errorhandling
+# - little clean up
+# - better seperation from cc and rootfs functions
+#
