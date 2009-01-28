@@ -4,7 +4,7 @@
  # Provides: $network
  ### END INIT INFO
  
-+# Patched for comoonics patch 1.3
++# Patched for comoonics patch 1.4
 +
  # Source function library.
  . /etc/init.d/functions
@@ -19,7 +19,7 @@
 +        rootopts=$(awk '{ if ($1 !~ /^rootfs/ && $1 !~ /^[ \t]*#/ && $2 == "/") { print $4; }}' /etc/mtab)
  	
 -	if [[ "$rootfs" =~ "^nfs" ]] || [[ "$rootopts" =~ "_netdev" ]] ; then
-+	if [[ "$rootfs" =~ "^nfs|^gfs" ]] || [[ "$rootopts" =~ "_netdev" ]] ; then
++	if [[ "$rootfs" =~ "^nfs|^gfs|^glusterfs" ]] || [[ "$rootopts" =~ "_netdev" ]] ; then
  		exit 1
  	fi
    
