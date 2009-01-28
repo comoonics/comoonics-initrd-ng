@@ -1,5 +1,5 @@
 #
-# $Id: ext3-lib.sh,v 1.4 2008-10-28 12:52:07 marc Exp $
+# $Id: ext3-lib.sh,v 1.5 2009-01-28 12:53:02 marc Exp $
 #
 # @(#)$File$
 #
@@ -29,8 +29,6 @@
 #    $id$
 #  DESCRIPTION
 #*******
-
-default_mountopts="ro"
 
 #****f* ext3-lib.sh/ext3_load
 #  NAME
@@ -92,20 +90,8 @@ function ext3_services_start {
 #  IDEAS
 #  SOURCE
 #
-function ext3_services_restart {
-  local old_root=$1
-  local new_root=$2
-
-  services=""
-  for service in $services; do
-    nfs_restart_$service $old_root $new_root
-    if [ $? -ne 0 ]; then
-      echo $service > $new_root/${cdsl_local_dir}/FAILURE_$service
-#      return $?
-    fi
-    step
-  done
-  return $return_c
+function ext3_services_restart_newroot {
+	return 0
 }
 #************ ext3_services_restart
 
@@ -144,7 +130,7 @@ function ext3_getdefaults {
 		    echo ""
 		    ;;
 		mount_opts|mountopts)
-		    echo "defaults"
+		    echo "ro"
 		    ;;
 		root_source|rootsource)
 		    echo "scsi"
@@ -164,7 +150,10 @@ function ext3_getdefaults {
 
 
 # $Log: ext3-lib.sh,v $
-# Revision 1.4  2008-10-28 12:52:07  marc
+# Revision 1.5  2009-01-28 12:53:02  marc
+# - added defaults and ro mountpoint
+#
+# Revision 1.4  2008/10/28 12:52:07  marc
 # fixed bug#288 where default mountoptions would always include noatime,nodiratime
 #
 # Revision 1.3  2008/10/14 10:57:07  marc
