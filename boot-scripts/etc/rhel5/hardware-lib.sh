@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.7 2008-11-18 08:37:56 marc Exp $
+# $Id: hardware-lib.sh,v 1.8 2009-01-28 12:48:44 marc Exp $
 #
 # @(#)$File$
 #
@@ -36,6 +36,7 @@
 #
 function rhel5_hardware_detect() {
   local KUDZU="/sbin/kudzu"
+
   cp ${modules_conf} ${modules_conf}.tmpl
   exec_local $KUDZU -t 30 -c SCSI -q
 #  mv ${modules_conf} ${modules_conf}.scsi
@@ -67,10 +68,13 @@ function rhel5_hardware_detect() {
 #
 function rhel5_udev_start() {
 	if ! /sbin/pidof udevd > /dev/null; then
-		udevd -d &&
-		udevtrigger
+      /sbin/modprobe sd_mod
+      /sbin/modprobe sg
+
+      udevd -d &&
+	  udevtrigger
 	else
-		udevtrigger
+      udevtrigger
 	fi
     
 }
@@ -78,7 +82,10 @@ function rhel5_udev_start() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.7  2008-11-18 08:37:56  marc
+# Revision 1.8  2009-01-28 12:48:44  marc
+# - added loading scsibasemodules before udev is started.
+#
+# Revision 1.7  2008/11/18 08:37:56  marc
 # cosmetic change.
 #
 # Revision 1.6  2008/08/14 13:31:23  marc
