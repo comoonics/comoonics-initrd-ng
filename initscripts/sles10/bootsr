@@ -2,7 +2,7 @@
 #****h* comoonics-bootimage/bootsr
 #  NAME
 #    bootsr
-#    $Id: bootsr,v 1.12 2008/09/10 12:55:31 marc Exp $
+#    $Id: bootsr,v 1.15 2008/11/18 14:19:58 marc Exp $
 #  DESCRIPTION
 #    Comoonics Shared Root post boot settings
 #  AUTHOR
@@ -37,7 +37,10 @@ BUILD_FILE="/etc/comoonics-build.txt"
 VAR_RUN_FILES="cman_admin cman_client"
 
 RETVAL=0
-[ -f /etc/sysconfig/cluster ] && . /etc/sysconfig/cluster
+. ${BOOTIMAGE_PATH}/boot-scripts/etc/std-lib.sh
+sourceLibs ${BOOTIMAGE_PATH}/boot-scripts
+sourceRootfsLibs ${BOOTIMAGE_PATH}/boot-scripts
+
 
 #****f* bootsr/check_mtab
 #  NAME
@@ -196,29 +199,6 @@ exec 5>> $logfile
 exec 6>> $logfile
 exec 7>> $logfile
 
-. ${BOOTIMAGE_PATH}/boot-scripts/etc/boot-lib.sh
-. ${BOOTIMAGE_PATH}/boot-scripts/etc/chroot-lib.sh
-. ${BOOTIMAGE_PATH}/boot-scripts/etc/stdfs-lib.sh
-. ${BOOTIMAGE_PATH}/boot-scripts/etc/std-lib.sh
-. ${BOOTIMAGE_PATH}/boot-scripts/etc/defaults.sh
-. ${BOOTIMAGE_PATH}/boot-scripts/etc/clusterfs-lib.sh
-
-distribution=$(getDistribution)
-clutype=$(getCluType)
-rootfs=$(get_mounted_rootfs)
-
-if ! [ -e ${BOOTIMAGE_PATH}/boot-scripts/etc/$clutype-lib.sh ]; then
-  echo "Cannot find ${BOOTIMAGE_PATH}/etc/$clutype-lib.sh"
-  exit 1
-fi
-. ${BOOTIMAGE_PATH}/boot-scripts/etc/$clutype-lib.sh
-
-if ! [ -e ${BOOTIMAGE_PATH}/boot-scripts/etc/$rootfs-lib.sh ]; then
-  echo "Cannot find ${BOOTIMAGE_PATH}/boot-scripts/etc/$rootfs-lib.sh"
-  exit 1
-fi
-. ${BOOTIMAGE_PATH}/boot-scripts/etc/$rootfs-lib.sh
-
 # See how we were called.
 case "$1" in
   start)
@@ -313,6 +293,16 @@ exit $RETVAL
 #************ main
 ###############
 # $Log: bootsr,v $
+# Revision 1.15  2008/11/18 14:19:58  marc
+# - implemented RFE-BUG 289
+#   - clear old repositoryfiles (/tmp/__repository__*)
+#
+# Revision 1.14  2008/10/29 14:54:32  mark
+# fix for bz #286
+#
+# Revision 1.13  2008/10/14 10:57:07  marc
+# Enhancement #273 and dependencies implemented (flexible boot of local fs systems)
+#
 # Revision 1.12  2008/09/10 12:55:31  marc
 # Fixed bug#265 where reload and restart will not work on rhels
 #
