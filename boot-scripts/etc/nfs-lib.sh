@@ -1,5 +1,5 @@
 #
-# $Id: nfs-lib.sh,v 1.6 2008-10-28 12:52:07 marc Exp $
+# $Id: nfs-lib.sh,v 1.7 2009-01-28 12:55:20 marc Exp $
 #
 # @(#)$File$
 #
@@ -30,6 +30,162 @@
 #  DESCRIPTION
 #*******
 
+# functions for nfsversion 4
+function nfs4_getdefaults {
+	nfs_getdefaults $*
+}
+function nfs4_init {
+	nfs_init $*
+}
+function nfs4_load {
+	nfs_load $*
+}
+function nfs4_services_start {
+  local services="rpcpipefs rpcbind rpc_idmapd"
+  for service in $services; do
+    nfs4_start_$service $*
+  done
+  return 0
+}
+# obsolete
+#function nfs4_services_restart {
+#	return nfs_services_restart $* 
+#}
+function nfs4_start_rpcpipefs {
+	nfs_start_rpcpipefs $*
+}
+
+function nfs4_services_restart_newroot {
+  local newroot=$1
+  local lock_method=$2
+  local lvm_sup=$3
+  local chroot_path=$4
+
+  local services=""
+  if [ -n "$services" ]; then
+    for service in $services; do
+      nfs_stop_$service "no_chroot"
+      if [ $? -ne 0 ]; then
+        return $?
+      fi
+    done
+
+    for service in $services; do
+      nfs_start_$service $newroot/$chroot_path
+      if [ $? -ne 0 ]; then
+        return $?
+      fi
+    done
+  fi
+
+  nfs_services_restart_newroot $*
+
+  return $return_c
+}
+
+#****f* nfs-lib.sh/nfs4_start_rpcbind
+#  NAME
+#    nfs4_start_rpcbind
+#  SYNOPSIS
+#    function nfs4_start_rpcbind
+#  DESCRIPTION
+#    This function starts the rpcbind daemon
+#  IDEAS
+#  SOURCE
+#
+function nfs4_start_rpcbind {
+  local chrootpath=$1
+  if [ -z $chrootpath ]; then
+  	chrootpath="no_chroot"
+  fi
+  start_service_chroot $chrootpath /sbin/rpcbind
+}
+#************ nfs4_start_rpcbind
+
+#****f* nfs-lib.sh/nfs4_stop_rpcbind
+#  NAME
+#    nfs4_stop_rpcbind
+#  SYNOPSIS
+#    function nfs4_stop_rpcbind
+#  DESCRIPTION
+#    This function stops the rpcbind daemon
+#  IDEAS
+#  SOURCE
+#
+function nfs4_stop_rpcbind {
+  local chrootpath=$1
+  if [ -z $chrootpath ]; then
+  	chrootpath="no_chroot"
+  fi
+  killall rpcbind
+}
+#************ nfs4_stop_rpcbind
+
+#****f* nfs-lib.sh/nfs4_start_rpc_idmapd
+#  NAME
+#    nfs4_start_rpc_idmapd
+#  SYNOPSIS
+#    function nfs4_start_rpc_idmapd
+#  DESCRIPTION
+#    This function starts the rpc4_idmapd daemon
+#  IDEAS
+#  SOURCE
+#
+function nfs4_start_rpc_idmapd {
+  local chrootpath=$1
+  if [ -z $chrootpath ]; then
+  	chrootpath="no_chroot"
+  fi
+	
+  start_service_chroot $chrootpath /usr/sbin/rpc.idmapd
+}
+#************ nfs4_start_rpc_idmapd
+
+#****f* nfs-lib.sh/nfs4_stop_rpc_idmapd
+#  NAME
+#    nfs4_stop_rpc_idmapd
+#  SYNOPSIS
+#    function nfs4_stop_rpc_idmapd
+#  DESCRIPTION
+#    This function stops the rpc4_idmapd daemon
+#  IDEAS
+#  SOURCE
+#
+function nfs4_stop_rpc_idmapd {
+  local chrootpath=$1
+  if [ -z $chrootpath ]; then
+  	chrootpath="no_chroot"
+  fi
+	
+  killall rpc.idmapd
+}
+#************ nfs4_start_rpc_statd
+
+function nfs4_checkhosts_alive {
+	nfs_checkhosts_alive $*
+}
+
+# for nfsv4 we need a chroot cause some services (rpc.idmapd, rpcbind) have to be running
+# not on the rootfs. 
+function nfs4_chroot_needed {
+	return 0
+}
+
+#************* nfs_chroot_needed
+#  NAME
+#    nfs_chroot_needed
+#  SYNOPSIS
+#    function nfs_chroot_needed(initrd|init|..)
+#  DESCRIPTION
+#    Returns 0 if this rootfilesystem needs a chroot inside initrd or init. Otherwise not 0
+#  IDEAS
+#  SOURCE
+#
+function nfs_chroot_needed {
+	return 1
+}
+#*********** nfs_chroot_needed
+
 #****f* boot-scripts/etc/clusterfs-lib.sh/nfs_getdefaults
 #  NAME
 #    nfs_getdefaults
@@ -47,9 +203,6 @@ function nfs_getdefaults {
 		mount_opts|mountopts)
 		    echo "nolock"
 		    ;;
-                readonly)
-                    echo 0
-                    ;;
 	    *)
 	        return 0
 	        ;;
@@ -69,7 +222,7 @@ function nfs_getdefaults {
 #
 function nfs_load {
 
-  NFS_MODULES="nfs nfslock"
+  local NFS_MODULES="nfs nfslock"
 
   echo_local -n "Loading NFS modules ($NFS_MODULES)..."
   for module in ${NFS_MODULES}; do
@@ -95,13 +248,74 @@ function nfs_load {
 #  SOURCE
 #
 function nfs_services_start {
-  services=""
+  local services=""
   for service in $services; do
-    nfs_start_$service
+    nfs_start_$service $*
   done
   return 0
 }
 #************ nfs_services_start
+
+#****f* nfs-lib.sh/nfs_start_rpcpipefs
+#  NAME
+#    nfs_start_rpcpipefs
+#  SYNOPSIS
+#    function nfs_start_rpcpipefs
+#  DESCRIPTION
+#    This function mounts the rpcpipefs and creates the link for it.
+#  IDEAS
+#  SOURCE
+#
+function nfs_start_rpcpipefs {
+  local chrootpath=$1
+  local pipefspath="/var/lib/nfs/rpc_pipefs"
+  if [ -n "$chrootpath" ] && [ ! -d ${chrootpath}${pipefspath} ]; then
+    if [ -e ${chrootpath}${pipefspath} ] || [ -L ${chrootpath}${pipefspath} ]; then
+      rm -f ${chrootpath}${pipefspath}
+    fi
+  	mkdir -p ${chrootpath}${pipefspath}
+  fi
+  exec_local mount -t rpc_pipefs sunrpc ${chrootpath}${pipefspath}
+  if [ -n "$chrootpath" ] && [ -e ${pipefspath} ]; then
+  	mv ${pipefspath} ${pipefspath}.old
+  fi
+  ln -s ${chrootpath}${pipefspath} ${pipefspath}
+}
+#************ nfs_start_rpcpipefs
+
+#****f* nfs-lib.sh/nfs_start_rpcbind
+#  NAME
+#    nfs_start_rpcbind
+#  SYNOPSIS
+#    function nfs_start_rpcbind
+#  DESCRIPTION
+#    This function starts the rpcbind daemon
+#  IDEAS
+#  SOURCE
+#
+function nfs_start_rpcbind {
+  local chrootpath=$1
+  if [ -z $chrootpath ]; then
+  	chrootpath="no_chroot"
+  fi
+  start_service /sbin/rpcbind
+}
+#************ nfs_start_rpcbind
+
+#****f* nfs-lib.sh/nfs_stop_rpcbind
+#  NAME
+#    nfs_stop_rpcbind
+#  SYNOPSIS
+#    function nfs_stop_rpcbind
+#  DESCRIPTION
+#    This function stops the rpcbind daemon
+#  IDEAS
+#  SOURCE
+#
+function nfs_stop_rpcbind {
+  killall rpcbind
+}
+#************ nfs_stop_rpcbind
 
 #****f* nfs-lib.sh/nfs_start_portmap
 #  NAME
@@ -114,7 +328,11 @@ function nfs_services_start {
 #  SOURCE
 #
 function nfs_start_portmap {
-  start_service /sbin/portmap "no_chroot"
+  local chrootpath=$1
+  if [ -z $chrootpath ]; then
+  	chrootpath="no_chroot"
+  fi
+  start_service /sbin/portmap
 }
 #************ nfs_start_portmap
 
@@ -129,7 +347,11 @@ function nfs_start_portmap {
 #  SOURCE
 #
 function nfs_start_rpc_lockd {
-  start_service /sbin/rpc.lockd "no_chroot"
+  local chrootpath=$1
+  if [ -z $chrootpath ]; then
+  	chrootpath="no_chroot"
+  fi
+  start_service /sbin/rpc.lockd
 }
 #************ nfs_start_rpc_statd
 
@@ -144,11 +366,13 @@ function nfs_start_rpc_lockd {
 #  SOURCE
 #
 function nfs_start_rpc_statd {
-  start_service /sbin/rpc.statd "no_chroot"
+  local chrootpath=$1
+  if [ -z $chrootpath ]; then
+  	chrootpath="no_chroot"
+  fi
+  start_service /sbin/rpc.statd
 }
 #************ nfs_start_rpc_statd
-
-
 
 #****f* nfs-lib.sh/nfs_services_restart
 #  NAME
@@ -171,7 +395,6 @@ function nfs_services_restart {
       echo $service > $new_root/${cdsl_local_dir}/FAILURE_$service
 #      return $?
     fi
-    step
   done
   
   return $return_c
@@ -219,7 +442,10 @@ function nfs_init {
 #********* nfs_init
 
 # $Log: nfs-lib.sh,v $
-# Revision 1.6  2008-10-28 12:52:07  marc
+# Revision 1.7  2009-01-28 12:55:20  marc
+# rewritten for nfsv4
+#
+# Revision 1.6  2008/10/28 12:52:07  marc
 # fixed bug#288 where default mountoptions would always include noatime,nodiratime
 #
 # Revision 1.5  2008/08/14 14:35:24  marc
