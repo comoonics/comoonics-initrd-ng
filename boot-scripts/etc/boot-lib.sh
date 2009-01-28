@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.67 2008-12-01 11:23:25 marc Exp $
+# $Id: boot-lib.sh,v 1.68 2009-01-28 12:51:23 marc Exp $
 #
 # @(#)$File$
 #
@@ -50,76 +50,20 @@ init_cmd_file="/var/init_cmd"
 init_chroot_file="/var/init_chroot_file"
 # the disk where the bootlog should be written to (default /dev/fd0).
 diskdev="/dev/fd0"
-[ -e /usr/bin/logger ] && logger="/usr/bin/logger -t com-bootlog"
+which logger &>/dev/null
+[ $? -eq 0 ] && logger="logger -t com-bootlog"
 modules_conf="/etc/modprobe.conf"
 
 # Default init cmd is bash
 init_cmd="/bin/bash"
 
 # TODO: consolidate mount_point , new_root and newroot to newroot
-newroot="/mnt/newroot"
 #mount_point="/mnt/newroot"
 
 # The comoonics buildfile
 build_file="/etc/comoonics-build.txt"
 
-#****f* boot-lib.sh/usage
-#  NAME
-#    usage
-#  SYNOPSIS
-#    function usage() {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function usage() {
-    echo "$0 [-R] [-s|S] [-d|D] [-h]"
-    echo -e "\t-R: non recursive for nfs-mounts (experimental or obsolete)"
-    echo -e "\t-s|S: set stepmode (s) or unset stepmode (S)"
-    echo -e "\t-d|D: set debugmode (d) or unset stepmode (D)"
-    echo -e "\t-h:   this usage."
-}
-#************ usage
-
-#****f* boot-lib.sh/check_cmd_params
-#  NAME
-#    check_cmd_params
-#  SYNOPSIS
-#    function check_cmd_params() {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function check_cmd_params() {
-    while getopts "RsdS" Option
-      do
-      case $Option in
-          S ) # executed from simulator mode
-              simulation=1
-              ;; 
-	  R ) # running non recursive for nfs-mounts
-	      non_recursive=1
-	      ;;
-          s) # stepmode
-              stepmode=1
-	      ;;
-	  d) # debug
-	      debug=1
-	      ;;
-	  h) # help
-	      usage
-	      exit 0
-	      ;;
-	  *)
-	      echo "Wrong option."
-	      usage
-	      exit 1
-	      ;;
-      esac
-    done
-    return $OPTIND;
-}
-#************ check_cmd_params
+atixlogofile="/etc/atix-logo.txt"
 
 #****f* boot-lib.sh/exit_linuxrc
 #  NAME
@@ -157,50 +101,6 @@ function exit_linuxrc() {
     #fi
 }
 #************ exit_linuxrc
-
-#****f* boot-lib.sh/step
-#  NAME
-#    step
-#  SYNOPSIS
-#    function step( info ) {
-#  MODIFICATION HISTORY
-#  IDEAS
-#    Modify or debug a running skript
-#  DESCRIPTION
-#    If stepmode step asks for input.
-#  SOURCE
-#
-function step() {
-   local __the_step=""
-   if [ ! -z "$stepmode" ]; then
-   	 echo -n "$1: "
-     echo -n "Press <RETURN> to continue (timeout in $step_timeout secs) [quit|break|continue]"
-     read -t$step_timeout __the_step
-     case "$__the_step" in
-       "quit")
-         exit_linuxrc 2
-         ;;
-       "continue")
-         stepmode=""
-         ;;
-       "break")
-         echo_local "Break detected forking a shell"
-         if [ -n "$simulation" ] && [ $simulation ]; then
-         	/bin/sh
-         else
-            /bin/sh &>/dev/console
-         fi
-         echo_local "Back to work.."
-         ;;
-     esac
-     if [ -z "$__the_step" ]; then
-       echo
-     fi
-   else
-     return 0
-   fi
-}
-#************ step
 
 #****f* boot-lib.sh/getBootParm
 #  NAME
@@ -275,47 +175,65 @@ function getParm() {
 }
 #************ getParm
 
-#****f* boot-lib.sh/exec_nondefault_boot_source
-#  NAME
-#    exec_nondefault_boot_source
-#  SYNOPSIS
-#    function exec_nondefault_boot_source() {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function exec_nondefault_boot_source() {
-    local boot_source=$1
-    local mount_dir=$2
-    local init=$3
-    if [ -z "$mount_dir" ]; then mount_dir="/mnt"; fi
-    if [ -z "$init" ]; then init=$(getBootParm init); fi
-    echo_local "Mounting nfs from \"$boot_source\" to \"$mount_dir\"..."
-    exec_local mount -t nfs $boot_source $mount_dir
-
-    echo_local "Executing \"$mnt/$init\"..."
-    exec_local $mnt/$init
-}
-#************ exec_nondefault_boot_source
-
 #****f* boot-lib.sh/getDistribution
 #  NAME
 #    getDistribution
 #  SYNOPSIS
 #    funtion getDistribution
 #  DESCRIPTION
-#    returns the name of the Linux Distribution right now only redhat
-#    works. Else an undefined value is returned.
+#    Returns the shortdescription of this distribution. Valid return strings are
+#    e.g. rhel4, rhel5, sles10, fedora9, ..
 #  SOURCE
 function getDistribution {
+    local temp
+	temp=( $(getDistributionList) )
+	echo ${temp[0]}""${temp[1]}
+}
+#**** getDistribution
+
+#****f* boot-lib.sh/getDistributionList
+#  NAME
+#    getDistributionList
+#  SYNOPSIS
+#    funtion getDistributionList
+#  DESCRIPTION
+#    returns the shortname of the Linux Distribution and version as 
+# defined in the /etc/..-release files. E.g. rhel 4 7 is returned for the redhat enterprise 
+# linux verion 4 U7. 
+#  SOURCE
+function getDistributionList {
 	if [ -e /etc/redhat-release ]; then
-    	if cat /etc/redhat-release | grep -i "release 4" &> /dev/null; then
-     		echo "rhel4"
-   	 	elif cat /etc/redhat-release | grep -i "release 5" &> /dev/null; then
-   	 		echo "rhel5"
-    	fi
+		awk '
+		   BEGIN { shortname="unknown"; version=""; }
+	       tolower($0) ~ /red hat enterprise linux/ || tolower($0) ~ /centos/ || tolower($0) ~ /scientific/ { 
+	       	  shortname="rhel";
+	       	  match($0, /release ([[:digit:]]+)/, _version);
+	       	  version=_version[1] 
+	       }
+	       tolower($0) ~ /fedora/ {
+	       	  shortname="fedora"
+	       	  match($0, /release ([[:digit:]]+)/, _version);
+	       	  version=_version[1] 
+	       }
+	       {
+	       	 next;
+	       } 
+	       END {
+	       	 print shortname,version;
+	       }' < /etc/redhat-release 
+#		
+#    	if cat /etc/redhat-release | grep -i "release 4" &> /dev/null; then
+#     		echo "rhel4"
+#   	 	elif cat /etc/redhat-release | grep -i "release 5" &> /dev/null; then
+#   	 		echo "rhel5"
+#    	else
+#    	    echo "rhel5"
+#    	fi
     elif [ -e /etc/SuSE-release ]; then
-        awk -vdistribution=sles '/VERSION[[:space:]]*=[[:space:]]*[[:digit:]]+/ { print distribution$3;}' /etc/SuSE-release
+        awk -vdistribution=sles '
+        /VERSION[[:space:]]*=[[:space:]]*[[:digit:]]+/ { 
+        	print distribution,$3;
+        }' /etc/SuSE-release
 	else
 		echo "unknown"
     	return 2
@@ -335,34 +253,40 @@ function getDistribution {
 #  SOURCE
 #
 function getParameter() {
-	local repository="configparams"
 	local name=$1
 	local default=$2
 	local ret=""
 	
 	# check if parameter is already in repository
-	if repository_has_key $repository $name; then
-		repository_get_value $repository $name
+	if repository_has_key $name; then
+		repository_get_value $name
 		return 0
 	fi
 	# first check for a boot parameter
 	if ret=$(getBootParm $name); then
-		repository_store_value $repository $name $ret
+        # set __set__ for parameters given as 
+		[ -z "$ret" ] && ret="__set__"
+		repository_store_value $name "$ret"
 		echo $ret
 		return 0
 	fi
 	# if we cannot find this one, try with a "com-"
 	if ret=$(getBootParm com-$name); then
-		repository_store_value $repository $name $ret
+        # set __set__ for parameters given as 
+		[ -z "$ret" ] && ret="__set__"
+		repository_store_value $name "$ret"
 		echo $ret
 		return 0
 	fi
 	# then we try to find a method to query the cluster configuration
 	if ret=$(getClusterParameter $name); then
-		repository_store_value $repository $name $ret
+        # set __set__ for parameters given as 
+		[ -z "$ret" ] && ret="__set__"
+		repository_store_value $name "$ret"
 		echo $ret
 		return 0
 	fi
+    repository_store_value $name "$default"
 	echo $default
 	return 1		
 		
@@ -415,7 +339,12 @@ function getBootParameters() {
 #
 function welcome() {
 	local _distro=$1
-	typeset -f ${_distro}_welcome >/dev/null 2>&1
+	local _logofile=$2
+	if [ -n "$_logofile" ] && [ -e "$_logofile" ]; then
+		cat $_logofile
+	fi
+
+	typeset -f ${_distro}_welcome >/dev/null 2>&1	
 	if [ $? -eq 0 ]; then
 		${_distro}_welcome
 	else
@@ -441,6 +370,7 @@ function welcome() {
 	fi	
 }
 #****** welcome
+
 #****f* boot-lib.sh/initBootProcess
 #  NAME
 #    initBootProcess
@@ -462,7 +392,7 @@ function initBootProcess() {
   [ "$BOOTUP" = "color" ] && echo -en "\\033[0;34m"
   echo_local $release
   [ "$BOOTUP" = "color" ] && echo -en "\\033[0;39m"
-  echo_local "Starting GFS Shared Root"
+  echo_local "Starting Open Shared Root Boot Process"
   echo_local "Date: $date"
   echo_local "***********************************"
 
@@ -470,6 +400,7 @@ function initBootProcess() {
   echo_local -n "Mounting Proc-FS"
   is_mounted /proc
   if [ $? -ne 0 ]; then 
+  	[ -d /proc ] || mkdir /proc
     exec_local /bin/mount -t proc proc /proc
     return_code
   else
@@ -478,7 +409,8 @@ function initBootProcess() {
 
   echo_local -n "Mounting Sys-FS"
   is_mounted /sys
-  if [ $? -ne 0 ]; then 
+  if [ $? -ne 0 ]; then
+  	[ -d /sys ] || mkdir /sys 
     exec_local /bin/mount -t sysfs none /sys
     return_code
   else
@@ -713,7 +645,6 @@ function build_chroot () {
 	echo "$chroot_mount $chroot_path"
 }
 
-
 #****f* boot-lib.sh/switchRoot
 #  NAME
 #    switchRoot has to be called from linuxrc at the end of the initrd instructions
@@ -899,6 +830,7 @@ function clean_initrd() {
 }
 
 #************ clean_initrd
+
 #****f* boot-lib.sh/ipaddress_from_name
 #  NAME
 #    ipaddress_from_name
@@ -912,6 +844,7 @@ function ipaddress_from_name() {
    gfsip=`/bin/nslookup ${name} | /bin/grep -A1 Name: | /bin/grep Address: | /bin/sed -e "s/\\W*Address:\\W*//"`
 }
 #************ ipaddress_from_name
+
 #****f* boot-lib.sh/ipaddress_from_dev
 #  NAME
 #    ipaddress_from_dev
@@ -925,198 +858,17 @@ function ipaddress_from_dev() {
    gfsip=`/sbin/ifconfig ${netdev} | /bin/grep "inet addr:" | /bin/sed -e "s/\\W*inet\\Waddr://" | /bin/sed -e "s/\\W*Bcast:.*$//"`
 }
 #************ ipaddress_from_dev
-#****f* boot-lib.sh/echo_out
-#  NAME
-#    echo_out
-#  SYNOPSIS
-#    function echo_out() {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function echo_out() {
-    echo ${*:0:$#-1} "${*:$#}" >&3
-}
-
-#************ echo_out
-#****f* boot-lib.sh/echo_local
-#  NAME
-#    echo_local
-#  SYNOPSIS
-#    function echo_local() {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function echo_local() {
-   echo ${*:0:$#-1} "${*:$#}"
-   echo ${*:0:$#-1} "${*:$#}" >&3
-#   echo ${*:0:$#-1} "${*:$#}" >&5
-#   echo ${*:0:$#-1} "${*:$#}" >> $bootlog
-#   [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
-}
-#************ echo_local
-#****f* boot-lib.sh/echo_local_debug
-#  NAME
-#    echo_local_debug
-#  SYNOPSIS
-#    function echo_local_debug() {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function echo_local_debug() {
-   if [ ! -z "$debug" ]; then
-     echo ${*:0:$#-1} "${*:$#}"
-     echo ${*:0:$#-1} "${*:$#}" >&3
-#     echo ${*:0:$#-1} "${*:$#}" >&5
-#     echo ${*:0:$#-1} "${*:$#}" >> $bootlog
-#     [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
-   fi
-}
-#************ echo_local_debug
-#****f* boot-lib.sh/error_out
-#  NAME
-#    error_out
-#  SYNOPSIS
-#    function error_out() {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function error_out() {
-    echo ${*:0:$#-1} "${*:$#}" >&4
-    echo ${*:0:$#-1} "${*:$#}" >&2
-}
-#************ error_out
-#****f* boot-lib.sh/error_local
-#  NAME
-#    error_local
-#  SYNOPSIS
-#    function error_local() {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function error_local() {
-   echo ${*:0:$#-1} "${*:$#}" >&2
-   echo ${*:0:$#-1} "${*:$#}" >&4
-#   echo ${*:0:$#-1} "${*:$#}" >&5
-#   echo ${*:0:$#-1} "${*:$#}" >> $bootlog
-#   [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
-}
-#************ error_local
-#****f* boot-lib.sh/error_local_debug
-#  NAME
-#    error_local_debug
-#  SYNOPSIS
-#    function error_local_debug() {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function error_local_debug() {
-   if [ ! -z "$debug" ]; then
-     echo ${*:0:$#-1} "${*:$#}" >&2
-     echo ${*:0:$#-1} "${*:$#}" >&4
-#     echo ${*:0:$#-1} "${*:$#}" >&5
-#     echo ${*:0:$#-1} "${*:$#}" >> $bootlog
-#     [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
-   fi
-}
-
-#************ error_local_debug
-
-
-
-#****f* boot-lib.sh/exec_local
-#  NAME
-#    exec_local
-#  SYNOPSIS
-#    function exec_local() {
-#  DESCRIPTION
-#    execs the given parameters in a subshell and returns the
-#    error_code
-#  IDEAS
-#
-#  SOURCE
-#
-function exec_local() {
-  do_exec=1
-  if [ -n "$dstepmode" ]; then
-  	echo -n "$* (Y|n|c)? " >&2
-  	read dstep_ans
-  	[ "$dstep_ans" == "n" ] && do_exec=0
-  	[ "$dstep_ans" == "c" ] && dstepmode=""
-  fi
-  if [ $do_exec == 1 ]; then
-  	output=$($*)
-  else
-  	output="skipped"
-  fi
-  return_c=$?
-  if [ ! -z "$debug" ]; then
-    echo "cmd: $*" >&3
-    echo "OUTPUT: $output" >&3
-  fi
-#  echo "cmd: $*" >> $bootlog
-  echo -n "$output"
-  return $return_c
-}
-#************ exec_local
-
-#****f* boot-lib.sh/exec_local_debug
-#  NAME
-#    exec_local_debug
-#  SYNOPSIS
-#    function exec_local_debug() {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function exec_local_debug() {
-  if [ ! -z "$debug" ]; then
-    exec_local $*
-  fi
-}
-#************ exec_local_debug
-
-#****f* boot-lib.sh/exec_local_stabilized
-#  NAME
-#    exec_local_stabilized
-#  SYNOPSIS
-#    function exec_local_stabilized(reps, sleeptime, command ...) {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-#  used to call a function until it succeded
-
-function exec_local_stabilized() {
-	reps=$1
-	stime=$2
- 	shift 2
-	ret=1
-
- 	for i in $(seq $reps); do
- 		if [ ! -z "$debug" ]; then
- 			echo "start_service_chroot run: $i, sleeptime: $stime" >&3
- 		fi
-   		output=$($exec_local $*) 
-   		if [ $? -eq 0 ]; then
-   			ret=0
-   			break
-   		fi 
-   		sleep $stime
- 	done	
- 	echo $output
- 	return $ret
-}
-#************ exec_local_stabilized
-
 
 # $Log: boot-lib.sh,v $
-# Revision 1.67  2008-12-01 11:23:25  marc
+# Revision 1.68  2009-01-28 12:51:23  marc
+# Many changes:
+# - moved some functions to std-lib.sh
+# - no "global" variables but repository
+# - bugfixes
+# - support for step with breakpoints
+# - errorhandling
+#
+# Revision 1.67  2008/12/01 11:23:25  marc
 # fix for testing in getBootParm
 #
 # Revision 1.66  2008/11/30 19:17:35  marc
