@@ -19,7 +19,7 @@
 +        rootopts=$(awk '{ if ($1 !~ /^rootfs/ && $1 !~ /^[ \t]*#/ && $2 == "/") { print $4; }}' /etc/mtab)
  	
 -	if [[ "$rootfs" =~ "^nfs" ]] || [[ "$rootopts" =~ "_netdev" ]] ; then
-+	if [[ "$rootfs" =~ "^nfs|^gfs|^glusterfs" ]] || [[ "$rootopts" =~ "_netdev" ]] ; then
++	if [[ "$rootfs" =~ "^nfs|^gfs|^glusterfs|^ocfs2" ]] || [[ "$rootopts" =~ "_netdev" ]] ; then
  		exit 1
  	fi
    
