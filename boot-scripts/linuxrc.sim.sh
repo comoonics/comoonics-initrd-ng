@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.sim.sh,v 1.1 2008-10-28 12:54:20 marc Exp $
+# $Id: linuxrc.sim.sh,v 1.2 2009-01-28 12:57:55 marc Exp $
 #
 # @(#)$File$
 #
@@ -30,8 +30,12 @@ source ${predir}/etc/std-lib.sh
 distribution=$(getDistribution)
 [ -e ${predir}/etc/${distribution}/boot-lib.sh ] && source ${predir}/etc/${distribution}/boot-lib.sh
 
-exec 3>>/tmp/simulator.err
-exec 4>>/tmp/simulator.log
+errlog=/tmp/com-bootimage-simulator.err
+outlog=/tmp/com-bootimage-simulator.log
+exec 3>>$outlog
+exec 4>>$errlog
+echo_local "All error are also directed to $errlog"
+echo_local "All output is directed to $outlog" 
 
 initEnv
 
