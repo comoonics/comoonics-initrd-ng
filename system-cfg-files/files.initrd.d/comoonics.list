@@ -1,3 +1,4 @@
 # Comoonics files
+/etc/sysconfig/comoonics
 /etc/sysconfig/comoonics-chroot
 /etc/cluster/cluster.conf
