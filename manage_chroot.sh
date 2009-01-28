@@ -7,7 +7,7 @@
 #  DESCRIPTION
 #*******
 #
-# $Id: manage_chroot.sh,v 1.8 2008-11-18 14:19:43 marc Exp $
+# $Id: manage_chroot.sh,v 1.9 2009-01-28 13:07:33 marc Exp $
 #
 # @(#)$File$
 #
@@ -42,51 +42,21 @@ exec 7>> $logfile
 
 # include libraries
 
-if  ! [ -e $(dirname $0)/boot-scripts/etc/boot-lib.sh ]; then
-  echo "Cannot find $(dirname $0)/boot-scripts/etc/boot-lib.sh"
-  exit 1
-fi
-if ! [ -e $(dirname $0)/boot-scripts/etc/stdfs-lib.sh ]; then
-  echo "Cannot find $(dirname $0)/boot-scripts/etc/stdfs-lib.sh"
-  exit 1
-fi
 if ! [ -e $(dirname $0)/boot-scripts/etc/std-lib.sh ]; then
   echo "Cannot find $(dirname $0)/boot-scripts/etc/stdfs-lib.sh"
   exit 1
 fi
-if ! [ -e $(dirname $0)/boot-scripts/etc/chroot-lib.sh ]; then
-  echo "Cannot find $(dirname $0)/boot-scripts/etc/chroot-lib.sh"
-  exit 1
-fi
 
-. $(dirname $0)/boot-scripts/etc/boot-lib.sh
-. $(dirname $0)/boot-scripts/etc/chroot-lib.sh
-. $(dirname $0)/boot-scripts/etc/stdfs-lib.sh
-. $(dirname $0)/boot-scripts/etc/std-lib.sh
-. $(dirname $0)/boot-scripts/etc/defaults.sh
-. $(dirname $0)/boot-scripts/etc/clusterfs-lib.sh
-. $(dirname $0)/boot-scripts/etc/repository-lib.sh
-clutype=$(getCluType)
-rootfs=$(get_mounted_rootfs)
-distribution=$(getDistribution)
-[ "$clutype" != "$rootfs" ] && . $(dirname $0)/boot-scripts/etc/${rootfs}-lib.sh
-[ -e /etc/${distribution}/boot-lib.sh ] && source /etc/${distribution}/boot-lib.sh
-[ -e /etc/${distribution}/hardware-lib.sh ] && source /etc/${distribution}/hardware-lib.sh
-[ -e /etc/${distribution}/network-lib.sh ] && source /etc/${distribution}/network-lib.sh
-[ -e /etc/${distribution}/clusterfs-lib.sh ] && source /etc/${distribution}/clusterfs-lib.sh
-[ -e /etc/${distribution}/${clutype}-lib.sh ] && source /etc/${distribution}/${clutype}-lib.sh
-[ -e /etc/${distribution}/${rootfs}-lib.sh ] && source /etc/${distribution}/${rootfs}-lib.sh
-
+source $(dirname $0)/boot-scripts/etc/std-lib.sh
+sourceLibs $(dirname $0)/boot-scripts
+sourceRootfsLibs $(dirname $0)/boot-scripts
+clutype=$(repository_get_value clutype)
+rootfs=$(repository_get_value rootfs)
+distribution=$(repository_get_value distribution)
 
 clusterfs_chroot_needed init
 __default=$?
 chrootneeded=$(getParameter chroot $__default)
-
- if ! [ -e $(dirname $0)/boot-scripts/etc/$clutype-lib.sh ]; then
-  echo "Cannot find $(dirname $0)/boot-scripts/etc/$clutype-lib.sh"
-  exit 1
-fi
-. $(dirname $0)/boot-scripts/etc/$clutype-lib.sh
 
 initEnv
 
@@ -320,7 +290,7 @@ case "$action" in
 	    mount_cdsl $*
 	;;
 	"clean")
-	    repository_clear '*'
+	    repository_clear
 	    ;;
 	*)
 		usage

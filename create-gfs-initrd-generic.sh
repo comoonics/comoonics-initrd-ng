@@ -6,7 +6,7 @@
 #*******
 #!/bin/bash
 #
-# $Id: create-gfs-initrd-generic.sh,v 1.16 2007-12-07 16:39:59 reiner Exp $
+# $Id: create-gfs-initrd-generic.sh,v 1.17 2009-01-28 13:07:21 marc Exp $
 #
 # @(#)$File$
 #
@@ -28,34 +28,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-
-if  ! [ -e $(dirname $0)/boot-scripts/etc/boot-lib.sh ]; then
-  echo "Cannot find $(dirname $0)/boot-scripts/etc/boot-lib.sh"
-  exit 1
-fi
-if ! [ -e $(dirname $0)/boot-scripts/etc/stdfs-lib.sh ]; then
-  echo "Cannot find $(dirname $0)/boot-scripts/etc/stdfs-lib.sh"
-  exit 1
-fi
-if ! [ -e $(dirname $0)/boot-scripts/etc/std-lib.sh ]; then
-  echo "Cannot find $(dirname $0)/boot-scripts/etc/std-lib.sh"
-  exit 1
-fi
-if ! [ -e $(dirname $0)/boot-scripts/etc/chroot-lib.sh ]; then
-  echo "Cannot find $(dirname $0)/boot-scripts/etc/chroot-lib.sh"
-  exit 1
-fi
-
-. $(dirname $0)/create-gfs-initrd-lib.sh
-. $(dirname $0)/boot-scripts/etc/boot-lib.sh
-. $(dirname $0)/boot-scripts/etc/chroot-lib.sh
-. $(dirname $0)/boot-scripts/etc/stdfs-lib.sh
-. $(dirname $0)/boot-scripts/etc/std-lib.sh
-
-initEnv
-
 exec 3>/dev/null
 exec 4>/dev/null 5>/dev/null
+
+predir=$(dirname $0)/boot-scripts
+source $predir/etc/std-lib.sh
+sourceLibs $predir
+source $(dirname $0)/create-gfs-initrd-lib.sh
+
+initEnv
 
 PATH=${PATH}:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin
 
@@ -86,7 +67,7 @@ function getoptions() {
     while getopts UoRFVvhm:fd:s:r:b: option ; do
 	case "$option" in
 	    v) # version
-		echo "$0 Version "'$Revision: 1.16 $'
+		echo "$0 Version "'$Revision: 1.17 $'
 		exit 0
 		;;
 	    h) # help
@@ -175,11 +156,11 @@ fi
 source ${cfg_file}
 getoptions $*
 
-prgdir=$(dirname $0)
+prgdir=${predir}
 lockfile=${prgdir}/.building_initrd
 
 if [ -e $lockfile ] && [ -z "$Force" ]; then
-  echo "Lockfile $lockfile exists. Another $0 is running. Please fix.."
+  echo "Lockfile "$lockfile" exists. Another $0 is running. Please fix.."
   echo "..or start with force mode."
   exit 1
 fi
@@ -324,7 +305,10 @@ ls -lk $initrdname
 
 ##########################################
 # $Log: create-gfs-initrd-generic.sh,v $
-# Revision 1.16  2007-12-07 16:39:59  reiner
+# Revision 1.17  2009-01-28 13:07:21  marc
+# - use load std-lib.sh the helperfunctions sourceLibs sourceRootfsLibs to load libraries
+#
+# Revision 1.16  2007/12/07 16:39:59  reiner
 # Added GPL license and changed ATIX GmbH to AG.
 #
 # Revision 1.15  2007/09/13 08:36:08  mark
