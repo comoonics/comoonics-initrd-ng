@@ -1,0 +1,5 @@
+# Extrafiles for sysctl
+/sbin/sysctl
+/etc/sysctl.conf
+#####
+# $Log$

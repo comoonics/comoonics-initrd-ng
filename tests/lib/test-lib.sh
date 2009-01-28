@@ -1,3 +1,27 @@
+function runonce {
+	eval test -n "\$${testname}_done" && eval test \$${testname}_done="1"
+}
+function clusterchanged {
+	if [ -n "$lastclutype" ] && [ "$lastclutype" = "$clutype" ]; then
+		return 1
+	else
+		return 0
+    fi
+}
+function rootfschanged {
+	if [ -n "$lastrootfs" ] && [ "$lastrootfs" = "$rootfs" ]; then
+		return 1
+	else
+		return 0
+    fi
+}
+function distributionchanged {
+	if [ -n "$lastdistribution" ] && [ "$lastdistribution" = "$distribution" ]; then
+		return 1
+	else
+		return 0
+    fi
+}
 function preparetest {
    local clutype="$1"
    local rootfs="$2"
@@ -8,16 +32,17 @@ function preparetest {
    
    source ${libdir}/etc/sysconfig/comoonics
 
+   source ${libdir}/etc/std-lib.sh
+   source ${libdir}/etc/repository-lib.sh
    source ${libdir}/etc/chroot-lib.sh
    source ${libdir}/etc/boot-lib.sh
    source ${libdir}/etc/hardware-lib.sh
    source ${libdir}/etc/network-lib.sh
    source ${libdir}/etc/clusterfs-lib.sh
-   source ${libdir}/etc/std-lib.sh
    source ${libdir}/etc/stdfs-lib.sh
    source ${libdir}/etc/defaults.sh
    source ${libdir}/etc/xen-lib.sh
-   source ${libdir}/etc/repository-lib.sh
+   source ${libdir}/etc/errors.sh
    [ -e ${libdir}/etc/iscsi-lib.sh ] && source ${libdir}/etc/iscsi-lib.sh
    [ -e ${libdir}/etc/drbd-lib.sh ] && source ${libdir}/etc/drbd-lib.sh
    if [ -n "$clutype" ]; then
@@ -43,5 +68,33 @@ function preparetest {
      [ -e ${libdir}/etc/${distribution}/xen-lib.sh ] && source ${libdir}/etc/${distribution}/xen-lib.sh
      [ -e ${libdir}/etc/${distribution}/iscsi-lib.sh ] && source ${libdir}/etc/${distribution}/iscsi-lib.sh
      [ -e ${libdir}/etc/${distribution}/drbd-lib.sh ] && source ${libdir}/etc/${distribution}/drbd-lib.sh
+	 [ -e ${libdir}/etc/${distribution}/errors.sh ] && source ${libdir}/etc/${distribution}/errors.sh
    fi
+}
+function detecterror {
+	if [ $? -ne 0 ]; then
+		testing_errors=$(( ${testing_errors} + $? ))
+		testing_errormsgs=${testing_errormsgs}"
+$*
+"
+	fi
+	return $testing_errors
+}
+function invdetecterror {
+	if [ $? -eq 0 ]; then
+		testing_errors=$(( ${testing_errors} + 1 ))
+		testing_errormsgs=${testing_errormsgs}"
+$*
+"
+	fi
+	return $testing_errors
+}
+function errormsg {
+	if [ ${testing_errors} -gt 0 ]; then
+		echo "$testing_errors errors were detected. Errormessages are: 
+$testing_errormsgs"
+	else
+	    echo "All tests have successfully been executed."
+    fi
+    return ${testing_errors}
 }
