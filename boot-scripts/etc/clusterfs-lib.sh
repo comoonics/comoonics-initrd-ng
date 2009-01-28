@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.27 2008-12-01 11:22:47 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.28 2009-01-28 12:52:11 marc Exp $
 #
 # @(#)$File$
 #
@@ -38,7 +38,7 @@
 #    cdsl_local_dir
 #  DESCRIPTION
 #    where the local dir for cdsls can be found
-cdsl_local_dir="/cdsl.local"
+repository_store_value cdsl_local_dir "/cdsl.local"
 #******** cdsl_local_dir
 
 #****d* boot-scripts/etc/clusterfs-lib.sh/cdsl_prefix
@@ -46,7 +46,7 @@ cdsl_local_dir="/cdsl.local"
 #    cdsl_prefix
 #  DESCRIPTION
 #    where the local dir for cdsls can be found
-cdsl_prefix="/cluster/cdsl"
+repository_store_value cdsl_prefix "/cluster/cdsl"
 #******** cdsl_prefix
 
 #****f* boot-scripts/etc/clusterfs-lib.sh/getClusterFSParameters
@@ -99,6 +99,7 @@ function getClusterFSParameters() {
 #
 function getCluType {
    local conf=$1
+   local clutype=""
    if [ -z "$conf" ]; then
    	  conf=$cluster_conf
    fi
@@ -130,6 +131,7 @@ function getRootFS {
    local cluster_conf=$1
    local nodeid=$2
    local nodename=$3
+   local clutype=$(repository_get_value clutype)
    local rootfs=$(${clutype}_get_rootfs $cluster_conf $nodeid $nodename)
    if [ -z "$rootfs" ]; then
      rootfs="gfs"
@@ -172,37 +174,38 @@ function getClusterParameter() {
 	if [ -n "$2" ] && [ -e $2 ]; then
 		local cluster_conf=$2
 	fi
-	local repository="configparams"
 	# check for the existance of the helper function
 	if ! type -t cc_get_$name >/dev/null; then
 		return 1
 	fi
 	# first we need to find our nodeid
 	#maybe it is already in the repository
-	if repository_has_key $repository nodeid; then
-		local nodeid=$(repository_get_value $repository nodeid)
+	local nodeid=""
+	if repository_has_key nodeid; then
+		nodeid=$(repository_get_value nodeid)
 	else
 		# we need to query it
-		local nodeid=$(cc_find_nodeid $cluster_conf)
+		nodeid=$(cc_find_nodeid $cluster_conf)
 		if [ -n "$nodeid" ]; then
-			repository_store_value $repository nodeid $nodeid
+			repository_store_value nodeid $nodeid
 		else
 			return 1
 		fi
 	fi	
-	if repository_has_key $repository nodename; then
-		local nodename=$(repository_get_value $repository nodename)
+    local nodename=""
+	if repository_has_key nodename; then
+		nodename=$(repository_get_value nodename)
 	else
-		local nodename=$(cc_get_nodename_by_id $cluster_conf $nodeid) 
+		nodename=$(cc_get_nodename_by_id $cluster_conf $nodeid) 
 		if [ -n "$nodename" ]; then
-			repository_store_value $repository nodename $nodename
+			repository_store_value nodename $nodename
 		else
 			return 1
 		fi
 	fi
 	# maybe we can find the value in the repository
-	if repository_has_key $repository $name; then
-		repository_get_value $repository $name
+	if repository_has_key $name; then
+		repository_get_value $name
 	else
 		cc_get_$name $cluster_conf $nodename
 	fi
@@ -276,6 +279,19 @@ function cluster_ip_config {
 }
 #******** cluster_ip_config
 
+#****f* clusterfs-lib.sh/cc_validate
+#  NAME
+#    cc_validate
+#  SYNOPSIS
+#    function cc_validate(cluster_conf)
+#  DESCRIPTION
+#    validates the cluster configuration. 
+#  SOURCE
+function cc_validate {
+  local clutype=$(repository_get_value clutype)
+  ${clutype}_validate $*
+}
+#*********** cc_validate
 
 #****f* clusterfs-lib.sh/cc_find_nodeid
 #  NAME
@@ -311,7 +327,8 @@ function cc_find_nodeid {
 #    returns defaults for the specified cluster. Parameter must be given to return the apropriate default
 #  SOURCE
 function cc_getdefaults {
-	${clutype}_getdefaults $*
+  local clutype=$(repository_get_value clutype)
+  ${clutype}_getdefaults $*
 }
 #********** cc_getdefaults
 
@@ -324,10 +341,11 @@ function cc_getdefaults {
 #    gets the nodeid of this node referenced by the networkdevice
 #  SOURCE
 function cc_get_nodeid_by_nodename {
-   local cluster_conf=$1
-   local mac=$2
+  local cluster_conf=$1
+  local mac=$2
+  local clutype=$(repository_get_value clutype)
 
-   ${clutype}_get_nodeid $cluster_conf $mac
+  ${clutype}_get_nodeid $cluster_conf $mac
 }
 #******* cc_get_nodeid
 
@@ -340,6 +358,7 @@ function cc_get_nodeid_by_nodename {
 #    gets the cluster nodename of this node from the cluster infrastructure
 #  SOURCE
 function cc_get_clu_nodename {
+  local clutype=$(repository_get_value clutype)
   ${clutype}_get_clu_nodename
 }
 #******* cc_get_clu_nodename
@@ -354,10 +373,11 @@ function cc_get_clu_nodename {
 #    gets the nodeid of this node referenced by the networkdevice
 #  SOURCE
 function cc_get_nodeid {
-   local cluster_conf=$1
-   local mac=$2
+  local cluster_conf=$1
+  local mac=$2
+  local clutype=$(repository_get_value clutype)
 
-   ${clutype}_get_nodeid $cluster_conf $mac
+  ${clutype}_get_nodeid $cluster_conf $mac
 }
 #******* cc_get_nodeid
 
@@ -386,10 +406,11 @@ function cc_get_nodename {
 #    gets the nodename of this node referenced by the nodeid
 #  SOURCE
 function cc_get_nodename_by_id {
-   local cluster_conf=$1
-   local id=$2
+  local cluster_conf=$1
+  local id=$2
+  local clutype=$(repository_get_value clutype)
 
-   ${clutype}_get_nodename_by_id $cluster_conf $id
+  ${clutype}_get_nodename_by_id $cluster_conf $id
 }
 #******** cc_get_nodename_by_id
 
@@ -402,10 +423,11 @@ function cc_get_nodename_by_id {
 #    gets the nodename of this node referenced by the networkdevice
 #  SOURCE
 function cc_get_rootvolume {
-   local cluster_conf=$1
-   local nodename=$2
+  local cluster_conf=$1
+  local nodename=$2
+  local clutype=$(repository_get_value clutype)
 
-   ${clutype}_get_rootvolume $cluster_conf $nodename
+  ${clutype}_get_rootvolume $cluster_conf $nodename
 }
 #******** cc_get_rootvolume
 
@@ -418,10 +440,11 @@ function cc_get_rootvolume {
 #    gets the nodename of this node referenced by the networkdevice
 #  SOURCE
 function cc_get_rootsource {
-   local cluster_conf=$1
-   local nodename=$2
+  local cluster_conf=$1
+  local nodename=$2
+  local clutype=$(repository_get_value clutype)
 
-   ${clutype}_get_rootsource $cluster_conf $nodename
+  ${clutype}_get_rootsource $cluster_conf $nodename
 }
 #******** cc_get_rootsource
 
@@ -434,10 +457,11 @@ function cc_get_rootsource {
 #    gets the rootfs type of this node referenced by the networkdevice
 #  SOURCE
 function cc_get_rootfs {
-   local cluster_conf=$1
-   local nodename=$2
+  local cluster_conf=$1
+  local nodename=$2
+  local clutype=$(repository_get_value clutype)
 
-   ${clutype}_get_rootfs $cluster_conf $nodename
+  ${clutype}_get_rootfs $cluster_conf $nodename
 }
 #******** cc_get_rootfs
 
@@ -450,15 +474,16 @@ function cc_get_rootfs {
 #    gets the nodename of this node referenced by the networkdevice
 #  SOURCE
 function cc_get_mountopts {
-   local cluster_conf=$1
-   local nodename=$2
-
-   typeset -f ${rootfs}_get_mountopts >/dev/null 2>/dev/null
-   if [ $? -eq 0 ]; then
-     ${rootfs}_get_mountopts $cluster_conf $nodename
-   else
-     ${rootfs}_getdefaults mountopts
-   fi
+  local cluster_conf=$1
+  local nodename=$2
+  local rootfs=$(repository_get_value rootfs)
+   
+  typeset -f ${rootfs}_get_mountopts >/dev/null 2>/dev/null
+  if [ $? -eq 0 ]; then
+    ${rootfs}_get_mountopts $cluster_conf $nodename
+  else
+    ${rootfs}_getdefaults mountopts
+  fi
 }
 #******** cc_get_mountopts
 
@@ -474,15 +499,16 @@ function cc_get_mountopts {
 #    default is /comoonics
 #  SOURCE
 function cc_get_chroot_mountpoint {
-   local cluster_conf=$1
-   local nodename=$2
+  local cluster_conf=$1
+  local nodename=$2
+  local clutype=$(repository_get_value clutype)
 
-   local mp=$(${clutype}_get_chroot_mountpoint $cluster_conf $nodename)
-   if [ -n "$mp" ]; then
-      echo $mp
-   else
-      echo $DFLT_CHROOT_MOUNT
-   fi
+  local mp=$(${clutype}_get_chroot_mountpoint $cluster_conf $nodename)
+  if [ -n "$mp" ]; then
+     echo $mp
+  else
+     echo $DFLT_CHROOT_MOUNT
+  fi
 }
 #******** cc_get_chroot_mountpoint
 
@@ -497,16 +523,16 @@ function cc_get_chroot_mountpoint {
 #    defaults to tmpfs
 #  SOURCE
 function cc_get_chroot_fstype {
-   local cluster_conf=$1
-   local nodename=$2
+  local cluster_conf=$1
+  local nodename=$2
+  local clutype=$(repository_get_value clutype)
 
-   local fs=$(${clutype}_get_chroot_fstype $cluster_conf $nodename)
-   if [ -n "$fs" ]; then
-      echo $fs
-   else
-      echo "tmpfs"
-   fi
-
+  local fs=$(${clutype}_get_chroot_fstype $cluster_conf $nodename)
+  if [ -n "$fs" ]; then
+     echo $fs
+  else
+     echo "tmpfs"
+  fi
 }
 #******** cc_get_chroot_fstype
 
@@ -520,16 +546,16 @@ function cc_get_chroot_fstype {
 #    defaults to nobe
 #  SOURCE
 function cc_get_chroot_device {
-   local cluster_conf=$1
-   local nodename=$2
+  local cluster_conf=$1
+  local nodename=$2
+  local clutype=$(repository_get_value clutype)
 
-   local dev=$(${clutype}_get_chroot_device $cluster_conf $nodename)
-   if [ -n "$dev" ]; then
-      echo $dev
-   else
-      echo "none"
-   fi
-
+  local dev=$(${clutype}_get_chroot_device $cluster_conf $nodename)
+  if [ -n "$dev" ]; then
+    echo $dev
+  else
+    echo "none"
+  fi
 }
 #******** cc_get_chroot_device
 
@@ -543,15 +569,16 @@ function cc_get_chroot_device {
 #    defaults to defaults
 #  SOURCE
 function cc_get_chroot_mountopts {
-   local cluster_conf=$1
-   local nodename=$2
+  local cluster_conf=$1
+  local nodename=$2
+  local clutype=$(repository_get_value clutype)
 
-   local mo=$(${clutype}_get_chroot_mountopts $cluster_conf $nodename)
-   if [ -n "$mo" ]; then
-      echo $mo
-   else
-      echo "defaults"
-   fi
+  local mo=$(${clutype}_get_chroot_mountopts $cluster_conf $nodename)
+  if [ -n "$mo" ]; then
+     echo $mo
+  else
+     echo "defaults"
+  fi
 }
 #******** cc_get_chroot_mountopts
 
@@ -565,15 +592,16 @@ function cc_get_chroot_mountopts {
 #    defaults to cc_get_chroot_mountpoint
 #  SOURCE
 function cc_get_chroot_dir {
-   local cluster_conf=$1
-   local nodename=$2
+  local cluster_conf=$1
+  local nodename=$2
+  local clutype=$(repository_get_value clutype)
 
-   local dir=$(${clutype}_get_chroot_dir $cluster_conf $nodename)
-   if [ -n "$dir" ]; then
-      echo $dir
-   else
-      cc_get_chroot_mountpoint $cluster_conf $nodename
-   fi
+  local dir=$(${clutype}_get_chroot_dir $cluster_conf $nodename)
+  if [ -n "$dir" ]; then
+     echo $dir
+  else
+     cc_get_chroot_mountpoint $cluster_conf $nodename
+  fi
 }
 #******** cc_get_chroot_dir
 
@@ -587,10 +615,11 @@ function cc_get_chroot_dir {
 #    gets the nodename of this node referenced by the networkdevice
 #  SOURCE
 function cc_get_scsifailover {
-   local cluster_conf=$1
-   local nodename=$2
+  local cluster_conf=$1
+  local nodename=$2
+  local clutype=$(repository_get_value clutype)
 
-   ${clutype}_get_scsifailover $cluster_conf $nodename
+  ${clutype}_get_scsifailover $cluster_conf $nodename
 }
 #******** cc_get_scsifailover
 
@@ -603,10 +632,11 @@ function cc_get_scsifailover {
 #    gets the network devcices of this node referenced by the networkdevice
 #  SOURCE
 function cc_get_netdevs {
-   local cluster_conf=$1
-   local nodename=$2
+  local cluster_conf=$1
+  local nodename=$2
+  local clutype=$(repository_get_value clutype)
 
-   ${clutype}_get_netdevs $cluster_conf $nodename
+  ${clutype}_get_netdevs $cluster_conf $nodename
 }
 #******** cc_get_netdevs
 
@@ -619,11 +649,12 @@ function cc_get_netdevs {
 #    gets the network devcices of this node referenced by the networkdevice
 #  SOURCE
 function cc_auto_netconfig {
-   local cluster_conf=$1
-   local nodename=$2
-   local netdev=$3
+  local cluster_conf=$1
+  local nodename=$2
+  local netdev=$3
+  local clutype=$(repository_get_value clutype)
 
-   ${clutype}_auto_netconfig $cluster_conf $nodename $netdev
+  ${clutype}_auto_netconfig $cluster_conf $nodename $netdev
 }
 #******** cc_auto_netconfig
 
@@ -636,10 +667,11 @@ function cc_auto_netconfig {
 #    gets the network devcices of this node referenced by the networkdevice
 #  SOURCE
 function cc_auto_hosts {
-   local cluster_conf=$1
+  local cluster_conf=$1
+  local clutype=$(repository_get_value clutype)
 
-   cp /etc/hosts /etc/hosts.bak
-   ${clutype}_auto_hosts $cluster_conf /etc/hosts.bak > /etc/hosts
+  cp /etc/hosts /etc/hosts.bak
+  ${clutype}_auto_hosts $cluster_conf /etc/hosts.bak > /etc/hosts
 }
 #******** cc_auto_netconfig
 
@@ -651,33 +683,68 @@ function cc_auto_hosts {
 #  DESCRIPTION
 #    creates config for the syslog service
 #    to enable local logging use "yes"
+#    It will also detect the different syslog implementations and start the apropriate syslogservers
 #  SOURCE
 function cc_auto_syslogconfig {
   local cluster_conf=$1
   local nodename=$2
   local chroot_path=$3
   local local_log=$4
-  local syslog_server_list=$(${clutype}_get_syslogserver $cluster_conf $nodename)
+  local clutype=$(repository_get_value clutype)
+  
+  local syslog_server_list=""
+  local syslog_conf="/etc/syslog.conf"
+  local services="/etc/services"
+  if [ -n "$cluster_conf" ] && [ -n $nodename ]; then
+    syslog_server_list=$(${clutype}_get_syslogserver $cluster_conf $nodename)
+  fi
 
-  if [ -n "$syslog_server_list" ]; then
+  # Checking for normal syslog all others should be checked before so that this is the last resort syslog
+  which syslogd >/dev/null
+  if [ $? -eq 0 ]; then
     echo_local -n "Creating syslog config for syslog servers: $syslog_server_list"
-    exec_local /bin/rm $chroot_path/etc/syslog.conf
+    cat <<EOSYSLOG > ${chroot_path}${syslog_conf}
+kern,daemon.*   /dev/console
+EOSYSLOG
+  
     for syslog_server in $syslog_server_list; do
-  	  echo '*.* @'"$syslog_server" >> $chroot_path/etc/syslog.conf
+      echo '*.* @'"$syslog_server" >> ${chroot_path}${syslog_conf}
     done
-    if [ "$local_log" == "yes" ]; then
-      echo "*.* -/var/log/comoonics_boot.syslog" >> $chroot_path/etc/syslog.conf
+    if [ "$local_log" != "no" ]; then
+      echo "*.*    -/var/log/comoonics_boot.syslog" >> ${chroot_path}${syslog_conf}
     fi
 
-    echo "syslog          514/udp" >> $chroot_path/etc/services
+    echo "syslog          514/udp" >> ${chroot_path}${services}
     return_code 0
     return 0
   else
-#    return_code 1
     return 1
   fi
 }
 #******** cc_auto_syslogconfig
+
+#****f* clusterfs-lib.sh/cc_syslog_start
+#  NAME
+#    cc_syslog_start
+#  SYNOPSIS
+#    function cc_syslog_start(chroot_path)
+#  DESCRIPTION
+#    Starts the apropriate syslogd as required
+#  SOURCE
+function cc_syslog_start {
+	local chrootpath=$1
+	local start_service_f="start_service_chroot $chrootpath"
+	
+    if [ -z "$chrootpath" ]; then
+    	start_service_f=""
+    fi
+    
+    which syslogd >/dev/null
+    if [ $? -eq 0 ]; then
+    	$start_service_f syslogd -m 0
+    fi
+}
+#******** cc_syslog_start
 
 #****f* clusterfs-lib.sh/cc_auto_getbridges
 #  NAME
@@ -690,6 +757,7 @@ function cc_auto_syslogconfig {
 function cc_auto_getbridges {
   local cluster_conf=$1
   local nodename=$2
+  local clutype=$(repository_get_value clutype)
 
   ${clutype}_get_bridges $cluster_conf $nodename
 }
@@ -703,33 +771,33 @@ function cc_get_bridgename {
 function cc_get_bridgescript {
   local cluster_conf=$1
   local nodename=$2
-  local repository="bridge"
+  local clutype=$(repository_get_value clutype)
 
-  bridgename=$(repository_get_value $repository bridgename)
+  bridgename=$(repository_get_value bridgename)
   ${clutype}_get_bridge_param $cluster_conf $nodename $bridgename script
 }
 function cc_get_bridgevifnum {
   local cluster_conf=$1
   local nodename=$2
-  local repository="bridge"
+  local clutype=$(repository_get_value clutype)
 
-  bridgename=$(repository_get_value $repository bridgename)
+  bridgename=$(repository_get_value bridgename)
   ${clutype}_get_bridge_param $cluster_conf $nodename $bridgename vifnum
 }
 function cc_get_bridgenetdev {
   local cluster_conf=$1
   local nodename=$2
-  local repository="bridge"
+  local clutype=$(repository_get_value clutype)
 
-  bridgename=$(repository_get_value $repository bridgename)
+  bridgename=$(repository_get_value bridgename)
   ${clutype}_get_bridge_param $cluster_conf $nodename $bridgename netdev
 }
 function cc_get_bridgeantispoof {
   local cluster_conf=$1
   local nodename=$2
-  local repository="bridge"
+  local clutype=$(repository_get_value clutype)
 
-  bridgename=$(repository_get_value $repository bridgename)
+  bridgename=$(repository_get_value bridgename)
   ${clutype}_get_bridge_param $cluster_conf $nodename $bridgename antispoof
 }
 
@@ -742,7 +810,8 @@ function cc_get_bridgeantispoof {
 #    returns defaults for the specified filesystem. Parameter must be given to return the apropriate default
 #  SOURCE
 function clusterfs_getdefaults {
-	${rootfs}_getdefaults $*
+  local rootfs=$(repository_get_value rootfs)
+  ${rootfs}_getdefaults $*
 }
 #********** clusterfs_getdefaults
 
@@ -756,7 +825,8 @@ function clusterfs_getdefaults {
 #  SOURCE
 #
 function clusterfs_load {
-   ${rootfs}_load $*
+  local rootfs=$(repository_get_value rootfs)
+  ${rootfs}_load $*
 }
 #***** clusterfs_load
 
@@ -770,7 +840,8 @@ function clusterfs_load {
 #  SOURCE
 #
 function clusterfs_services_start {
-   ${rootfs}_services_start $*
+  local rootfs=$(repository_get_value rootfs)
+  ${rootfs}_services_start $*
 }
 #***** clusterfs_services_start
 
@@ -784,7 +855,8 @@ function clusterfs_services_start {
 #  SOURCE
 #
 function clusterfs_services_stop {
-   ${rootfs}_services_stop $*
+  local rootfs=$(repository_get_value rootfs)
+  ${rootfs}_services_stop $*
 }
 #***** clusterfs_services_stop
 
@@ -798,7 +870,8 @@ function clusterfs_services_stop {
 #  SOURCE
 #
 function clusterfs_services_restart {
-   ${rootfs}_services_restart $*
+  local rootfs=$(repository_get_value rootfs)
+  ${rootfs}_services_restart $*
 }
 #***** clusterfs_services_restart
 
@@ -812,7 +885,8 @@ function clusterfs_services_restart {
 #  SOURCE
 #
 function clusterfs_services_restart_newroot {
-   ${rootfs}_services_restart_newroot $*
+  local rootfs=$(repository_get_value rootfs)
+  ${rootfs}_services_restart_newroot $*
 }
 #***** clusterfs_services_restart_newroot
 
@@ -832,17 +906,15 @@ function clusterfs_mount {
   local mountpoint=$3
   local mountopts=$4
   local tries=1
-  [ -n $5 ] && tries=$5
+  [ -n "$5" ] && tries=$5
   local waittime=5
-  [ -n $6 ] && waittime=$6
+  [ -n "$6" ] && waittime=$6
   local i=0
 
   #TODO: skip device check at least for nfs services
   echo_local -n "Mounting $dev on $mountpoint.."
-  if [ ! -e $dev -a $fstype != "nfs" ]; then
-    echo_local -n "device not found error"
-    failure
-    return $?
+  if [ ! -e $dev -a ${fstype:0:3} != "nfs" ]; then
+     breakp $(errormsg err_rootfs_device)
   fi
   if [ ! -d $mountpoint ]; then
     mkdir -p $mountpoint
@@ -869,6 +941,7 @@ function clusterfs_mount {
 #  SOURCE
 #
 function cluster_restart_cluster_services {
+  local rootfs=$(repository_get_value rootfs)
   ${rootfs}_restart_cluster_services $1 $2
 }
 #******** cluster_restart_cluster_services
@@ -883,7 +956,8 @@ function cluster_restart_cluster_services {
 #  SOURCE
 #
 function cluster_checkhosts_alive {
-   ${rootfs}_checkhosts_alive
+  local rootfs=$(repository_get_value rootfs)
+  ${rootfs}_checkhosts_alive
 }
 #********* cluster_checkhosts_alive
 
@@ -924,15 +998,62 @@ function clusterfs_mount_cdsl {
 #    Should just cascade to ${rootfs_chroot_needed} $* and return 0 to indicate that
 #    by a chroot is always needed. Defaults to 0
 function clusterfs_chroot_needed {
-	typeset -f ${rootfs}_chroot_needed >/dev/null
-	if [ $? -eq 0 ]; then
-		${rootfs}_chroot_needed $*
-		return $?
-	else
-		return 0
-	fi
+  local rootfs=$(repository_get_value rootfs)
+  typeset -f ${rootfs}_chroot_needed >/dev/null
+  if [ $? -eq 0 ]; then
+    ${rootfs}_chroot_needed $*
+    return $?
+  else
+    return 0
+  fi
 }
 #***** clusterfs_chroot_needed
+
+#****f* clusterfs-lib.sh/clusterfs_fsck_needed
+#  NAME
+#    clusterfs_fsck_needed
+#  SYNOPSIS
+#    clusterfs_fsck_needed root rootfs
+#  IDEAS
+#    Will check if the rootfilesystem needs to be checked. 0 on success 1 otherwise. 
+#    Has to be implemented by the rootfslib with the function ${rootfs}_fsck_needed
+function clusterfs_fsck_needed {
+  local root="$1"
+  local rootfs="$2"
+  [ -z "$root" ] && root=$(repository_get_value root)
+  [ -z "$rootfs" ] && rootfs=$(repository_get_value rootfs)
+  typeset -f ${rootfs}_fsck_needed >/dev/null
+  if [ $? -eq 0 ]; then
+    ${rootfs}_fsck_needed $*
+    return $?
+  else
+    return 1
+  fi
+}
+#************* clusterfs_rootfs_needed
+
+#****f* clusterfs-lib.sh/clusterfs_fsck
+#  NAME
+#    clusterfs_fsck
+#  SYNOPSIS
+#    clusterfs_fsck root rootfs
+#  IDEAS
+#    Will autocheck the rootfilesystem if implemented. 
+#    Has to be implemented by the rootfslib with the function ${rootfs}_fsck
+function clusterfs_fsck {
+  local root="$1"
+  local rootfs="$2"
+  [ -z "$root" ] && root=$(repository_get_value root)
+  [ -z "$rootfs" ] && rootfs=$(repository_get_value rootfs)
+  typeset -f ${rootfs}_fsck >/dev/null
+  if [ $? -eq 0 ]; then
+    ${rootfs}_fsck $*
+    return $?
+  else
+    return 1
+  fi
+}
+#************* clusterfs_rootfs_needed
 
 #****f* clusterfs-lib.sh/copy_relevant_files
 #  NAME
@@ -1006,7 +1127,17 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.27  2008-12-01 11:22:47  marc
+# Revision 1.28  2009-01-28 12:52:11  marc
+# Many changes:
+# - moved some functions to std-lib.sh
+# - no "global" variables but repository
+# - bugfixes
+# - support for step with breakpoints
+# - errorhandling
+# - little clean up
+# - better seperation from cc and rootfs functions
+#
+# Revision 1.27  2008/12/01 11:22:47  marc
 # fixed Bug #300 that clutype is setup where it should not
 #
 # Revision 1.26  2008/10/28 12:52:07  marc
