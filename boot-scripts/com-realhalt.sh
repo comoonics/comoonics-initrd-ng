@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: com-realhalt.sh,v 1.7 2008-06-11 15:59:35 marc Exp $
+# $Id: com-realhalt.sh,v 1.8 2009-01-28 12:57:22 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/com-halt.sh
 #  NAME
 #    com-halt.sh
-#    $Id: com-realhalt.sh,v 1.7 2008-06-11 15:59:35 marc Exp $
+#    $Id: com-realhalt.sh,v 1.8 2009-01-28 12:57:22 marc Exp $
 #  DESCRIPTION
 #    script called from <chrootpath>/com-halt.sh
 #  USAGE
@@ -56,45 +56,11 @@ exec 7>> $logfile
 
 
 # include libraries
-
-if  ! [ -e $(dirname $0)/etc/boot-lib.sh ]; then
-  echo "Cannot find $(dirname $0)/etc/boot-lib.sh"
-  exit 1
-fi
-if ! [ -e $(dirname $0)/etc/stdfs-lib.sh ]; then
-  echo "Cannot find $(dirname $0)/etc/stdfs-lib.sh"
-  exit 1
-fi
-if ! [ -e $(dirname $0)/etc/std-lib.sh ]; then
-  echo "Cannot find $(dirname $0)/etc/stdfs-lib.sh"
-  exit 1
-fi
-if ! [ -e $(dirname $0)/etc/chroot-lib.sh ]; then
-  echo "Cannot find $(dirname $0)/etc/chroot-lib.sh"
-  exit 1
-fi
-
-. $(dirname $0)/etc/boot-lib.sh
-. $(dirname $0)/etc/chroot-lib.sh
-. $(dirname $0)/etc/hardware-lib.sh
-. $(dirname $0)/etc/stdfs-lib.sh
-. $(dirname $0)/etc/std-lib.sh
-. $(dirname $0)/etc/defaults.sh
-. $(dirname $0)/etc/clusterfs-lib.sh
-
-distribution=$(getDistribution)
-clutype=$(getCluType)
+predir=$(dirname $0)
+source ${predir}/etc/std-lib.sh
+sourceLibs ${predir}
 lvm_check $root
 lvm_sup=$?
-
-[ -e /etc/${distribution}/clusterfs-lib.sh ] && source /etc/${distribution}/clusterfs-lib.sh
-[ -e /etc/${distribution}/${clutype}-lib.sh ] && source /etc/${distribution}/${clutype}-lib.sh
-
-if ! [ -e $(dirname $0)/etc/$clutype-lib.sh ]; then
-  echo "Cannot find $(dirname $0)/etc/$clutype-lib.sh"
-  exit 1
-fi
-. $(dirname $0)/etc/$clutype-lib.sh
 
 initEnv
 
@@ -150,14 +116,11 @@ echo
 
 step
 
-rootfs=$(get_mounted_rootfs $COM_OLDROOT)
-
+sourceRootfsLibs ${predir}
+clutype=$(repository_get_value clutype)
+distribution=$(repository_get_value distribution)
+rootfs=$(repository_get_value rootfs)
 echo_local "com-realhalt: detected distribution: $distribution, clutype: $clutype, rootfs: $rootfs"
-if [ "$rootfs" != "$clutype" ]; then
-	. $(dirname $0)/etc/${rootfs}-lib.sh
-	[ -e /etc/${distribution}/${rootfs}-lib.sh ] && source /etc/${distribution}/${rootfs}-lib.sh
-fi
-
 
 #nasty workaround for a bug that causes fenced to exit on sigstop sigcont
 # see also rh bz#318571
