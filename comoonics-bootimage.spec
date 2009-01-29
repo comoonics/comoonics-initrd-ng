@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.83 2008-12-08 15:43:04 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.84 2009-01-29 19:48:58 marc Exp $
 #
 ##
 ##
@@ -58,7 +58,7 @@ Requires: comoonics-cluster-py >= 0.1-2
 Requires: comoonics-bootimage-initscripts >= 1.3 
 Requires: comoonics-bootimage-listfiles-all
 #Conflicts:
-Release: 41
+Release: 44
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -84,7 +84,7 @@ Extra listfiles for special network configurations
 
 %package extras-nfs
 Version: 0.1
-Release: 5
+Release: 7
 Requires: comoonics-bootimage >= 1.3-33
 Summary: Listfiles for nfs sharedroot configurations
 Group:   System Environment/Base
@@ -132,6 +132,19 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 %description extras-dm-multipath-rhel
 Extra listfiles for device mapper multipath OSR configurations for RHEL
 
+%package extras-dm-multipath-fedora
+Version: 0.1
+Release: 2
+Requires: comoonics-bootimage >= 1.3-41
+Requires: /etc/redhat-release
+Requires: comoonics-bootimage-listfiles-fedora
+Summary: Listfiles for device mapper multipath OSR configurations for fedora
+Group:   System Environment/Base
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description extras-dm-multipath-fedora
+Extra listfiles for device mapper multipath OSR configurations for fedora
+
 %package extras-rdac-multipath
 Version: 0.1
 Release: 3
@@ -176,9 +189,31 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 %description extras-drbd
 DRBD support in the OSR cluster
 
+%package extras-glusterfs
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage >= 1.3-44
+Summary: Extras for glusterfs support in the open-sharedroot cluster
+Group:   System Environment/Base
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description extras-glusterfs
+GlusterFS support in the OSR cluster
+
+%package extras-sysctl
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage >= 1.3-44
+Summary: Extras for sysctl support in the open-sharedroot cluster
+Group:   System Environment/Base
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description extras-sysctl
+Sysctl support in the OSR cluster
+
 %package listfiles-all
 Version: 0.1
-Release: 2
+Release: 4
 Requires: comoonics-bootimage >= 1.3-36
 Group:   System Environment/Base
 Summary: OSR listfilesfiles for all distributions 
@@ -200,6 +235,30 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 %description listfiles-rhel
 OSR extra files that are only relevant for RHEL Versions
 
+%package listfiles-fedora
+Version: 0.1
+Release: 4
+Requires: comoonics-bootimage >= 1.3-41
+Requires: /etc/redhat-release
+Requires: comoonics-bootimage-listfiles-all
+Group: System Environment/Base
+Summary: Extrafiles for Fedora Core 
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description listfiles-fedora
+OSR extra files that are only relevant for Fedora Versions
+
+%package listfiles-fedora-nfs
+Version: 0.1
+Release: 3
+Requires: comoonics-bootimage-listfiles-fedora
+Group: System Environment/Base
+Summary: Extrafiles for Fedora Core NFS support 
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description listfiles-fedora-nfs
+OSR extra files that are only relevant for Fedora Versions and nfs support
+
 %package listfiles-rhel4
 Version: 0.1
 Release: 2
@@ -216,7 +275,7 @@ OSR extra files that are only relevant for RHEL4
 
 %package listfiles-rhel5
 Version: 0.1
-Release: 2
+Release: 3
 Requires: comoonics-bootimage >= 1.3-36
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-rhel
@@ -449,23 +508,29 @@ fi
 %attr(0755, root, root) %{LIBDIR}/boot-scripts/rescue.sh
 %attr(0755, root, root) %{LIBDIR}/boot-scripts/linuxrc
 %attr(0755, root, root) %{LIBDIR}/boot-scripts/linuxrc.bash
+%attr(0755, root, root) %{LIBDIR}/boot-scripts/make_tar.sh
+%attr(0755, root, root) %{LIBDIR}/boot-scripts/update-from-url.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/atix.txt
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/atix-logo.txt
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/bashrc
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/boot-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/chroot-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/clusterfs-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/comoonics-release
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/defaults.sh
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/errors.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/ext3-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/gfs-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/hardware-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/inittab
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/issue
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/network-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/repository-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/xen-lib.sh
 #%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/passwd
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/stdfs-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/std-lib.sh
-%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/sysconfig/comoonics
+#%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/sysconfig/comoonics
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel4/boot-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel4/hardware-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel4/network-lib.sh
@@ -478,6 +543,11 @@ fi
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/sles10/boot-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/sles10/hardware-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/sles10/network-lib.sh
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/fedora/boot-lib.sh
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/fedora/gfs-lib.sh
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/fedora/hardware-lib.sh
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/fedora/network-lib.sh
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/fedora/nfs-lib.sh
 
 %dir %{CONFIGDIR}/bootimage-chroot
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage-chroot/files.list
@@ -509,8 +579,19 @@ fi
 %files extras-dm-multipath-rhel
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/dm_multipath.list
 
+%files extras-dm-multipath-fedora
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fedora/dm_multipath.list
+
 %files extras-rdac-multipath
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rdac_multipath.list
+
+%files extras-glusterfs
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/glusterfs-lib.sh
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/glusterfs.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/glusterfs.list
+
+%files extras-sysctl
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/sysctl.list
 
 %files extras-xen
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/xen.list
@@ -525,6 +606,14 @@ fi
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/drbd-lib.sh
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/drbd.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/drbd.list
+
+#%files extras-rhcs-fedora
+#%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhcs.list
+#%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhcs.list
+#
+#%files extras-gfs-fedora
+#%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/gfs1.list
+#%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/gfs2.list
 
 %files listfiles-all
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/basefiles.list
@@ -589,6 +678,19 @@ fi
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/dm_multipath.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/network.list
 
+%files listfiles-fedora
+%dir %{CONFIGDIR}/bootimage/files.initrd.d/fedora
+%dir %{CONFIGDIR}/bootimage/rpms.initrd.d/fedora
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/fedora/base.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/fedora/configs.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/fedora/network.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fedora/base.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fedora/hardware.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fedora/python.list
+
+%files listfiles-fedora-nfs
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fedora/nfs.list
+
 %files listfiles-fenceacksv-plugins
 %config %attr(0644, root, root) %dir %{CONFIGDIR}/bootimage-chroot/rpms.initrd.d/fenceacksv-plugins.list
 
@@ -637,6 +739,12 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Tue Jan 29 2009 Marc Grimme <grimme@atix.de> 1.3-44
+- First version with new hardware detection Bug#325
+- First version with Usability review Parent-Bug#323
+- Implemented sysctl concept to generally implement the IGMPv2 thing Bug#324
+- Many other usability improvements
+- Support for nfsv4
 * Fri Dec 05 2008 Marc Grimme <grimme@atix.de> 1.3-41
 - First version on the way to rpmlint BUG#290
 * Tue Nov 18 2008 Marc Grimme <grimme@atix.de> 1.3-40
@@ -795,6 +903,12 @@ rm -rf %{buildroot}
 - first release
 
 %changelog extras-nfs
+* Tue Jan 29 2009 Marc Grimme <grimme@atix.de> 0.1-7
+- First version with new hardware detection Bug#325
+- First version with Usability review Parent-Bug#323
+- Implemented sysctl concept to generally implement the IGMPv2 thing Bug#324
+- Many other usability improvements
+- Support for nfsv4
 * Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-4
 - First version on the way to rpmlint BUG#290
 * Wed Aug 06 2008 Marc Grimme <grimme@atix.de> - 0.1-3
@@ -802,7 +916,29 @@ rm -rf %{buildroot}
 * Tue Jun 10 2008 Marc Grimme <grimme@atix.de> - 0.1-2
 - added nfs-lib.sh file
 
+%changelog extras-dm-multipath
+* Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-3
+- introduced the changelog
+
+%changelog extras-dm-multipath-rhel
+* Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-2
+- introduced the changelog
+
+%changelog extras-dm-multipath-fedora
+* Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-2
+- introduced the changelog
+
+%changelog extras-glusterfs
+* Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-1
+- initial revision (thanks to Gordan)
+
+%changelog extras-sysctl
+* Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-1
+- initial revision
+
 %changelog listfiles-all
+* Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-4
+- Updated the listfiles to latest deps
 * Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-2
 - First version on the way to rpmlint BUG#290
 * Thu Aug 14 2008 Marc Grimme <grimme@atix.de - 0.1-1
@@ -821,6 +957,8 @@ rm -rf %{buildroot}
   - initial revision 
 
 %changelog listfiles-rhel5
+* Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-3
+- Removed and added more files
 * Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-2
 - First version on the way to rpmlint BUG#290
 * Thu Aug 14 2008 Marc Grimme <grimme@atix.de - 0.1-1
@@ -833,6 +971,14 @@ rm -rf %{buildroot}
 - Replaced dependency listfiles to listfiles-all in listfiles-sles
 * Thu Aug 14 2008 Marc Grimme <grimme@atix.de - 0.1-1
   - initial revision 
+
+%changelog listfiles-fedora
+* Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-4
+- introduced the changelog
+
+%changelog listfiles-fedora-nfs
+* Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-3
+- introduced the changelog
 
 %changelog fenceacksv
 * Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.3-2
@@ -869,7 +1015,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.83  2008-12-08 15:43:04  marc
+# Revision 1.84  2009-01-29 19:48:58  marc
+# new versions
+#
+# Revision 1.83  2008/12/08 15:43:04  marc
 # rpmlint Bug#290
 #
 # Revision 1.82  2008/12/08 15:05:25  marc
@@ -1060,7 +1209,7 @@ rm -rf %{buildroot}
 # Revision 1.25  2006/08/14 17:42:41  marc
 # new version with max_drop_count and fenced from local disk
 #
-# Revision 1.24  2006/07/19 15:14:39  marc
+# Revision 1.24  2006/07/19 15%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/fedora/base.list
 # removed the fence-tool lists for chroot
 #
 # Revision 1.23  2006/07/19 15:11:36  marc
