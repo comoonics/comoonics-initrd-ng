@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.15 2009-01-28 12:46:55 marc Exp $
+# $Id: gfs-lib.sh,v 1.16 2009-01-29 15:55:57 marc Exp $
 #
 # @(#)$File$
 #
@@ -24,7 +24,6 @@
 
 if [ -z "$__RHEL5_GFS_LIB__" ]; then
 	__RHEL5_GFS_LIB__=1
-#	echo_local "Loading RedHat 5 Cluster dependencies"
 fi
 
 #****f* gfs-lib.sh/gfs_load
@@ -153,7 +152,7 @@ function gfs_services_restart_newroot {
   if [ -d "${chroot_path}/${comoonicspath}" ]; then
   	echo_local -n "Creating clusterfiles ${clusterfiles}.."
   	for _clusterfile in $clusterfiles; do
-  		exec_local chroot $chroot_path $ln -sf ${comoonicspath}/${_clusterfile} ${_clusterfile}
+  		exec_local chroot $chroot_path ln -sf ${comoonicspath}/${_clusterfile} ${_clusterfile}
     done
     success
     echo
