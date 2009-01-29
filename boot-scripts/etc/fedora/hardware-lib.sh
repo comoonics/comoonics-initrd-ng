@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.1 2009-01-28 12:45:29 marc Exp $
+# $Id: hardware-lib.sh,v 1.2 2009-01-29 15:55:16 marc Exp $
 #
 # @(#)$File$
 #
@@ -35,23 +35,10 @@
 #  SOURCE
 #
 function fedora9_hardware_detect() {
-  #local KUDZU="/sbin/kudzu"
-  #cp ${modules_conf} ${modules_conf}.tmpl
-  #exec_local $KUDZU -t 30 -c SCSI -q
-#  mv ${modules_conf} ${modules_conf}.scsi
-#  cp ${modules_conf}.tmpl ${modules_conf}
-  #exec_local $KUDZU -t 30 -c RAID -q
-  #mv ${modules_conf} ${modules_conf}.raid
-  #exec_local $KUDZU -t 30 -c USB -q
-#  mv ${modules_conf} ${modules_conf}.usb
-#  cp ${modules_conf}.tmpl ${modules_conf}
-  #exec_local $KUDZU -t 30 -c NETWORK -q
-#  cat ${modules_conf}.scsi >> ${modules_conf}
-  #	cat ${modules_conf}.raid >> ${modules_conf}
-#  cat ${modules_conf}.usb >> ${modules_conf}
-  #cp ${modules_conf} ${modules_conf}.tmpl
-  #cat ${modules_conf}.tmpl | sort -u > ${modules_conf}
-  true
+  exec_local udev_start
+  [ -e /proc/modules ] && stabilized --type=hash --interval=600 --good=5 /proc/modules
+
+  return $return_c
 }
 #************ rhel5_hardware_detect
 
@@ -66,11 +53,11 @@ function fedora9_hardware_detect() {
 #
 function fedora9_udev_start() {
 	if ! /sbin/pidof udevd > /dev/null; then
-      /sbin/modprobe sd_mod
-      /sbin/modprobe sg
+#      /sbin/modprobe sd_mod
+#      /sbin/modprobe sg
 
-      udevd -d &&
-	  udevtrigger
+      udevd -d # &&
+#	  udevtrigger
 	else
       udevtrigger
 	fi
@@ -98,7 +85,10 @@ function fedora9_udev_stop() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.1  2009-01-28 12:45:29  marc
+# Revision 1.2  2009-01-29 15:55:16  marc
+# Implemented new hw detection
+#
+# Revision 1.1  2009/01/28 12:45:29  marc
 # initial revision.
 # Support for fedora
 #
