@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.14 2008-12-05 16:12:58 marc Exp $
+# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.15 2009-01-29 19:48:45 marc Exp $
 #
 ##
 ##
@@ -51,7 +51,7 @@ Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-rhel
 Requires: comoonics-bootimage-listfiles-rhel5
 #Conflicts: 
-Release: 10.el5
+Release: 11.el5
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -149,6 +149,8 @@ done
 rm -rf %{buildroot}
 
 %changelog
+* Tue Nov 18 2008 Marc Grimme <grimme@atix.de> 1.3-11el5
+- Support for glusterfs
 * Tue Nov 18 2008 Marc Grimme <grimme@atix.de> 1.3-10el5
 - Clean up of old repository caches (Bug #289)
 * Tue Oct 14 2008 Marc Grimme <grimme@atix.de> 1.3-9el5
@@ -169,7 +171,10 @@ rm -rf %{buildroot}
 - first revision
 # ------
 # $Log: comoonics-bootimage-initscripts-el5.spec,v $
-# Revision 1.14  2008-12-05 16:12:58  marc
+# Revision 1.15  2009-01-29 19:48:45  marc
+# new version
+#
+# Revision 1.14  2008/12/05 16:12:58  marc
 # First step to go rpmlint compat BUG#230
 #
 # Revision 1.13  2008/12/01 14:46:24  marc
