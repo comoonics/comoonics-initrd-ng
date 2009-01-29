@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.45 2008-12-01 12:30:41 marc Exp $
+# $Id: Makefile,v 1.46 2009-01-29 19:49:08 marc Exp $
 #
 # @(#)$file$
 #
@@ -106,7 +106,9 @@ EXEC_FILES=create-gfs-initrd-generic.sh \
   boot-scripts/linuxrc.bash \
   boot-scripts/linuxrc.sim.sh \
   boot-scripts/detectHardware.sh \
-  boot-scripts/rescue.sh
+  boot-scripts/rescue.sh \
+  boot-scripts/make_tar.sh \
+  boot-scripts/update-from-url.sh
 #************ EXEC_FILES 
 
 #****d* Makefile/LIB_FILES
@@ -118,7 +120,10 @@ EXEC_FILES=create-gfs-initrd-generic.sh \
 #
 LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/inittab \
+  boot-scripts/etc/issue \
   boot-scripts/etc/atix.txt \
+  boot-scripts/etc/atix-logo.txt \
+  boot-scripts/etc/bashrc \
   boot-scripts/etc/boot-lib.sh \
   boot-scripts/etc/chroot-lib.sh \
   boot-scripts/etc/clusterfs-lib.sh \
@@ -126,7 +131,9 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/drbd-lib.sh \
   boot-scripts/etc/defaults.sh \
   boot-scripts/etc/ext3-lib.sh \
+  boot-scripts/etc/errors.sh \
   boot-scripts/etc/gfs-lib.sh \
+  boot-scripts/etc/glusterfs-lib.sh \
   boot-scripts/etc/hardware-lib.sh \
   boot-scripts/etc/iscsi-lib.sh \
   boot-scripts/etc/network-lib.sh \
@@ -136,7 +143,6 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/stdfs-lib.sh \
   boot-scripts/etc/std-lib.sh \
   boot-scripts/etc/xen-lib.sh \
-  boot-scripts/etc/sysconfig/comoonics \
   boot-scripts/etc/rhel4/boot-lib.sh \
   boot-scripts/etc/rhel4/hardware-lib.sh \
   boot-scripts/etc/rhel4/network-lib.sh \
@@ -148,7 +154,12 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/sles8/network-lib.sh \
   boot-scripts/etc/sles10/boot-lib.sh \
   boot-scripts/etc/sles10/hardware-lib.sh \
-  boot-scripts/etc/sles10/network-lib.sh
+  boot-scripts/etc/sles10/network-lib.sh \
+  boot-scripts/etc/fedora/boot-lib.sh \
+  boot-scripts/etc/fedora/gfs-lib.sh \
+  boot-scripts/etc/fedora/hardware-lib.sh \
+  boot-scripts/etc/fedora/network-lib.sh \
+  boot-scripts/etc/fedora/nfs-lib.sh
 #************ LIB_FILES 
 #****d* Makefile/SYSTEM_CFG_DIR
 #  NAME
@@ -194,6 +205,7 @@ CFG_FILES=basefiles.list \
     files.initrd.d/base.list \
     files.initrd.d/iscsi.list \
     files.initrd.d/bonding.list \
+    files.initrd.d/glusterfs.list \
     files.initrd.d/grub.list \
     files.initrd.d/comoonics.list \
     files.initrd.d/vlan.list \
@@ -201,6 +213,7 @@ CFG_FILES=basefiles.list \
     files.initrd.d/xen.list \
     files.initrd.d/rdac_multipath.list \
     files.initrd.d/network.list \
+    files.initrd.d/sysctl.list \
     files.initrd.d/user_edit.list \
 	files.initrd.d/rhel/empty.list \
     files.initrd.d/rhel/base.list \
@@ -215,6 +228,9 @@ CFG_FILES=basefiles.list \
     files.initrd.d/sles/base.list \
     files.initrd.d/sles/empty.list \
     files.initrd.d/sles/network.list \
+    files.initrd.d/fedora/base.list \
+    files.initrd.d/fedora/configs.list \
+    files.initrd.d/fedora/network.list \
     rpms.list \
     rpms.initrd.d/python.list \
     rpms.initrd.d/drbd.list \
@@ -222,6 +238,7 @@ CFG_FILES=basefiles.list \
     rpms.initrd.d/iscsi.list \
     rpms.initrd.d/hardware.list \
     rpms.initrd.d/lvm.list \
+    rpms.initrd.d/glusterfs.list \
     rpms.initrd.d/comoonics.list \
     rpms.initrd.d/ext2.list \
     rpms.initrd.d/xen.list \
@@ -244,8 +261,12 @@ CFG_FILES=basefiles.list \
     rpms.initrd.d/sles/hardware.list \
     rpms.initrd.d/sles/empty.list \
     rpms.initrd.d/sles/dm_multipath.list \
-    rpms.initrd.d/sles/network.list
-    
+    rpms.initrd.d/sles/network.list \
+    rpms.initrd.d/fedora/base.list \
+    rpms.initrd.d/fedora/dm_multipath.list \
+    rpms.initrd.d/fedora/hardware.list \
+    rpms.initrd.d/fedora/python.list \
+    rpms.initrd.d/fedora/nfs.list    
 	
 #************ CFG_FILES 
 
@@ -284,6 +305,8 @@ EMPTY_DIRS=boot-scripts/mnt \
  boot-scripts/var/lib/dhcp \
  boot-scripts/var/run/netreport \
  boot-scripts/proc \
+ boot-scripts/sys \
+ boot-scripts/tmp \
  boot-scripts/dev
 
 #************ EMPTY_DIRS 
@@ -316,13 +339,16 @@ ARCHIVE_FILE=./$(PACKAGE_NAME)-$(VERSION).tar.gz
 TAR_PATH=$(PACKAGE_NAME)-$(VERSION)/*
 #************ TAR_PATH 
 
-RPM_PACKAGE_BIN_DIR=/usr/src/redhat/RPMS/*
-RPM_PACKAGE_SRC_DIR=/usr/src/redhat/SRPMS
 RPM_PACKAGE_DIR=/usr/src/redhat
+RPM_PACKAGE_BIN_DIR=$(RPM_PACKAGE_DIR)/RPMS/*
+RPM_PACKAGE_SRC_DIR=$(RPM_PACKAGE_DIR)/SRPMS
+RPM_PACKAGE_SOURCE_DIR=$(RPM_PACKAGE_DIR)/SOURCES
 
 
 CHANNELBASEDIR=/atix/dist-mirrors
-CHANNELDIRS=comoonics/rhel5/preview comoonics/sles10/preview
+ALL_DISTROS=rhel4 rhel5 sles10 fedora
+# Which directories are used for installation
+CHANNELDIRS=comoonics/rhel5/preview comoonics/sles10/preview comoonics/fedora/preview
 CHANNELSUBDIRS=i386 x86_64 noarch SRPMS
 
 TEST_DIR=tests
@@ -438,29 +464,33 @@ test:
 
 rpmbuild: archive
 	@echo -n "Creating RPM"
-	cp ../$(ARCHIVE_FILE) /usr/src/redhat/SOURCES/
+	cp ../$(ARCHIVE_FILE) $(RPM_PACKAGE_SOURCE_DIR)/
 	rpmbuild -ba --target=noarch ./comoonics-bootimage.spec
 	
 	
 rpmbuild-listfiles-el4: archive
-	cp ../$(ARCHIVE_FILE) /usr/src/redhat/SOURCES/
+	cp ../$(ARCHIVE_FILE) $(RPM_PACKAGE_SOURCE_DIR)/
 	rpmbuild -ba  --target=noarch ./comoonics-bootimage-listfiles-el4.spec
 
 rpmbuild-listfiles-el5: archive
-	cp ../$(ARCHIVE_FILE) /usr/src/redhat/SOURCES/
+	cp ../$(ARCHIVE_FILE) $(RPM_PACKAGE_SOURCE_DIR)/
 	rpmbuild -ba  --target=noarch ./comoonics-bootimage-listfiles-el5.spec
 
 rpmbuild-initscripts-el4: archive
-	cp ../$(ARCHIVE_FILE) /usr/src/redhat/SOURCES/
+	cp ../$(ARCHIVE_FILE) $(RPM_PACKAGE_SOURCE_DIR)/
 	rpmbuild -ba  --target=noarch ./comoonics-bootimage-initscripts-el4.spec
 
 rpmbuild-initscripts-el5: archive
-	cp ../$(ARCHIVE_FILE) /usr/src/redhat/SOURCES/
+	cp ../$(ARCHIVE_FILE) $(RPM_PACKAGE_SOURCE_DIR)/
 	rpmbuild -ba  --target=noarch ./comoonics-bootimage-initscripts-el5.spec
 	
 rpmbuild-initscripts-sles10: archive
-	cp ../$(ARCHIVE_FILE) /usr/src/redhat/SOURCES/
+	cp ../$(ARCHIVE_FILE) $(RPM_PACKAGE_SOURCE_DIR)/
 	rpmbuild -ba  --target=noarch ./comoonics-bootimage-initscripts-sles10.spec
+	
+rpmbuild-initscripts-fedora: archive
+	cp ../$(ARCHIVE_FILE) $(RPM_PACKAGE_SOURCE_DIR)/
+	rpmbuild -ba  --target=noarch ./comoonics-bootimage-initscripts-fedora.spec
 	
 .PHONY:rpmsign
 rpmsign:
@@ -474,21 +504,24 @@ channelcopy:
 		touch $$TMPFILE; \
 		echo "Copying rpms to channel $$channeldir..$$TMPFILE"; \
 		# Create an array of all CHANNELDIRS distros (second dir in path) and one without numbers at the end ready to be feeded in find \
-		excludeddistros=`echo -n $(CHANNELDIRS) | awk -F/ 'BEGIN { RS=" "; } $$0=="'$$channeldir'" { next; } { print "-not -name \"*"$$2"-*\" -and -not -name \"*"gensub("[0-9]+$$","","",$$2)"-*\" -and "; }'`; \
-		includeddistros=`echo -n $$channeldir | awk -F/ '{ print "-name \"*"$$2"-*\" -or -name \"*"gensub("[0-9]+$$","","",$$2)"-*\" -or "; }'`; \
+		includeddistros=`echo -n $$channeldir | awk -F/ '{ print "-name \"*"$$2"*\" -or -name \"*"gensub("[0-9]+$$","","",$$2)"-*\" -or "; }'`; \
+		excludeddistros=`echo -n $(ALL_DISTROS) | awk -F/ 'BEGIN { RS=" "; } $$0=="'$$includedistro'" { next; } { print "-not -name \"*"$$0"*\" -and -not -name \"*"gensub("[0-9]+$$","","",$$0)"*\" -and "; }'`; \
 		for subdir in $(CHANNELSUBDIRS); do \
 			if [ $$subdir == "SRPMS" ]; then \
 				type="src"; \
+				rpmdir=""; \
 			else \
 				type=$$subdir; \
+				rpmdir="/RPMS"; \
 			fi; \
-			echo 'find $(RPM_PACKAGE_DIR) -name "$(PACKAGE_NAME)*.'$$type'.rpm" -and -not -name "*.el?.*" -and '$$excludeddistros' -true -exec cp -f {} $(CHANNELBASEDIR)/'$$channeldir'/'$$subdir'/RPMS \;' ;\
-			echo 'find $(RPM_PACKAGE_DIR) -name "$(PACKAGE_NAME)*.'$$type'.rpm" -and -not -name "*.el?.*" -and '$$excludeddistros' -true -exec cp -f {} $(CHANNELBASEDIR)/'$$channeldir'/'$$subdir'/RPMS \;' | bash ;\
-			echo 'find $(RPM_PACKAGE_DIR) -name "$(PACKAGE_NAME)*.'$$type'.rpm" -and -not -name "*.el?.*" -and \( '$$includeddistros' -false \) -exec cp -f {} $(CHANNELBASEDIR)/'$$channeldir'/'$$subdir'/RPMS \;' ;\
-			echo 'find $(RPM_PACKAGE_DIR) -name "$(PACKAGE_NAME)*.'$$type'.rpm" -and -not -name "*.el?.*" -and \( '$$includeddistros' -false \) -exec cp -f {} $(CHANNELBASEDIR)/'$$channeldir'/'$$subdir'/RPMS \;' | bash ;\
+			echo 'find $(RPM_PACKAGE_DIR) -name "$(PACKAGE_NAME)*.'$$type'.rpm" -and -not -name "*.el?.*" -and '$$excludeddistros' -true -exec cp -f {} $(CHANNELBASEDIR)/'$$channeldir'/'$${subdir}$${rpmdir}' \;' ;\
+			echo 'find $(RPM_PACKAGE_DIR) -name "$(PACKAGE_NAME)*.'$$type'.rpm" -and -not -name "*.el?.*" -and '$$excludeddistros' -true -exec cp -f {} $(CHANNELBASEDIR)/'$$channeldir'/'$${subdir}$${rpmdir}' \;' | bash ;\
+			echo 'find $(RPM_PACKAGE_DIR) -name "$(PACKAGE_NAME)*.'$$type'.rpm" -and -not -name "*.el?.*" -and \( '$$includeddistros' -false \) -exec cp -f {} $(CHANNELBASEDIR)/'$$channeldir'/'$${subdir}$${rpmdir}' \;' ;\
+			echo 'find $(RPM_PACKAGE_DIR) -name "$(PACKAGE_NAME)*.'$$type'.rpm" -and -not -name "*.el?.*" -and \( '$$includeddistros' -false \) -exec cp -f {} $(CHANNELBASEDIR)/'$$channeldir'/'$${subdir}$${rpmdir}' \;' | bash ;\
 		done; \
 		echo find $(CHANNELBASEDIR)/$$channeldir -name "$(PACKAGE_NAME)*.rpm" -newer $$TMPFILE; \
 		find $(CHANNELBASEDIR)/$$channeldir -name "$(PACKAGE_NAME)*.rpm" -newer $$TMPFILE; \
+		rm -f $$TMPFILE; \
 	done;
 	
 .PHONY: channelbuild
@@ -499,7 +532,7 @@ channelbuild:
 	done 
 
 .PHONY:rpm	
-rpm: rpmbuild rpmbuild-initscripts-el4 rpmbuild-initscripts-el5 rpmbuild-initscripts-sles10 \
+rpm: rpmbuild rpmbuild-initscripts-el4 rpmbuild-initscripts-el5 rpmbuild-initscripts-sles10 rpmbuild-initscripts-fedora \
 rpmbuild-listfiles-el4 rpmbuild-listfiles-el5 \
 rpmsign
 
@@ -509,7 +542,10 @@ channel: rpm channelcopy channelbuild
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.45  2008-12-01 12:30:41  marc
+# Revision 1.46  2009-01-29 19:49:08  marc
+# added new files
+#
+# Revision 1.45  2008/12/01 12:30:41  marc
 # implemented test
 #
 # Revision 1.44  2008/11/18 14:28:36  marc
