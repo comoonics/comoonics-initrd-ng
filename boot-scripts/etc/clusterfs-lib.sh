@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.28 2009-01-28 12:52:11 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.29 2009-01-29 15:57:03 marc Exp $
 #
 # @(#)$File$
 #
@@ -293,6 +293,20 @@ function cc_validate {
 }
 #*********** cc_validate
 
+#****f* clusterfs-lib.sh/cc_get_nic_drivers
+#  NAME
+#    cc_get_nic_drivers
+#  SYNOPSIS
+#    function cc_get_nic_drivers(cluster_conf)
+#  DESCRIPTION
+#    Returns the nic drivers for the given node if specified in cluster configuration. 
+#  SOURCE
+function cc_get_nic_drivers {
+  local clutype=$(repository_get_value clutype)
+  ${clutype}_get_nic_drivers $*
+}
+#*********** cc_get_nic_drivers
+
 #****f* clusterfs-lib.sh/cc_find_nodeid
 #  NAME
 #    cc_find_nodeid
@@ -303,7 +317,8 @@ function cc_validate {
 #  SOURCE
 function cc_find_nodeid {
 	local cluster_conf=$1
-	local macs=$(ifconfig -a | grep -i hwaddr | awk '{print $5;};')
+	local macs=$(repository_get_value hardwareids)
+	[ -z "$macs" ] && macs=$(ifconfig -a | grep -i hwaddr | awk '{print $5;};')
 	for mac in $macs; do
     	local nodeid=$(cc_get_nodeid ${cluster_conf} $mac 2>/dev/null)
     	if [ -n "$nodeid" ]; then
@@ -1127,7 +1142,10 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.28  2009-01-28 12:52:11  marc
+# Revision 1.29  2009-01-29 15:57:03  marc
+# Upstream with new HW Detection see bug#325
+#
+# Revision 1.28  2009/01/28 12:52:11  marc
 # Many changes:
 # - moved some functions to std-lib.sh
 # - no "global" variables but repository

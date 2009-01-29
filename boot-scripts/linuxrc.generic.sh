@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.66 2009-01-28 12:57:44 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.67 2009-01-29 15:58:24 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.66 2009-01-28 12:57:44 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.67 2009-01-29 15:58:24 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -79,7 +79,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.66 $ $Date: 2009-01-28 12:57:44 $'
+echo_local 'Internal Version $Revision: 1.67 $ $Date: 2009-01-29 15:58:24 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -134,9 +134,6 @@ if [ -z "$simulation" ] || [ "$simulation" -ne 1 ]; then
   echo_local -n "Starting network configuration for lo0"
   exec_local nicUp lo
   return_code
-  # Just load nic drivers
-  auto_netconfig
-  found_nics && breakp $(errormsg err_hw_nicdriver)
 fi
 step "NIC modules loaded." "autonetconfig"
 
@@ -151,6 +148,11 @@ echo_local -n "nodeid: $nodeid, nodename: $nodename "
 
 sourceRootfsLibs ${predir}
 success
+
+# Just load nic drivers
+auto_netconfig $(cc_get_nic_drivers $(repository_get_value nodeid) $(repository_get_value nodename) $(repository_get_value cluster_conf))
+udev_start # now we should be able to trigger this.
+found_nics && breakp $(errormsg err_hw_nicdriver)
 
 cc_auto_syslogconfig $(repository_get_value cluster_conf) $(repository_get_value nodename)
 is_syslog=$?
@@ -418,7 +420,7 @@ if [ $is_syslog -eq 0 ]; then
 fi
 
 if [ $(repository_get_value chrootneeded) -eq 0 ]; then
-  echo_local -n "Moving chroot environment $chroot_mount to $newroot"
+  echo_local -n "Moving chroot environment $(repository_get_value chroot_path) to $(repository_get_value newroot)"
   move_chroot $(repository_get_value chroot_mount) $(repository_get_value newroot)/$(repository_get_value chroot_mount)
   return_code
 
@@ -439,7 +441,7 @@ set "Cleaned up initrd" "cleanup"
 
 echo_local -n "Restart services in newroot ..."
 exec_local prepare_newroot $(repository_get_value newroot)
-exec_local clusterfs_services_restart_newroot $(repository_get_value newroot) "$(repository_get_value lockmethod)" "$(repository_get_value lvm_sup)" "$(repository_get_value chrootpath)" || breakp $(errormsg err_cc_restart_service)
+exec_local clusterfs_services_restart_newroot $(repository_get_value newroot) "$(repository_get_value lockmethod)" "$(repository_get_value lvm_sup)" "$(repository_get_value chroot_path)" || breakp $(errormsg err_cc_restart_service)
 return_code
 step "Initialization completed." "initcomplete"
 
@@ -451,7 +453,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.66  2009-01-28 12:57:44  marc
+# Revision 1.67  2009-01-29 15:58:24  marc
+# Upstream with new HW Detection see bug#325
+#
+# Revision 1.66  2009/01/28 12:57:44  marc
 # Many changes:
 # - moved some functions to std-lib.sh
 # - no "global" variables but repository

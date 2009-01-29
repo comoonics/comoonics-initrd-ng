@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.21 2009-01-28 12:54:18 marc Exp $
+# $Id: hardware-lib.sh,v 1.22 2009-01-29 15:58:06 marc Exp $
 #
 # @(#)$File$
 #
@@ -375,7 +375,11 @@ function setHWClock() {
 #
 function hardware_detect() {
   local distribution=$(repository_get_value distribution)
+  /sbin/depmod -a &>/dev/null
+
   echo_local -n "Detecting Hardware "
+  echo_local_debug -n "..(saving modules).."
+  local modules=$(listmodules)
   # detecting xen
   xen_domx_detect
   if [ $? -eq 0 ]; then
@@ -384,22 +388,57 @@ function hardware_detect() {
   else
     ${distribution}_hardware_detect
   fi
+  return_c=$?
+  local hwids=$(hardware_ids)
+  repository_append_value hardwareids " $hwids"
+  return_code $return_c
+  
+  echo_local "Removing loaded modules"
+  for _module in $(listmodules); do
+  	if [ -n "$modules" ]; then
+  	  for _smodule in $modules; do
+  		if [ $_module != $_smodule ]; then
+  	      rmmod $_module
+  		fi
+  	  done
+  	else
+      rmmod $_module
+    fi
+  done
+  [ -e /proc/modules ] && stabilized --type=hash --interval=600 --good=5 /proc/modules
   return_code
 
-  echo_local -n "Module-dependency"
-  exec_local /sbin/depmod -a
-  return_code
-
-#  echo_local -n "Starting udev"
-#  udev_start
-#  return_code
-
-#  echo_local_debug "File $modules_conf ***"
-#  exec_local_debug cat $modules_conf
-
-  return $ret_c
+  return $return_c
 }
 #************ hardware_detect
+
+#****f* hardware-lib.sh/listmodules
+#  NAME
+#    listmodules
+#  SYNOPSIS
+#    function listmodules()
+#  DESCRIPTION
+#    lists all names of loaded modules
+#  SOURCE
+#
+function listmodules {
+  lsmod | awk '$2 ~ /[[:digit:]]+/ {print $1; }'
+}
+#************ listmodules
+
+#****f* hardware-lib.sh/hardware_ids
+#  NAME
+#    hardware_ids
+#  SYNOPSIS
+#    function hardware_ids()
+#  DESCRIPTION
+#    lists all names of loaded modules
+#  SOURCE
+#
+function hardware_ids {
+  ifconfig -a | grep -v -i "Link encap: Local" | grep -v -i "Link encap:UNSPEC" | grep -i hwaddr | awk '{print $5;};'
+}
+#************ hardware_ids
 
 #****f* boot-lib.sh/add_scsi_device
 #  NAME
@@ -466,7 +505,10 @@ function sysctl_load() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.21  2009-01-28 12:54:18  marc
+# Revision 1.22  2009-01-29 15:58:06  marc
+# Upstream with new HW Detection see bug#325
+#
+# Revision 1.21  2009/01/28 12:54:18  marc
 # Many changes:
 # - moved some functions to std-lib.sh
 # - no "global" variables but repository

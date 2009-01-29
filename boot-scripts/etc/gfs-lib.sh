@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.57 2009-01-28 12:53:53 marc Exp $
+# $Id: gfs-lib.sh,v 1.58 2009-01-29 15:57:30 marc Exp $
 #
 # @(#)$File$
 #
@@ -645,6 +645,32 @@ function gfs_get_bridge_param {
   fi
 }
 
+#****f* clusterfs-lib.sh/gfs_get_nic_drivers
+#  NAME
+#    gfs_get_nic_drivers
+#  SYNOPSIS
+#    function gfs_get_nic_drivers(nodeid, nodename, clusterconf)
+#  DESCRIPTION
+#    Returns the nic drivers for the given node if specified in cluster configuration. 
+#  SOURCE
+function gfs_get_nic_drivers {
+  local nodeid=$1
+  local nodename=$2
+  local xml_file=$3
+  
+  local xml_cmd="${ccs_xml_query}"
+  local out=$($xml_cmd -f $xml_file query_value '/cluster/clusternodes/clusternode[@name="'$nodename'"]/com_info/eth/@driver')
+  if [ -z "$out" ]; then
+    out=$($xml_cmd -f $xml_file query_value '/cluster/clusternodes/clusternode[@nodeid="'$nodeid'"]/com_info/eth/@driver')
+  fi
+  if [ -z "$out" ]; then
+  	return 1
+  else
+    echo $out
+  fi
+}
+#*********** gfs_get_nic_drivers
+
 #****f* gfs-lib.sh/gfs_load
 #  NAME
 #    gfs_load
@@ -1206,7 +1232,10 @@ function gfs_fsck {
 #********* gfs_fsck
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.57  2009-01-28 12:53:53  marc
+# Revision 1.58  2009-01-29 15:57:30  marc
+# Upstream with new HW Detection see bug#325
+#
+# Revision 1.57  2009/01/28 12:53:53  marc
 # Many changes:
 # - moved some functions to std-lib.sh
 # - no "global" variables but repository

@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.8 2009-01-28 12:48:44 marc Exp $
+# $Id: hardware-lib.sh,v 1.9 2009-01-29 15:56:25 marc Exp $
 #
 # @(#)$File$
 #
@@ -37,6 +37,8 @@
 function rhel5_hardware_detect() {
   local KUDZU="/sbin/kudzu"
 
+  exec_local udev_start
+
   cp ${modules_conf} ${modules_conf}.tmpl
   exec_local $KUDZU -t 30 -c SCSI -q
 #  mv ${modules_conf} ${modules_conf}.scsi
@@ -52,6 +54,7 @@ function rhel5_hardware_detect() {
 #  cat ${modules_conf}.usb >> ${modules_conf}
   cp ${modules_conf} ${modules_conf}.tmpl
   cat ${modules_conf}.tmpl | sort -u > ${modules_conf}
+  [ -e /proc/modules ] && stabilized --type=hash --interval=600 --good=5 /proc/modules
 
   return $return_c
 }
@@ -68,11 +71,11 @@ function rhel5_hardware_detect() {
 #
 function rhel5_udev_start() {
 	if ! /sbin/pidof udevd > /dev/null; then
-      /sbin/modprobe sd_mod
-      /sbin/modprobe sg
+#      /sbin/modprobe sd_mod
+#      /sbin/modprobe sg
 
-      udevd -d &&
-	  udevtrigger
+      udevd -d
+#	  udevtrigger
 	else
       udevtrigger
 	fi
@@ -82,7 +85,10 @@ function rhel5_udev_start() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.8  2009-01-28 12:48:44  marc
+# Revision 1.9  2009-01-29 15:56:25  marc
+# Upstream with new HW Detection see bug#325
+#
+# Revision 1.8  2009/01/28 12:48:44  marc
 # - added loading scsibasemodules before udev is started.
 #
 # Revision 1.7  2008/11/18 08:37:56  marc

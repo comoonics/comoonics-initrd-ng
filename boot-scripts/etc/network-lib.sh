@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.11 2009-01-28 12:54:42 marc Exp $
+# $Id: network-lib.sh,v 1.12 2009-01-29 15:57:51 marc Exp $
 #
 # @(#)$File$
 #
@@ -227,9 +227,10 @@ function ip2Config() {
 #  SOURCE
 #
 function auto_netconfig {
+   local drivers=$*
+   [ -z "$drivers" ] && drivers=$(cat $modules_conf | grep "alias eth[0-9]" | awk '{print $2;}')
    echo_local -n "Loading modules for all found network cards"
-   modules=$(cat $modules_conf | grep "alias eth[0-9]" | awk '{print $2;}')
-   for module in $modules; do
+   for module in $drivers; do
       exec_local modprobe $module
    done
    return_code
@@ -268,7 +269,10 @@ function getPosFromIPString() {
 
 #############
 # $Log: network-lib.sh,v $
-# Revision 1.11  2009-01-28 12:54:42  marc
+# Revision 1.12  2009-01-29 15:57:51  marc
+# Upstream with new HW Detection see bug#325
+#
+# Revision 1.11  2009/01/28 12:54:42  marc
 # Many changes:
 # - moved some functions to std-lib.sh
 # - no "global" variables but repository
