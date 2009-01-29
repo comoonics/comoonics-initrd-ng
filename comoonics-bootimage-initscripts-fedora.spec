@@ -50,7 +50,7 @@ Requires: comoonics-bootimage >= 1.3-41
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-fedora
 #Conflicts: 
-Release: 1.fedora
+Release: 2.fedora
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -150,64 +150,7 @@ done
 rm -rf %{buildroot}
 
 %changelog
-* Tue Nov 18 2008 Marc Grimme <grimme@atix.de> 1.3-10el5
-- Clean up of old repository caches (Bug #289)
-* Tue Oct 14 2008 Marc Grimme <grimme@atix.de> 1.3-9el5
-- Enhancement #273 and dependencies implemented (flexible boot of local fs systems)
-* Tue Jun 24 2008 Mark Hlawatschek <hlawatschek@atix.de> 1.3.8
-- changed kill level fro bootsr initscript
-* Fri Jun 20 2008 Mark Hlawatschek <hlawatschek@atix.de> 1.3.7
-- added patch for netfs and network
-* Tue Jun 10 2008 Marc Grimme <grimme@atix.de> - 1.3-6
-- rewrote reboot concept
-* Wed Nov 28 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3.5
-- Fixed BZ 150
-* Tue Sep 25 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3.3
-- create symlinks in /var/run
-* Wed Sep 19 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3.2
-- added file halt.patch
-* Wed Sep 12 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3.1
+* Tue Jan 29 2009  Marc Grimme <grimme@atix.de> 1.3.2-fedora
 - first revision
 # ------
 # $Log: comoonics-bootimage-initscripts-el5.spec,v $
-# Revision 1.14  2008/12/05 16:12:58  marc
-# First step to go rpmlint compat BUG#230
-#
-# Revision 1.13  2008/12/01 14:46:24  marc
-# changed file attributes (Bug #290)
-#
-# Revision 1.12  2008/11/18 15:59:37  marc
-# - implemented RFE-BUG 289 (level up/down)
-#
-# Revision 1.11  2008/10/14 10:57:07  marc
-# Enhancement #273 and dependencies implemented (flexible boot of local fs systems)
-#
-# Revision 1.10  2008/08/14 14:41:08  marc
-# removed listfiles
-#
-# Revision 1.9  2008/06/24 12:31:01  mark
-# changed kill level fro bootsr initscript
-#
-# Revision 1.8  2008/06/23 22:13:57  mark
-# new release
-#
-# Revision 1.7  2008/06/10 10:11:03  marc
-# - new versions
-#
-# Revision 1.6  2007/12/07 16:39:59  reiner
-# Added GPL license and changed ATIX GmbH to AG.
-#
-# Revision 1.5  2007/11/28 12:41:42  mark
-# new release
-#
-# Revision 1.4  2007/10/05 14:09:53  mark
-# new revision
-#
-# Revision 1.3  2007/09/26 11:55:51  mark
-# new releases
-#
-# Revision 1.2  2007/09/21 15:34:51  mark
-# new release
-#
-# Revision 1.1  2007/09/14 08:32:58  mark
-# initial check in
