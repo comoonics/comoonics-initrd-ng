@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.1 2009-01-28 12:45:29 marc Exp $
+# $Id: gfs-lib.sh,v 1.2 2009-01-29 15:55:02 marc Exp $
 #
 # @(#)$File$
 #
@@ -22,9 +22,8 @@
 #    Enterprise Linux 5.
 #*******
 
-if [ -z "$__FEDORA_GFS_LIB__" ]; then
-	__FEDORA_GFS_LIB__=1
-	echo_local "Loading Fedora gfs dependencies"
+if [ -z "$__RHEL5_GFS_LIB__" ]; then
+	__RHEL5_GFS_LIB__=1
 fi
 
 #****f* gfs-lib.sh/gfs_load
@@ -86,8 +85,8 @@ function gfs_services_start {
   exec_local mount -t configfs none $chroot_path/sys/kernel/config
   return_code
 
-  services="ccsd cman groupd qdiskd fenced dlm_controld gfs_controld"
-  if [ "$lvm_sup" -eq 0 ]; then
+  local services="ccsd cman groupd qdiskd fenced dlm_controld gfs_controld"
+  if [ -n "$lvm_sup" ] && [ "$lvm_sup" -eq 0 ]; then
   	services="$services clvmd"
   fi
 
@@ -116,7 +115,7 @@ function gfs_services_stop {
   local lock_method=$2
   local lvm_sup=$3
 
-  services="fenced cman"
+  local services="fenced cman"
   if [ -n "$lvm_sup" ] && [ $lvm_sup -eq 0 ]; then
   	services="fenced clvmd cman"
   fi
@@ -144,9 +143,21 @@ function gfs_services_restart_newroot {
   local chroot_path=$1
   local lock_method=$2
   local lvm_sup=$3
+  local comoonicspath=$4
+  local clusterfiles=$5
+  
+  [ -z "$clusterfiles" ] && clusterfiles="/var/run/cman_admin /var/run/cman_client"
 
-  services=""
-  if [ "$lvm_sup" -eq 0 ]; then
+  local services=""
+  if [ -d "${chroot_path}/${comoonicspath}" ]; then
+  	echo_local -n "Creating clusterfiles ${clusterfiles}.."
+  	for _clusterfile in $clusterfiles; do
+  		exec_local chroot $chroot_path ln -sf ${comoonicspath}/${_clusterfile} ${_clusterfile}
+    done
+    success
+    echo
+  fi
+  if [ -n "$lvm_sup" ] && [ "$lvm_sup" -eq 0 ]; then
   	services="$services clvmd"
   fi
   if [ -n "$services" ]; then
