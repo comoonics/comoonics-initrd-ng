@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc,v 1.18 2009-01-28 12:57:32 marc Exp $
+# $Id: linuxrc,v 1.19 2009-01-29 19:48:20 marc Exp $
 #
 # @(#)$File$
 #
@@ -34,7 +34,7 @@
 #****h* comoonics-bootimage/linuxrc
 #  NAME
 #    linuxrc
-#    $Id: linuxrc,v 1.18 2009-01-28 12:57:32 marc Exp $
+#    $Id: linuxrc,v 1.19 2009-01-29 19:48:20 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -91,7 +91,7 @@ initEnv
 #debug=$(getParm ${bootparms} 1)
 #stepmode=$(getParm ${bootparms} 2)
 
-welcome $distribution
+welcome $distribution $(repository_get_value logo)
 
 # Print a text banner.
 if [ -e "$build_file" ]; then
@@ -147,7 +147,10 @@ fi
 
 ################
 # $Log: linuxrc,v $
-# Revision 1.18  2009-01-28 12:57:32  marc
+# Revision 1.19  2009-01-29 19:48:20  marc
+# small logo bugfix
+#
+# Revision 1.18  2009/01/28 12:57:32  marc
 # Many changes:
 # - moved some functions to std-lib.sh
 # - no "global" variables but repository
