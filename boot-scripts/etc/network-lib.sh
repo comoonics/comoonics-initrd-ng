@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.12 2009-01-29 15:57:51 marc Exp $
+# $Id: network-lib.sh,v 1.13 2009-02-02 20:12:55 marc Exp $
 #
 # @(#)$File$
 #
@@ -66,27 +66,38 @@ function getNetParameters() {
 #    and the ip configuration.
 #  SOURCE
 function nicConfig {
-#  local dev=$1
   local ipconfig=$1
-
-  dev=$(getPosFromIPString 6, $ipconfig)
+  local dev=$(getPosFromIPString 6, $ipconfig)
+  local hwids=$2
+  
+  [ -z "$hwids" ] && hwids=$(repository_get_value hardwareids)
 
   return_c=0
   if [ "$dev" != "lo" ] && [ "$dev" != "lo0" ]; then
-    echo_local -n "Loading module for $dev..."
     exec_local modprobe $dev && sleep 2 && ifconfig $dev up
-    return_code
   fi
+
+  # let's have a look if the mac of this nic matches to the name of the nic specified. If not change it.
+  for _hwid in $hwids; do
+  	  local devmay=$(echo "$_hwid" | cut -f1 -d:)
+  	  local macmay=$(echo "$_hwid" | cut -f2- -d:)
+  	  local macwish=$(getPosFromIPString 7, $ipconfig)
+      macwish=${macwish//-/:}  	  
+  	  if [ -n "$devmay" ] && [ -n "$macmay" ] && [ -n "$macwish" ] && [ "$macmay" = "$macwish" ] && [ "$dev" != "$devmay" ]; then
+  	  	echo_local -n "moving nicname from $dev => $devmay." >&2
+  	    ipconfig=$(setPosAtIPString 6 $devmay $ipconfig)
+  	  fi  
+  done
 
   if [ -n "$ipconfig" ] && [ "$ipconfig" != "skip" ]; then
     sleep 2
-    echo_local "Creating network configuration for $dev"
     xen_dom0_detect
     if [ $? -eq 0 ]; then
       xen_ip2Config $ipconfig
     else
-      exec_local ip2Config ${ipconfig}
+      exec_local ip2Config ${ipconfig} >&2
     fi
+    echo "$ipconfig"
 #    exec_local ip2Config $(getPosFromIPString 1, $ipconfig):$(getPosFromIPString 2, $ipconfig):$(getPosFromIPString 3, $ipconfig):$(getPosFromIPString 4, $ipconfig):$(hostname):$dev
   fi
 }
@@ -250,7 +261,6 @@ function found_nics {
   return $nics
 }
 	
-
 #****f* boot-lib.sh/getPosFromIPString
 #  NAME
 #    getPosFromIPString
@@ -261,15 +271,36 @@ function found_nics {
 #  SOURCE
 #
 function getPosFromIPString() {
-  pos=$1
-  str=$2
+  local pos=$1
+  local str=$2
   echo $str | awk -v pos=$pos 'BEGIN { FS=":"; }{ print $pos; }'
+}
+#************ getPosFromIPString
+
+#****f* boot-lib.sh/setPosAtIPString
+#  NAME
+#    setPosAtIPString
+#  SYNOPSIS
+#    function setPosFromIPString(pos, value, ipstring) {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function setPosAtIPString() {
+  local pos=$1
+  local value=$2
+  local str=$3
+  local oldval=$(getPosFromIPString $pos $str)
+  echo ${str/:$oldval:/:$value:}
 }
 #************ getPosFromIPString
 
 #############
 # $Log: network-lib.sh,v $
-# Revision 1.12  2009-01-29 15:57:51  marc
+# Revision 1.13  2009-02-02 20:12:55  marc
+# - Bugfix in Hardwaredetection
+#
+# Revision 1.12  2009/01/29 15:57:51  marc
 # Upstream with new HW Detection see bug#325
 #
 # Revision 1.11  2009/01/28 12:54:42  marc

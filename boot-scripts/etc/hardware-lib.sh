@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.22 2009-01-29 15:58:06 marc Exp $
+# $Id: hardware-lib.sh,v 1.23 2009-02-02 20:12:25 marc Exp $
 #
 # @(#)$File$
 #
@@ -398,17 +398,21 @@ function hardware_detect() {
   	if [ -n "$modules" ]; then
   	  for _smodule in $modules; do
   		if [ $_module != $_smodule ]; then
-  	      rmmod $_module
+  	      exec_local rmmod $_module
   		fi
   	  done
   	else
-      rmmod $_module
+      exec_local rmmod $_module
     fi
   done
   [ -e /proc/modules ] && stabilized --type=hash --interval=600 --good=5 /proc/modules
   return_code
+  local exitc=$return_c
 
-  return $return_c
+  echo_local_debug "Loaded modules"
+  exec_local_debug cat /proc/modules 
+
+  return $exitc
 }
 #************ hardware_detect
 
@@ -436,7 +440,7 @@ function listmodules {
 #  SOURCE
 #
 function hardware_ids {
-  ifconfig -a | grep -v -i "Link encap: Local" | grep -v -i "Link encap:UNSPEC" | grep -i hwaddr | awk '{print $5;};'
+  ifconfig -a | grep -v -i "Link encap: Local" | grep -v -i "Link encap:UNSPEC" | grep -i hwaddr | awk 'BEGIN{OFS=":";}{print $1,$5;};'
 }
 #************ hardware_ids
 
@@ -505,7 +509,10 @@ function sysctl_load() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.22  2009-01-29 15:58:06  marc
+# Revision 1.23  2009-02-02 20:12:25  marc
+# - Bugfix in Hardwaredetection
+#
+# Revision 1.22  2009/01/29 15:58:06  marc
 # Upstream with new HW Detection see bug#325
 #
 # Revision 1.21  2009/01/28 12:54:18  marc
