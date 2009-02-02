@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.29 2009-01-29 15:57:03 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.30 2009-02-02 20:12:09 marc Exp $
 #
 # @(#)$File$
 #
@@ -171,8 +171,9 @@ $2 == "'$root'" { print $3 }
 #  SOURCE
 function getClusterParameter() {
 	local name=$1
+	local cluster_conf=$(repository_get_value cluster_conf)
 	if [ -n "$2" ] && [ -e $2 ]; then
-		local cluster_conf=$2
+		cluster_conf=$2
 	fi
 	# check for the existance of the helper function
 	if ! type -t cc_get_$name >/dev/null; then
@@ -317,9 +318,10 @@ function cc_get_nic_drivers {
 #  SOURCE
 function cc_find_nodeid {
 	local cluster_conf=$1
-	local macs=$(repository_get_value hardwareids)
+	local hwids=$(repository_get_value hardwareids)
 	[ -z "$macs" ] && macs=$(ifconfig -a | grep -i hwaddr | awk '{print $5;};')
-	for mac in $macs; do
+	for hwid in $hwids; do
+		local mac=$(echo "$hwid" | cut -f2- -d:)
     	local nodeid=$(cc_get_nodeid ${cluster_conf} $mac 2>/dev/null)
     	if [ -n "$nodeid" ]; then
     		break
@@ -1032,6 +1034,27 @@ function clusterfs_chroot_needed {
 #  IDEAS
 #    Will check if the rootfilesystem needs to be checked. 0 on success 1 otherwise. 
 #    Has to be implemented by the rootfslib with the function ${rootfs}_fsck_needed
+function clusterfs_blkstorage_needed {
+  local rootfs="$1"
+  [ -z "$rootfs" ] && rootfs=$(repository_get_value rootfs)
+  typeset -f ${rootfs}_blkstorage_needed >/dev/null
+  if [ $? -eq 0 ]; then
+    ${rootfs}_blkstorage_needed $*
+    return $?
+  else
+    return 0
+  fi
+}
+#************* clusterfs_rootfs_needed
+	
+#****f* clusterfs-lib.sh/clusterfs_fsck_needed
+#  NAME
+#    clusterfs_fsck_needed
+#  SYNOPSIS
+#    clusterfs_fsck_needed root rootfs
+#  IDEAS
+#    Will check if the rootfilesystem needs to be checked. 0 on success 1 otherwise. 
+#    Has to be implemented by the rootfslib with the function ${rootfs}_fsck_needed
 function clusterfs_fsck_needed {
   local root="$1"
   local rootfs="$2"
@@ -1142,7 +1165,11 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.29  2009-01-29 15:57:03  marc
+# Revision 1.30  2009-02-02 20:12:09  marc
+# - Bugfix in hardware detection
+# - Introduced function to not load storage when not needed
+#
+# Revision 1.29  2009/01/29 15:57:03  marc
 # Upstream with new HW Detection see bug#325
 #
 # Revision 1.28  2009/01/28 12:52:11  marc

@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.67 2009-01-29 15:58:24 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.68 2009-02-02 20:13:40 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.67 2009-01-29 15:58:24 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.68 2009-02-02 20:13:40 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -79,7 +79,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.67 $ $Date: 2009-01-29 15:58:24 $'
+echo_local 'Internal Version $Revision: 1.68 $ $Date: 2009-02-02 20:13:40 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -160,7 +160,7 @@ if [ $is_syslog -eq 0 ]; then
   cc_syslog_start
 fi
 
-echo_local -n "Scanning other parameters"
+echo_local -n "Scanning other parameters "
 _ccparameters="votes tmpfix quorumack ip rootvolume rootsource"
 _fsparameters="sourceserver lockmethod root mountopts scsifailover rootfsck mounttimes mountwait"
 echo_local_debug -n "cc: $_ccparameters fs: $_fsparameters "
@@ -172,7 +172,9 @@ done
 for _parameter in $_fsparameters; do
   getParameter $_parameter $(clusterfs_getdefaults $_parameter) &>/dev/null
 done 
-[ -z "$(repository_get_value root)" ] || [ "$(repository_get_value root)" = "/dev/ram0" ] && repository_set_value rootvolume $rootvolume
+if ! $(repository_has_key root); then
+	repository_store_value root $(repository_get_value rootvolume)
+fi
 getParameter ro $(clusterfs_getdefaults readonly) &>/dev/null
 getParameter rw &>/dev/null
 if [ -n "$(repository_get_value ro)" ]; then
@@ -209,7 +211,9 @@ if [ $? -ne 0 ] && [ -z "$(repository_get_value nousb)" ]; then
   [ -e /proc/bus/usb/devices ] && stabilized --type=hash --interval=300 /proc/bus/usb/devices
 fi
 
-sysctl_load $(repository_get_value sysctlfile)
+if [ -f "$(repository_get_value sysctlfile)" ]; then
+  sysctl_load $(repository_get_value sysctlfile)
+fi
 
 netdevs=""
 for ipconfig in $(repository_get_value ipConfig); do
@@ -227,13 +231,24 @@ for ipconfig in $(repository_get_value ipConfig); do
     depmod -a >/dev/null 2>&1
   fi
 done
-step "Network configuration created" "netconfig"
+
+_ipconfig=""
+for ipconfig in $(repository_get_value ipConfig); do
+  dev=$(getPosFromIPString 6, $ipconfig)
+  hwids=$(repository_get_value hardwareids)
+  echo_local "Creating network configuration for $dev"
+  _ipconfig="$_ipconfig "$(nicConfig $ipconfig "$hwids")
+  if [ $? -ne 0 ]; then
+	breakp $(err_nic_config)
+  fi
+  return_code $?
+done
+repository_store_value ipConfig "$_ipconfig"
+step "Network configuration finished" "netconfig"
 
 for ipconfig in $(repository_get_value ipConfig); do
   dev=$(getPosFromIPString 6, $ipconfig)
-  nicConfig $ipconfig
-
-  nicAutoUp $ipconfig || breakp $(errormsg err_nic_load)
+  nicAutoUp $ipconfig
   if [ $? -eq 0 ]; then
     echo_local -n "Powering up $dev.."
     exec_local nicUp $dev >/dev/null 2>&1 || breakp $(errormsg err_nic_ifup)
@@ -241,7 +256,7 @@ for ipconfig in $(repository_get_value ipConfig); do
   fi
   netdevs="$netdevs $dev"
 done
-step "Network configuration started" "netstart"
+step "Network started" "netstart"
 
 bridges=$(cc_auto_getbridges $(repository_get_value cluster_conf) $(repository_get_value nodename))
 if [ -n $bridges ]; then
@@ -253,28 +268,30 @@ if [ -n $bridges ]; then
   step "Network bridges setup finished" "netbridge"
 fi
 
-dm_start
-scsi_start $(repository_get_value scsi_failover)
+if clusterfs_blkstorage_needed $(repository_get_value rootfs); then
+  dm_start
+  scsi_start $(repository_get_value scsi_failover)
 
-# start iscsi if apropriate
-typeset -f isISCSIRootsource >/dev/null 2>&1 && isISCSIRootsource $(repository_get_value rootsource)
-if [ $? -eq 0 ]; then
+  # start iscsi if apropriate
+  typeset -f isISCSIRootsource >/dev/null 2>&1 && isISCSIRootsource $(repository_get_value rootsource)
+  if [ $? -eq 0 ]; then
 	loadISCSI
 	startISCSI $(repository_get_value rootsource) $(repository_get_value nodename)
-fi
-[ -e /proc/scsi/scsi ]  && stabilized --type=hash --interval=600 /proc/scsi/scsi
-if [ "$(repository_get_value scsifailover)" = "mapper" ] || [ "$(repository_get_value scsifailover)" = "devicemapper" ]; then
-  dm_mp_start
-fi
-validate_storage || breakp $(errormsg err_storage_config)
-step "Storage environment started" "storage"
+  fi
+  [ -e /proc/scsi/scsi ]  && stabilized --type=hash --interval=600 /proc/scsi/scsi
+  if [ "$(repository_get_value scsifailover)" = "mapper" ] || [ "$(repository_get_value scsifailover)" = "devicemapper" ]; then
+    dm_mp_start
+  fi
+  validate_storage || breakp $(errormsg err_storage_config)
+  step "Storage environment started" "storage"
 
-lvm_check $(repository_get_value root)
-lvm_sup=$?
-repository_store_value lvm_sup $lvm_sup
-if [ "$lvm_sup" -eq 0 ]; then
+  lvm_check $(repository_get_value root)
+  lvm_sup=$?
+  repository_store_value lvm_sup $lvm_sup
+  if [ "$lvm_sup" -eq 0 ]; then
 	lvm_start || breakp $(errormsg err_storage_lvm)
 	step "LVM subsystem started" "lvm"
+  fi
 fi
 
 # loads kernel modules for cluster stack
@@ -372,7 +389,6 @@ fi
 clusterfs_mount "$(repository_get_value rootfs)" "$(repository_get_value root)" "$(repository_get_value newroot)" "$(repository_get_value mountopts)" "$(repository_get_value mounttimes)" "$(repository_get_value mountwait)"
 if [ $return_c -ne 0 ]; then
    breakp $(errormsg err_rootfs_mount)
-   exit_linuxrc 1
 fi
 step "RootFS mounted return_c ${return_c}" "rootfsmount"
 
@@ -453,7 +469,11 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.67  2009-01-29 15:58:24  marc
+# Revision 1.68  2009-02-02 20:13:40  marc
+# - Bugfix in hardware detection
+# - Introduced function to not load storage when not needed
+#
+# Revision 1.67  2009/01/29 15:58:24  marc
 # Upstream with new HW Detection see bug#325
 #
 # Revision 1.66  2009/01/28 12:57:44  marc

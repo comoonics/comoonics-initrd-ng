@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc,v 1.19 2009-01-29 19:48:20 marc Exp $
+# $Id: linuxrc,v 1.20 2009-02-02 20:13:40 marc Exp $
 #
 # @(#)$File$
 #
@@ -34,7 +34,7 @@
 #****h* comoonics-bootimage/linuxrc
 #  NAME
 #    linuxrc
-#    $Id: linuxrc,v 1.19 2009-01-29 19:48:20 marc Exp $
+#    $Id: linuxrc,v 1.20 2009-02-02 20:13:40 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -61,6 +61,8 @@ source /etc/repository-lib.sh
 
 exec 3>/dev/console
 exec 4>/dev/console
+
+repository_clear
 
 mkdir -p /proc
 mount -t proc proc /proc 2>/dev/null
@@ -147,7 +149,11 @@ fi
 
 ################
 # $Log: linuxrc,v $
-# Revision 1.19  2009-01-29 19:48:20  marc
+# Revision 1.20  2009-02-02 20:13:40  marc
+# - Bugfix in hardware detection
+# - Introduced function to not load storage when not needed
+#
+# Revision 1.19  2009/01/29 19:48:20  marc
 # small logo bugfix
 #
 # Revision 1.18  2009/01/28 12:57:32  marc
