@@ -1,5 +1,5 @@
 #
-# $Id: nfs-lib.sh,v 1.7 2009-01-28 12:55:20 marc Exp $
+# $Id: nfs-lib.sh,v 1.8 2009-02-02 20:13:23 marc Exp $
 #
 # @(#)$File$
 #
@@ -186,6 +186,22 @@ function nfs_chroot_needed {
 }
 #*********** nfs_chroot_needed
 
+#************* nfs_chroot_needed
+#  NAME
+#    nfs_blkstorage_needed
+#  SYNOPSIS
+#    function nfs_blkstorage_needed(initrd|init|..)
+#  DESCRIPTION
+#    Returns 0 if this rootfilesystem needs a blkstorage inside initrd or init.
+#  IDEAS
+#  SOURCE
+#
+function nfs_blkstorage_needed {
+	return 1
+}
+#************ nfs_blkstorage_needed
+
+
 #****f* boot-scripts/etc/clusterfs-lib.sh/nfs_getdefaults
 #  NAME
 #    nfs_getdefaults
@@ -248,14 +264,13 @@ function nfs_load {
 #  SOURCE
 #
 function nfs_services_start {
-  local services=""
+  local services="portmap"
   for service in $services; do
     nfs_start_$service $*
   done
   return 0
 }
 #************ nfs_services_start
-
 #****f* nfs-lib.sh/nfs_start_rpcpipefs
 #  NAME
 #    nfs_start_rpcpipefs
@@ -336,6 +351,25 @@ function nfs_start_portmap {
 }
 #************ nfs_start_portmap
 
+#****f* nfs-lib.sh/nfs_stop_portmap
+#  NAME
+#    nfs_stop_portmap
+#  SYNOPSIS
+#    function nfs_stop_portmap
+#  DESCRIPTION
+#    This function starts the portmap daemon
+#  IDEAS
+#  SOURCE
+#
+function nfs_stop_portmap {
+  local chrootpath=$1
+  if [ -z $chrootpath ]; then
+  	chrootpath="no_chroot"
+  fi
+  killall portmap
+}
+#************ nfs_stop_portmap
+
 #****f* nfs-lib.sh/nfs_start_rpc_lockd
 #  NAME
 #    nfs_start_rpc_lockd
@@ -374,33 +408,6 @@ function nfs_start_rpc_statd {
 }
 #************ nfs_start_rpc_statd
 
-#****f* nfs-lib.sh/nfs_services_restart
-#  NAME
-#    nfs_services_restart
-#  SYNOPSIS
-#    function nfs_services_restart(lockmethod)
-#  DESCRIPTION
-#    This function loads all relevant gfs modules
-#  IDEAS
-#  SOURCE
-#
-function nfs_services_restart {
-  local old_root=$1
-  local new_root=$2
-
-  services=""
-  for service in $services; do
-    nfs_restart_$service $old_root $new_root
-    if [ $? -ne 0 ]; then
-      echo $service > $new_root/${cdsl_local_dir}/FAILURE_$service
-#      return $?
-    fi
-  done
-  
-  return $return_c
-}
-#************ nfs_services_restart
-
 #****f* nfs-lib.sh/nfs_services_restart_newroot
 #  NAME
 #    nfs_services_restart_newroot
@@ -415,6 +422,8 @@ function nfs_services_restart_newroot {
   local chroot_path=$1
   local lock_method=$2
   local lvm_sup=$3
+
+  nfs_stop_portmap $chroot_path
 
   echo "Umounting $chroot_path/proc"
   exec_local umount $chroot_path/proc
@@ -442,7 +451,10 @@ function nfs_init {
 #********* nfs_init
 
 # $Log: nfs-lib.sh,v $
-# Revision 1.7  2009-01-28 12:55:20  marc
+# Revision 1.8  2009-02-02 20:13:23  marc
+# - Bugfix to only start portmap
+#
+# Revision 1.7  2009/01/28 12:55:20  marc
 # rewritten for nfsv4
 #
 # Revision 1.6  2008/10/28 12:52:07  marc
