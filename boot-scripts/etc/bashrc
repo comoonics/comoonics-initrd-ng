@@ -25,7 +25,9 @@ export PS1="comoonics \! > " TERM=xterm
 source ${predir}/etc/std-lib.sh
 
 sourceLibs ${predir}
-sourceRootfsLibs ${predir}
+if repository_has_key rootfs; then
+  sourceRootfsLibs ${predir}
+fi
 
 logo=$(repository_get_value logo)
 shellissue=$(repository_get_value shellissue)
@@ -47,6 +49,24 @@ function drawline {
 	echo "-------------------------------------------------------------"
 	echo
 }
+function help {
+	local shellissue=$(repository_get_value shellissue)
+    if [ -n "$shellissue" ] && [ -f "$shellissue" ]; then	
+	  cat $shellissue
+    fi
+}
+function lastmessage {
+	local shellissuetmp=$(repository_get_value shellissuetmp)
+    if [ -n "$shellissuetmp" ] && [ -f "$shellissuetmp" ]; then	
+	  cat $shellissuetmp
+    fi
+}
+function messages {
+	if [ -n "$bootlog" ] && [ -f "$bootlog" ]; then
+	  cat $bootlog
+	fi
+}
+	
 if [ -f "$logo" ]; then
   cat $logo
   drawline
