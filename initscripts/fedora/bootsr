@@ -210,37 +210,30 @@ case "$1" in
   	# - update chroot environment for additional services (fence_ack_server)
     
   	# first clean old repos
-  	clean_start
-    
     check_mtab $rootfs
     
     check_sharedroot $rootfs
     sharedroot=$?
     if  [ -n "$rootfs" ] && [ $sharedroot ]; then
 #      runlevel=$(get_runlevel)
-      echo  -n "Doing the Comoonics Shared Root post settings "
       touch /var/lock/subsys/bootsr
 #      echo `date` Doing the Comoonics Shared Root post settings | tee -a /var/log/bootsr | logger -t com-bootsr
 #      /sbin/swapon -av 2>&1 | tee -a /var/log/bootsr | logger -t com-bootsr
-      /bin/mount -at $rootfs 2>&1 | tee -a /var/log/bootsr | logger -t com-bootsr
-	  # Create symbolic links
-	  for file in ${VAR_RUN_FILES}; do
-	  	[ -e /var/run/${file} ] && rm -f /var/run/${file}
-	  	test -e ${CHROOT_PATH}/var/run/${file} && /bin/ln -sf ${CHROOT_PATH}/var/run/${file} /var/run/
-      done
-      mkdir -p /var/run/cluster
-      for file in ccsd.pid ccsd.sock; do
+      if [ "$rootfs" = "gfs" ]; then
+        echo  -n "Doing the Comoonics Shared Root post settings "
+        /bin/mount -at $rootfs 2>&1 | tee -a /var/log/bootsr | logger -t com-bootsr
+	    # Create symbolic links
+	    for file in ${VAR_RUN_FILES}; do
+	  	  [ -e /var/run/${file} ] && rm -f /var/run/${file}
+	  	  test -e ${CHROOT_PATH}/var/run/${file} && /bin/ln -sf ${CHROOT_PATH}/var/run/${file} /var/run/
+        done
+        mkdir -p /var/run/cluster
+        for file in ccsd.pid ccsd.sock; do
             ln -s ${CHROOT_PATH}/var/run/cluster/$file /var/run/cluster
-      done
+        done
+        success
+      fi
       
-      success
-      echo	
-      # Start ccsd-chroot if it will not be started from init in Runlevel 3
-      # FIXME: There will be propably be no $FENCE_CHROOT this time.
-#      chkconfig --list ccsd-chroot | grep "3:on" >/dev/null 2>/dev/null
-#      if [ $? -eq 1 ] && [ ! -e /var/run/cluster/ccsd.pid ]; then
-#         /etc/init.d/ccsd-chroot start
-#      fi
 	  # Update chroot environment with files from /etc/comoonics/bootimage-chroot
 	  clusterfs_chroot_needed init
 	  if [ $? -eq 0 ]; then

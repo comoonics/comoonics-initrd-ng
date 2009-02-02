@@ -7,7 +7,7 @@
 #  DESCRIPTION
 #*******
 #
-# $Id: manage_chroot.sh,v 1.9 2009-01-28 13:07:33 marc Exp $
+# $Id: manage_chroot.sh,v 1.10 2009-02-02 20:15:34 marc Exp $
 #
 # @(#)$File$
 #
@@ -49,9 +49,13 @@ fi
 
 source $(dirname $0)/boot-scripts/etc/std-lib.sh
 sourceLibs $(dirname $0)/boot-scripts
-sourceRootfsLibs $(dirname $0)/boot-scripts
+repository_clear
+sourceLibs $(dirname $0)/boot-scripts
 clutype=$(repository_get_value clutype)
-rootfs=$(repository_get_value rootfs)
+rootfs=$(get_mounted_rootfs)
+repository_store_value cluster_conf /etc/cluster/cluster.conf
+repository_store_value rootfs $rootfs
+sourceRootfsLibs $(dirname $0)/boot-scripts
 distribution=$(repository_get_value distribution)
 
 clusterfs_chroot_needed init
