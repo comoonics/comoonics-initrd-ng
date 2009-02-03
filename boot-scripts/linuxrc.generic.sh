@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.68 2009-02-02 20:13:40 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.69 2009-02-03 20:36:50 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.68 2009-02-02 20:13:40 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.69 2009-02-03 20:36:50 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -79,7 +79,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.68 $ $Date: 2009-02-02 20:13:40 $'
+echo_local 'Internal Version $Revision: 1.69 $ $Date: 2009-02-03 20:36:50 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -189,7 +189,7 @@ getParameter chrootneeded $__default &>/dev/null
 success
 
 _ipConfig=$(cluster_ip_config $(repository_get_value cluster_conf) $(repository_get_value nodename))
-[ -n "$_ipConfig" ] && ( [ -z "$(repository_get_value ipConfig)" ] || [ "$(repository_get_value ipConfig)" = "cluster" ] ) && repository_store_value ipConfig $_ipConfig
+[ -n "$_ipConfig" ] && ( [ -z "$(repository_get_value ipConfig)" ] || [ "$(repository_get_value ipConfig)" = "cluster" ] ) && repository_store_value ipConfig "$_ipConfig"
 
 step "Inialization started" "init"
 
@@ -469,7 +469,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.68  2009-02-02 20:13:40  marc
+# Revision 1.69  2009-02-03 20:36:50  marc
+# bugfix for multiple nics
+#
+# Revision 1.68  2009/02/02 20:13:40  marc
 # - Bugfix in hardware detection
 # - Introduced function to not load storage when not needed
 #
