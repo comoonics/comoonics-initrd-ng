@@ -50,7 +50,7 @@ Requires: comoonics-bootimage >= 1.3-41
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-fedora
 #Conflicts: 
-Release: 2.fedora
+Release: 3.fedora
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -150,6 +150,8 @@ done
 rm -rf %{buildroot}
 
 %changelog
+* Mon Feb 02 2009 Marc Grimme <grimme@atix.de> 1.3-3.fedora
+- Bugfix in support for other filesystems
 * Tue Jan 29 2009  Marc Grimme <grimme@atix.de> 1.3.2-fedora
 - first revision
 # ------
