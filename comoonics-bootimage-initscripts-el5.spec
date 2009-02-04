@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.16 2009-02-03 16:32:46 marc Exp $
+# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.17 2009-02-04 09:17:43 marc Exp $
 #
 ##
 ##
@@ -115,6 +115,7 @@ if [ "$1" -eq 2 ]; then
 		echo "Unpatching network"
 		cd /etc/init.d/ && patch -R -f -r /tmp/network.patch.rej > /dev/null < /opt/atix/comoonics-bootimage/patches/network.patch
 	fi
+	true
 fi 
 
 %post
@@ -173,7 +174,10 @@ rm -rf %{buildroot}
 - first revision
 # ------
 # $Log: comoonics-bootimage-initscripts-el5.spec,v $
-# Revision 1.16  2009-02-03 16:32:46  marc
+# Revision 1.17  2009-02-04 09:17:43  marc
+# added true to pre to make it updateable
+#
+# Revision 1.16  2009/02/03 16:32:46  marc
 # new version
 #
 # Revision 1.15  2009/01/29 19:48:45  marc
