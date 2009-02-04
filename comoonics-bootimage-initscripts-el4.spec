@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage-initscripts-el4.spec,v 1.10 2008-12-05 16:12:58 marc Exp $
+# $Id: comoonics-bootimage-initscripts-el4.spec,v 1.11 2009-02-04 09:27:15 marc Exp $
 #
 ##
 ##
@@ -47,7 +47,7 @@ Version: 1.3
 BuildArch: noarch
 Requires: comoonics-bootimage >= 1.3-1
 #Conflicts:
-Release: 5.el4
+Release: 5.rhel4
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -134,7 +134,10 @@ chkconfig --del bootsr
 - first revision
 # ------
 # $Log: comoonics-bootimage-initscripts-el4.spec,v $
-# Revision 1.10  2008-12-05 16:12:58  marc
+# Revision 1.11  2009-02-04 09:27:15  marc
+# changed rpm names.
+#
+# Revision 1.10  2008/12/05 16:12:58  marc
 # First step to go rpmlint compat BUG#230
 #
 # Revision 1.9  2008/12/01 14:46:24  marc

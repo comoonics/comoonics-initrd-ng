@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage-listfiles-el5.spec,v 1.12 2008-12-08 15:43:04 marc Exp $
+# $Id: comoonics-bootimage-listfiles-el5.spec,v 1.13 2009-02-04 09:22:18 marc Exp $
 #
 ##
 ##
@@ -49,7 +49,7 @@ Requires: comoonics-bootimage >= 1.3-1
 Requires: comoonics-bootimage-listfiles-rhel
 Requires: comoonics-bootimage-listfiles-rhel5
 #Conflicts:
-Release: 8.el5
+Release: 8.rhel5
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -135,7 +135,10 @@ rm -rf %{buildroot}
 - first revision
 # ------
 # $Log: comoonics-bootimage-listfiles-el5.spec,v $
-# Revision 1.12  2008-12-08 15:43:04  marc
+# Revision 1.13  2009-02-04 09:22:18  marc
+# changed rpm names.
+#
+# Revision 1.12  2008/12/08 15:43:04  marc
 # rpmlint Bug#290
 #
 # Revision 1.11  2008/12/05 16:12:58  marc
