@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.87 2009-02-08 14:22:38 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.88 2009-02-08 14:24:50 marc Exp $
 #
 ##
 ##
@@ -585,7 +585,7 @@ fi
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/ocfs2-lib.sh
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/ocfs2.list
 
-%files extras-mdadm
+%files extras-md
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/mdadm.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/mdadm.list
 
@@ -1040,7 +1040,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.87  2009-02-08 14:22:38  marc
+# Revision 1.88  2009-02-08 14:24:50  marc
+# typo
+#
+# Revision 1.87  2009/02/08 14:22:38  marc
 # added extras-md
 #
 # Revision 1.86  2009/02/08 13:17:54  marc
