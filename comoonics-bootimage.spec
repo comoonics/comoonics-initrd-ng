@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.86 2009-02-08 13:17:54 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.87 2009-02-08 14:22:38 marc Exp $
 #
 ##
 ##
@@ -118,6 +118,17 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description extras-dm-multipath
 Extra listfiles for device mapper multipath OSR configurations
+
+%package extras-md
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage >= 1.3-46
+Summary: Listfiles for md support
+Group:   System Environment/Base
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description extras-dm-multipath
+Extra listfiles for md in OSR configurations
 
 %package extras-dm-multipath-rhel
 Version: 0.1
@@ -574,6 +585,10 @@ fi
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/ocfs2-lib.sh
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/ocfs2.list
 
+%files extras-mdadm
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/mdadm.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/mdadm.list
+
 %files extras-dm-multipath
 
 %files extras-dm-multipath-rhel
@@ -922,6 +937,10 @@ rm -rf %{buildroot}
 * Tue Jun 10 2008 Marc Grimme <grimme@atix.de> - 0.1-2
 - added nfs-lib.sh file
 
+%changelog extras-md
+* Sun Feb 08 2009 Marc Grimme <grimme@atix.de> - 0.1-1
+  initial revision (Thanks to Gordan)
+  
 %changelog extras-dm-multipath
 * Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-3
 - introduced the changelog
@@ -1021,7 +1040,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.86  2009-02-08 13:17:54  marc
+# Revision 1.87  2009-02-08 14:22:38  marc
+# added extras-md
+#
+# Revision 1.86  2009/02/08 13:17:54  marc
 # new version for comoonics-bootimage (1.3-46
 #
 # Revision 1.85  2009/02/03 16:33:08  marc
