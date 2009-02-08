@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.16 2009-01-29 15:55:57 marc Exp $
+# $Id: gfs-lib.sh,v 1.17 2009-02-08 13:14:07 marc Exp $
 #
 # @(#)$File$
 #
@@ -24,6 +24,36 @@
 
 if [ -z "$__RHEL5_GFS_LIB__" ]; then
 	__RHEL5_GFS_LIB__=1
+    # FENCED_START_TIMEOUT -- amount of time to wait for starting fenced
+    #     before giving up.  If FENCED_START_TIMEOUT is positive, then we will
+    #     wait FENCED_START_TIMEOUT seconds before giving up and failing when
+    #     fenced does not start.  If FENCED_START_TIMEOUT is zero, then
+    #     wait indefinately for fenced to start.
+    [ -z "$FENCED_START_TIMEOUT" ] && FENCED_START_TIMEOUT=300
+
+    # FENCED_MEMBER_DELAY -- amount of time to delay fence_tool join to allow
+    #     all nodes in cluster.conf to become cluster members.  In seconds.
+    [ -z "$FENCED_MEMBER_DELAY" ] && FENCED_MEMBER_DELAY=45
+    # CMAN_CLUSTER_TIMEOUT -- amount of time to wait for joinging a cluster
+    #     before giving up.  If CMAN_CLUSTER_TIMEOUT is positive, then we will
+    #     wait CMAN_CLUSTER_TIMEOUT seconds before giving up and failing when
+    #     a cluster is not joined.  If CMAN_CLUSTER_TIMEOUT is zero, then
+    #     wait indefinately for a cluster join.  If CMAN_CLUSTER_TIMEOUT is
+    #     negative, do not check to see that the cluster has been joined
+    [ -z "$CMAN_CLUSTER_TIMEOUT" ] && CMAN_CLUSTER_TIMEOUT=120
+
+    # CMAN_QUORUM_TIMEOUT -- amount of time to wait for a quorate cluster on
+    #     startup quorum is needed by many other applications, so we may as
+    #     well wait here.  If CMAN_QUORUM_TIMEOUT is less than 1, quorum will
+    #     be ignored.
+    #CMAN_QUORUM_TIMEOUT=300
+    [ -z "$CMAN_QUORUM_TIMEOUT" ] && CMAN_QUORUM_TIMEOUT=0
+    
+    # CMAN_SHUTDOWN_TIMEOUT -- amount of time to wait for cman to become a
+    #     cluster member before calling cman_tool leave during shutdown.  
+    #     default is 60 seconds
+    [ -z "$CMAN_SHUTDOWN_TIMEOUT" ] && CMAN_SHUTDOWN_TIMEOUT=60
+    
 fi
 
 #****f* gfs-lib.sh/gfs_load
@@ -218,16 +248,79 @@ function gfs_start_qdiskd {
 #
 function gfs_start_fenced {
   local chroot_path=$1
-  start_service_chroot $chroot_path 'fenced -c'
+  local fenced_opts="-c"
+  local fence_tool_opts=""
+
+  echo_local -n "Starting fenced.."
+  start_service_chroot $chroot_path "fenced $fenced_opts"
+  return_code
   # fence_tool -c is not supported from RHEL5.2 up so we need to check (ABI compatibility)
   fence_tool -h | grep -- '-c' > /dev/null 2>&1
   if [ $? -eq 0 ]; then
-    start_service_chroot $chroot_path '/sbin/fence_tool -c -w join'
-  else
-    start_service_chroot $chroot_path '/sbin/fence_tool -w join'
+  	fence_tool_opts="-c"
   fi
-  #echo_local "Waiting for fenced to complete join"
-  #exec_local fence_tool wait
-  return_code
+  chroot $chroot_path /usr/sbin/cman_tool status | grep Flags | grep 2node &> /dev/null
+  echo_local -n "Joining fencedomain.."
+  if [ $? -ne 0 ]; then
+    errors="$errors\n"$( chroot $chroot_path /sbin/fence_tool $fence_tool_opts -w -t $FENCED_START_TIMEOUT join \
+                 > /dev/null 2>&1 )
+    return_c=$?
+  else
+    errors="$errors\n"$( chroot $chroot_path /sbin/fence_tool $fence_tool_opts -w -t $FENCED_START_TIMEOUT \
+                 -m $FENCED_MEMBER_DELAY join \
+                 > /dev/null 2>&1 )
+    return_c=$?
+  fi
+  return_code $return_c
 }
 #************ gfs_start_fenced
+
+#****f* gfs-lib.sh/gfs_start_cman
+#  NAME
+#    gfs_start_cman
+#  SYNOPSIS
+#    function gfs_start_cman
+#  DESCRIPTION
+#    Function starts the cman in a changeroot environment
+#  IDEAS
+#  SOURCE
+#
+function gfs_start_cman {
+  local chroot_path=$1
+  local cmd="cman_tool join -w"
+  local cman_join_opts=""
+  
+  if repository_has_key votes; then
+  	local votes=$(repository_get_value votes)
+  	cman_join_opts=" -v $votes"
+	echo_local_debug "Votes value has been set to $votes"
+  fi
+
+  # cman
+  chroot $chroot_path /usr/sbin/cman_tool status &> /dev/null
+  if [ $? -ne 0 ]
+  then
+    echo_local -n "Joining the cluster manager"
+    errors="errors\n"$( chroot $chroot_path /usr/sbin/cman_tool -t $CMAN_CLUSTER_TIMEOUT -w join \
+              $cman_join_opts 2>&1 )
+    return_c=$?
+
+    if [ -n "$votes" ]; then
+	  errors="errors\n"$( chroot $chroot_path cman_tool votes -v $votes )
+    fi
+    if [ $CMAN_QUORUM_TIMEOUT -gt 0 ]; then
+      errors="errors\n"$( chroot $chroot_path /usr/sbin/cman_tool -t $CMAN_QUORUM_TIMEOUT \
+               -q wait 2>&1 )
+      return_c=$?
+    fi
+
+    return_code $return_c
+  fi
+}
+#************ gfs_start_cman
+
+###############
+# $Log: gfs-lib.sh,v $
+# Revision 1.17  2009-02-08 13:14:07  marc
+# implemented the gfs join process as specified in RedHat initscripts
+#
