@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.23 2009-02-02 20:12:25 marc Exp $
+# $Id: hardware-lib.sh,v 1.24 2009-02-08 13:14:29 marc Exp $
 #
 # @(#)$File$
 #
@@ -375,11 +375,13 @@ function setHWClock() {
 #
 function hardware_detect() {
   local distribution=$(repository_get_value distribution)
+  local remove_times=4
+  
   /sbin/depmod -a &>/dev/null
 
   echo_local -n "Detecting Hardware "
   echo_local_debug -n "..(saving modules).."
-  local modules=$(listmodules)
+  local modules=$(listmodules | sort)
   # detecting xen
   xen_domx_detect
   if [ $? -eq 0 ]; then
@@ -393,16 +395,23 @@ function hardware_detect() {
   repository_append_value hardwareids " $hwids"
   return_code $return_c
   
+  local _modules=""
   echo_local "Removing loaded modules"
-  for _module in $(listmodules); do
-  	if [ -n "$modules" ]; then
-  	  for _smodule in $modules; do
-  		if [ $_module != $_smodule ]; then
-  	      exec_local rmmod $_module
-  		fi
-  	  done
-  	else
-      exec_local rmmod $_module
+  for i in $(seq 0 $remove_times); do
+    for _module in $(listmodules); do
+  	  if [ -n "$modules" ]; then
+  	    for _smodule in $modules; do
+  		  if [ $_module != $_smodule ]; then
+  	        exec_local rmmod $_module
+  		  fi
+  	    done
+  	  else
+        exec_local rmmod $_module
+      fi
+    done
+    _modules=$(listmodules | sort)
+    if [ "$modules" = "$_modules" ]; then
+      break
     fi
   done
   [ -e /proc/modules ] && stabilized --type=hash --interval=600 --good=5 /proc/modules
@@ -509,7 +518,10 @@ function sysctl_load() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.23  2009-02-02 20:12:25  marc
+# Revision 1.24  2009-02-08 13:14:29  marc
+# stable module removement
+#
+# Revision 1.23  2009/02/02 20:12:25  marc
 # - Bugfix in Hardwaredetection
 #
 # Revision 1.22  2009/01/29 15:58:06  marc
