@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.85 2009-02-03 16:33:08 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.86 2009-02-08 13:17:54 marc Exp $
 #
 ##
 ##
@@ -58,7 +58,7 @@ Requires: comoonics-cluster-py >= 0.1-2
 Requires: comoonics-bootimage-initscripts >= 1.3 
 Requires: comoonics-bootimage-listfiles-all
 #Conflicts:
-Release: 45
+Release: 46
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -739,6 +739,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Sun Feb 08 2009 Marc Grimme <grimme@atix.de> 1.3-46
+- Hardwaredetection: stable module removement
+- RHEL5/gfsjoin: copied joinprocess from initscripts
 * Mon Feb 02 2009 Marc Grimme <grimme@atix.de> 1.3-45
 - Bugfix in hardwaredetection
 - Introduced no load of storage if not needed
@@ -1018,7 +1021,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.85  2009-02-03 16:33:08  marc
+# Revision 1.86  2009-02-08 13:17:54  marc
+# new version for comoonics-bootimage (1.3-46
+#
+# Revision 1.85  2009/02/03 16:33:08  marc
 # new version
 #
 # Revision 1.84  2009/01/29 19:48:58  marc
