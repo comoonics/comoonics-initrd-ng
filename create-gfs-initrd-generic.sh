@@ -6,7 +6,7 @@
 #*******
 #!/bin/bash
 #
-# $Id: create-gfs-initrd-generic.sh,v 1.17 2009-01-28 13:07:21 marc Exp $
+# $Id: create-gfs-initrd-generic.sh,v 1.18 2009-02-08 14:22:22 marc Exp $
 #
 # @(#)$File$
 #
@@ -50,7 +50,7 @@ PATH=${PATH}:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin
 #  SOURCE
 #
 function usage() {
-  echo "$0 -d dep_filename [-s initrdsize] [-m mountpoint] [-r rpm-list-file] [-b build-date-file] [-V] [-F] [-R] [-o] [-U] initrdname [kernel-version]"
+  echo "$0 -d dep_filename [-s initrdsize] [-m mountpoint] [-r rpm-list-file] [-b build-date-file] [-V] [-F] [-R] [-o] [-U] [-l] initrdname [kernel-version]"
 }
 
 #************ usage
@@ -64,10 +64,10 @@ function usage() {
 #  SOURCE
 #
 function getoptions() {
-    while getopts UoRFVvhm:fd:s:r:b: option ; do
+    while getopts UoRFVvhm:fd:s:r:b:l option ; do
 	case "$option" in
 	    v) # version
-		echo "$0 Version "'$Revision: 1.17 $'
+		echo "$0 Version "'$Revision: 1.18 $'
 		exit 0
 		;;
 	    h) # help
@@ -107,6 +107,9 @@ function getoptions() {
             U) # only update
 	       update=1
                ;;
+	    l) # "light" initrd - only take used drivers
+		light=1
+		;;
 	    *)
 		echo "Error wrong option."
 		exit 1
@@ -251,10 +254,30 @@ success
 
 # copying kernel modules
 echo -n "Copying kernelmodules ($kernel)..."
+
 if [ ! -d ${mountpoint}/lib/modules/$kernel ]; then
   mkdir -p ${mountpoint}/lib/modules/
 fi
-cp -a /lib/modules/$kernel ${mountpoint}/lib/modules/$kernel || (failure && rm $lockfile && exit $?)
+
+if [ -n "$light" ] && [ $light -eq 1 ]; then
+	# Only copy modules that are currently used or are specified in /etc/modprobe.conf
+	for module in `		(
+					lsmod |\
+						sed -e 's/ .*//' -e 's/_/\[_-\]/g' |\
+						grep -v "^Module$";
+					cat /etc/modprobe.conf |\
+						grep "alias" |\
+						awk '{print $3;}'
+				) |\
+			sort -u`;
+	do
+		for file in `find /lib/modules/$kernel -name "$module.ko"`; do
+			tar -chf - $file 2>/dev/null | tar -xf - -C ${mountpoint};
+		done
+	done || (failure && rm $lockfile && exit $?)
+else
+	cp -a /lib/modules/$kernel ${mountpoint}/lib/modules/$kernel || (failure && rm $lockfile && exit $?)
+fi
 success
 
 create_builddate_file $build_file && success || failure
@@ -305,7 +328,10 @@ ls -lk $initrdname
 
 ##########################################
 # $Log: create-gfs-initrd-generic.sh,v $
-# Revision 1.17  2009-01-28 13:07:21  marc
+# Revision 1.18  2009-02-08 14:22:22  marc
+# added the diet patch from gordan
+#
+# Revision 1.17  2009/01/28 13:07:21  marc
 # - use load std-lib.sh the helperfunctions sourceLibs sourceRootfsLibs to load libraries
 #
 # Revision 1.16  2007/12/07 16:39:59  reiner

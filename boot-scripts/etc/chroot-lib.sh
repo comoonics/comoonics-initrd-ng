@@ -1,5 +1,5 @@
 #
-# $Id: chroot-lib.sh,v 1.6 2008-08-14 13:36:37 marc Exp $
+# $Id: chroot-lib.sh,v 1.7 2009-02-08 14:23:08 marc Exp $
 #
 # @(#)$File$
 #
@@ -65,7 +65,8 @@ function extract_rpm() {
 function extract_installed_rpm() {
   local rpm=$1
   local dest=$2
-  local filter=$3
+  local filter1=$3
+  local filter2=$4
   local qopt=""
   rpm -q $rpm >/dev/null 2>&1
   if [ $? -ne 0 ]; then
@@ -73,11 +74,20 @@ function extract_installed_rpm() {
     return 1
   fi
 
-  if [ -n "$filter" ]; then
+  if [ "$filter1" = "." ]; then
+	filter1=""
+  fi
+
+  if [ -n "$filter1" ]; then
   	qopt="-a"
   fi
+
+  if [ -z "$filter2" ]; then
+  	filter2="^\$"
+  fi
+
   pushd $dest >/dev/null
-  for file in $(rpm -ql $qopt $rpm | grep -e "$filter"); do
+  for file in $(rpm -ql $qopt $rpm | grep -e "$filter1" | grep -v "$filter2"); do
   	#echo "rpm : $rpm, $file" >&2
     [ ! -e ${dest}$(dirname $file) ] && mkdir -p ${dest}$(dirname $file)
     if [ -d $file ]; then
@@ -104,7 +114,8 @@ function extract_installed_rpm() {
 #
 function get_filelist_from_installed_rpm() {
   local rpm=$1
-  local filter=$2
+  local filter1=$2
+  local filter2=$3
   local qopt=""
   rpm -q $rpm >/dev/null 2>&1
   if [ $? -ne 0 ]; then
@@ -112,12 +123,20 @@ function get_filelist_from_installed_rpm() {
     return 1
   fi
 
-  if [ -n "$filter" ]; then
-  	qopt="-a"
+  if [ "$filter1" = "." ]; then
+      filter1="";
+  fi
+
+  if [ -n "$filter1" ]; then
+       qopt="-a"
+   fi
+
+  if [ -z "$filter2" ]; then
+      filter2="^\$"
   fi
   #for filename in $(rpm -ql $qopt $rpm | grep -e "$filter"); do
   # get all rpms that match filter without docs
-  for filename in $(rpm -q $qopt $rpm --dump | grep -e "$filter" | awk ' $9~0 {print $1}'); do
+  for filename in $(rpm -q $qopt $rpm --dump | grep -e "$filter1" | grep -v "$filter2" | awk ' $9~0 {print $1}'); do
   	if [ -n "$filename" ] && [ ${filename:0:5} != "/proc" ] && [ ${filename:0:4} != "proc" ]; then
   	   echo $filename
   	   get_dependent_files $filename
@@ -152,13 +171,14 @@ function extract_all_rpms() {
   get_all_rpms_dependent $rpm_listfile $verbose | while read line; do
   	rpmdef=( $line )
   	rpm=${rpmdef[0]}
-	filter=${rpmdef[1]}
+	filter1=${rpmdef[1]}
+	filter2=${rpmdef[2]}
     if [ ${rpm:0:1} != '#' ]; then
       if [ -f $rpm ]; then
         extract_rpm $rpm $root
       else
-      	[ -n "$verbose" ] && echo "$rpm with filter $filter"
-        extract_installed_rpm $rpm $root $filter
+      	[ -n "$verbose" ] && echo "$rpm with filter $filter1 and ! $filter2"
+        extract_installed_rpm $rpm $root $filter1 $filter2
       fi
     fi
   done
@@ -189,10 +209,11 @@ function get_filelist_from_rpms() {
   get_all_rpms_dependent $rpm_listfile $verbose | while read line; do
   	rpmdef=( $line )
   	rpm=${rpmdef[0]}
-	filter=${rpmdef[1]}
+	filter1=${rpmdef[1]}
+	filter2=${rpmdef[2]}
     if [ ${rpm:0:1} != '#' ]; then
-      [ -n "$verbose" ] && echo "$rpm with filter $filter" >&2
-      get_filelist_from_installed_rpm $rpm $filter
+      [ -n "$verbose" ] && echo "$rpm with filter $filter1 and ! $filter2" >&2
+      get_filelist_from_installed_rpm $rpm $filter1 $filter2
     fi
   done
 }
