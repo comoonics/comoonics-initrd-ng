@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.13 2009-02-02 20:12:55 marc Exp $
+# $Id: network-lib.sh,v 1.14 2009-02-08 14:00:00 marc Exp $
 #
 # @(#)$File$
 #
@@ -82,10 +82,13 @@ function nicConfig {
   	  local devmay=$(echo "$_hwid" | cut -f1 -d:)
   	  local macmay=$(echo "$_hwid" | cut -f2- -d:)
   	  local macwish=$(getPosFromIPString 7, $ipconfig)
+  	  local macis=$(ifconfig $dev | grep -v -i "Link encap: Local" | grep -v -i "Link encap:UNSPEC" | grep -i hwaddr | awk '{print $5;};')
       macwish=${macwish//-/:}  	  
   	  if [ -n "$devmay" ] && [ -n "$macmay" ] && [ -n "$macwish" ] && [ "$macmay" = "$macwish" ] && [ "$dev" != "$devmay" ]; then
-  	  	echo_local -n "moving nicname from $dev => $devmay." >&2
-  	    ipconfig=$(setPosAtIPString 6 $devmay $ipconfig)
+  	  	if [ -z "$macis" ] || [ "$macis" != "$macwish" ]; then
+  	  	  echo_local -n "moving nicname from $dev => $devmay." >&2
+  	      ipconfig=$(setPosAtIPString 6 $devmay $ipconfig)
+  	  	fi
   	  fi  
   done
 
@@ -297,7 +300,10 @@ function setPosAtIPString() {
 
 #############
 # $Log: network-lib.sh,v $
-# Revision 1.13  2009-02-02 20:12:55  marc
+# Revision 1.14  2009-02-08 14:00:00  marc
+# Bugfix in NIC detection
+#
+# Revision 1.13  2009/02/02 20:12:55  marc
 # - Bugfix in Hardwaredetection
 #
 # Revision 1.12  2009/01/29 15:57:51  marc
