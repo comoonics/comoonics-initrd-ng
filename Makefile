@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.46 2009-01-29 19:49:08 marc Exp $
+# $Id: Makefile,v 1.47 2009-02-08 14:22:48 marc Exp $
 #
 # @(#)$file$
 #
@@ -207,6 +207,7 @@ CFG_FILES=basefiles.list \
     files.initrd.d/bonding.list \
     files.initrd.d/glusterfs.list \
     files.initrd.d/grub.list \
+    files.initrd.d/mdadm.list \
     files.initrd.d/comoonics.list \
     files.initrd.d/vlan.list \
     files.initrd.d/ext2.list \
@@ -243,6 +244,7 @@ CFG_FILES=basefiles.list \
     rpms.initrd.d/ext2.list \
     rpms.initrd.d/xen.list \
     rpms.initrd.d/ocfs2.list \
+    rpms.initrd.d/mdadm.list \
     rpms.initrd.d/nfs.list \
     rpms.initrd.d/rhel/dm_multipath.list \
 	rpms.initrd.d/rhel/empty.list \
@@ -542,7 +544,10 @@ channel: rpm channelcopy channelbuild
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.46  2009-01-29 19:49:08  marc
+# Revision 1.47  2009-02-08 14:22:48  marc
+# added md
+#
+# Revision 1.46  2009/01/29 19:49:08  marc
 # added new files
 #
 # Revision 1.45  2008/12/01 12:30:41  marc

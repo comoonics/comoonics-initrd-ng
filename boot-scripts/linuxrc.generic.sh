@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.69 2009-02-03 20:36:50 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.70 2009-02-08 14:23:49 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.69 2009-02-03 20:36:50 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.70 2009-02-08 14:23:49 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -79,7 +79,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.69 $ $Date: 2009-02-03 20:36:50 $'
+echo_local 'Internal Version $Revision: 1.70 $ $Date: 2009-02-08 14:23:49 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -282,6 +282,9 @@ if clusterfs_blkstorage_needed $(repository_get_value rootfs); then
   if [ "$(repository_get_value scsifailover)" = "mapper" ] || [ "$(repository_get_value scsifailover)" = "devicemapper" ]; then
     dm_mp_start
   fi
+  
+  md_start
+  
   validate_storage || breakp $(errormsg err_storage_config)
   step "Storage environment started" "storage"
 
@@ -469,7 +472,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.69  2009-02-03 20:36:50  marc
+# Revision 1.70  2009-02-08 14:23:49  marc
+# added md
+#
+# Revision 1.69  2009/02/03 20:36:50  marc
 # bugfix for multiple nics
 #
 # Revision 1.68  2009/02/02 20:13:40  marc

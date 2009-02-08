@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.24 2009-02-08 13:14:29 marc Exp $
+# $Id: hardware-lib.sh,v 1.25 2009-02-08 14:23:37 marc Exp $
 #
 # @(#)$File$
 #
@@ -257,6 +257,24 @@ function dm_start {
    #/sbin/udevstart
 }
 #************ dm_start
+
+#****f* boot-lib.sh/md_start
+#  NAME
+#    md_start
+#  SYNOPSIS
+#    function md_start() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function md_start {
+  if [ -e "/etc/mdadm.conf" ]; then
+    echo_local -n "Starting MD (software RAID) devices"
+    exec_local mdadm --assemble --scan
+    return_code $?
+  fi
+}
+#******** md_start
 
 #****f* boot-lib.sh/lvm_check
 #  NAME
@@ -518,7 +536,10 @@ function sysctl_load() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.24  2009-02-08 13:14:29  marc
+# Revision 1.25  2009-02-08 14:23:37  marc
+# added md
+#
+# Revision 1.24  2009/02/08 13:14:29  marc
 # stable module removement
 #
 # Revision 1.23  2009/02/02 20:12:25  marc
