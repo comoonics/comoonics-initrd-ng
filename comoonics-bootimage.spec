@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.74.2.2 2009-01-13 14:44:22 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.74.2.3 2009-02-13 08:53:21 mark Exp $
 #
 ##
 ##
@@ -57,7 +57,7 @@ Requires: comoonics-cluster-py >= 0.1-2
 Requires: comoonics-bootimage-initscripts >= 1.3 
 Requires: comoonics-bootimage-listfiles-all
 #Conflicts:
-Release: 38.1
+Release: 38.2
 Vendor: ATIX AG
 Packager: Mark Hlawatschek (hlawatschek (at) atix.de)
 ExclusiveArch: noarch
@@ -829,7 +829,10 @@ rm -rf %{buildroot}
 
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.74.2.2  2009-01-13 14:44:22  marc
+# Revision 1.74.2.3  2009-02-13 08:53:21  mark
+# new hotfix release for comoonics-bootimage (1.3.38.2)
+#
+# Revision 1.74.2.2  2009/01/13 14:44:22  marc
 # Bugfix for Bug #313 (/usr/bin/logger in /bin/logger)
 #
 # Revision 1.74.2.1  2008/09/09 15:09:45  mark
