@@ -7,7 +7,7 @@
 #  DESCRIPTION
 #*******
 #
-# $Id: manage_chroot.sh,v 1.10 2009-02-02 20:15:34 marc Exp $
+# $Id: manage_chroot.sh,v 1.11 2009-02-13 08:44:13 mark Exp $
 #
 # @(#)$File$
 #
@@ -179,7 +179,7 @@ function update_chroot() {
 
 	log "Retreiving dependent files"
 
-	files=( $(get_all_files_dependent $dep_filename $verbose | sort -u | grep -v "^.$" | grep -v "^..$") )
+	files=( $(get_all_files_dependent $dep_filename $verbose | sort -u | grep -v "^.$" | grep -v "^..$"| tr '&' '\n'))
 	rc=$?
 
 	log "found ${#files[@]} files $(return_code $rc) "
