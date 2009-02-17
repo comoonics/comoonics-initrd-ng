@@ -6,7 +6,7 @@
 #    Library for the creating of initrds for sharedroot
 #*******
 #
-# $Id: create-gfs-initrd-lib.sh,v 1.13 2007-12-07 16:39:59 reiner Exp $
+# $Id: create-gfs-initrd-lib.sh,v 1.14 2009-02-17 20:04:46 marc Exp $
 #
 # @(#)$File$
 #
@@ -109,12 +109,14 @@ function umount_and_zip_initrd() {
   local force=$3
   local opts=""
   local LODEV=$(mount | grep "^$mountpoint" | tail -1 | cut -f6 -d" " | cut -d"=" -f2)
+  [ -z "$compression_cmd" ] && compression_cmd="gzip"
+  [ -z "$compression_opts" ] && compression_opts="-c -9"
   LODEV=$(echo ${LODEV/%\)/})
   [ -n "$force" ] && [ $force -gt 0 ] && opts="-f"
   (umount $mountpoint && \
    losetup -d $LODEV && \
    mv $filename ${filename}.tmp && \
-   gzip $opts -c -9 ${filename}.tmp > $filename && rm ${filename}.tmp) || (fuser -mv "$mountpoint" && exit 1)
+   $compression_cmd $compression_opts $opts ${filename}.tmp > $filename && rm ${filename}.tmp) || (fuser -mv "$mountpoint" && exit 1)
 }
 
 #
@@ -134,14 +136,19 @@ function cpio_and_zip_initrd() {
   local filename=$2
   local force=$3
   local opts=""
+  [ -z "$compression_cmd" ] && compression_cmd="gzip"
+  [ -z "$compression_opts" ] && compression_opts="-c -9"
   [ -n "$force" ] && [ $force -gt 0 ] && opts="-f"
-  ((cd $mountpoint; find . | cpio --quiet -c -o) >| ${filename}.tmp && gzip $opts -c -9 ${filename}.tmp > $filename && rm ${filename}.tmp)|| (fuser -mv "$mountpoint" && exit 1)
+  ((cd $mountpoint; find . | cpio --quiet -c -o) >| ${filename}.tmp && $compression_cmd $compression_opts $opts ${filename}.tmp > $filename && rm ${filename}.tmp)|| (fuser -mv "$mountpoint" && exit 1)
 }
 #************ cpio_and_zip_initrd
 
 ######################
 # $Log: create-gfs-initrd-lib.sh,v $
-# Revision 1.13  2007-12-07 16:39:59  reiner
+# Revision 1.14  2009-02-17 20:04:46  marc
+# bug 330 fixed (compression_cmd & compression_opts).
+#
+# Revision 1.13  2007/12/07 16:39:59  reiner
 # Added GPL license and changed ATIX GmbH to AG.
 #
 # Revision 1.12  2007/08/06 16:02:17  mark
