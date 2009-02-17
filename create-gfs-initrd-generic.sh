@@ -6,7 +6,7 @@
 #*******
 #!/bin/bash
 #
-# $Id: create-gfs-initrd-generic.sh,v 1.18 2009-02-08 14:22:22 marc Exp $
+# $Id: create-gfs-initrd-generic.sh,v 1.19 2009-02-17 20:05:44 marc Exp $
 #
 # @(#)$File$
 #
@@ -50,7 +50,7 @@ PATH=${PATH}:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin
 #  SOURCE
 #
 function usage() {
-  echo "$0 -d dep_filename [-s initrdsize] [-m mountpoint] [-r rpm-list-file] [-b build-date-file] [-V] [-F] [-R] [-o] [-U] [-l] initrdname [kernel-version]"
+  echo "$0 [-d dep_filename] [-s initrdsize] [-m mountpoint] [-r rpm-list-file] [-b build-date-file] [-V] [-F] [-R] [-o] [-U] [-l] initrdname [kernel-version]"
 }
 
 #************ usage
@@ -67,7 +67,7 @@ function getoptions() {
     while getopts UoRFVvhm:fd:s:r:b:l option ; do
 	case "$option" in
 	    v) # version
-		echo "$0 Version "'$Revision: 1.18 $'
+		echo "$0 Version "'$Revision: 1.19 $'
 		exit 0
 		;;
 	    h) # help
@@ -328,7 +328,10 @@ ls -lk $initrdname
 
 ##########################################
 # $Log: create-gfs-initrd-generic.sh,v $
-# Revision 1.18  2009-02-08 14:22:22  marc
+# Revision 1.19  2009-02-17 20:05:44  marc
+# small typo
+#
+# Revision 1.18  2009/02/08 14:22:22  marc
 # added the diet patch from gordan
 #
 # Revision 1.17  2009/01/28 13:07:21  marc
