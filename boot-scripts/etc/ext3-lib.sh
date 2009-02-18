@@ -1,5 +1,5 @@
 #
-# $Id: ext3-lib.sh,v 1.5 2009-01-28 12:53:02 marc Exp $
+# $Id: ext3-lib.sh,v 1.6 2009-02-18 18:01:14 marc Exp $
 #
 # @(#)$File$
 #
@@ -23,7 +23,7 @@
 
 #
 
-#****h* comoonics-bootimage/nfs-lib.sh
+#****h* comoonics-bootimage/ext3-lib.sh
 #  NAME
 #    ext3-lib.sh
 #    $id$
@@ -148,9 +148,66 @@ function ext3_getdefaults {
 }
 #********** ext3_getdefaults
 
+#****f* ext3-lib.sh/ext3_services_restart_newroot
+#  NAME
+#    ext3_services_restart_newroot
+#  SYNOPSIS
+#    function ext3_services_restart_newroot(lockmethod)
+#  DESCRIPTION
+#    This function loads all relevant gfs modules
+#  IDEAS
+#  SOURCE
+#
+function ext3_services_restart_newroot {
+  local chroot_path=$1
+  local lock_method=$2
+  local lvm_sup=$3
+
+  echo "Umounting $chroot_path/proc"
+  exec_local umount $chroot_path/proc
+  return_code
+}
+#************ ext3_services_restart_newroot
+
+#****f* ext3-lib.sh/ext3_fsck_needed
+#  NAME
+#    ext3_fsck_needed
+#  SYNOPSIS
+#    function ext3_fsck_needed(root, rootfs)
+#  DESCRIPTION
+#    Will always return 1 for no fsck needed. This can only be triggered by rootfsck 
+#    bootoption.
+#
+function ext3_fsck_needed {
+	local device=$1
+	fsck -t noopts -T $device
+}
+#********* ext3_fsck_needed
+
+#****f* ext3-lib.sh/ext3_fsck
+#  NAME
+#    ext3_fsck
+#  SYNOPSIS
+#    function ext3_fsck_needed(root, rootfs)
+#  DESCRIPTION
+#    If this function is called. It will always execute an ext3fsck on the given root.
+#    Be very very carefull with this function!!
+#
+function ext3_fsck {
+	local root="$1"
+	local fsck="fsck.ext3"
+	local options=""
+	echo_local -n "Calling $fsck on filesystem $root"
+	exec_local $fsck $options $root
+	return_code
+}
+#********* ext3_fsck
 
 # $Log: ext3-lib.sh,v $
-# Revision 1.5  2009-01-28 12:53:02  marc
+# Revision 1.6  2009-02-18 18:01:14  marc
+# added restart_newroot, fsck
+#
+# Revision 1.5  2009/01/28 12:53:02  marc
 # - added defaults and ro mountpoint
 #
 # Revision 1.4  2008/10/28 12:52:07  marc
