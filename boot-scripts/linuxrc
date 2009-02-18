@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc,v 1.20 2009-02-02 20:13:40 marc Exp $
+# $Id: linuxrc,v 1.21 2009-02-18 18:04:25 marc Exp $
 #
 # @(#)$File$
 #
@@ -34,7 +34,7 @@
 #****h* comoonics-bootimage/linuxrc
 #  NAME
 #    linuxrc
-#    $Id: linuxrc,v 1.20 2009-02-02 20:13:40 marc Exp $
+#    $Id: linuxrc,v 1.21 2009-02-18 18:04:25 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -72,6 +72,8 @@ repository_store_value shellissue /etc/issue
 repository_store_value shellissuetmp /tmp/issue
 repository_store_value shell "/bin/bash --rcfile $(repository_get_value shellrcfile)"
 repository_store_value logo "$atixlogofile"
+repository_store_value bootlog "$bootlog"
+repository_store_value syslog_logfile "$syslog_logfile"
 
 shell=$(repository_get_value shell)
 [ -z "$shell" ] && shell="/bin/sh" 
@@ -79,6 +81,7 @@ if cat /proc/cmdline | grep com-expert; then
     echo -e "Expertshell started. Change anything you like here." > $(repository_get_value shellissuetmp)
 	echo "Type exit to continue work.." >> $(repository_get_value shellissuetmp)
 	$shell
+	bootlog=$(repository_get_value bootlog)
 fi
 umount /proc
 unset shell
@@ -149,7 +152,10 @@ fi
 
 ################
 # $Log: linuxrc,v $
-# Revision 1.20  2009-02-02 20:13:40  marc
+# Revision 1.21  2009-02-18 18:04:25  marc
+# setup default syslog file
+#
+# Revision 1.20  2009/02/02 20:13:40  marc
 # - Bugfix in hardware detection
 # - Introduced function to not load storage when not needed
 #
