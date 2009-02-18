@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.30 2009-02-02 20:12:09 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.31 2009-02-18 17:57:45 marc Exp $
 #
 # @(#)$File$
 #
@@ -696,7 +696,7 @@ function cc_auto_hosts {
 #  NAME
 #    cc_auto_syslogconfig
 #  SYNOPSIS
-#    function cc_auto_syslogconfig(cluster_conf, nodename, chroot_path, locallog)
+#    function cc_auto_syslogconfig(cluster_conf, nodename, chroot_path, locallog, syslog_logfile)
 #  DESCRIPTION
 #    creates config for the syslog service
 #    to enable local logging use "yes"
@@ -707,11 +707,19 @@ function cc_auto_syslogconfig {
   local nodename=$2
   local chroot_path=$3
   local local_log=$4
+  local syslog_logfile=$5
   local clutype=$(repository_get_value clutype)
   
   local syslog_server_list=""
   local syslog_conf="/etc/syslog.conf"
   local services="/etc/services"
+  
+  if [ -z "$syslog_logfile" ]; then
+    syslog_logfile=$(repository_get_value syslog_logfile)
+    if [ -z "$syslog_logfile" ]; then
+      syslog_logfile="/var/log/comoonics-boot.syslog"
+    fi
+  fi
   if [ -n "$cluster_conf" ] && [ -n $nodename ]; then
     syslog_server_list=$(${clutype}_get_syslogserver $cluster_conf $nodename)
   fi
@@ -728,7 +736,7 @@ EOSYSLOG
       echo '*.* @'"$syslog_server" >> ${chroot_path}${syslog_conf}
     done
     if [ "$local_log" != "no" ]; then
-      echo "*.*    -/var/log/comoonics_boot.syslog" >> ${chroot_path}${syslog_conf}
+      echo "*.*    -$syslog_logfile" >> ${chroot_path}${syslog_conf}
     fi
 
     echo "syslog          514/udp" >> ${chroot_path}${services}
@@ -1165,7 +1173,10 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.30  2009-02-02 20:12:09  marc
+# Revision 1.31  2009-02-18 17:57:45  marc
+# setup default syslog file
+#
+# Revision 1.30  2009/02/02 20:12:09  marc
 # - Bugfix in hardware detection
 # - Introduced function to not load storage when not needed
 #

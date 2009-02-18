@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.68 2009-01-28 12:51:23 marc Exp $
+# $Id: boot-lib.sh,v 1.69 2009-02-18 17:55:05 marc Exp $
 #
 # @(#)$File$
 #
@@ -45,6 +45,7 @@ MKDIR="/bin/mkdir"
 
 step_timeout=10
 bootlog="/var/log/comoonics-boot.log"
+syslog_logfile="/var/log/comoonics-boot.syslog"
 error_code_file="/var/error_code"
 init_cmd_file="/var/init_cmd"
 init_chroot_file="/var/init_chroot_file"
@@ -860,7 +861,10 @@ function ipaddress_from_dev() {
 #************ ipaddress_from_dev
 
 # $Log: boot-lib.sh,v $
-# Revision 1.68  2009-01-28 12:51:23  marc
+# Revision 1.69  2009-02-18 17:55:05  marc
+# setup default syslog file
+#
+# Revision 1.68  2009/01/28 12:51:23  marc
 # Many changes:
 # - moved some functions to std-lib.sh
 # - no "global" variables but repository
