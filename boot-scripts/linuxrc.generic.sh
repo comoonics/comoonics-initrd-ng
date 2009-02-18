@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.70 2009-02-08 14:23:49 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.71 2009-02-18 18:05:05 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.70 2009-02-08 14:23:49 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.71 2009-02-18 18:05:05 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -79,7 +79,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.70 $ $Date: 2009-02-08 14:23:49 $'
+echo_local 'Internal Version $Revision: 1.71 $ $Date: 2009-02-18 18:05:05 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -154,7 +154,7 @@ auto_netconfig $(cc_get_nic_drivers $(repository_get_value nodeid) $(repository_
 udev_start # now we should be able to trigger this.
 found_nics && breakp $(errormsg err_hw_nicdriver)
 
-cc_auto_syslogconfig $(repository_get_value cluster_conf) $(repository_get_value nodename)
+cc_auto_syslogconfig $(repository_get_value cluster_conf) $(repository_get_value nodename) / "yes" $(repository_get_value syslog_logfile)
 is_syslog=$?
 if [ $is_syslog -eq 0 ]; then
   cc_syslog_start
@@ -232,12 +232,23 @@ for ipconfig in $(repository_get_value ipConfig); do
   fi
 done
 
+bridgeipconfig=""
+vlanipconfig=""
+networkipconfig=""
 _ipconfig=""
 for ipconfig in $(repository_get_value ipConfig); do
   dev=$(getPosFromIPString 6, $ipconfig)
   hwids=$(repository_get_value hardwareids)
   echo_local "Creating network configuration for $dev"
   _ipconfig="$_ipconfig "$(nicConfig $ipconfig "$hwids")
+  type=$(getPosFromIPString 8, $1)
+  if [ "$type" = "bridge" ]; then
+    bridgeipconfig="$bridgeipconfig $_ipconfig"
+  elif [[ "$dev" =~ "[a-z]+[0-9]+\.[0-9]+" ]]; then
+    vlanipconfig="$vlanipconfig $_ipconfig"
+  else
+    networkipconfig="$networkipconfig $_ipconfig"
+  fi
   if [ $? -ne 0 ]; then
 	breakp $(err_nic_config)
   fi
@@ -246,12 +257,18 @@ done
 repository_store_value ipConfig "$_ipconfig"
 step "Network configuration finished" "netconfig"
 
-for ipconfig in $(repository_get_value ipConfig); do
+for ipconfig in $networkipconfig $vlanipconfig $bridgeipconfig; do
   dev=$(getPosFromIPString 6, $ipconfig)
+  driver=$(getPosFromIPString 11, $ipconfig)
   nicAutoUp $ipconfig
   if [ $? -eq 0 ]; then
+  	if [ -n "$driver" ]; then
+  		echo_local -n "Loading driver $driver for nic $dev.."
+  		exec_local modprobe $driver
+  		return_code $?
+  	fi
     echo_local -n "Powering up $dev.."
-    exec_local nicUp $dev >/dev/null 2>&1 || breakp $(errormsg err_nic_ifup)
+    exec_local nicUp $dev boot >/dev/null 2>&1 || breakp $(errormsg err_nic_ifup)
     return_code $?
   fi
   netdevs="$netdevs $dev"
@@ -323,7 +340,7 @@ fi
 
 # but only if /dev is not the same inode as $chroot_path /dev
 if [ $is_syslog -eq 0 ] && ! is_same_inode /dev $(repository_get_value chroot_path)/dev; then
-  cc_auto_syslogconfig $(repository_get_value cluster_conf) $(repository_get_value nodename) $(repository_get_value chroot_path) yes
+  cc_auto_syslogconfig $(repository_get_value cluster_conf) $(repository_get_value nodename) $(repository_get_value chroot_path) yes $(repository_get_value syslog_logfile)
   cc_syslog_start $(repository_get_value chroot_path)
   step "Syslog services started in chroot $(repository_get_value chroot_path)" "syslogchroot"
 fi
@@ -356,11 +373,11 @@ if [ -z "$(repository_get_value quorumack)" ]; then
 	echo_local "         Otherwise you'll risk split brain with data inconsistency !!!"
 
 	confirm="XXX"
-	until [ $confirm == "YES" ] || [ $confirm == "NO" ]; do
+	until [ $confirm = "YES" ] || [ $confirm = "NO" ]; do
   		echo_local "USER INPUT: (YES|NO): "
   		read confirm
   		echo_local_debug "confirm: $confirm"
-  		if [ $confirm == "NO" ]; then
+  		if [ $confirm = "NO" ]; then
   			breakp "Cluster not acknowledged. Falling back to shell"
   		fi
   	done
@@ -416,13 +433,18 @@ exec_local cp -a $(repository_get_value newroot)/dev/console /dev/
 #exec_local mount --bind /dev $newroot/dev
 return_code $_error
 
-echo_local -n "Copying logfile to "$(repository_get_value newroot)"/${bootlog}..."
-exec_local cp -f ${bootlog} $(repository_get_value newroot)/${bootlog} || cp -f ${bootlog} $(repository_get_value newroot)/$(basename $bootlog)
-if [ -f $(repository_get_value newroot)/$bootlog ]; then
-  repository_store_value bootlog $(repository_get_value newroot)/$bootlog
-else
-  repository_store_value bootlog $(repository_get_value newroot)/$(basename bootlog)
-fi
+for logfile_name in bootlog syslog_logfile; do
+  logfile=$(repository_get_value $logfile_name)
+  if [ -n "$logfile" ] && [ -e "$logfile" ]; then
+    echo_local -n "Copying logfile to \"$logfile\"..."
+    exec_local cp -f ${logfile} $(repository_get_value newroot)/${logfile} || cp -f ${logfile} $(repository_get_value newroot)/$(basename $logfile)
+    if [ -f $(repository_get_value newroot)/$logfile ]; then
+      repository_store_value logfile_name $(repository_get_value newroot)/$logfile
+    else
+      repository_store_value logfile_name $(repository_get_value newroot)/$(basename $logfile)
+    fi
+  fi
+done
 return_code_warning
 exec 3>> $bootlog
 exec 4>> $bootlog
@@ -472,7 +494,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.70  2009-02-08 14:23:49  marc
+# Revision 1.71  2009-02-18 18:05:05  marc
+# added driver for nic
+#
+# Revision 1.70  2009/02/08 14:23:49  marc
 # added md
 #
 # Revision 1.69  2009/02/03 20:36:50  marc

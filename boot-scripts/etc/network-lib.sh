@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.14 2009-02-08 14:00:00 marc Exp $
+# $Id: network-lib.sh,v 1.15 2009-02-18 18:03:20 marc Exp $
 #
 # @(#)$File$
 #
@@ -73,18 +73,19 @@ function nicConfig {
   [ -z "$hwids" ] && hwids=$(repository_get_value hardwareids)
 
   return_c=0
-  if [ "$dev" != "lo" ] && [ "$dev" != "lo0" ]; then
-    exec_local modprobe $dev && sleep 2 && ifconfig $dev up
-  fi
+#  if [ "$dev" != "lo" ] && [ "$dev" != "lo0" ]; then
+#    modprobe $dev && sleep 2 && ifconfig $dev up
+#  fi
 
   # let's have a look if the mac of this nic matches to the name of the nic specified. If not change it.
   for _hwid in $hwids; do
   	  local devmay=$(echo "$_hwid" | cut -f1 -d:)
   	  local macmay=$(echo "$_hwid" | cut -f2- -d:)
   	  local macwish=$(getPosFromIPString 7, $ipconfig)
+  	  local driver=$(getPosFromIPString 11, $ipconfig)
   	  local macis=$(ifconfig $dev | grep -v -i "Link encap: Local" | grep -v -i "Link encap:UNSPEC" | grep -i hwaddr | awk '{print $5;};')
       macwish=${macwish//-/:}  	  
-  	  if [ -n "$devmay" ] && [ -n "$macmay" ] && [ -n "$macwish" ] && [ "$macmay" = "$macwish" ] && [ "$dev" != "$devmay" ]; then
+  	  if [ -z "$driver" ] && [ -n "$devmay" ] && [ -n "$macmay" ] && [ -n "$macwish" ] && [ "$macmay" = "$macwish" ] && [ "$dev" != "$devmay" ]; then
   	  	if [ -z "$macis" ] || [ "$macis" != "$macwish" ]; then
   	  	  echo_local -n "moving nicname from $dev => $devmay." >&2
   	      ipconfig=$(setPosAtIPString 6 $devmay $ipconfig)
@@ -136,12 +137,7 @@ function nicAutoUp() {
 #  SOURCE
 #
 function nicUp() {
-   local _err=0
-   local dev=$1
-   /sbin/ifup $dev
-   _err=$?
-   return $_err
-
+   /sbin/ifup $*
 }
 #************ ifup
 #****f* boot-lib.sh/network_setup_bridge
@@ -300,7 +296,10 @@ function setPosAtIPString() {
 
 #############
 # $Log: network-lib.sh,v $
-# Revision 1.14  2009-02-08 14:00:00  marc
+# Revision 1.15  2009-02-18 18:03:20  marc
+# added driver for nic
+#
+# Revision 1.14  2009/02/08 14:00:00  marc
 # Bugfix in NIC detection
 #
 # Revision 1.13  2009/02/02 20:12:55  marc
