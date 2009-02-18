@@ -44,12 +44,12 @@
 
 Name: comoonics-bootimage-initscripts
 Summary: Initscripts used by the OSR cluster environment for Novell SLES10.
-Version: 1.3
+Version: 1.4
 BuildArch: noarch
 Requires: comoonics-bootimage >= 1.3-1
 Requires: comoonics-bootimage-listfiles-sles
 #Conflicts:
-Release: 2.sles10
+Release: 1.sles10
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch

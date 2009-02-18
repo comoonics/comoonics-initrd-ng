@@ -43,14 +43,14 @@
 
 Name: comoonics-bootimage-initscripts
 Summary: Initscripts used by the OSR cluster environment.
-Version: 1.3
+Version: 1.4
 BuildArch: noarch
 Requires: comoonics-bootimage >= 1.3-41 
 # Requires: SysVinit-comoonics
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-fedora
 #Conflicts: 
-Release: 3.fedora
+Release: 1.fedora
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch

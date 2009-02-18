@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.88 2009-02-08 14:24:50 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.89 2009-02-18 18:10:40 marc Exp $
 #
 ##
 ##
@@ -51,14 +51,14 @@
 
 Name: comoonics-bootimage
 Summary: Scripts for creating an initrd in a OSR Cluster environment
-Version: 1.3
+Version: 1.4
 BuildArch: noarch
 Requires: comoonics-cs-py >= 0.1-43 
 Requires: comoonics-cluster-py >= 0.1-2 
-Requires: comoonics-bootimage-initscripts >= 1.3 
+Requires: comoonics-bootimage-initscripts >= 1.4 
 Requires: comoonics-bootimage-listfiles-all
 #Conflicts:
-Release: 46
+Release: 2
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -127,7 +127,7 @@ Summary: Listfiles for md support
 Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
-%description extras-dm-multipath
+%description extras-md
 Extra listfiles for md in OSR configurations
 
 %package extras-dm-multipath-rhel
@@ -1040,7 +1040,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.88  2009-02-08 14:24:50  marc
+# Revision 1.89  2009-02-18 18:10:40  marc
+# new version
+#
+# Revision 1.88  2009/02/08 14:24:50  marc
 # typo
 #
 # Revision 1.87  2009/02/08 14:22:38  marc
