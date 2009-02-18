@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.47 2009-02-08 14:22:48 marc Exp $
+# $Id: Makefile,v 1.48 2009-02-18 18:11:51 marc Exp $
 #
 # @(#)$file$
 #
@@ -49,7 +49,7 @@ PREFIX=/
 #  IDEAS
 #  SOURCE
 #
-VERSION=1.3
+VERSION=1.4
 
 #************ VERSION 
 #****d* Makefile/PACKAGE_NAME
@@ -544,7 +544,10 @@ channel: rpm channelcopy channelbuild
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.47  2009-02-08 14:22:48  marc
+# Revision 1.48  2009-02-18 18:11:51  marc
+# new version of comoonics-bootimage
+#
+# Revision 1.47  2009/02/08 14:22:48  marc
 # added md
 #
 # Revision 1.46  2009/01/29 19:49:08  marc
