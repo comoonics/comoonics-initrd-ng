@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.9 2009-01-29 15:56:25 marc Exp $
+# $Id: hardware-lib.sh,v 1.10 2009-02-20 09:50:24 marc Exp $
 #
 # @(#)$File$
 #
@@ -78,6 +78,7 @@ function rhel5_udev_start() {
 #	  udevtrigger
 	else
       udevtrigger
+      udevsettle
 	fi
     
 }
@@ -85,7 +86,10 @@ function rhel5_udev_start() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.9  2009-01-29 15:56:25  marc
+# Revision 1.10  2009-02-20 09:50:24  marc
+# added udevsettle
+#
+# Revision 1.9  2009/01/29 15:56:25  marc
 # Upstream with new HW Detection see bug#325
 #
 # Revision 1.8  2009/01/28 12:48:44  marc

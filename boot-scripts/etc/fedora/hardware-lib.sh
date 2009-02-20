@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.2 2009-01-29 15:55:16 marc Exp $
+# $Id: hardware-lib.sh,v 1.3 2009-02-20 09:50:42 marc Exp $
 #
 # @(#)$File$
 #
@@ -60,6 +60,7 @@ function fedora9_udev_start() {
 #	  udevtrigger
 	else
       udevtrigger
+      udevsettle
 	fi
 }
 #************rhel5_udev_start
@@ -85,7 +86,10 @@ function fedora9_udev_stop() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.2  2009-01-29 15:55:16  marc
+# Revision 1.3  2009-02-20 09:50:42  marc
+# added udevsettle
+#
+# Revision 1.2  2009/01/29 15:55:16  marc
 # Implemented new hw detection
 #
 # Revision 1.1  2009/01/28 12:45:29  marc
