@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.71 2009-02-18 18:05:05 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.72 2009-02-20 09:51:22 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.71 2009-02-18 18:05:05 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.72 2009-02-20 09:51:22 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -79,7 +79,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.71 $ $Date: 2009-02-18 18:05:05 $'
+echo_local 'Internal Version $Revision: 1.72 $ $Date: 2009-02-20 09:51:22 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -129,13 +129,12 @@ step "Udev Started" "udev"
 
 if [ -z "$simulation" ] || [ "$simulation" -ne 1 ]; then
   hardware_detect
-  step "Hardwaredetection finished" "hwdetect"
 
   echo_local -n "Starting network configuration for lo0"
   exec_local nicUp lo
   return_code
 fi
-step "NIC modules loaded." "autonetconfig"
+step "Hardwaredetection finished" "hwdetect"
 
 echo_local -n "Detecting nodeid & nodename ..."
 
@@ -151,8 +150,9 @@ success
 
 # Just load nic drivers
 auto_netconfig $(cc_get_nic_drivers $(repository_get_value nodeid) $(repository_get_value nodename) $(repository_get_value cluster_conf))
-udev_start # now we should be able to trigger this.
+found_nics && udev_start # now we should be able to trigger this.
 found_nics && breakp $(errormsg err_hw_nicdriver)
+step "NIC modules loaded." "autonetconfig"
 
 cc_auto_syslogconfig $(repository_get_value cluster_conf) $(repository_get_value nodename) / "yes" $(repository_get_value syslog_logfile)
 is_syslog=$?
@@ -286,6 +286,7 @@ if [ -n $bridges ]; then
 fi
 
 if clusterfs_blkstorage_needed $(repository_get_value rootfs); then
+  udev_start
   dm_start
   scsi_start $(repository_get_value scsi_failover)
 
@@ -494,7 +495,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.71  2009-02-18 18:05:05  marc
+# Revision 1.72  2009-02-20 09:51:22  marc
+# small changes in NIC detection
+#
+# Revision 1.71  2009/02/18 18:05:05  marc
 # added driver for nic
 #
 # Revision 1.70  2009/02/08 14:23:49  marc
