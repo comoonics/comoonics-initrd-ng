@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.17 2009-02-08 13:14:07 marc Exp $
+# $Id: gfs-lib.sh,v 1.18 2009-02-20 09:49:42 marc Exp $
 #
 # @(#)$File$
 #
@@ -289,6 +289,9 @@ function gfs_start_cman {
   local chroot_path=$1
   local cmd="cman_tool join -w"
   local cman_join_opts=""
+  local nodename=$(repository_get_value nodename)
+  
+  [ -n "$nodename" ] && cman_join_opts=" -n $nodename "  
   
   if repository_has_key votes; then
   	local votes=$(repository_get_value votes)
@@ -321,6 +324,9 @@ function gfs_start_cman {
 
 ###############
 # $Log: gfs-lib.sh,v $
-# Revision 1.17  2009-02-08 13:14:07  marc
+# Revision 1.18  2009-02-20 09:49:42  marc
+# added nodename option to cman_tool join.
+#
+# Revision 1.17  2009/02/08 13:14:07  marc
 # implemented the gfs join process as specified in RedHat initscripts
 #
