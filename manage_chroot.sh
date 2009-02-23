@@ -7,7 +7,7 @@
 #  DESCRIPTION
 #*******
 #
-# $Id: manage_chroot.sh,v 1.11 2009-02-13 08:44:13 mark Exp $
+# $Id: manage_chroot.sh,v 1.12 2009-02-23 12:58:48 marc Exp $
 #
 # @(#)$File$
 #
@@ -73,6 +73,8 @@ cluconf=/etc/cluster/cluster.conf
 # filesystems
 UMOUNTFS="/dev/pts /dev /proc /sys"
 
+repository_store_value cluster_conf $cluconf
+repository_store_value hardwareids "$(hardware_ids)"
 
 function usage() {
 	cat<<EOF
@@ -197,9 +199,13 @@ function mount_cdsl {
 	local nodeid=$(getParameter nodeid $(cc_getdefaults nodeid))
 	local newroot="/"
 	
-	[ -z "$cdsl_path" ] && cdsl_path=$cdsl_prefix
-	[ -z "$cdsl_local" ] && cdsl_local=$cdsl_local_dir 
+	[ -z "$cdsl_path" ] && cdsl_path=$(repository_get_value cdsl_prefix)
+	[ -z "$cdsl_local" ] && cdsl_local=$(repository_get_value cdsl_local_dir)
 	
+	if [ -z "$nodeid" ]; then
+		echo_local "Could not detect nodeid. Therefore I couldn't mount $cdsl_path" >&2
+		exit 1
+	fi
 	clusterfs_mount_cdsl $newroot $cdsl_local $nodeid $cdsl_path	
 }
 
