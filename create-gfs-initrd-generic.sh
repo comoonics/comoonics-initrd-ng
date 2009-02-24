@@ -6,7 +6,7 @@
 #*******
 #!/bin/bash
 #
-# $Id: create-gfs-initrd-generic.sh,v 1.19 2009-02-17 20:05:44 marc Exp $
+# $Id: create-gfs-initrd-generic.sh,v 1.20 2009-02-24 12:10:44 marc Exp $
 #
 # @(#)$File$
 #
@@ -32,9 +32,22 @@ exec 3>/dev/null
 exec 4>/dev/null 5>/dev/null
 
 predir=$(dirname $0)/boot-scripts
+
 source $predir/etc/std-lib.sh
 sourceLibs $predir
 source $(dirname $0)/create-gfs-initrd-lib.sh
+
+lockfile=/var/lock/mkinitrd
+
+cfg_file=/etc/comoonics/comoonics-bootimage.cfg
+
+pwd=$(pwd)
+force=0
+TMPDIR=/tmp
+mountpoint=$(mktemp -d ${TMPDIR}/initrd.mnt.XXXXXX)
+#size=32768
+size=120000
+kernel[0]=$(uname -r)
 
 initEnv
 
@@ -50,7 +63,7 @@ PATH=${PATH}:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin
 #  SOURCE
 #
 function usage() {
-  echo "$0 [-d dep_filename] [-s initrdsize] [-m mountpoint] [-r rpm-list-file] [-b build-date-file] [-V] [-F] [-R] [-o] [-U] [-l] initrdname [kernel-version]"
+  echo "$0 [-d dep_filename] [-s initrdsize] [-m mountpoint] [-r rpm-list-file] [-b build-date-file] [-V] [-F] [-R] [-o] [-U] [-l] initrdname kernel-version [kernel-version]"
 }
 
 #************ usage
@@ -64,10 +77,11 @@ function usage() {
 #  SOURCE
 #
 function getoptions() {
+    local i=0
     while getopts UoRFVvhm:fd:s:r:b:l option ; do
 	case "$option" in
 	    v) # version
-		echo "$0 Version "'$Revision: 1.19 $'
+		echo "$0 Version "'$Revision: 1.20 $'
 		exit 0
 		;;
 	    h) # help
@@ -118,7 +132,13 @@ function getoptions() {
     done
     shift $(($OPTIND - 1))
     initrdname=$1
-    if [ -n "$2" ]; then kernel=$2; fi
+    shift
+    [ -z "${kernel[$i]}" ] && kernel[$i]="$(uname -r)"
+    while [ -n "$1" ]; do
+      kernel[$i]=$1
+      shift
+      i=$(( $i + 1 ))
+    done
 }
 #************ getoptions
 
@@ -139,16 +159,6 @@ if [ -z "$1" ]; then
   exit
 fi
 
-cfg_file=/etc/comoonics/comoonics-bootimage.cfg
-
-pwd=$(pwd)
-force=0
-TMPDIR=/tmp
-mountpoint=$(mktemp -d ${TMPDIR}/initrd.mnt.XXXXXX)
-#size=32768
-size=120000
-kernel=$(uname -r)
-
 if [ ${1:0:1} = "--" ]; then
     echo "detected request for old version of mkinitrd."
     echo "Params: $*"
@@ -160,16 +170,16 @@ source ${cfg_file}
 getoptions $*
 
 prgdir=${predir}
-lockfile=${prgdir}/.building_initrd
 
 if [ -e $lockfile ] && [ -z "$Force" ]; then
-  echo "Lockfile "$lockfile" exists. Another $0 is running. Please fix.."
+  echo "Lockfile "$lockfile" exists. "
+  echo "Another $(basename $0) is running. Please check if another process is running or remove the lockfile.."
   echo "..or start with force mode."
   exit 1
 fi
 touch $lockfile
 
-kernelmajor=`echo $kernel | cut -d . -f 1,2`
+kernelmajor=`echo ${kernel[0]} | cut -d . -f 1,2`
 
 if [ "$kernelmajor" == "2.4" ] || [ "$initramfs" -eq 0 ]; then
     if [ -n "$verbose" ]; then echo "Creating old-style initrd"; fi
@@ -253,13 +263,14 @@ done
 success
 
 # copying kernel modules
-echo -n "Copying kernelmodules ($kernel)..."
+for _kernel in ${kernel[@]}; do
+  echo -n "Copying kernelmodules ($_kernel)..."
 
-if [ ! -d ${mountpoint}/lib/modules/$kernel ]; then
-  mkdir -p ${mountpoint}/lib/modules/
-fi
+  if [ ! -d ${mountpoint}/lib/modules/$_kernel ]; then
+    mkdir -p ${mountpoint}/lib/modules
+  fi
 
-if [ -n "$light" ] && [ $light -eq 1 ]; then
+  if [ -n "$light" ] && [ $light -eq 1 ]; then
 	# Only copy modules that are currently used or are specified in /etc/modprobe.conf
 	for module in `		(
 					lsmod |\
@@ -275,10 +286,11 @@ if [ -n "$light" ] && [ $light -eq 1 ]; then
 			tar -chf - $file 2>/dev/null | tar -xf - -C ${mountpoint};
 		done
 	done || (failure && rm $lockfile && exit $?)
-else
-	cp -a /lib/modules/$kernel ${mountpoint}/lib/modules/$kernel || (failure && rm $lockfile && exit $?)
-fi
-success
+  else
+	cp -a /lib/modules/$_kernel ${mountpoint}/lib/modules/$_kernel || (failure && rm $lockfile && exit $?)
+  fi
+  success
+done
 
 create_builddate_file $build_file && success || failure
 
@@ -328,7 +340,11 @@ ls -lk $initrdname
 
 ##########################################
 # $Log: create-gfs-initrd-generic.sh,v $
-# Revision 1.19  2009-02-17 20:05:44  marc
+# Revision 1.20  2009-02-24 12:10:44  marc
+# moved default lockfile
+# multiple kernel modules in initrd
+#
+# Revision 1.19  2009/02/17 20:05:44  marc
 # small typo
 #
 # Revision 1.18  2009/02/08 14:22:22  marc
