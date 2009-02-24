@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.90 2009-02-24 12:09:45 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.91 2009-02-24 12:13:49 marc Exp $
 #
 ##
 ##
@@ -235,7 +235,7 @@ OSR Listfiles that are only relevant for all linux distributions
 
 %package listfiles-rhel
 Version: 0.1
-Release: 2
+Release: 3
 Requires: comoonics-bootimage >= 1.3-36
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-all
@@ -248,7 +248,7 @@ OSR extra files that are only relevant for RHEL Versions
 
 %package listfiles-fedora
 Version: 0.1
-Release: 4
+Release: 5
 Requires: comoonics-bootimage >= 1.3-41
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-all
@@ -986,6 +986,8 @@ rm -rf %{buildroot}
   - initial revision 
 
 %changelog listfiles-rhel5
+* Tue Feb 24 2009 Marc Grimme <grimme@atix.de> - 0.1-4
+- removed krb files in configs.list
 * Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-3
 - Removed and added more files
 * Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-2
@@ -1002,6 +1004,8 @@ rm -rf %{buildroot}
   - initial revision 
 
 %changelog listfiles-fedora
+* Tue Feb 24 2009 Marc Grimme <grimme@atix.de> - 0.1-5
+- removed krb files in configs.list
 * Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-4
 - introduced the changelog
 
@@ -1044,7 +1048,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.90  2009-02-24 12:09:45  marc
+# Revision 1.91  2009-02-24 12:13:49  marc
+# new listfiles
+#
+# Revision 1.90  2009/02/24 12:09:45  marc
 # first 1.4 rc
 #
 # Revision 1.89  2009/02/18 18:10:40  marc
