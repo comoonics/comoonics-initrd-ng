@@ -7,6 +7,26 @@ IDEAS:
 CHANGES:
 
 comoonics-bootimage:
+- 24.02.2009 Release 1.4-5
+  * first official release candidate of comoonics-1.4
+  * restricted hw-detection
+- 02.02.2009 Release 1.3-45
+  * Bugfix in hardwaredetection
+  * Introduced no load of storage if not needed
+- 29.01.2009 Release 1.3-44
+  * First version with new hardware detection Bug#325
+  * First version with Usability review Parent-Bug#323
+  * Implemented sysctl concept to generally implement the IGMPv2 thing Bug#324
+  * Many other usability improvements
+  * Support for nfsv4
+- 05.12.2008 Release 1.3-41
+  * First version on the way to rpmlint BUG#290
+- 18.11.2008 Release 1.3-40
+  * Enhancement #289 implemented so that we now have a script linux.sim.sh to be executed within initrd or from outside.
+  * Cosmetic changes looks much better!
+  * Pulled all other changes upstream
+- 14.10.2008 Release 1.3-39
+  * Enhancement #273 and dependencies implemented (flexible boot of local fs systems)
 - 24.09.2008 Release 1.3-38
   * Bugfix #272 where static ipaddress will not be set in sles10
 - 11.08.2008 Release 1.3-37
@@ -215,6 +235,8 @@ comoonics-bootimage-fencemaster-vmware:
     * initial release
 
 comoonics-bootimage-initscripts:
+- 24.02.2009 Release 1.4-1
+    * first official 1.4 rc
 - 24.06.2008 Release 1.3-8
 	* changed kill level for bootsr initscript
 - 20.06.2008 Release 1.3-7
@@ -254,7 +276,10 @@ TODO:
 ########################################
 # CVS-Log
 # $Log: CHANGELOG,v $
-# Revision 1.42  2008-09-24 08:15:02  marc
+# Revision 1.43  2009-02-24 12:07:22  marc
+# added changelog for 1.4 version
+#
+# Revision 1.42  2008/09/24 08:15:02  marc
 # updated docu
 #
 # Revision 1.41  2008/08/14 14:38:23  marc
