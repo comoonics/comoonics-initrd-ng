@@ -9,8 +9,9 @@
 /etc/profile.d/which-2.sh
 /etc/profile.d/lang.csh
 /etc/profile.d/lang.sh
-/etc/profile.d/krb5.csh
-/etc/profile.d/krb5.sh
+# Not available and therefore not needed
+#/etc/profile.d/krb5.csh
+#/etc/profile.d/krb5.sh
 /etc/rc.d/init.d/functions
 /etc/rc.d/init.d/killall
 /etc/rc.d/init.d/network
