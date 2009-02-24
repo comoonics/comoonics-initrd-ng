@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.60 2009-02-24 11:59:21 marc Exp $
+# $Id: gfs-lib.sh,v 1.61 2009-02-24 20:37:20 marc Exp $
 #
 # @(#)$File$
 #
@@ -650,7 +650,7 @@ function gfs_get_bridge_param {
 #  NAME
 #    gfs_get_nic_names
 #  SYNOPSIS
-#    function gfs_get_nic_names(nodeid, nodename, clusterconf)
+#    function gfs_get_nic_names(nodeid, nodename, nic, clusterconf)
 #  DESCRIPTION
 #    Returns the nic drivers for the given node if specified in cluster configuration.
 #    If node is left out all drivers will be returned. 
@@ -664,7 +664,7 @@ function gfs_get_nic_names {
 #  NAME
 #    gfs_get_nic_drivers
 #  SYNOPSIS
-#    function gfs_get_nic_drivers(nodeid, nodename, clusterconf)
+#    function gfs_get_nic_drivers(nodeid, nodename, nic, clusterconf)
 #  DESCRIPTION
 #    Returns the nic drivers for the given node if specified in cluster configuration.
 #    If node is left out all drivers will be returned. 
@@ -697,7 +697,7 @@ function gfs_get_nic_attrs {
   fi
   local query="/cluster/clusternodes/clusternode[@name=\"$nodename\" or @nodeid=\"$nodeid\"]/com_info/eth$nic_query/@$attr"
   if [ -z "$nodeid" ] && [ -z "$nodename" ]; then
-  	query="/cluster/clusternodes/clusternode/com_info/eth/@$attr"
+  	query="/cluster/clusternodes/clusternode/com_info/eth$nic_query/@$attr"
   fi
   local out=$($xml_cmd -f $xml_file query_value "$query")
   if [ -z "$out" ]; then
@@ -1269,7 +1269,10 @@ function gfs_fsck {
 #********* gfs_fsck
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.60  2009-02-24 11:59:21  marc
+# Revision 1.61  2009-02-24 20:37:20  marc
+# rollback to older version
+#
+# Revision 1.60  2009/02/24 11:59:21  marc
 # added gfs_get_nic_drives
 #
 # Revision 1.59  2009/02/18 18:01:52  marc
