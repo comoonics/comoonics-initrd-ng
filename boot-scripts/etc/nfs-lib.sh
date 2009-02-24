@@ -1,5 +1,5 @@
 #
-# $Id: nfs-lib.sh,v 1.9 2009-02-18 18:03:42 marc Exp $
+# $Id: nfs-lib.sh,v 1.10 2009-02-24 12:03:04 marc Exp $
 #
 # @(#)$File$
 #
@@ -238,7 +238,7 @@ function nfs_getdefaults {
 #
 function nfs_load {
 
-  local NFS_MODULES="sunrpc nfslock"
+  local NFS_MODULES="sunrpc"
 
   echo_local -n "Loading NFS modules ($NFS_MODULES)..."
   for module in ${NFS_MODULES}; do
@@ -451,7 +451,10 @@ function nfs_init {
 #********* nfs_init
 
 # $Log: nfs-lib.sh,v $
-# Revision 1.9  2009-02-18 18:03:42  marc
+# Revision 1.10  2009-02-24 12:03:04  marc
+# removed obsolete nfslock module.
+#
+# Revision 1.9  2009/02/18 18:03:42  marc
 # *** empty log message ***
 #
 # Revision 1.8  2009/02/02 20:13:23  marc
