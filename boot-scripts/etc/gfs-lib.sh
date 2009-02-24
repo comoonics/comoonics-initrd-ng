@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.59 2009-02-18 18:01:52 marc Exp $
+# $Id: gfs-lib.sh,v 1.60 2009-02-24 11:59:21 marc Exp $
 #
 # @(#)$File$
 #
@@ -646,31 +646,67 @@ function gfs_get_bridge_param {
   fi
 }
 
+#****f* clusterfs-lib.sh/gfs_get_nic_names
+#  NAME
+#    gfs_get_nic_names
+#  SYNOPSIS
+#    function gfs_get_nic_names(nodeid, nodename, clusterconf)
+#  DESCRIPTION
+#    Returns the nic drivers for the given node if specified in cluster configuration.
+#    If node is left out all drivers will be returned. 
+#  SOURCE
+function gfs_get_nic_names {
+	gfs_get_nic_attrs name "$1" "$2" "$3" "$4"
+}
+#*********** gfs_get_nic_names
+
 #****f* clusterfs-lib.sh/gfs_get_nic_drivers
 #  NAME
 #    gfs_get_nic_drivers
 #  SYNOPSIS
 #    function gfs_get_nic_drivers(nodeid, nodename, clusterconf)
 #  DESCRIPTION
-#    Returns the nic drivers for the given node if specified in cluster configuration. 
+#    Returns the nic drivers for the given node if specified in cluster configuration.
+#    If node is left out all drivers will be returned. 
 #  SOURCE
 function gfs_get_nic_drivers {
-  local nodeid=$1
-  local nodename=$2
-  local xml_file=$3
+	gfs_get_nic_attrs driver "$1" "$2" "$3" "$4"
+}
+#*********** gfs_get_nic_drivers
+
+#****f* clusterfs-lib.sh/gfs_get_nic_attrs
+#  NAME
+#    gfs_get_nic_attrs
+#  SYNOPSIS
+#    function gfs_get_nic_attrs(attr, nodeid, nodename, nicname, clusterconf)
+#  DESCRIPTION
+#    Returns the nic drivers for the given node if specified in cluster configuration.
+#    If node is left out all drivers will be returned. 
+#  SOURCE
+function gfs_get_nic_attrs {
+  local attr=$1
+  local nodeid=$2
+  local nodename=$3
+  local nicname=$4
+  local xml_file=$5
   
   local xml_cmd="${ccs_xml_query}"
-  local out=$($xml_cmd -f $xml_file query_value '/cluster/clusternodes/clusternode[@name="'$nodename'"]/com_info/eth/@driver')
-  if [ -z "$out" ]; then
-    out=$($xml_cmd -f $xml_file query_value '/cluster/clusternodes/clusternode[@nodeid="'$nodeid'"]/com_info/eth/@driver')
+  local nic_query=""
+  if [ -n "$nicname" ]; then
+  	nic_query="[@name=\"$nicname\"]"
   fi
+  local query="/cluster/clusternodes/clusternode[@name=\"$nodename\" or @nodeid=\"$nodeid\"]/com_info/eth$nic_query/@$attr"
+  if [ -z "$nodeid" ] && [ -z "$nodename" ]; then
+  	query="/cluster/clusternodes/clusternode/com_info/eth/@$attr"
+  fi
+  local out=$($xml_cmd -f $xml_file query_value "$query")
   if [ -z "$out" ]; then
   	return 1
   else
     echo $out
   fi
 }
-#*********** gfs_get_nic_drivers
+#*********** gfs_get_nic_attrs
 
 #****f* gfs-lib.sh/gfs_load
 #  NAME
@@ -1233,7 +1269,10 @@ function gfs_fsck {
 #********* gfs_fsck
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.59  2009-02-18 18:01:52  marc
+# Revision 1.60  2009-02-24 11:59:21  marc
+# added gfs_get_nic_drives
+#
+# Revision 1.59  2009/02/18 18:01:52  marc
 # added driver for nic
 #
 # Revision 1.58  2009/01/29 15:57:30  marc
