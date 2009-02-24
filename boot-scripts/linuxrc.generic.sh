@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.72 2009-02-20 09:51:22 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.73 2009-02-24 12:03:46 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.72 2009-02-20 09:51:22 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.73 2009-02-24 12:03:46 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -79,7 +79,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.72 $ $Date: 2009-02-20 09:51:22 $'
+echo_local 'Internal Version $Revision: 1.73 $ $Date: 2009-02-24 12:03:46 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -128,7 +128,14 @@ return_code
 step "Udev Started" "udev"
 
 if [ -z "$simulation" ] || [ "$simulation" -ne 1 ]; then
-  hardware_detect
+  num_names=$(cc_get_nic_names "" "" "" $(repository_get_value cluster_conf) | wc -w)
+  num_drivers=$(cc_get_nic_drivers "" "" "" $(repository_get_value cluster_conf) | wc -w)
+  drivers=""
+  if [ $num_drivers -ge $num_names ]; then
+  	drivers=$(cc_get_nic_drivers "" "" "" $(repository_get_value cluster_conf))
+  fi
+  hardware_detect $drivers
+  unset num_names num_drivers drivers
 
   echo_local -n "Starting network configuration for lo0"
   exec_local nicUp lo
@@ -495,7 +502,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.72  2009-02-20 09:51:22  marc
+# Revision 1.73  2009-02-24 12:03:46  marc
+# * added restricted hardwaredetection when drivers are specified
+#
+# Revision 1.72  2009/02/20 09:51:22  marc
 # small changes in NIC detection
 #
 # Revision 1.71  2009/02/18 18:05:05  marc
