@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.89 2009-02-18 18:10:40 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.90 2009-02-24 12:09:45 marc Exp $
 #
 ##
 ##
@@ -58,7 +58,7 @@ Requires: comoonics-cluster-py >= 0.1-2
 Requires: comoonics-bootimage-initscripts >= 1.4 
 Requires: comoonics-bootimage-listfiles-all
 #Conflicts:
-Release: 2
+Release: 5
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -754,6 +754,10 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Tue Feb 24 2009 Marc Grimme <grimme@atix.de> 1.4-5
+- first offical 1.4 rc
+- Hardwaredetection: restricted hwdetection implemented (@driver)
+- Multiple kernelmodules in initrd
 * Sun Feb 08 2009 Marc Grimme <grimme@atix.de> 1.3-46
 - Hardwaredetection: stable module removement
 - RHEL5/gfsjoin: copied joinprocess from initscripts
@@ -1040,7 +1044,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.89  2009-02-18 18:10:40  marc
+# Revision 1.90  2009-02-24 12:09:45  marc
+# first 1.4 rc
+#
+# Revision 1.89  2009/02/18 18:10:40  marc
 # new version
 #
 # Revision 1.88  2009/02/08 14:24:50  marc
