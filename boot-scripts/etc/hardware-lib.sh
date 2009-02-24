@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.25 2009-02-08 14:23:37 marc Exp $
+# $Id: hardware-lib.sh,v 1.26 2009-02-24 12:01:05 marc Exp $
 #
 # @(#)$File$
 #
@@ -392,8 +392,10 @@ function setHWClock() {
 #  SOURCE
 #
 function hardware_detect() {
+  local drivers=$*
   local distribution=$(repository_get_value distribution)
   local remove_times=4
+  local driver=""
   
   /sbin/depmod -a &>/dev/null
 
@@ -405,7 +407,11 @@ function hardware_detect() {
   if [ $? -eq 0 ]; then
 	echo_local -n "..(xen DomX).."
 	xen_domx_hardware_detect
-  else
+  elif [ -n "$drivers" ]; then
+    for driver in $drivers; do
+    	exec_local modprobe $driver
+    done
+  else 
     ${distribution}_hardware_detect
   fi
   return_c=$?
@@ -456,6 +462,23 @@ function listmodules {
   lsmod | awk '$2 ~ /[[:digit:]]+/ {print $1; }'
 }
 #************ listmodules
+
+#****f* hardware-lib.sh/modprobe
+#  NAME
+#    modprobe
+#  SYNOPSIS
+#    function modprobe()
+#  DESCRIPTION
+#    lists all names of loaded modules
+#  SOURCE
+#
+function modprobe {
+	if [ "$1" != "ignore" ]; then
+	  /sbin/modprobe $*
+	fi
+}
+#************ modprobe
+
 
 #****f* hardware-lib.sh/hardware_ids
 #  NAME
@@ -536,7 +559,11 @@ function sysctl_load() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.25  2009-02-08 14:23:37  marc
+# Revision 1.26  2009-02-24 12:01:05  marc
+# * added function modprobe to overwrite command.
+# * added restricted hardwaredetection when drivers are specified
+#
+# Revision 1.25  2009/02/08 14:23:37  marc
 # added md
 #
 # Revision 1.24  2009/02/08 13:14:29  marc
