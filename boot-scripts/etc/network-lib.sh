@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.15 2009-02-18 18:03:20 marc Exp $
+# $Id: network-lib.sh,v 1.16 2009-02-24 12:02:13 marc Exp $
 #
 # @(#)$File$
 #
@@ -239,6 +239,7 @@ function ip2Config() {
 function auto_netconfig {
    local drivers=$*
    [ -z "$drivers" ] && drivers=$(cat $modules_conf | grep "alias eth[0-9]" | awk '{print $2;}')
+   
    echo_local -n "Loading modules for all found network cards"
    for module in $drivers; do
       exec_local modprobe $module
@@ -296,7 +297,10 @@ function setPosAtIPString() {
 
 #############
 # $Log: network-lib.sh,v $
-# Revision 1.15  2009-02-18 18:03:20  marc
+# Revision 1.16  2009-02-24 12:02:13  marc
+# *** empty log message ***
+#
+# Revision 1.15  2009/02/18 18:03:20  marc
 # added driver for nic
 #
 # Revision 1.14  2009/02/08 14:00:00  marc
