@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.31 2009-02-18 17:57:45 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.32 2009-02-24 11:58:19 marc Exp $
 #
 # @(#)$File$
 #
@@ -305,6 +305,44 @@ function cc_validate {
 function cc_get_nic_drivers {
   local clutype=$(repository_get_value clutype)
   ${clutype}_get_nic_drivers $*
+}
+#*********** cc_get_nic_drivers
+
+#****f* clusterfs-lib.sh/cc_get_nic_names
+#  NAME
+#    cc_get_nic_names
+#  SYNOPSIS
+#    function cc_get_nic_names(cluster_conf)
+#  DESCRIPTION
+#    Returns the nic drivers for the given node if specified in cluster configuration. 
+#  SOURCE
+function cc_get_nic_names {
+  local clutype=$(repository_get_value clutype)
+  ${clutype}_get_nic_names "$1" "$2" "$3"
+}
+#*********** cc_get_nic_names
+
+#****f* clusterfs-lib.sh/cc_get_nic_drivers
+#  NAME
+#    cc_get_nic_drivers
+#  SYNOPSIS
+#    function cc_get_nic_drivers(cluster_conf)
+#  DESCRIPTION
+#    Returns the nic drivers for the given node if specified in cluster configuration. 
+#  SOURCE
+function cc_get_nic_drivers {
+  local clutype=$(repository_get_value clutype)
+  local nicname="$2"
+  local delimiter=":"
+  if [ -n "$nicname" ]; then
+    ${clutype}_get_nic_drivers "$1" "$2" "$3"
+  else
+    local output=""
+    local _nic=""
+    for _nic in $(cc_get_nic_names "$1" "$2" "$3"); then
+      output=$output" "$_nic""$delimiter""$(cc_get_nic_drivers "$1" "_nic" "$3")
+    echo $output
+  fi
 }
 #*********** cc_get_nic_drivers
 
@@ -1173,7 +1211,10 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.31  2009-02-18 17:57:45  marc
+# Revision 1.32  2009-02-24 11:58:19  marc
+# added cc_get_nic_drives
+#
+# Revision 1.31  2009/02/18 17:57:45  marc
 # setup default syslog file
 #
 # Revision 1.30  2009/02/02 20:12:09  marc
