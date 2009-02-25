@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage-initscripts-el4.spec,v 1.11 2009-02-04 09:27:15 marc Exp $
+# $Id: comoonics-bootimage-initscripts-el4.spec,v 1.12 2009-02-25 14:25:16 marc Exp $
 #
 ##
 ##
@@ -43,11 +43,11 @@
 
 Name: comoonics-bootimage-initscripts
 Summary: Initscripts used by the OSR cluster environment.
-Version: 1.3
+Version: 1.4
 BuildArch: noarch
-Requires: comoonics-bootimage >= 1.3-1
+Requires: comoonics-bootimage >= 1.4-6
 #Conflicts:
-Release: 5.rhel4
+Release: 1.rhel4
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -121,7 +121,10 @@ chkconfig --del bootsr
 %attr(755, root, root) %{INITDIR}/bootsr
 %attr(755, root, root) %{INITDIR}/fenced-chroot
 %attr(755, root, root) %{INITDIR}/ccsd-chroot
+
 %changelog
+* Wed Feb 25 2009 Marc Grimme <grimme@atix.de> 1.4-1
+- Backport of important features to rhel4
 * Fri Feb 29 2008 Mark Hlawatschek <hlawatschek@atix.de> 1.3.5
 - Fixed BZ 203, support FENCE_OPTS from /etc/sysconfig/cluster during boot
 * Tue Dec 18 2007 Mark Hlawatschek <hlawatschek@atix.de> 1.3.4
@@ -134,7 +137,11 @@ chkconfig --del bootsr
 - first revision
 # ------
 # $Log: comoonics-bootimage-initscripts-el4.spec,v $
-# Revision 1.11  2009-02-04 09:27:15  marc
+# Revision 1.12  2009-02-25 14:25:16  marc
+# backport of new features to rhel4
+# new version 1.4-1
+#
+# Revision 1.11  2009/02/04 09:27:15  marc
 # changed rpm names.
 #
 # Revision 1.10  2008/12/05 16:12:58  marc
