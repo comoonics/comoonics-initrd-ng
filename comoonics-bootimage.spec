@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.92 2009-02-25 08:42:13 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.93 2009-02-25 10:42:24 marc Exp $
 #
 ##
 ##
@@ -58,7 +58,7 @@ Requires: comoonics-cluster-py >= 0.1-2
 Requires: comoonics-bootimage-initscripts >= 1.4 
 Requires: comoonics-bootimage-listfiles-all
 #Conflicts:
-Release: 5
+Release: 6
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -754,6 +754,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Wed Feb 25 2009 Marc Grimme <grimme@atix.de> 1.4-6
+- fixed bug in xen hardwaredetection
+- and rootfs and clutype in bootsr
 * Tue Feb 24 2009 Marc Grimme <grimme@atix.de> 1.4-5
 - first offical 1.4 rc
 - Hardwaredetection: restricted hwdetection implemented (@driver)
@@ -1048,7 +1051,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.92  2009-02-25 08:42:13  marc
+# Revision 1.93  2009-02-25 10:42:24  marc
+# fixed bug with xennet hardware_detection
+#
+# Revision 1.92  2009/02/25 08:42:13  marc
 # changed nfs modules
 #
 # Revision 1.91  2009/02/24 12:13:49  marc
