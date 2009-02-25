@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.91 2009-02-24 12:13:49 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.92 2009-02-25 08:42:13 marc Exp $
 #
 ##
 ##
@@ -84,7 +84,7 @@ Extra listfiles for special network configurations
 
 %package extras-nfs
 Version: 0.1
-Release: 7
+Release: 8
 Requires: comoonics-bootimage >= 1.3-33
 Summary: Listfiles for nfs sharedroot configurations
 Group:   System Environment/Base
@@ -1048,7 +1048,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.91  2009-02-24 12:13:49  marc
+# Revision 1.92  2009-02-25 08:42:13  marc
+# changed nfs modules
+#
+# Revision 1.91  2009/02/24 12:13:49  marc
 # new listfiles
 #
 # Revision 1.90  2009/02/24 12:09:45  marc
