@@ -7,6 +7,9 @@ IDEAS:
 CHANGES:
 
 comoonics-bootimage:
+- 25.02.2009 Release 1.4-6
+  * fixed bug in xen hardware detection
+  * fixed bug in bootsr with rootfs and clutype
 - 24.02.2009 Release 1.4-5
   * first official release candidate of comoonics-1.4
   * restricted hw-detection
@@ -276,7 +279,10 @@ TODO:
 ########################################
 # CVS-Log
 # $Log: CHANGELOG,v $
-# Revision 1.43  2009-02-24 12:07:22  marc
+# Revision 1.44  2009-02-25 10:44:50  marc
+# new version for comoonics-bootimage
+#
+# Revision 1.43  2009/02/24 12:07:22  marc
 # added changelog for 1.4 version
 #
 # Revision 1.42  2008/09/24 08:15:02  marc
