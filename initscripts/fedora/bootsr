@@ -199,11 +199,12 @@ exec 5>> $logfile
 exec 6>> $logfile
 exec 7>> $logfile
 
+rootfs=$(repository_get_value rootfs)
+clutype=$(repository_get_value clutype)
+
 # See how we were called.
 case "$1" in
   start)
-    rootfs=$(repository_get_value rootfs)
-    clutype=$(repository_get_value clutype)
   	# will do
   	# - activate swap partitions (currently disabled)
   	# - mount everything except nfs (na)
@@ -253,7 +254,7 @@ case "$1" in
    	    typeset -f ${rootfs}_init >/dev/null && action "Stopping ${rootfs} dependent services" ${rootfs}_init stop
  	  fi 
   	  [ -e /var/lock/subsys/bootsr ] && rm -f /var/lock/subsys/bootsr 
-	  typeset -f ${rootfs}_init >/dev/null && ${rootfs}_chroot_needed init
+	  typeset -f ${rootfs}_needed >/dev/null && ${rootfs}_chroot_needed init
 	  if [ $? -eq 0 ]; then
 	    action "Cleaning up chroot environment" $UMOUNT_CHROOT
 	  fi

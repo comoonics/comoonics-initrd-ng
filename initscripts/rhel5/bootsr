@@ -2,7 +2,7 @@
 #****h* comoonics-bootimage/bootsr
 #  NAME
 #    bootsr
-#    $Id: bootsr,v 1.18 2009-02-02 20:14:03 marc Exp $
+#    $Id: bootsr,v 1.19 2009-02-25 10:34:11 marc Exp $
 #  DESCRIPTION
 #    Comoonics Shared Root post boot settings
 #  AUTHOR
@@ -199,11 +199,12 @@ exec 5>> $logfile
 exec 6>> $logfile
 exec 7>> $logfile
 
+rootfs=$(repository_get_value rootfs)
+clutype=$(repository_get_value clutype)
+
 # See how we were called.
 case "$1" in
   start)
-    rootfs=$(repository_get_value rootfs)
-    clutype=$(repository_get_value clutype)
   	# will do
   	# - activate swap partitions (currently disabled)
   	# - mount everything except nfs (na)
@@ -253,7 +254,7 @@ case "$1" in
    	    typeset -f ${rootfs}_init >/dev/null && action "Stopping ${rootfs} dependent services" ${rootfs}_init stop
  	  fi 
   	  [ -e /var/lock/subsys/bootsr ] && rm -f /var/lock/subsys/bootsr 
-	  typeset -f ${rootfs}_init >/dev/null && ${rootfs}_chroot_needed init
+	  typeset -f ${rootfs}_needed >/dev/null && ${rootfs}_chroot_needed init
 	  if [ $? -eq 0 ]; then
 	    action "Cleaning up chroot environment" $UMOUNT_CHROOT
 	  fi
@@ -289,7 +290,10 @@ exit $RETVAL
 #************ main
 ###############
 # $Log: bootsr,v $
-# Revision 1.18  2009-02-02 20:14:03  marc
+# Revision 1.19  2009-02-25 10:34:11  marc
+# moved the rootfs/clutype for all
+#
+# Revision 1.18  2009/02/02 20:14:03  marc
 # - Bugfix to work with other rootfs except gfs
 #
 # Revision 1.17  2009/01/29 11:10:17  marc
