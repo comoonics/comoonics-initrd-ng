@@ -2,7 +2,7 @@
 #****h* comoonics-bootimage/bootsr
 #  NAME
 #    bootsr
-#    $Id: bootsr,v 1.5 2008-10-29 14:45:33 mark Exp $
+#    $Id: bootsr,v 1.6 2009-02-25 14:24:59 marc Exp $
 #  DESCRIPTION
 #    Comoonics Shared Root post boot settings
 #  AUTHOR
@@ -24,15 +24,57 @@ CCSD_OPTS=
 
 . /etc/init.d/functions
 
+BOOTIMAGE_PATH=/opt/atix/comoonics-bootimage
 CCSD_LOCK_FILE="/var/lock/subsys/ccsd-chroot"
 DEFAULT_LOCK_COUNT=50000
-UPDATE_CHROOT="/opt/atix/comoonics-bootimage/manage_chroot.sh -a update"
-UMOUNT_CHROOT="/opt/atix/comoonics-bootimage/manage_chroot.sh -a umount"
-MOUNT_CHROOT="/opt/atix/comoonics-bootimage/manage_chroot.sh -a mount"
+CHROOT_PATH=$(/opt/atix/comoonics-bootimage/manage_chroot.sh -p) 
+UPDATE_CHROOT="${BOOTIMAGE_PATH}/manage_chroot.sh -a update"
+UMOUNT_CHROOT="${BOOTIMAGE_PATH}/manage_chroot.sh -a umount"
+MOUNT_CHROOT="${BOOTIMAGE_PATH}/manage_chroot.sh -a mount"
+MOUNT_CDSL="${BOOTIMAGE_PATH}/manage_chroot.sh -a mount_cdsl"
+CLEAN_START="${BOOTIMAGE_PATH}/manage_chroot.sh -a clean"
 BUILD_FILE="/etc/comoonics-build.txt"
 
 RETVAL=0
-[ -f /etc/sysconfig/cluster ] && . /etc/sysconfig/cluster
+. ${BOOTIMAGE_PATH}/boot-scripts/etc/std-lib.sh
+sourceLibs ${BOOTIMAGE_PATH}/boot-scripts
+sourceRootfsLibs ${BOOTIMAGE_PATH}/boot-scripts
+
+
+#****f* bootsr/check_mtab
+#  NAME
+#    check_mtab
+#  SYNOPSIS
+#    function check_mtab rootfstype
+#  IDEAS
+#    Checks if the mtab is a file (not a link) and if so checks if all filesystems mounted within the initrd are also in the mtab
+function check_mtab {
+	local rootfs_type=$1
+	
+	if [ -f /etc/mtab ]; then
+		cat /proc/mounts | cut -d" " -f2 | grep /cdsl.local >/dev/null &>/dev/null
+		if [ $? -eq 0 ]; then
+			cat /etc/mtab | cut -d" " -f2 | grep /cdsl.local >/dev/null &>/dev/null
+			if [ $? -ne 0 ]; then
+				$MOUNT_CDSL
+			fi
+		fi
+	fi
+} 
+
+#****f* bootsr/clean_start
+#  NAME
+#    clean_start
+#  SYNOPSIS
+#    function clean_start
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function clean_start {
+	$CLEAN_START
+}
+#************ clean_start
 
 #****f* bootsr/check_sharedroot
 #  NAME
@@ -117,6 +159,17 @@ function get_lockcount {
 #  IDEAS
 #  SOURCE
 #
+logfile=/var/log/bootsr.log
+
+#to be backward compatible
+exec 3>> $logfile
+exec 4>> $logfile
+exec 5>> $logfile
+exec 6>> $logfile
+exec 7>> $logfile
+
+rootfs=$(repository_get_value rootfs)
+clutype=$(repository_get_value clutype)
 
 # See how we were called.
 case "$1" in
@@ -182,7 +235,10 @@ exit $RETVAL
 #************ main
 ###############
 # $Log: bootsr,v $
-# Revision 1.5  2008-10-29 14:45:33  mark
+# Revision 1.6  2009-02-25 14:24:59  marc
+# backport of new features to rhel4
+#
+# Revision 1.5  2008/10/29 14:45:33  mark
 # fix for bug #251 from EL4_4
 #
 # Revision 1.3.2.1  2008/09/09 15:15:08  mark
