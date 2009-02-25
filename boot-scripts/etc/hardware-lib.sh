@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.26 2009-02-24 12:01:05 marc Exp $
+# $Id: hardware-lib.sh,v 1.27 2009-02-25 10:36:39 marc Exp $
 #
 # @(#)$File$
 #
@@ -407,6 +407,7 @@ function hardware_detect() {
   if [ $? -eq 0 ]; then
 	echo_local -n "..(xen DomX).."
 	xen_domx_hardware_detect
+	modules="$modules xennet"
   elif [ -n "$drivers" ]; then
     for driver in $drivers; do
     	exec_local modprobe $driver
@@ -559,7 +560,10 @@ function sysctl_load() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.26  2009-02-24 12:01:05  marc
+# Revision 1.27  2009-02-25 10:36:39  marc
+# fixed bug with xennet hardware_detection
+#
+# Revision 1.26  2009/02/24 12:01:05  marc
 # * added function modprobe to overwrite command.
 # * added restricted hardwaredetection when drivers are specified
 #

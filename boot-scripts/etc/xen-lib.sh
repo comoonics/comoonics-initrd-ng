@@ -1,5 +1,5 @@
 #
-# $Id: xen-lib.sh,v 1.8 2008-08-14 14:31:34 marc Exp $
+# $Id: xen-lib.sh,v 1.9 2009-02-25 10:36:59 marc Exp $
 #
 # @(#)$File$
 #
@@ -100,6 +100,7 @@ function xen_domx_hardware_detect() {
     echo "alias eth$i xennet"
    done
    echo "alias scsi_hostadapter xenblk") > ${modules_conf}
+  exec_local modprobe xennet
 }
 #************ xen_domx_hardware_detect
 
