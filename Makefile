@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.48 2009-02-18 18:11:51 marc Exp $
+# $Id: Makefile,v 1.49 2009-02-25 13:44:16 marc Exp $
 #
 # @(#)$file$
 #
@@ -350,7 +350,7 @@ RPM_PACKAGE_SOURCE_DIR=$(RPM_PACKAGE_DIR)/SOURCES
 CHANNELBASEDIR=/atix/dist-mirrors
 ALL_DISTROS=rhel4 rhel5 sles10 fedora
 # Which directories are used for installation
-CHANNELDIRS=comoonics/rhel5/preview comoonics/sles10/preview comoonics/fedora/preview
+CHANNELDIRS=comoonics/rhel4/preview comoonics/rhel5/preview comoonics/sles10/preview comoonics/fedora/preview
 CHANNELSUBDIRS=i386 x86_64 noarch SRPMS
 
 TEST_DIR=tests
@@ -544,7 +544,10 @@ channel: rpm channelcopy channelbuild
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.48  2009-02-18 18:11:51  marc
+# Revision 1.49  2009-02-25 13:44:16  marc
+# added rhel4
+#
+# Revision 1.48  2009/02/18 18:11:51  marc
 # new version of comoonics-bootimage
 #
 # Revision 1.47  2009/02/08 14:22:48  marc
