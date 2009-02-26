@@ -1,10 +1,10 @@
---- halt.orig	2008-06-05 21:09:31.453907988 +0200
-+++ halt	2008-06-05 22:25:35.339146789 +0200
+--- halt.orig	2009-02-13 17:56:48.000000000 +0100
++++ halt	2009-02-26 08:22:43.000000000 +0100
 @@ -8,6 +8,21 @@
  #               Modified for RHS Linux by Damien Neil
  #
  
-+# Patched for comoonics patch 1.3
++# Patched for comoonics patch 1.5
 +
 +
 +COM_KILLALL_OPTS="-x aisexec \
@@ -51,7 +51,7 @@
      -f
  
  LANG=C __umount_loop '$2 ~ /^\/$|^\/proc|^\/dev/{next}
-+	$2 ~ /'$COM_CHROOT_PATH'/ || $2 ~/^\/cdsl.local/ {next}
++	"'$COM_CHROOT_PATH'" != "" && ($2 ~ /'$COM_CHROOT_PATH'/ || $2 ~/^\/cdsl.local/) {next}
  	$3 == "tmpfs" || $3 == "proc" {print $2 ; next}
  	/(loopfs|autofs|nfs|cifs|smbfs|ncpfs|sysfs|^none|^\/dev\/ram|^\/dev\/root$)/ {next}
  	{print $2}' /proc/mounts \
@@ -61,27 +61,31 @@
  # one last time.
 -awk '$2 !~ /\/(|dev|proc|selinux)$/ && $1 !~ /^\/dev\/ram/ { print $2 }' \
 +awk '
-+$2 ~ /'$COM_CHROOT_PATH'/ || $2 ~/^\/cdsl.local/ {next}
++"'$COM_CHROOT_PATH'" != "" && $2 ~ /'$COM_CHROOT_PATH'/ || $2 ~/^\/cdsl.local/ {next}
 +$2 !~ /\/(|dev|proc|selinux)$/ && $1 !~ /^\/dev\/ram/ { print $2 }' \
      /proc/mounts | sort -r | \
    while read line; do
      fstab-decode umount -f $line
-@@ -192,9 +214,9 @@
+@@ -191,10 +213,12 @@
+ fi
  
  # Remount read only anything that's left mounted.
- # echo $"Remounting remaining filesystems readonly"
+-# echo $"Remounting remaining filesystems readonly"
 -mount | awk '{ print $3 }' | while read line; do
--    fstab-decode mount -n -o ro,remount $line
++if [ -z "$COM_CHROOT_PATH" ]; then
++  echo $"Remounting remaining filesystems readonly"
++  mount | awk '{ print $3 }' | while read line; do
+     fstab-decode mount -n -o ro,remount $line
 -done
-+#mount | awk '{ print $3 }' | while read line; do
-+#fstab-decode mount -n -o ro,remount $line
-+#done
++  done
++fi
  
  # Now halt or reboot.
  echo $"$message"
-@@ -219,4 +241,5 @@
+@@ -219,5 +243,5 @@
  HALTARGS="-d"
  [ -f /poweroff -o ! -f /halt ] && HALTARGS="$HALTARGS -p"
  
-+[ -e $COM_CHROOT_PATH_REAL/com-halt.sh ] && $COM_CHROOT_PATH_REAL/com-halt.sh "$command $HALTARGS"
+-[ -n "$COM_CHROOT_PATH_REAL" ] && $COM_CHROOT_PATH_REAL/com-halt.sh "$command $HALTARGS"
++[ -n "$COM_CHROOT_PATH_REAL" ] && [ -f "$COM_CHROOT_PATH_REAL/com-halt.sh" ] && $COM_CHROOT_PATH_REAL/com-halt.sh "$command $HALTARGS"
  exec $command $HALTARGS
