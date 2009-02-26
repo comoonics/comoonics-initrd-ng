@@ -13,7 +13,7 @@
 # Provides: $local_fs $remote_fs
 ### END INIT INFO
 
-# Patched for comoonics patch 1.0
+# Patched for comoonics patch 1.1
 
 [ -f /etc/sysconfig/network ] || exit 0
 . /etc/init.d/functions
@@ -28,7 +28,7 @@ CIFSFSTAB=`LC_ALL=C awk '!/^#/ && $3 == "cifs" && $4 !~ /noauto/ { print $2 }' /
 NCPFSTAB=`LC_ALL=C awk '!/^#/ && $3 == "ncpfs" && $4 !~ /noauto/ { print $2 }' /etc/fstab`
 NETDEVFSTAB=`LC_ALL=C awk '!/^#/ && $4 ~/_netdev/ && $4 !~ /noauto/ { print $1 }' /etc/fstab`
 
-NFSMTAB=`LC_ALL=C awk '$3 ~ /^nfs/ && $3 != "nfsd" && $2 != "/" { print $2 }' /proc/mounts`
+NFSMTAB=`LC_ALL=C awk '$3 ~ /^nfs/ && $3 != "nfsd" && $2 != "/" && $2 != "/cdsl.local" { print $2 }' /proc/mounts`
 SMBMTAB=`LC_ALL=C awk '$3 == "smbfs" { print $2 }' /proc/mounts`
 CIFSMTAB=`LC_ALL=C awk '$3 == "cifs" { print $2 }' /proc/mounts`
 NCPMTAB=`LC_ALL=C awk '$3 == "ncpfs" { print $2 }' /proc/mounts`
