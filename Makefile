@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.49 2009-02-25 13:44:16 marc Exp $
+# $Id: Makefile,v 1.50 2009-02-26 07:12:57 marc Exp $
 #
 # @(#)$file$
 #
@@ -504,6 +504,7 @@ channelcopy:
 	@for channeldir in $(CHANNELDIRS); do \
 		TMPFILE="$(CHANNELBASEDIR)/$$channeldir/.channelcopy"$$$$; \
 		touch $$TMPFILE; \
+		sleep 1; \
 		echo "Copying rpms to channel $$channeldir..$$TMPFILE"; \
 		# Create an array of all CHANNELDIRS distros (second dir in path) and one without numbers at the end ready to be feeded in find \
 		includeddistros=`echo -n $$channeldir | awk -F/ '{ print "-name \"*"$$2"*\" -or -name \"*"gensub("[0-9]+$$","","",$$2)"-*\" -or "; }'`; \
@@ -544,7 +545,10 @@ channel: rpm channelcopy channelbuild
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.49  2009-02-25 13:44:16  marc
+# Revision 1.50  2009-02-26 07:12:57  marc
+# added a sleep
+#
+# Revision 1.49  2009/02/25 13:44:16  marc
 # added rhel4
 #
 # Revision 1.48  2009/02/18 18:11:51  marc
