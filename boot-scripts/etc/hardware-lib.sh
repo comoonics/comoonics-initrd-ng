@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.27 2009-02-25 10:36:39 marc Exp $
+# $Id: hardware-lib.sh,v 1.28 2009-02-27 10:33:51 marc Exp $
 #
 # @(#)$File$
 #
@@ -111,11 +111,11 @@ function scsi_start() {
   _xen=$?
   if [ $_xen -ne 0 ]; then
     echo_local -n "Loading scsi_disk Module..."
-    exec_local /sbin/modprobe sd_mod
+    exec_local modprobe sd_mod
     return_code
 
     echo_local -n "Loading sg.ko module"
-    exec_local /sbin/modprobe sg
+    exec_local modprobe sg
     return_code
 
     if [ -n "$scsifailover" ] && [ "$scsifailover" = "rdac" ]; then
@@ -129,19 +129,19 @@ function scsi_start() {
 
   if [ -n "${FC_MODULES}" ]; then
     echo_local -n "Loading $FC_MODULES"
-    exec_local /sbin/modprobe ${FC_MODULES}
+    exec_local modprobe ${FC_MODULES}
     return_code
   else
     echo_local -n "Loading all detected SCSI modules"
     for hostadapter in $(cat ${modules_conf} | awk '/scsi_hostadapter.*/ {print $3}'); do
-      exec_local /sbin/modprobe ${hostadapter}
+      exec_local modprobe ${hostadapter}
     done
     return_code
   fi
 
   if [ -n "$scsifailover" ] && [ "$scsifailover" = "rdac" ]; then
     echo_local "Loading mppVhba module"
-    exec_local /sbin/modprobe mppVhba
+    exec_local modprobe mppVhba
     return_code
     echo_local -n "Starting mpp hotadd script"
     exec_local /usr/sbin/hot_add
@@ -560,7 +560,10 @@ function sysctl_load() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.27  2009-02-25 10:36:39  marc
+# Revision 1.28  2009-02-27 10:33:51  marc
+# changed the calling of modprobe to use the function
+#
+# Revision 1.27  2009/02/25 10:36:39  marc
 # fixed bug with xennet hardware_detection
 #
 # Revision 1.26  2009/02/24 12:01:05  marc
