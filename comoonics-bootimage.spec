@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.93 2009-02-25 10:42:24 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.94 2009-02-27 08:43:52 marc Exp $
 #
 ##
 ##
@@ -58,7 +58,7 @@ Requires: comoonics-cluster-py >= 0.1-2
 Requires: comoonics-bootimage-initscripts >= 1.4 
 Requires: comoonics-bootimage-listfiles-all
 #Conflicts:
-Release: 6
+Release: 7
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -754,6 +754,8 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Tue Feb 27 2009 Marc Grimme <grimme@atix.de> 1.4-7
+- Backport to RHEL4
 * Wed Feb 25 2009 Marc Grimme <grimme@atix.de> 1.4-6
 - fixed bug in xen hardwaredetection
 - and rootfs and clutype in bootsr
@@ -1051,7 +1053,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.93  2009-02-25 10:42:24  marc
+# Revision 1.94  2009-02-27 08:43:52  marc
+# new version for bootimage (1.4-7)
+#
+# Revision 1.93  2009/02/25 10:42:24  marc
 # fixed bug with xennet hardware_detection
 #
 # Revision 1.92  2009/02/25 08:42:13  marc
