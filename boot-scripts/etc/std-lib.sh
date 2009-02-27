@@ -1,5 +1,5 @@
 #
-# $Id: std-lib.sh,v 1.6 2009-01-28 12:56:01 marc Exp $
+# $Id: std-lib.sh,v 1.7 2009-02-27 08:38:59 marc Exp $
 #
 # @(#)$File$
 #
@@ -62,7 +62,7 @@ function sourceLibs {
 
     # including all distribution dependent files
     local distribution=$(getDistribution)
-    local temp=( $(getDistributionList) )
+    temp=( $(getDistributionList) )
     local shortdistribution=${temp[0]}
     unset temp
 
@@ -778,7 +778,10 @@ function usage() {
 
 #################
 # $Log: std-lib.sh,v $
-# Revision 1.6  2009-01-28 12:56:01  marc
+# Revision 1.7  2009-02-27 08:38:59  marc
+# fixed bash strangeness with rhel4
+#
+# Revision 1.6  2009/01/28 12:56:01  marc
 # Many changes:
 # - moved some functions to std-lib.sh
 # - no "global" variables but repository
