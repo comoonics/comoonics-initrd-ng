@@ -7,6 +7,10 @@ IDEAS:
 CHANGES:
 
 comoonics-bootimage:
+- 27.02.2009 Release 1.4-8
+  * Bugfix in static hardware detection
+- 27.02.2009 Release 1.4-7
+  * Backport RHEL4
 - 25.02.2009 Release 1.4-6
   * fixed bug in xen hardware detection
   * fixed bug in bootsr with rootfs and clutype
@@ -279,7 +283,10 @@ TODO:
 ########################################
 # CVS-Log
 # $Log: CHANGELOG,v $
-# Revision 1.44  2009-02-25 10:44:50  marc
+# Revision 1.45  2009-02-27 10:35:30  marc
+# bugfix with static hardware detection
+#
+# Revision 1.44  2009/02/25 10:44:50  marc
 # new version for comoonics-bootimage
 #
 # Revision 1.43  2009/02/24 12:07:22  marc

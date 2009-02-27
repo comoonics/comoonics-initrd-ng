@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.73 2009-02-24 12:03:46 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.74 2009-02-27 10:34:10 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.73 2009-02-24 12:03:46 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.74 2009-02-27 10:34:10 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -79,7 +79,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.73 $ $Date: 2009-02-24 12:03:46 $'
+echo_local 'Internal Version $Revision: 1.74 $ $Date: 2009-02-27 10:34:10 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -156,7 +156,7 @@ sourceRootfsLibs ${predir}
 success
 
 # Just load nic drivers
-auto_netconfig $(cc_get_nic_drivers $(repository_get_value nodeid) $(repository_get_value nodename) $(repository_get_value cluster_conf))
+auto_netconfig $(cc_get_nic_drivers $(repository_get_value nodeid) $(repository_get_value nodename) "" $(repository_get_value cluster_conf))
 found_nics && udev_start # now we should be able to trigger this.
 found_nics && breakp $(errormsg err_hw_nicdriver)
 step "NIC modules loaded." "autonetconfig"
@@ -502,7 +502,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.73  2009-02-24 12:03:46  marc
+# Revision 1.74  2009-02-27 10:34:10  marc
+# bugfix with static hardware detection
+#
+# Revision 1.73  2009/02/24 12:03:46  marc
 # * added restricted hardwaredetection when drivers are specified
 #
 # Revision 1.72  2009/02/20 09:51:22  marc
