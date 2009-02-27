@@ -45,12 +45,12 @@ Name: comoonics-bootimage-initscripts
 Summary: Initscripts used by the OSR cluster environment.
 Version: 1.4
 BuildArch: noarch
-Requires: comoonics-bootimage >= 1.3-41 
+Requires: comoonics-bootimage >= 1.4-6
 # Requires: SysVinit-comoonics
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-fedora
 #Conflicts: 
-Release: 1.fedora
+Release: 2.fedora
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -150,6 +150,8 @@ done
 rm -rf %{buildroot}
 
 %changelog
+* Tue Feb 27 2009 Marc Grimme <grimme@atix.de> 1.4-2.fedora
+- Upstream from RHEL5
 * Mon Feb 02 2009 Marc Grimme <grimme@atix.de> 1.3-3.fedora
 - Bugfix in support for other filesystems
 * Tue Jan 29 2009  Marc Grimme <grimme@atix.de> 1.3.2-fedora

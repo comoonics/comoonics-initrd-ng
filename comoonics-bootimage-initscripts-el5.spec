@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.19 2009-02-18 18:06:59 marc Exp $
+# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.20 2009-02-27 08:42:26 marc Exp $
 #
 ##
 ##
@@ -45,13 +45,13 @@ Name: comoonics-bootimage-initscripts
 Summary: Initscripts used by the OSR cluster environment.
 Version: 1.4
 BuildArch: noarch
-Requires: comoonics-bootimage >= 1.3-1 
+Requires: comoonics-bootimage >= 1.4-6 
 Requires: SysVinit-comoonics
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-rhel
 Requires: comoonics-bootimage-listfiles-rhel5
 #Conflicts: 
-Release: 1.rhel5
+Release: 2.rhel5
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -174,7 +174,10 @@ rm -rf %{buildroot}
 - first revision
 # ------
 # $Log: comoonics-bootimage-initscripts-el5.spec,v $
-# Revision 1.19  2009-02-18 18:06:59  marc
+# Revision 1.20  2009-02-27 08:42:26  marc
+# fixed bug with halt and localfilesystems
+#
+# Revision 1.19  2009/02/18 18:06:59  marc
 # new version
 #
 # Revision 1.18  2009/02/04 09:22:18  marc
