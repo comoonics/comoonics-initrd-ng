@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.94 2009-02-27 08:43:52 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.95 2009-02-27 10:35:46 marc Exp $
 #
 ##
 ##
@@ -754,6 +754,8 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Tue Feb 27 2009 Marc Grimme <grimme@atix.de> 1.4-8
+- Bugfix in static hardware detection
 * Tue Feb 27 2009 Marc Grimme <grimme@atix.de> 1.4-7
 - Backport to RHEL4
 * Wed Feb 25 2009 Marc Grimme <grimme@atix.de> 1.4-6
@@ -1053,7 +1055,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.94  2009-02-27 08:43:52  marc
+# Revision 1.95  2009-02-27 10:35:46  marc
+# new version for bootimage (1.4-8)
+#
+# Revision 1.94  2009/02/27 08:43:52  marc
 # new version for bootimage (1.4-7)
 #
 # Revision 1.93  2009/02/25 10:42:24  marc
