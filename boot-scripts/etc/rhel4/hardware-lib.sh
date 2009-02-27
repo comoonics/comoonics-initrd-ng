@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.6 2008-08-14 13:32:46 marc Exp $
+# $Id: hardware-lib.sh,v 1.7 2009-02-27 08:38:22 marc Exp $
 #
 # @(#)$File$
 #
@@ -59,6 +59,11 @@ function rhel4_hardware_detect() {
   cp ${modules_conf} ${modules_conf}.tmpl
   cat ${modules_conf}.tmpl | sort -u > ${modules_conf}
 
+  for driver in $( awk '$2 ~ /^eth/ { print $3; }' < ${modules_conf} | sort -u); do
+  	exec_local modprobe $driver
+  done
+  unset driver
+
   return $return_c
 }
 #************ rhel4_hardware_detect 
@@ -80,7 +85,10 @@ function rhel4_udev_start() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.6  2008-08-14 13:32:46  marc
+# Revision 1.7  2009-02-27 08:38:22  marc
+# backport to rhel4
+#
+# Revision 1.6  2008/08/14 13:32:46  marc
 # - rewrote udevstart because would not work with kvm
 #
 # Revision 1.5  2007/12/07 16:39:59  reiner

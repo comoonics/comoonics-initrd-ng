@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.8 2008-08-14 13:33:04 marc Exp $
+# $Id: network-lib.sh,v 1.9 2009-02-27 08:38:22 marc Exp $
 #
 # @(#)$File$
 #
@@ -59,6 +59,7 @@ function rhel4_ip2Config() {
   local ipMAC=$6
   local type=$7
   local bridge=$8
+  local onboot=$9
 
   # reformating MAC from - to :
   ipMAC=${ipMAC//-/:}
@@ -86,7 +87,7 @@ function rhel4_ip2Config() {
 
     (echo "DEVICE=$ipDevice" &&
      echo "BOOTPROTO=$bootproto" &&
-     echo "ONBOOT=no" &&
+     echo "ONBOOT=$onboot" &&
      echo "TYPE=$type") > ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
     if [ -n "$ipMAC" ] && [ "$ipMAC" != "00:00:00:00:00:00" ]; then
     	echo "HWADDR=$ipMAC" >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
@@ -105,7 +106,7 @@ function rhel4_ip2Config() {
   else
     (echo "DEVICE=$ipDevice" &&
      echo "BOOTPROTO=none" &&
-     echo "ONBOOT=no" &&
+     echo "ONBOOT=$onboot" &&
      echo "MASTER=${master}" &&
      echo "SLAVE=${slave}" &&
      echo "TYPE=Ethernet") > ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
@@ -125,7 +126,10 @@ function rhel4_ip2Config() {
 
 #################
 # $Log: network-lib.sh,v $
-# Revision 1.8  2008-08-14 13:33:04  marc
+# Revision 1.9  2009-02-27 08:38:22  marc
+# backport to rhel4
+#
+# Revision 1.8  2008/08/14 13:33:04  marc
 # - rewrote briding
 # - fix mac bug
 #
