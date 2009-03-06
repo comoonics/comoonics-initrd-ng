@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.71 2009-03-06 13:22:03 marc Exp $
+# $Id: boot-lib.sh,v 1.72 2009-03-06 15:02:33 marc Exp $
 #
 # @(#)$File$
 #
@@ -823,12 +823,12 @@ function stop_service {
 #
 function clean_initrd() {
 	local procs="udevd"
-	echo_local_debug "Sending unnecessary processes the KILL signal"
+	echo_local_debug "Sending unnecessary processes the TERM signal"
 	for p in $procs; do
 		killall $p &> /dev/null
 	done
 	sleep 3
-	echo_local_debug "Sending unnecessary processes the TERM signal"
+	echo_local_debug "Sending unnecessary processes the KILL signal"
 	for p in $procs; do
 		killall -9 $p &> /dev/null
 	done
@@ -866,7 +866,10 @@ function ipaddress_from_dev() {
 #************ ipaddress_from_dev
 
 # $Log: boot-lib.sh,v $
-# Revision 1.71  2009-03-06 13:22:03  marc
+# Revision 1.72  2009-03-06 15:02:33  marc
+# fixed typos
+#
+# Revision 1.71  2009/03/06 13:22:03  marc
 # added removal of stale files
 #
 # Revision 1.70  2009/03/06 13:21:34  marc

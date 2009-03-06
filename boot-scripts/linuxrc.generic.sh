@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.75 2009-03-06 13:25:48 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.76 2009-03-06 15:03:02 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.75 2009-03-06 13:25:48 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.76 2009-03-06 15:03:02 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -79,7 +79,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.75 $ $Date: 2009-03-06 13:25:48 $'
+echo_local 'Internal Version $Revision: 1.76 $ $Date: 2009-03-06 15:03:02 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -117,7 +117,7 @@ if [ "$confirm" = "i" ]; then
 fi
 wait
 
-echo_local "Validating cluster configuration."
+echo_local -n "Validating cluster configuration."
 exec_local cc_validate
 return_code || breakp $(errormsg err_cc_validate)
 step "Successfully validated cluster configuration" "ccvalidate"
@@ -501,7 +501,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.75  2009-03-06 13:25:48  marc
+# Revision 1.76  2009-03-06 15:03:02  marc
+# fixed typos
+#
+# Revision 1.75  2009/03/06 13:25:48  marc
 # - removed initial start of udev as it should be started implicitly on demand
 # - fixed bug in network setup because devices would have been created multiple times
 # - some typos
