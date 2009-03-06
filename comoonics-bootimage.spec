@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.95 2009-02-27 10:35:46 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.96 2009-03-06 13:27:26 marc Exp $
 #
 ##
 ##
@@ -58,7 +58,7 @@ Requires: comoonics-cluster-py >= 0.1-2
 Requires: comoonics-bootimage-initscripts >= 1.4 
 Requires: comoonics-bootimage-listfiles-all
 #Conflicts:
-Release: 7
+Release: 11
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -754,6 +754,14 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Fri Mar 06 2009 Marc Grimme <grimme@atix.de> 1.4-11
+- Udevd will be started implicitly
+- Fixed bug in network setup because NICs would be detected multiple times
+- Some typos
+* Tue Feb 27 2009 Marc Grimme <grimme@atix.de> 1.4-10
+- Bugfix in network power up order (vlan/bridges)
+* Tue Feb 27 2009 Marc Grimme <grimme@atix.de> 1.4-9
+- Bugfix in amount of nics being powered up
 * Tue Feb 27 2009 Marc Grimme <grimme@atix.de> 1.4-8
 - Bugfix in static hardware detection
 * Tue Feb 27 2009 Marc Grimme <grimme@atix.de> 1.4-7
@@ -1055,7 +1063,12 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.95  2009-02-27 10:35:46  marc
+# Revision 1.96  2009-03-06 13:27:26  marc
+# - removed initial start of udev as it should be started implicitly on demand
+# - fixed bug in network setup because devices would have been created multiple times
+# - some typos
+#
+# Revision 1.95  2009/02/27 10:35:46  marc
 # new version for bootimage (1.4-8)
 #
 # Revision 1.94  2009/02/27 08:43:52  marc

@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.74 2009-02-27 10:34:10 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.75 2009-03-06 13:25:48 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.74 2009-02-27 10:34:10 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.75 2009-03-06 13:25:48 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -79,7 +79,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.74 $ $Date: 2009-02-27 10:34:10 $'
+echo_local 'Internal Version $Revision: 1.75 $ $Date: 2009-03-06 13:25:48 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -121,11 +121,6 @@ echo_local "Validating cluster configuration."
 exec_local cc_validate
 return_code || breakp $(errormsg err_cc_validate)
 step "Successfully validated cluster configuration" "ccvalidate"
-
-echo_local -n "Starting udev "
-exec_local udev_start
-return_code
-step "Udev Started" "udev"
 
 if [ -z "$simulation" ] || [ "$simulation" -ne 1 ]; then
   num_names=$(cc_get_nic_names "" "" "" $(repository_get_value cluster_conf) | wc -w)
@@ -193,7 +188,6 @@ fi
 clusterfs_chroot_needed initrd
 __default=$?
 getParameter chrootneeded $__default &>/dev/null
-success
 
 _ipConfig=$(cluster_ip_config $(repository_get_value cluster_conf) $(repository_get_value nodename))
 [ -n "$_ipConfig" ] && ( [ -z "$(repository_get_value ipConfig)" ] || [ "$(repository_get_value ipConfig)" = "cluster" ] ) && repository_store_value ipConfig "$_ipConfig"
@@ -243,24 +237,29 @@ bridgeipconfig=""
 vlanipconfig=""
 networkipconfig=""
 _ipconfig=""
+__ipconfig=""
 for ipconfig in $(repository_get_value ipConfig); do
   dev=$(getPosFromIPString 6, $ipconfig)
   hwids=$(repository_get_value hardwareids)
-  echo_local "Creating network configuration for $dev"
-  _ipconfig="$_ipconfig "$(nicConfig $ipconfig "$hwids")
-  type=$(getPosFromIPString 8, $1)
-  if [ "$type" = "bridge" ]; then
-    bridgeipconfig="$bridgeipconfig $_ipconfig"
+  echo_local -n "Creating network configuration for $dev"
+  __ipconfig=$(nicConfig $ipconfig "$hwids")
+  _type=$(getPosFromIPString 8, $ipconfig)
+  if [ "$_type" = "bridge" ]; then
+    bridgeipconfig="$bridgeipconfig $__ipconfig"
   elif [[ "$dev" =~ "[a-z]+[0-9]+\.[0-9]+" ]]; then
-    vlanipconfig="$vlanipconfig $_ipconfig"
+    vlanipconfig="$vlanipconfig $__ipconfig"
   else
-    networkipconfig="$networkipconfig $_ipconfig"
+    networkipconfig="$networkipconfig $__ipconfig"
   fi
   if [ $? -ne 0 ]; then
 	breakp $(err_nic_config)
   fi
+  _ipconfig="$_ipconfig "$__ipconfig
   return_code $?
 done
+unset _type
+unset __ipconfig
+#echo_local_debug "network: $networkipconfig, vlan: $vlanipconfig, bridge: $bridgeipconfig"
 repository_store_value ipConfig "$_ipconfig"
 step "Network configuration finished" "netconfig"
 
@@ -381,11 +380,11 @@ if [ -z "$(repository_get_value quorumack)" ]; then
 	echo_local "         Otherwise you'll risk split brain with data inconsistency !!!"
 
 	confirm="XXX"
-	until [ $confirm = "YES" ] || [ $confirm = "NO" ]; do
+	until [ "$confirm" = "YES" ] || [ "$confirm" = "NO" ]; do
   		echo_local "USER INPUT: (YES|NO): "
   		read confirm
   		echo_local_debug "confirm: $confirm"
-  		if [ $confirm = "NO" ]; then
+  		if [ "$confirm" = "NO" ]; then
   			breakp "Cluster not acknowledged. Falling back to shell"
   		fi
   	done
@@ -502,7 +501,12 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.74  2009-02-27 10:34:10  marc
+# Revision 1.75  2009-03-06 13:25:48  marc
+# - removed initial start of udev as it should be started implicitly on demand
+# - fixed bug in network setup because devices would have been created multiple times
+# - some typos
+#
+# Revision 1.74  2009/02/27 10:34:10  marc
 # bugfix with static hardware detection
 #
 # Revision 1.73  2009/02/24 12:03:46  marc
