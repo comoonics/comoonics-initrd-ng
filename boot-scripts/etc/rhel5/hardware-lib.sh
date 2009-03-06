@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.10 2009-02-20 09:50:24 marc Exp $
+# $Id: hardware-lib.sh,v 1.11 2009-03-06 13:20:51 marc Exp $
 #
 # @(#)$File$
 #
@@ -75,18 +75,18 @@ function rhel5_udev_start() {
 #      /sbin/modprobe sg
 
       udevd -d
-#	  udevtrigger
-	else
-      udevtrigger
-      udevsettle
 	fi
-    
+    udevtrigger
+    udevsettle
 }
 #************rhel5_udev_start
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.10  2009-02-20 09:50:24  marc
+# Revision 1.11  2009-03-06 13:20:51  marc
+# start udev implicitly
+#
+# Revision 1.10  2009/02/20 09:50:24  marc
 # added udevsettle
 #
 # Revision 1.9  2009/01/29 15:56:25  marc

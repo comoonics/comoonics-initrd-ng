@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.3 2009-02-20 09:50:42 marc Exp $
+# $Id: hardware-lib.sh,v 1.4 2009-03-06 13:20:39 marc Exp $
 #
 # @(#)$File$
 #
@@ -57,11 +57,9 @@ function fedora9_udev_start() {
 #      /sbin/modprobe sg
 
       udevd -d # &&
-#	  udevtrigger
-	else
-      udevtrigger
-      udevsettle
 	fi
+    udevtrigger
+    udevsettle
 }
 #************rhel5_udev_start
 
@@ -86,7 +84,10 @@ function fedora9_udev_stop() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.3  2009-02-20 09:50:42  marc
+# Revision 1.4  2009-03-06 13:20:39  marc
+# start udev implicitly
+#
+# Revision 1.3  2009/02/20 09:50:42  marc
 # added udevsettle
 #
 # Revision 1.2  2009/01/29 15:55:16  marc

@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.1 2008-08-14 13:30:52 marc Exp $
+# $Id: hardware-lib.sh,v 1.2 2009-03-06 13:21:04 marc Exp $
 #
 # @(#)$File$
 #
@@ -109,17 +109,18 @@ function sles10_hardware_detect() {
 function sles10_udev_start() {
 	if ! killall -0 udevd; then
 		udevd -d &&
-		udevtrigger
-	else
-		udevtrigger
 	fi
-    
+	udevtrigger
+	udevsettle    
 }
 #************sles10_udev_start
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.1  2008-08-14 13:30:52  marc
+# Revision 1.2  2009-03-06 13:21:04  marc
+# start udev implicitly
+#
+# Revision 1.1  2008/08/14 13:30:52  marc
 # initial revision
 #
 # Revision 1.2  2007/12/07 16:40:00  reiner
