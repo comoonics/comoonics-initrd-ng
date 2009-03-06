@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.28 2009-02-27 10:33:51 marc Exp $
+# $Id: hardware-lib.sh,v 1.29 2009-03-06 13:22:47 marc Exp $
 #
 # @(#)$File$
 #
@@ -410,7 +410,7 @@ function hardware_detect() {
 	modules="$modules xennet"
   elif [ -n "$drivers" ]; then
     for driver in $drivers; do
-    	exec_local modprobe $driver
+    	exec_local modprobe -q $driver 2>/dev/null
     done
   else 
     ${distribution}_hardware_detect
@@ -427,11 +427,11 @@ function hardware_detect() {
   	  if [ -n "$modules" ]; then
   	    for _smodule in $modules; do
   		  if [ $_module != $_smodule ]; then
-  	        exec_local rmmod $_module
+  	        exec_local modprobe -r -q $_module
   		  fi
   	    done
   	  else
-        exec_local rmmod $_module
+        exec_local modprobe -q -r $_module
       fi
     done
     _modules=$(listmodules | sort)
@@ -560,7 +560,10 @@ function sysctl_load() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.28  2009-02-27 10:33:51  marc
+# Revision 1.29  2009-03-06 13:22:47  marc
+# always call modprobe instead of anything else
+#
+# Revision 1.28  2009/02/27 10:33:51  marc
 # changed the calling of modprobe to use the function
 #
 # Revision 1.27  2009/02/25 10:36:39  marc
