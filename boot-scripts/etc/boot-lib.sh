@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.69 2009-02-18 17:55:05 marc Exp $
+# $Id: boot-lib.sh,v 1.70 2009-03-06 13:21:34 marc Exp $
 #
 # @(#)$File$
 #
@@ -698,6 +698,11 @@ function switchRoot() {
   cmd=$(echo find / -xdev ! \\\( -regex \"$skipfiles\" \\\) -exec 'rm {}' '\;')
 
   eval $cmd > /dev/null 2>&1
+  
+  # It happens that sometimes a lockfile is being left over by udev or the initprocess. 
+  # So we'll remove any stale lockfile either in /dev or /var/lock/subsys
+  find ${newroot}/var/lock/subsys -type f -delete 2>/dev/null
+  find ${newroot}/dev -name ".*.lock" -or -name "*.lock" 2>/dev/null
 
   cd ${newroot}
   # TODO
@@ -861,7 +866,10 @@ function ipaddress_from_dev() {
 #************ ipaddress_from_dev
 
 # $Log: boot-lib.sh,v $
-# Revision 1.69  2009-02-18 17:55:05  marc
+# Revision 1.70  2009-03-06 13:21:34  marc
+# added removal of stale files
+#
+# Revision 1.69  2009/02/18 17:55:05  marc
 # setup default syslog file
 #
 # Revision 1.68  2009/01/28 12:51:23  marc
