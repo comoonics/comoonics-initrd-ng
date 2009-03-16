@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.18 2009-02-20 09:49:42 marc Exp $
+# $Id: gfs-lib.sh,v 1.19 2009-03-16 19:23:54 marc Exp $
 #
 # @(#)$File$
 #
@@ -266,8 +266,13 @@ function gfs_start_fenced {
                  > /dev/null 2>&1 )
     return_c=$?
   else
+    fence_tool -h | grep -- '-m' > /dev/null 2>&1
+    # fence_tool -m is not supported from RHEL5.2 down so we need to check (ABI compatibility)
+    if [ $? -eq 0 ]; then
+    	fence_tool_opts="$fence_tool_opts -m $FENCED_MEMBER_DELAY"
+    fi    
     errors="$errors\n"$( chroot $chroot_path /sbin/fence_tool $fence_tool_opts -w -t $FENCED_START_TIMEOUT \
-                 -m $FENCED_MEMBER_DELAY join \
+                 join \
                  > /dev/null 2>&1 )
     return_c=$?
   fi
@@ -324,7 +329,10 @@ function gfs_start_cman {
 
 ###############
 # $Log: gfs-lib.sh,v $
-# Revision 1.18  2009-02-20 09:49:42  marc
+# Revision 1.19  2009-03-16 19:23:54  marc
+# fix for bug #335 fence_tool -m
+#
+# Revision 1.18  2009/02/20 09:49:42  marc
 # added nodename option to cman_tool join.
 #
 # Revision 1.17  2009/02/08 13:14:07  marc
