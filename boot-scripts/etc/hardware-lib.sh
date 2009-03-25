@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.29 2009-03-06 13:22:47 marc Exp $
+# $Id: hardware-lib.sh,v 1.30 2009-03-25 13:52:14 marc Exp $
 #
 # @(#)$File$
 #
@@ -92,6 +92,20 @@ function dev_start() {
     return_code
 }
 #************dev_start
+
+#****f* boot-lib.sh/scsi_get_drivers
+#  NAME
+#    scsi_get_drivers
+#  SYNOPSIS
+#    function scsi_get_drivers() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function scsi_get_drivers {
+	echo "sd[-_]mod sg libata scsi[-_]transport_fc sata[-_]svw sata[-_]mv scsi[-_]mod"
+}
+#************ scsi_get_drivers
 
 #****f* boot-lib.sh/scsi_start
 #  NAME
@@ -207,6 +221,20 @@ function dm_mp_start() {
 }
 #************ dm_mp_start
 
+#****f* boot-lib.sh/usb_get_drivers
+#  NAME
+#    usb_get_drivers
+#  SYNOPSIS
+#    function usb_get_drivers() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function usb_get_drivers {
+	echo "ehci_hcd ohci_hcd uhci_hcd hidp"
+}
+#************ usb_get_drivers
+
 #****f* boot-lib.sh/usbLoad
 #  NAME
 #    usbLoad
@@ -217,7 +245,7 @@ function dm_mp_start() {
 #  SOURCE
 #
 function usbLoad() {
-	modules="ehci_hcd ohci_hcd uhci_hcd hidp"
+	local modules=$(usb_get_drivers)
 	for module in modules; do
 		grep $module /proc/modules >/dev/null 2>/dev/null && modprobe $module
 	done
@@ -227,7 +255,7 @@ function usbLoad() {
 	fi
 	return 0
 }
-#************ dm_mp_start
+#************ usbLoad
 
 #****f* boot-lib.sh/dm_start
 #  NAME
@@ -248,15 +276,28 @@ function dm_start {
    #mkdir /dev/shm
 
    echo_local -n "Loading device mapper modules"
-   exec_local modprobe dm_mod >/dev/null 2>&1 &&
-   exec_local modprobe dm-mirror  >/dev/null 2>&1 &&
-   exec_local modprobe dm-mirror >/dev/null 2>&1 &&
-   exec_local modprobe dm-snapshot >/dev/null 2>&1
+   for module in $(dm_get_drivers); do
+      exec_local modprobe $module >/dev/null 2>&1
+   done
    return_code $?
 
    #/sbin/udevstart
 }
 #************ dm_start
+
+#****f* boot-lib.sh/dm_get_drivers
+#  NAME
+#    dm_get_drivers
+#  SYNOPSIS
+#    function dm_get_drivers() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function dm_get_drivers {
+	echo "dm_mod dm-mirror dm-snapshot dm-multipath"
+}
+#************ dm_get_drivers
 
 #****f* boot-lib.sh/md_start
 #  NAME
@@ -299,6 +340,7 @@ function lvm_check {
     fi
 	return 0
 }
+#************* lvm_check
 
 #****f* boot-lib.sh/lvm_start
 #  NAME
@@ -536,6 +578,36 @@ function add_scsi_device() {
 function validate_storage() {
 	return 0
 }
+#************ validate_storage
+
+#****f* boot-lib.sh/storage_get_drivers
+#  NAME
+#    storage_get_drivers
+#  SYNOPSIS
+#    function storage_get_drivers() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function storage_get_drivers {
+	scsi_get_drivers
+	dm_get_drivers
+}
+#************ storage_get_drivers
+
+#****f* boot-lib.sh/get_default_drivers
+#  NAME
+#    get_default_drivers
+#  SYNOPSIS
+#    function get_default_drivers() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function get_default_drivers {
+	echo "$DEFAULT_MODULES"
+}
+#************ get_default_drivers
 
 #****f* boot-lib.sh/sysctl_load
 #  NAME
@@ -560,7 +632,10 @@ function sysctl_load() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.29  2009-03-06 13:22:47  marc
+# Revision 1.30  2009-03-25 13:52:14  marc
+# - added get_drivers functions to return modules in more general
+#
+# Revision 1.29  2009/03/06 13:22:47  marc
 # always call modprobe instead of anything else
 #
 # Revision 1.28  2009/02/27 10:33:51  marc

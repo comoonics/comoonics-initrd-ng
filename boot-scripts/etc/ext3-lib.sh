@@ -1,5 +1,5 @@
 #
-# $Id: ext3-lib.sh,v 1.6 2009-02-18 18:01:14 marc Exp $
+# $Id: ext3-lib.sh,v 1.7 2009-03-25 13:51:00 marc Exp $
 #
 # @(#)$File$
 #
@@ -56,6 +56,19 @@ function ext3_load {
   return $return_c
 }
 #************ ext3_load
+
+#****f* clusterfs-lib.sh/ext3_get_drivers
+#  NAME
+#    ext3_get_drivers
+#  SYNOPSIS
+#    function ext3_get_drivers()
+#  DESCRIPTION
+#    Returns the all drivers for this clusterfs. 
+#  SOURCE
+function ext3_get_drivers {
+	echo "ext3 jbd"
+}
+#*********** ext3_get_drivers
 
 #****f* ext3-lib.sh/ext3_services_start
 #  NAME
@@ -204,7 +217,10 @@ function ext3_fsck {
 #********* ext3_fsck
 
 # $Log: ext3-lib.sh,v $
-# Revision 1.6  2009-02-18 18:01:14  marc
+# Revision 1.7  2009-03-25 13:51:00  marc
+# - added get_drivers functions to return modules in more general
+#
+# Revision 1.6  2009/02/18 18:01:14  marc
 # added restart_newroot, fsck
 #
 # Revision 1.5  2009/01/28 12:53:02  marc

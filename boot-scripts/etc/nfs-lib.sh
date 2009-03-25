@@ -1,5 +1,5 @@
 #
-# $Id: nfs-lib.sh,v 1.10 2009-02-24 12:03:04 marc Exp $
+# $Id: nfs-lib.sh,v 1.11 2009-03-25 13:52:35 marc Exp $
 #
 # @(#)$File$
 #
@@ -226,6 +226,19 @@ function nfs_getdefaults {
 }
 #********** clusterfs_getdefaults
 
+#****f* clusterfs-lib.sh/nfs_get_drivers
+#  NAME
+#    nfs_get_drivers
+#  SYNOPSIS
+#    function nfs_get_drivers()
+#  DESCRIPTION
+#    Returns the all drivers for this clusterfs. 
+#  SOURCE
+function nfs_get_drivers {
+	echo "sunrpc nfs lockd fscache nfs_acl"
+}
+#*********** nfs_get_drivers
+
 #****f* nfs-lib.sh/nfs_load
 #  NAME
 #    nfs_load
@@ -238,7 +251,7 @@ function nfs_getdefaults {
 #
 function nfs_load {
 
-  local NFS_MODULES="sunrpc"
+  local NFS_MODULES="$(nfs_get_drivers)"
 
   echo_local -n "Loading NFS modules ($NFS_MODULES)..."
   for module in ${NFS_MODULES}; do
@@ -451,7 +464,10 @@ function nfs_init {
 #********* nfs_init
 
 # $Log: nfs-lib.sh,v $
-# Revision 1.10  2009-02-24 12:03:04  marc
+# Revision 1.11  2009-03-25 13:52:35  marc
+# - added get_drivers functions to return modules in more general
+#
+# Revision 1.10  2009/02/24 12:03:04  marc
 # removed obsolete nfslock module.
 #
 # Revision 1.9  2009/02/18 18:03:42  marc
