@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.61 2009-02-24 20:37:20 marc Exp $
+# $Id: gfs-lib.sh,v 1.62 2009-03-25 13:51:47 marc Exp $
 #
 # @(#)$File$
 #
@@ -656,7 +656,7 @@ function gfs_get_bridge_param {
 #    If node is left out all drivers will be returned. 
 #  SOURCE
 function gfs_get_nic_names {
-	gfs_get_nic_attrs name "$1" "$2" "$3" "$4"
+	gfs_get_node_attrs "name" "eth" "$1" "$2" "$3" "$4"
 }
 #*********** gfs_get_nic_names
 
@@ -670,34 +670,49 @@ function gfs_get_nic_names {
 #    If node is left out all drivers will be returned. 
 #  SOURCE
 function gfs_get_nic_drivers {
-	gfs_get_nic_attrs driver "$1" "$2" "$3" "$4"
+	gfs_get_node_attrs "driver" "eth" "$1" "$2" "$3" "$4"
 }
 #*********** gfs_get_nic_drivers
 
-#****f* clusterfs-lib.sh/gfs_get_nic_attrs
+#****f* clusterfs-lib.sh/gfs_get_nic_drivers
 #  NAME
-#    gfs_get_nic_attrs
+#    gfs_get_nic_drivers
 #  SYNOPSIS
-#    function gfs_get_nic_attrs(attr, nodeid, nodename, nicname, clusterconf)
+#    function gfs_get_nic_drivers(nodeid, nodename, name, clusterconf)
 #  DESCRIPTION
 #    Returns the nic drivers for the given node if specified in cluster configuration.
 #    If node is left out all drivers will be returned. 
 #  SOURCE
-function gfs_get_nic_attrs {
+function gfs_get_all_drivers {
+	gfs_get_node_attrs "driver" "" "$1" "$2" "$3" "$4"
+}
+#*********** gfs_get_nic_drivers
+
+#****f* clusterfs-lib.sh/gfs_get_node_attrs
+#  NAME
+#    gfs_get_node_attrs
+#  SYNOPSIS
+#    function gfs_get_node_attrs(attr, subpath, nodeid, nodename, name, clusterconf)
+#  DESCRIPTION
+#    Returns the drivers for the given node if specified in cluster configuration.
+#    If node is left out all drivers will be returned. 
+#  SOURCE
+function gfs_get_node_attrs {
   local attr=$1
-  local nodeid=$2
-  local nodename=$3
-  local nicname=$4
-  local xml_file=$5
+  local subpath=$2
+  local nodeid=$3
+  local nodename=$4
+  local name=$5
+  local xml_file=$6
   
   local xml_cmd="${ccs_xml_query}"
-  local nic_query=""
-  if [ -n "$nicname" ]; then
-  	nic_query="[@name=\"$nicname\"]"
+  local query=""
+  if [ -n "$name" ]; then
+  	subquery="[@name=\"$name\"]"
   fi
-  local query="/cluster/clusternodes/clusternode[@name=\"$nodename\" or @nodeid=\"$nodeid\"]/com_info/eth$nic_query/@$attr"
+  local query="/cluster/clusternodes/clusternode[@name=\"$nodename\" or @nodeid=\"$nodeid\"]/com_info/${sub_path}$subquery/@$attr"
   if [ -z "$nodeid" ] && [ -z "$nodename" ]; then
-  	query="/cluster/clusternodes/clusternode/com_info/eth$nic_query/@$attr"
+    query="/cluster/clusternodes/clusternode/com_info/${subpath}$subquery/@$attr"
   fi
   local out=$($xml_cmd -f $xml_file query_value "$query")
   if [ -z "$out" ]; then
@@ -706,7 +721,20 @@ function gfs_get_nic_attrs {
     echo $out
   fi
 }
-#*********** gfs_get_nic_attrs
+#*********** gfs_get_node_attrs
+
+#****f* clusterfs-lib.sh/gfs_get_drivers
+#  NAME
+#    gfs_get_drivers
+#  SYNOPSIS
+#    function gfs_get_drivers()
+#  DESCRIPTION
+#    Returns the all drivers for this clusterfs. 
+#  SOURCE
+function gfs_get_drivers {
+	echo "dlm lock_dlm gfs configfs lock_nolock"
+}
+#*********** gfs_get_drivers
 
 #****f* gfs-lib.sh/gfs_load
 #  NAME
@@ -1269,7 +1297,11 @@ function gfs_fsck {
 #********* gfs_fsck
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.61  2009-02-24 20:37:20  marc
+# Revision 1.62  2009-03-25 13:51:47  marc
+# - added get_drivers functions to return modules in more general
+# - implemented function to get drivers specified in initrd in more general
+#
+# Revision 1.61  2009/02/24 20:37:20  marc
 # rollback to older version
 #
 # Revision 1.60  2009/02/24 11:59:21  marc
