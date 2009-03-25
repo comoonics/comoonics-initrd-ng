@@ -1,5 +1,5 @@
 #
-# $Id: chroot-lib.sh,v 1.7 2009-02-08 14:23:08 marc Exp $
+# $Id: chroot-lib.sh,v 1.8 2009-03-25 13:49:06 marc Exp $
 #
 # @(#)$File$
 #
@@ -136,14 +136,14 @@ function get_filelist_from_installed_rpm() {
   fi
   #for filename in $(rpm -ql $qopt $rpm | grep -e "$filter"); do
   # get all rpms that match filter without docs
-  for filename in $(rpm -q $qopt $rpm --dump | grep -e "$filter1" | grep -v "$filter2" | awk ' $9~0 {print $1}'); do
+  for filename in $(rpm -q $qopt $rpm --dump | awk ' $9~0 {print $1}' | grep -e "$filter1" | grep -v "$filter2" | apply_global_filters); do
   	if [ -n "$filename" ] && [ ${filename:0:5} != "/proc" ] && [ ${filename:0:4} != "proc" ]; then
   	   echo $filename
   	   get_dependent_files $filename
   	fi
   done
 }
-#************ extract_installed_rpm
+#************ get_filelist_from_installed_rpm
 
 
 #****f* create-gfs-initrd-lib.sh/extract_all_rpms
@@ -168,7 +168,7 @@ function extract_all_rpms() {
     return 1
   fi
 
-  get_all_rpms_dependent $rpm_listfile $verbose | while read line; do
+  resolve_file $rpm_listfile $verbose | while read line; do
   	rpmdef=( $line )
   	rpm=${rpmdef[0]}
 	filter1=${rpmdef[1]}
@@ -198,15 +198,18 @@ function extract_all_rpms() {
 #
 function get_filelist_from_rpms() {
   local rpm_listfile=$1
-  local verbose=$2
+  local globalfilters_file=$2
+  local verbose=$3
   local -a rpmdef
-  local rpm
+  local rpm=""
   if [ ! -e "$rpm_listfile" ]; then
     echo "Cannot find rpmlistfile \"$rpm_listfile\". Exiting." >&2
     return 1
   fi
 
-  get_all_rpms_dependent $rpm_listfile $verbose | while read line; do
+  globalfilters=$(get_global_filters $globalfilters_file $verbose) 
+
+  resolve_file $rpm_listfile $verbose | while read line; do
   	rpmdef=( $line )
   	rpm=${rpmdef[0]}
 	filter1=${rpmdef[1]}
@@ -215,24 +218,78 @@ function get_filelist_from_rpms() {
       [ -n "$verbose" ] && echo "$rpm with filter $filter1 and ! $filter2" >&2
       get_filelist_from_installed_rpm $rpm $filter1 $filter2
     fi
-  done
+   done
 }
 #************ get_filelist_from_rpms
 
 
-
-#****f* create-gfs-initrd-lib.sh/get_all_rpms_dependent
+#****f* chroot-lib.sh/get_global_filters
 #  NAME
-#    get_all_rpms_dependent
+#    get_global_filters
 #  SYNOPSIS
-#    function get_all_rpms_dependent() {
-#  MODIFICATION HISTORY
-#  DOCUMENTATION
-#    Takes a filename as argument and pipes all files listed in this file to
-#    get_dependent_files.
+#    get_global_filters(globalfilters_file, [verbose]) {
+#  DESCRIPTION
+#    Gets all globally set filters from files
+#  IDEAS
 #  SOURCE
 #
-function get_all_rpms_dependent {
+function get_global_filters() {
+	local filterfile=$1
+	local verbose=$2
+	
+    resolve_file $filterfile
+}
+#************ get_global_filters
+
+#****f* chroot-lib.sh/apply_global_filters
+#  NAME
+#    apply_global_filters
+#  SYNOPSIS
+#    apply_global_filters() {
+#  DESCRIPTION
+#    applies all global filters to stdin line by line
+#  IDEAS
+#  SOURCE
+#
+function apply_global_filters {
+	local line=""
+	local applied=0
+	local applied2=0
+	while read line; do
+		if [ -z "$globalfilters" ] || [ "$globalfilters" = "" ]; then
+			echo $line
+		else	
+			applied=0
+			for filter in "$globalfilters"; do
+				echo $line | grep -v "$filter" 1>/dev/null 2>/dev/null
+				if [ $? -ne 0 ]; then
+					applied=1
+					applied2=1
+				fi
+			done
+			if [ $applied -ne 1 ]; then
+				echo $line
+			fi
+		fi
+	done
+	if [ $applied2 -eq 1 ]; then
+		return 1
+	fi
+}
+#************ apply_global_filters
+
+
+#****f* create-gfs-initrd-lib.sh/resolve_file
+#  NAME
+#    resolve_file
+#  SYNOPSIS
+#    function resolve_file() {
+#  MODIFICATION HISTORY
+#  DOCUMENTATION
+#    Takes a filename as argument and resolves it be ignoring comments and including @include tags.
+#  SOURCE
+#
+function resolve_file {
   local filename=$1
   local verbose=$2
   while read line; do
@@ -243,11 +300,11 @@ function get_all_rpms_dependent {
 	    include=${aline[@]:1}
 	    if [ -d "$include" ]; then
 	      for file in ${include}/*; do
-	        [ -n "$verbose" ] && echo "Including rpm $file" >&2
-            get_all_rpms_dependent $file $verbose
+	        [ -n "$verbose" ] && echo "Including file $file" >&2
+            resolve_file $file $verbose
           done
         elif [ -e "$include" ]; then
-	      get_all_rpms_dependent $include $verbose
+	      resolve_file $include $verbose
 	    else
           if [ "${include:0:2}" = '$(' ] || [ "${include:0:1}" = '`' ]; then
 	        [ -n "$verbose" ] && echo "Eval $include"  >&2
@@ -259,18 +316,18 @@ function get_all_rpms_dependent {
             files="$include"
 	      fi
           for file in $files; do
-  	        [ -n "$verbose" ] && echo "Including rpm $file" >&2
-            get_all_rpms_dependent $file $verbose
+  	        [ -n "$verbose" ] && echo "Including file $file" >&2
+            resolve_file $file $verbose
           done
         fi
       else
-        [ -n "$verbose" ] && echo "rpm $line" >&2
-        echo $line
+        [ -n "$verbose" ] && echo "line $line" >&2
+        echo "$line"
       fi
     fi
   done <$filename
 }
-#************get_all_rpms_dependent
+#************resolve_file
 
 ##****f* chroot-lib.sh/get_dependent_files
 #  NAME
@@ -436,4 +493,37 @@ function get_all_files_dependent() {
 }
 #************ get_all_files_dependent
 
+
+#****f* chroot-lib.sh/get_min_modules
+#  NAME
+#    get_min_modules
+#  SYNOPSIS
+#    function get_min_modules(module*) {
+#  MODIFICATION HISTORY
+#  DOCUMENTATION
+#    Returns a list of modules needed as minimum for the initrd. Those are modules loaded by
+#    by this node, modules in /etc/modprobe.conf and modules (@driver) specified in the 
+#    cluster configuration 
+#  SOURCE
+#
+function get_min_modules() {
+	local loaded_modules="/proc/modules"
+	echo $@
+    awk '{ sub("_", "[_-]", $1); print $1; }' $loaded_modules
+	awk '$1="alias" { print $3; }' $modules_conf
+	cc_get_all_drivers "" "" "" $(repository_get_value cluster_conf)
+	if clusterfs_blkstorage_needed $(repository_get_value rootfs); then
+		storage_get_drivers $(repository_get_value cluster_conf)
+	fi
+	get_default_drivers
+}
+#************ get_min_modules
+
+#####################
+# $Log: chroot-lib.sh,v $
+# Revision 1.8  2009-03-25 13:49:06  marc
+# - fixed BUG 338 (klogd not being started in initrd)
+# - added global filters to filter files from initrd
+# - cleanups
+#
 
