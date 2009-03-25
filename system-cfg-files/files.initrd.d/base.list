@@ -63,6 +63,9 @@ sleep
 sort
 strace
 syslogd
+klogd
+/etc/sysconfig/syslog
+/etc/syslog.conf
 tail
 tar
 tee
