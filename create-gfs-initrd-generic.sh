@@ -6,7 +6,7 @@
 #*******
 #!/bin/bash
 #
-# $Id: create-gfs-initrd-generic.sh,v 1.20 2009-02-24 12:10:44 marc Exp $
+# $Id: create-gfs-initrd-generic.sh,v 1.21 2009-03-25 13:55:20 marc Exp $
 #
 # @(#)$File$
 #
@@ -35,6 +35,7 @@ predir=$(dirname $0)/boot-scripts
 
 source $predir/etc/std-lib.sh
 sourceLibs $predir
+sourceRootfsLibs $predir
 source $(dirname $0)/create-gfs-initrd-lib.sh
 
 lockfile=/var/lock/mkinitrd
@@ -81,7 +82,7 @@ function getoptions() {
     while getopts UoRFVvhm:fd:s:r:b:l option ; do
 	case "$option" in
 	    v) # version
-		echo "$0 Version "'$Revision: 1.20 $'
+		echo "$0 Version "'$Revision: 1.21 $'
 		exit 0
 		;;
 	    h) # help
@@ -202,6 +203,10 @@ if [ -z "$dep_filename" ] || [ ! -e "$dep_filename" ]; then
   exit 1
 fi
 
+echo_local -n "Validating cluster configuration."
+exec_local cc_validate
+return_code || (failure && errormsg err_cc_validate && exit 10)
+
 if [ -z "$initramfs" ] || [ $initramfs -eq 0 ]; then
   echo -n "Makeing initrd ..."
   make_initrd $initrdname $size || (failure && rm $lockfile && exit $?)
@@ -216,7 +221,7 @@ fi
 if [ -n "$rpm_filename" ] && [ -e "$rpm_filename" ]; then
   echo -n "Extracting rpms..."
   #extract_all_rpms $rpm_filename $mountpoint $rpm_dir $verbose || echo "(WARNING)"
-  rpmfilelist=$(get_filelist_from_rpms $rpm_filename $verbose)
+  rpmfilelist=$(get_filelist_from_rpms $rpm_filename $filters_filename $verbose)
   success
 fi
 
@@ -272,15 +277,7 @@ for _kernel in ${kernel[@]}; do
 
   if [ -n "$light" ] && [ $light -eq 1 ]; then
 	# Only copy modules that are currently used or are specified in /etc/modprobe.conf
-	for module in `		(
-					lsmod |\
-						sed -e 's/ .*//' -e 's/_/\[_-\]/g' |\
-						grep -v "^Module$";
-					cat /etc/modprobe.conf |\
-						grep "alias" |\
-						awk '{print $3;}'
-				) |\
-			sort -u`;
+	for module in $( ( get_min_modules ) | sort -u);
 	do
 		for file in `find /lib/modules/$kernel -name "$module.ko"`; do
 			tar -chf - $file 2>/dev/null | tar -xf - -C ${mountpoint};
@@ -340,7 +337,10 @@ ls -lk $initrdname
 
 ##########################################
 # $Log: create-gfs-initrd-generic.sh,v $
-# Revision 1.20  2009-02-24 12:10:44  marc
+# Revision 1.21  2009-03-25 13:55:20  marc
+# - added global filters to filter files from initrd
+#
+# Revision 1.20  2009/02/24 12:10:44  marc
 # moved default lockfile
 # multiple kernel modules in initrd
 #
