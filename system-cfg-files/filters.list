@@ -1,0 +1,10 @@
+# $Id: rpms.list,v 1.6 2008/08/14 14:40:04 marc Exp $
+/usr/share/man/\.*
+/usr/share/doc/\.*
+/usr/share/locale/\.*
+[.]pyc$
+[.]pyo$
+@include $(ls -1 /etc/comoonics/bootimage/filters.initrd.d/*.list 2>/dev/null)
+@include $(ls -1 /etc/comoonics/bootimage/filters.initrd.d/*/*.list 2>/dev/null)
+#########
+# $Log: rpms.list,v $
