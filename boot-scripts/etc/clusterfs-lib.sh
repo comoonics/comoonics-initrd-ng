@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.33 2009-02-24 20:37:20 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.34 2009-03-25 13:50:26 marc Exp $
 #
 # @(#)$File$
 #
@@ -322,6 +322,38 @@ function cc_get_nic_drivers {
 }
 #*********** cc_get_nic_drivers
 
+#****f* clusterfs-lib.sh/cc_get_all_drivers
+#  NAME
+#    cc_get_all_drivers
+#  SYNOPSIS
+#    function cc_get_all_drivers(cluster_conf)
+#  DESCRIPTION
+#    Returns the all specified drivers for all nodes if specified in cluster configuration. 
+#  SOURCE
+function cc_get_all_drivers {
+  local clutype=$(repository_get_value clutype)
+  local rootfs=$(repository_get_value rootfs)
+  ${clutype}_get_all_drivers "$1" "$2" "$3" "$4"
+  cc_get_cluster_drivers
+  if [ "$clutype" != "$rootfs" ]; then 
+    clusterfs_get_drivers
+  fi
+}
+#*********** cc_get_all_drivers
+
+#****f* clusterfs-lib.sh/cc_get_cluster_drivers
+#  NAME
+#    cc_get_cluster_drivers
+#  SYNOPSIS
+#    function cc_get_cluster_drivers(cluster_conf)
+#  DESCRIPTION
+#    Returns the all drivers for this clustertype. 
+#  SOURCE
+function cc_get_cluster_drivers {
+  ${clutype}_get_drivers
+}
+#*********** cc_get_cluster_drivers
+
 #****f* clusterfs-lib.sh/cc_find_nodeid
 #  NAME
 #    cc_find_nodeid
@@ -517,8 +549,6 @@ function cc_get_mountopts {
   fi
 }
 #******** cc_get_mountopts
-
-
 
 #****f* clusterfs-lib.sh/cc_get_chroot_mountpoint
 #  NAME
@@ -777,10 +807,26 @@ function cc_syslog_start {
     if [ -z "$chrootpath" ]; then
     	start_service_f=""
     fi
-    
-    which syslogd >/dev/null
+
+    if [ -f /etc/sysconfig/syslog ] ; then
+        . /etc/sysconfig/syslog
+    else
+       SYSLOGD_OPTIONS="-m 0"
+       KLOGD_OPTIONS="-2"
+    fi
+
+    if [ -z "$SYSLOG_UMASK" ] ; then
+       SYSLOG_UMASK=077;
+    fi
+    umask $SYSLOG_UMASK
+   
+    which syslogd >/dev/null 2>/dev/null
     if [ $? -eq 0 ]; then
-    	$start_service_f syslogd -m 0
+    	$start_service_f syslogd $SYSLOGD_OPTIONS
+    fi
+    which klogd > /dev/null 2>/dev/null
+    if [ $? -eq 0 ]; then
+    	$start_service_f klogd $KLOGD_OPTIONS
     fi
 }
 #******** cc_syslog_start
@@ -1115,6 +1161,22 @@ function clusterfs_fsck {
 }
 #************* clusterfs_rootfs_needed
 
+#****f* clusterfs-lib.sh/clusterfs_get_drivers
+#  NAME
+#    clusterfs_get_drivers
+#  SYNOPSIS
+#    function clusterfs_get_drivers()
+#  DESCRIPTION
+#    Returns the all drivers for this clusterfs. 
+#  SOURCE
+function clusterfs_get_drivers {
+  local rootfs="$1"
+
+  [ -z "$rootfs" ] && rootfs=$(repository_get_value rootfs)
+  ${rootfs}_get_drivers
+}
+#*********** clusterfs_get_drivers
+
 #****f* clusterfs-lib.sh/copy_relevant_files
 #  NAME
 #    copy_relevant_files
@@ -1187,7 +1249,11 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.33  2009-02-24 20:37:20  marc
+# Revision 1.34  2009-03-25 13:50:26  marc
+# - added get_drivers functions to return modules in more general
+# - fixed Bug 338 (klogd not being started in initrd)
+#
+# Revision 1.33  2009/02/24 20:37:20  marc
 # rollback to older version
 #
 # Revision 1.32  2009/02/24 11:58:19  marc
