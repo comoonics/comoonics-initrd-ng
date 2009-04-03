@@ -1,12 +1,12 @@
+#!/bin/bash
 #****h* comoonics-bootimage/create-gfs-initrd-generic.sh
 #  NAME
 #    create-gfs-initrd-generic.sh
 #    $id$
 #  DESCRIPTION
 #*******
-#!/bin/bash
 #
-# $Id: create-gfs-initrd-generic.sh,v 1.21 2009-03-25 13:55:20 marc Exp $
+# $Id: create-gfs-initrd-generic.sh,v 1.22 2009-04-03 17:30:43 marc Exp $
 #
 # @(#)$File$
 #
@@ -48,7 +48,11 @@ TMPDIR=/tmp
 mountpoint=$(mktemp -d ${TMPDIR}/initrd.mnt.XXXXXX)
 #size=32768
 size=120000
-kernel[0]=$(uname -r)
+
+del_kernels=""
+update=
+index_list=".index.lst"
+modules=""
 
 initEnv
 
@@ -64,7 +68,37 @@ PATH=${PATH}:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin
 #  SOURCE
 #
 function usage() {
-  echo "$0 [-d dep_filename] [-s initrdsize] [-m mountpoint] [-r rpm-list-file] [-b build-date-file] [-V] [-F] [-R] [-o] [-U] [-l] initrdname kernel-version [kernel-version]"
+  cat <<USAGE_EOF
+$0 [-d dep_filename] [-s initrdsize] [-m mountpoint] [-r rpm-list-file] [-b build-date-file] 
+[-V] [-F] [-R] [-o] [-l] [-L] [-M module]* 
+[-U] [-A kernelversion]* [-D kernelversion]* 
+initrdname kernel-version [kernel-version]*
+
+This is the initrd ng tool. You should be able to build more complex and feature rich initrds. 
+Up to now it is mainly used for building sharedroot clusters but can be also used to build initrd
+for localfilesystems.
+
+-d dep_filename: use another depfile listing the files to be included
+-r rpm-list-file: use another depfile listing the rpms to be included
+-s initrdsize: specify another initrdsize. This option is only valid if initrd is build as memory filesystem.
+-m mountpoint: use a given "mountpoint" to build the initrd to
+-b build-date-file: overwrite the default setting for the builddate file
+-V: be more verbose
+-F: ignore lockfiles
+-R: don't remove the files added to the initrd afterwards
+-o: use old initrd format (ramfilesystem)
+
+-l: use lite initrd (only include necessary modules in initrd)
+-L: include all actually loaded modules into this initrd
+-M module : specify a module to be included in this initrd (can be specified multiple times)
+
+-U: switch to update modes
+-A kernelversion: add this kernelversion to this initrd (can be specified multiple times)
+-D kernelversion: remove this kernelversion from this initrd  (can be specified multiple times)
+
+initrdname: which file should be the initrd
+kernel-version: which kernel version should be included in this initrd (=-A) (can be specified multiple times) 
+USAGE_EOF
 }
 
 #************ usage
@@ -79,10 +113,10 @@ function usage() {
 #
 function getoptions() {
     local i=0
-    while getopts UoRFVvhm:fd:s:r:b:l option ; do
+    while getopts LUoRFVvhlm:fd:s:r:b:A:D: option ; do
 	case "$option" in
 	    v) # version
-		echo "$0 Version "'$Revision: 1.21 $'
+		echo "$0 Version "'$Revision: 1.22 $'
 		exit 0
 		;;
 	    h) # help
@@ -107,24 +141,37 @@ function getoptions() {
 	    b) # release file
 		build_file="$OPTARG"
 		;;
-            V) # verbose mode
-                verbose=1
-                ;;
-            F) # ignore locks
-               Force=1
-               ;;
-            o) # use old initrd method
-               initramfs=0
-               ;;
-            R) # don't remove temp dirs
-               no_remove_tmp=1
-	       ;;
-            U) # only update
-	       update=1
-               ;;
+        V) # verbose mode
+        verbose=1
+        ;;
+        F) # ignore locks
+        Force=1
+        ;;
+        o) # use old initrd method
+        initramfs=0
+        ;;
+        R) # don't remove temp dirs
+        no_remove_tmp=1
+	    ;;
+        U) # only update
+	    update=1
+        ;;
 	    l) # "light" initrd - only take used drivers
 		light=1
 		;;
+        A) # add kernel to initrd (only in update mode)
+        kernel[$i]=$OPTARG
+        i=$(( $i + 1 ))
+        ;;
+        D) # del kernel from initrd (only in update mode)
+        del_kernels="$del_kernels $OPTARG"
+        ;;
+        L) # include all loaded modules
+        modules="$modules "$(awk '{ print $1; }' /proc/modules)
+        ;;
+        M) # add a specific module
+        modules="$modules $OPTARG"
+        ;;
 	    *)
 		echo "Error wrong option."
 		exit 1
@@ -134,7 +181,7 @@ function getoptions() {
     shift $(($OPTIND - 1))
     initrdname=$1
     shift
-    [ -z "${kernel[$i]}" ] && kernel[$i]="$(uname -r)"
+#    [ -z "${kernel[$i]}" ] && kernel[$i]="$(uname -r)"
     while [ -n "$1" ]; do
       kernel[$i]=$1
       shift
@@ -159,7 +206,7 @@ if [ -z "$1" ]; then
   usage
   exit
 fi
-
+/etc/comoonics/bootimage/files.initrd.d/comoonics.list
 if [ ${1:0:1} = "--" ]; then
     echo "detected request for old version of mkinitrd."
     echo "Params: $*"
@@ -170,10 +217,14 @@ fi
 source ${cfg_file}
 getoptions $*
 
+if [ -z "$update" ] && [ -z "$kernel" ]; then
+  kernel[0]=$(uname -r)
+fi
+
 prgdir=${predir}
 
 if [ -e $lockfile ] && [ -z "$Force" ]; then
-  echo "Lockfile "$lockfile" exists. "
+  echo "L/etc/comoonics/bootimage/files.initrd.d/comoonics.listockfile "$lockfile" exists. "
   echo "Another $(basename $0) is running. Please check if another process is running or remove the lockfile.."
   echo "..or start with force mode."
   exit 1
@@ -196,11 +247,25 @@ fi
 #if [ -e $netenv_file ]; then . $netenv_file; fi
 
 if [ -z "$dep_filename" ] || [ ! -e "$dep_filename" ]; then
-  echo "No depfile given. A dep_file is required."
-  echo "Hint: Is the package comoonics-bootimage-listfiles-<distro> installed ?"
+  echo "No depfile given. A dep_file is required." >&2
+  echo "Hint: Is the package comoonics-bootimage-listfiles-<distro> installed ?" >&2
   usage
   rm $lockfile
   exit 1
+fi
+
+#if [ -z "$update" ] && ( [ -n "$kernel" ] || [ -n "$del_kernels" ] ); then
+#	echo "Add or delete kernels given but not update mode selected." >&2
+#	echo "Hint: You propably want to select update mode [-U]." >&2
+#	usage 
+#	rm $lockfile
+#	exit 2
+#fi
+
+if [ -z "$initramfs" ] || [ $initramfs -eq 0 ] && [ -n "$update" ]; then
+	echo "You selected updatemode with old initrd method <ramfs>." >&2
+	echo "This is not supported." >&2
+	exit 3
 fi
 
 echo_local -n "Validating cluster configuration."
@@ -217,24 +282,52 @@ if [ -z "$initramfs" ] || [ $initramfs -eq 0 ]; then
   success
 fi
 
-# extracting rpms
-if [ -n "$rpm_filename" ] && [ -e "$rpm_filename" ]; then
-  echo -n "Extracting rpms..."
-  #extract_all_rpms $rpm_filename $mountpoint $rpm_dir $verbose || echo "(WARNING)"
-  rpmfilelist=$(get_filelist_from_rpms $rpm_filename $filters_filename $verbose)
-  success
+map_paths=$(get_mappaths_from_depfiles $dep_filename)
+
+pushd $mountpoint >/dev/null 2>&1  	
+if [ -z "$update" ]; then
+  # extracting rpms
+  if [ -n "$rpm_filename" ] && [ -e "$rpm_filename" ]; then
+    echo -n "Extracting rpms..."
+    #extract_all_rpms $rpm_filename $mountpoint $rpm_dir $verbose || echo "(WARNING)"
+    rpmfilelist=$(get_filelist_from_rpms $rpm_filename $filters_filename $verbose)
+    success
+  fi
+
+  echo -n "Retrieving dependent files..."
+  # compiling marked perlfiles in this function
+  #dep_files=$(get_all_depfiles $dep_filename $verbose)
+  filelist=$(get_all_files_dependent $dep_filename $verbose)
+  files=( $( ( echo $rpmfilelist; echo $filelist ) | tr ' ' '\n'| sort -u | grep -v "^.$" | grep -v "^..$" | tr '&' '\n') ) 
+  echo ${files[@]} | tr ' ' '\n' > ${mountpoint}/file-list.txt
+#  create_filelist $mountpoint > ${mountpoint}/$index_list
+  echo -n "found "${#files[@]}" files" && success
+else
+  echo -n "Unpacking initrd => ${mountpoint} .."
+  unzip_and_uncpio_initrd $mountpoint $initrdname $force
+  if [ ! -e "${mountpoint}/$index_list" ]; then
+  	echo "Could not find valid index file."
+  	echo -n "Autocreating index file .."
+    create_filelist $mountpoint > ${mountpoint}/$index_list || (failure; echo "Could not create index file. Breaking." >&2; exit 5)
+    success
+  fi
+  files=( $(PYTHONPATH=${predir}/etc python -c '
+import stdlib
+stdlib.get_files_newer(open("'$index_list'"), 
+          { '$(create_python_dict_from_mappaths $(get_mappaths_from_depfiles $dep_filename))'
+          	 "/":"/"} )') )
+  if [ $? -ne 0 ]; then
+    rm -rf ${mountpoint}/*
+    rm $lockfile
+    exit 11
+  fi
+  echo "Files to update "${#files[@]}
+  if [ -n "$verbose" ]; then
+    echo ${files[@]} | tr ' ' '\n'
+  fi
 fi
 
-echo -n "Retrieving dependent files..."
-# compiling marked perlfiles in this function
-#dep_files=$(get_all_depfiles $dep_filename $verbose)
-filelist=$(get_all_files_dependent $dep_filename $verbose)
-files=( $( ( echo $rpmfilelist; echo $filelist ) | tr ' ' '\n'| sort -u | grep -v "^.$" | grep -v "^..$" | tr '&' '\n') ) 
-echo ${files[@]} | tr ' ' '\n' > ${mountpoint}/file-list.txt
-echo -n "found ${#files[@]}" && success
-
 echo -n "Copying files..."
-cd $mountpoint
 i=0
 while [ $i -lt ${#files[@]} ]; do
   file=${files[$i]}
@@ -258,6 +351,17 @@ while [ $i -lt ${#files[@]} ]; do
       create_dir ${mountpoint}$todir
       copy_file $file ${mountpoint}$todir
     fi
+  elif [ ! -e "$file" ] && [ "$file" = '@mapfile' ]; then
+    i=$(( $i+1 ))
+    file=${files[$i]}
+    i=$(( $i+1 ))
+    fromdir=${files[$i]}
+    i=$(( $i+1 ))
+    todir=${files[$i]}
+    subpath=$(dirname ${file#${fromdir}})
+    [ -n "$verbose" ] && echo "File mapping ${file}#${fromdir} => ${mountpoint}/$todir/$subpath"
+    create_dir ${mountpoint}/$todir/$subpath
+    copy_file $file ${mountpoint}/$todir/$subpath
   else
     dirname=`dirname $file`
     create_dir ${mountpoint}$dirname
@@ -267,29 +371,47 @@ while [ $i -lt ${#files[@]} ]; do
 done
 success
 
-# copying kernel modules
-for _kernel in ${kernel[@]}; do
-  echo -n "Copying kernelmodules ($_kernel)..."
-
-  if [ ! -d ${mountpoint}/lib/modules/$_kernel ]; then
-    mkdir -p ${mountpoint}/lib/modules
+if [ -z "$update" ] || [ -n "$kernel" ]; then
+  # first remove any kernel already specified
+  if [ -n "$del_kernels" ]; then
+  	for del_kernel in $del_kernels; do
+  	  echo -n "Removing kernel $del_kernel"
+  	  if [ -d ${mountpoint}/lib/modules/$del_kernel ]; then
+  	    rm -rf ${mountpoint}/lib/modules/$del_kernel
+  	  fi
+  	  success
+  	done
   fi
+  # copying kernel modules
+  for _kernel in ${kernel[@]}; do
+    echo -n "Copying kernelmodules ($_kernel)..."
 
-  if [ -n "$light" ] && [ $light -eq 1 ]; then
-	# Only copy modules that are currently used or are specified in /etc/modprobe.conf
-	for module in $( ( get_min_modules ) | sort -u);
-	do
-		for file in `find /lib/modules/$kernel -name "$module.ko"`; do
+    if [ ! -d ${mountpoint}/lib/modules/$_kernel ]; then
+      mkdir -p ${mountpoint}/lib/modules
+    fi
+
+    if [ -n "$light" ] && [ $light -eq 1 ]; then
+	  # Only copy modules that are currently used or are specified in /etc/modprobe.conf
+	  for module in $(get_min_modules $default_modules $modules | sort -u); do
+		for file in `find /lib/modules/$_kernel -name "$module.ko"`; do
+			if [ -n "$verbose" ]; then
+				echo "Copying module $file"
+			fi
 			tar -chf - $file 2>/dev/null | tar -xf - -C ${mountpoint};
 		done
-	done || (failure && rm $lockfile && exit $?)
-  else
-	cp -a /lib/modules/$_kernel ${mountpoint}/lib/modules/$_kernel || (failure && rm $lockfile && exit $?)
-  fi
-  success
-done
+	  done || (failure && rm $lockfile && exit $?)
+    else
+	  cp -a /lib/modules/$_kernel ${mountpoint}/lib/modules/$_kernel || (failure && rm $lockfile && exit $?)
+    fi
+    success
+  done
+fi
 
-create_builddate_file $build_file && success || failure
+create_builddate_file $build_file # && success || failure
+
+echo -n "Creating index file .."
+create_filelist $mountpoint > ${mountpoint}/$index_list || (failure; echo "Could not create index file. Breaking." >&2; exit 5)
+success
 
 #for module in $FC_MODULE $FC_MODULES $GFS_MODULES; do
 #  dirname=`dirname ${MODULES_DIR}/${module}`
@@ -299,29 +421,31 @@ create_builddate_file $build_file && success || failure
 
 #echo "The following files reside on the image:"
 #find .
-echo -n "Post settings .."
-chown -R root:root $mountpoint
-if [ -z "$initramfs" ] || [ $initramfs -eq 0 ]; then
-  if [ ! -e ${mountpoint}/linuxrc ] && [ -e ${mountpoint}/init ]; then
-    cd $mountpoint && ln -s init linuxrc
-    cd $pwd
+if [ -z "$update" ]; then
+  echo -n "Post settings .."
+  chown -R root:root $mountpoint
+  if [ -z "$initramfs" ] || [ $initramfs -eq 0 ]; then
+    if [ ! -e ${mountpoint}/linuxrc ] && [ -e ${mountpoint}/init ]; then
+      cd $mountpoint && ln -s init linuxrc
+      cd $pwd
+    fi
+  else
+    if [ -e ${mountpoint}/linuxrc ] && [ ! -e ${mountpoint}/init ]; then
+      cd $mountpoint && ln -s linuxrc init
+      cd $pwd
+    fi
   fi
-else
-  if [ -e ${mountpoint}/linuxrc ] && [ ! -e ${mountpoint}/init ]; then
-    cd $mountpoint && ln -s linuxrc init
-    cd $pwd
-  fi
+  success
 fi
-success
 
 if [ -z "$initramfs" ] || [ $initramfs -eq 0 ]; then
   cd $pwd
   echo -n "Unmounting and compressing.."
-  (chown -R root:root $mountpoint && umount_and_zip_initrd $mountpoint $initrdname $force && \
+  (umount_and_zip_initrd $mountpoint $initrdname $force && \
    rm $lockfile) || (failure && rm $lockfile && exit $?)
 else
   echo -n "Cpio and compress.."
-  (chown -R root:root $mountpoint && cpio_and_zip_initrd $mountpoint $initrdname $force && \
+  (cpio_and_zip_initrd $mountpoint $initrdname $force && \
    rm $lockfile) || (failure && rm $lockfile && exit $?)
 fi
 success
@@ -337,7 +461,11 @@ ls -lk $initrdname
 
 ##########################################
 # $Log: create-gfs-initrd-generic.sh,v $
-# Revision 1.21  2009-03-25 13:55:20  marc
+# Revision 1.22  2009-04-03 17:30:43  marc
+# - added usage
+# - added update feature
+#
+# Revision 1.21  2009/03/25 13:55:20  marc
 # - added global filters to filter files from initrd
 #
 # Revision 1.20  2009/02/24 12:10:44  marc
