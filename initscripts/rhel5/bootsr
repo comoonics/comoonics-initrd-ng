@@ -2,7 +2,7 @@
 #****h* comoonics-bootimage/bootsr
 #  NAME
 #    bootsr
-#    $Id: bootsr,v 1.20 2009-04-14 15:01:27 marc Exp $
+#    $Id: bootsr,v 1.21 2009-04-14 15:26:54 marc Exp $
 #  DESCRIPTION
 #    Comoonics Shared Root post boot settings
 #  AUTHOR
@@ -33,6 +33,8 @@ UMOUNT_CHROOT="${BOOTIMAGE_PATH}/manage_chroot.sh -a umount"
 MOUNT_CHROOT="${BOOTIMAGE_PATH}/manage_chroot.sh -a mount"
 MOUNT_CDSL="${BOOTIMAGE_PATH}/manage_chroot.sh -a mount_cdsl"
 CLEAN_START="${BOOTIMAGE_PATH}/manage_chroot.sh -a clean"
+PATCH_FILES="${BOOTIMAGE_PATH}/manage_chroot.sh -a patch_files"
+UNPATCH_FILES="${BOOTIMAGE_PATH}/manage_chroot.sh -a unpatch_files"
 BUILD_FILE="/etc/comoonics-build.txt"
 VAR_RUN_FILES="cman_admin cman_client"
 
@@ -93,7 +95,7 @@ function clean_start {
 #
 function check_sharedroot {
   local root_fstype=$1
-  if [ "$root_fstype" = "gfs" ] || [ "$root_fstype" = "ocfs2" ]; then
+  if [ "$root_fstype" = "gfs" ] || [ "$root_fstype" = "ocfs2" ] || [ "$root_fstype" = "nfs" ] || [ "$root_fstype" = "glusterfs" ]; then
     return 1
   else
     return 0
@@ -113,36 +115,6 @@ function get_runlevel {
   return $(runlevel | cut -d" " -f2)
 }
 #************ get_runlevel
-
-#****f* bootsr/patch_files
-#  NAME
-#    patch_files
-#  SYNOPSIS
-#    function patch_files
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function patch_files {
-	# we patch all versions here
-	# halt
-	if ! grep "comoonics patch " /etc/init.d/halt > /dev/null; then
-		echo "Patching halt"
-		cd /etc/init.d/ && patch -f -r /tmp/halt.patch.rej > /dev/null < /opt/atix/comoonics-bootimage/patches/halt.patch
-	fi
-	# netfs
-	if ! grep "comoonics patch " /etc/init.d/netfs > /dev/null; then
-		echo "Patching netfs"
-		cd /etc/init.d/ && patch -f -r /tmp/netfs.patch.rej > /dev/null < /opt/atix/comoonics-bootimage/patches/netfs.patch
-	fi
-	# network
-	if ! grep "comoonics patch " /etc/init.d/network > /dev/null; then
-		echo "Patching network"
-		cd /etc/init.d/ && patch -f -r /tmp/network.patch.rej > /dev/null < /opt/atix/comoonics-bootimage/patches/network.patch
-	fi
-	
-}
-#************ patch_files
 
 #************ umount_chroot
 #****f* bootsr/umount_chroot
@@ -247,8 +219,8 @@ case "$1" in
         chrootneeded=$(getParameter chroot $__default)
       fi
 	  if [ $chrootneeded -eq 0 ]; then
-	  	action "Updating chroot environment" $UPDATE_CHROOT
  	  	action "Mounting filesystems to chroot" $MOUNT_CHROOT
+	  	action "Updating chroot environment" $UPDATE_CHROOT
  	  
  	  	typeset -f ${clutype}_init >/dev/null && action "Starting ${clutype} dependent services" ${clutype}_init start
  	  	if [ "${clutype}" != "${rootfs}" ]; then
@@ -267,7 +239,7 @@ case "$1" in
 	  if [ $? -eq 0 ]; then
 	    action "Cleaning up chroot environment" $UMOUNT_CHROOT
 	  fi
-  	  patch_files
+  	  $PATCH_FILES
         ;;
   status)
       exit 0
@@ -285,12 +257,11 @@ case "$1" in
   	 $0 start 
       ;;
   patch_files)
-  	 check_sharedroot $rootfs
-     sharedroot=$?
-     if  [ -n "$rootfs" ] && [ $sharedroot ]; then
-  	   patch_files
-     fi
-     ;;
+      $PATCH_FILES
+      ;;
+  unpatch_files)
+      $UNPATCH_FILES
+      ;;
   *)
         echo "Usage: bootsr {start|stop|status|restart|reload}"
         exit 1
@@ -299,7 +270,10 @@ exit $RETVAL
 #************ main
 ###############
 # $Log: bootsr,v $
-# Revision 1.20  2009-04-14 15:01:27  marc
+# Revision 1.21  2009-04-14 15:26:54  marc
+# synced fedora and rhel5 bootsr
+#
+# Revision 1.20  2009/04/14 15:01:27  marc
 # *** empty log message ***
 #
 # Revision 1.19  2009/02/25 10:34:11  marc

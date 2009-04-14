@@ -39,6 +39,11 @@ BUILD_FILE="/etc/comoonics-build.txt"
 VAR_RUN_FILES="cman_admin cman_client"
 
 RETVAL=0
+
+if [ -f /etc/sysconfig/comoonics-chroot ]; then
+	source /etc/sysconfig/comoonics-chroot
+fi
+
 . ${BOOTIMAGE_PATH}/boot-scripts/etc/std-lib.sh
 sourceLibs ${BOOTIMAGE_PATH}/boot-scripts
 sourceRootfsLibs ${BOOTIMAGE_PATH}/boot-scripts
@@ -208,10 +213,14 @@ case "$1" in
       fi
       
 	  # Update chroot environment with files from /etc/comoonics/bootimage-chroot
-	  clusterfs_chroot_needed init
-	  if [ $? -eq 0 ]; then
+      if [ -z "$chrootneeded" ]; then
+        clusterfs_chroot_needed init
+        __default=$?
+        chrootneeded=$(getParameter chroot $__default)
+      fi
+	  if [ $chrootneeded -eq 0 ]; then
  	  	action "Mounting filesystems to chroot" $MOUNT_CHROOT
-	  	action "Updating chroot " $UPDATE_CHROOT
+	  	action "Updating chroot environment" $UPDATE_CHROOT
  	  
  	  	typeset -f ${clutype}_init >/dev/null && action "Starting ${clutype} dependent services" ${clutype}_init start
  	  	if [ "${clutype}" != "${rootfs}" ]; then
