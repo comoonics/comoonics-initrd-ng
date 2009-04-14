@@ -36,6 +36,7 @@
 %define _user root
 %define CONFIGDIR /%{_sysconfdir}/comoonics
 %define APPDIR    /opt/atix/comoonics-bootimage
+%define SBINDIR   /sbin
 %define ENVDIR    /etc/profile.d
 %define ENVFILE   %{ENVDIR}/%{name}.sh
 %define INITDIR   /etc/rc.d/init.d
@@ -45,12 +46,12 @@ Name: comoonics-bootimage-initscripts
 Summary: Initscripts used by the OSR cluster environment.
 Version: 1.4
 BuildArch: noarch
-Requires: comoonics-bootimage >= 1.4-6
+Requires: comoonics-bootimage >= 1.4-16
 # Requires: SysVinit-comoonics
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-fedora
 #Conflicts: 
-Release: 2.fedora
+Release: 7.fedora
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -74,28 +75,33 @@ Initscripts used by the OSR cluster environment.
 install -d -m 755 $RPM_BUILD_ROOT/%{INITDIR}
 install -m755 initscripts/fedora/bootsr $RPM_BUILD_ROOT/%{INITDIR}/bootsr
 install -d -m 755 $RPM_BUILD_ROOT/%{APPDIR}/patches
-install -m600 initscripts/fedora/halt.fedora.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/halt.patch
-install -m600 initscripts/fedora/netfs.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/netfs.patch
-install -m600 initscripts/fedora/network.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/network.patch
+install -m600 initscripts/fedora/halt-xtab.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/halt-xtab.patch
+install -m600 initscripts/fedora/halt-local.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/halt-local.patch
+install -m600 initscripts/fedora/halt-killall.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/halt-killall.patch
+install -m600 initscripts/fedora/halt-comoonics.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/halt-comoonics.patch
+install -m600 initscripts/fedora/netfs-xtab.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/netfs-xtab.patch
+install -m600 initscripts/fedora/netfs-comoonics.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/netfs-comoonics.patch
+install -m600 initscripts/fedora/network-xrootfs.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/network-xrootfs.patch
+install -m600 initscripts/fedora/network-comoonics.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/network-comoonics.patch
+install -d $RPM_BUILD_ROOT/%{SBINDIR}
+install -m755 initscripts/fedora/halt.local $RPM_BUILD_ROOT/%{SBINDIR}/halt.local
 
 %preun
 if [ "$1" -eq 0 ]; then
   echo "Preuninstalling comoonics-bootimage-initscripts"
-# root_fstype=$(awk '{ if ($1 !~ /^rootfs/ && $1 !~ /^[ \t]*#/ && $2 == "/") { print $3; }}' /etc/mtab)
-	/sbin/chkconfig --del bootsr
-	if grep "comoonics patch " /etc/init.d/halt > /dev/null; then
-		echo "Unpatching halt"
-		cd /etc/init.d/ && patch -R -f -r /tmp/halt.patch.rej > /dev/null < /opt/atix/comoonics-bootimage/patches/halt.patch
+  /sbin/chkconfig --del bootsr
+  # we patch all versions here
+  for initscript in halt network netfs; do
+	if grep "comoonics patch " /etc/init.d/$initscript > /dev/null; then
+		echo -n "Unpatching $initscript ("
+		for patchfile in $(ls -1 /opt/atix/comoonics-bootimage/patches/${initscript}*.patch | sort -r); do
+			echo -n $(basename $patchfile)", "
+			cd /etc/init.d/ && patch -R -f -r /tmp/$(basename ${patchfile}).patch.rej > /dev/null < $patchfile || \
+			echo "Failure patching $initscript with patch $patchfile" >&2
+		done
+		echo ")"
 	fi
-	if grep "comoonics patch " /etc/init.d/netfs > /dev/null; then
-		echo "Unpatching netfs"
-		cd /etc/init.d/ && patch -R -f -r /tmp/netfs.patch.rej > /dev/null < /opt/atix/comoonics-bootimage/patches/netfs.patch
-	fi
-	if grep "comoonics patch " /etc/init.d/network > /dev/null; then
-		echo "Unpatching network"
-		cd /etc/init.d/ && patch -R -f -r /tmp/network.patch.rej > /dev/null < /opt/atix/comoonics-bootimage/patches/network.patch
-	fi
-	true
+  done
 fi
 
 
@@ -103,19 +109,18 @@ fi
 
 #if this is an upgrade we need to unpatch all files
 if [ "$1" -eq 2 ]; then
-	if grep "comoonics patch " /etc/init.d/halt > /dev/null; then
-		echo "Unpatching halt"
-		cd /etc/init.d/ && patch -R -f -r /tmp/halt.patch.rej > /dev/null < /opt/atix/comoonics-bootimage/patches/halt.patch
+  # we patch all versions here
+  for initscript in halt network netfs; do
+	if grep "comoonics patch " /etc/init.d/$initscript > /dev/null; then
+		echo -n "Unpatching $initscript ("
+		for patchfile in $(ls -1 /opt/atix/comoonics-bootimage/patches/${initscript}*.patch | sort -r); do
+			echo -n $(basename $patchfile)", "
+			cd /etc/init.d/ && patch -R -f -r /tmp/$(basename ${patchfile}).patch.rej > /dev/null < $patchfile || \
+			echo "Failure patching $initscript with patch $patchfile" >&2
+		done
+		echo ")"
 	fi
-	if grep "comoonics patch " /etc/init.d/netfs > /dev/null; then
-		echo "Unpatching netfs"
-		cd /etc/init.d/ && patch -R -f -r /tmp/netfs.patch.rej > /dev/null < /opt/atix/comoonics-bootimage/patches/netfs.patch
-	fi
-	if grep "comoonics patch " /etc/init.d/network > /dev/null; then
-		echo "Unpatching network"
-		cd /etc/init.d/ && patch -R -f -r /tmp/network.patch.rej > /dev/null < /opt/atix/comoonics-bootimage/patches/network.patch
-	fi
-	true
+  done
 fi 
 
 %post
@@ -135,21 +140,34 @@ echo "Disabling services ($services)"
 for service in $services; do
    /sbin/chkconfig --del $service &> /dev/null
 done
-/etc/init.d/bootsr patch_files
+/opt/atix/comoonics-bootimage/manage_chroot.sh -a patch_files
+/opt/atix/comoonics-bootimage/manage_chroot.sh -a createxfiles
 
 /bin/true
 
 %files
 
 %attr(755, root, root) %{INITDIR}/bootsr
-%attr(644, root, root) %{APPDIR}/patches/halt.patch
-%attr(644, root, root) %{APPDIR}/patches/netfs.patch
-%attr(644, root, root) %{APPDIR}/patches/network.patch
+%attr(644, root, root) %{APPDIR}/patches/halt-comoonics.patch
+%attr(644, root, root) %{APPDIR}/patches/halt-killall.patch
+%attr(644, root, root) %{APPDIR}/patches/halt-local.patch
+%attr(644, root, root) %{APPDIR}/patches/halt-xtab.patch
+%attr(644, root, root) %{APPDIR}/patches/netfs-comoonics.patch
+%attr(644, root, root) %{APPDIR}/patches/netfs-xtab.patch
+%attr(644, root, root) %{APPDIR}/patches/network-comoonics.patch
+%attr(644, root, root) %{APPDIR}/patches/network-xrootfs.patch
+%attr(755, root, root) %{SBINDIR}/halt.local
 
 %clean
 rm -rf %{buildroot}
 
 %changelog
+* Tue Apr 14 2009 Marc Grimme <grimme@atix.de> 1.4-7.fedora
+- Multipatches and rework on building of chroot
+* Wed Apr 08 2009 Marc Grimme <grimme@atix.de> 1.4-4.fedora
+- First final of multi-patches and halt.local
+* Mon Apr 06 2009 Marc Grimme <grimme@atix.de> 1.4-3.fedora
+- New patch concept (only small patches)
 * Tue Feb 27 2009 Marc Grimme <grimme@atix.de> 1.4-2.fedora
 - Upstream from RHEL5
 * Mon Feb 02 2009 Marc Grimme <grimme@atix.de> 1.3-3.fedora

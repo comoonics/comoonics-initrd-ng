@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.96 2009-03-06 13:27:26 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.97 2009-04-14 15:03:41 marc Exp $
 #
 ##
 ##
@@ -58,7 +58,7 @@ Requires: comoonics-cluster-py >= 0.1-2
 Requires: comoonics-bootimage-initscripts >= 1.4 
 Requires: comoonics-bootimage-listfiles-all
 #Conflicts:
-Release: 11
+Release: 18
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -84,8 +84,8 @@ Extra listfiles for special network configurations
 
 %package extras-nfs
 Version: 0.1
-Release: 8
-Requires: comoonics-bootimage >= 1.3-33
+Release: 10
+Requires: comoonics-bootimage >= 1.4
 Summary: Listfiles for nfs sharedroot configurations
 Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
@@ -95,8 +95,8 @@ Extra listfiles for nfs sharedroot configurations
 
 %package extras-ocfs2
 Version: 0.1
-Release: 2
-Requires: comoonics-bootimage >= 1.3-33
+Release: 3
+Requires: comoonics-bootimage >= 1.4
 Summary: Listfiles for ocfs2 sharedroot configurations
 Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
@@ -224,7 +224,7 @@ Sysctl support in the OSR cluster
 
 %package listfiles-all
 Version: 0.1
-Release: 4
+Release: 5
 Requires: comoonics-bootimage >= 1.3-36
 Group:   System Environment/Base
 Summary: OSR listfilesfiles for all distributions 
@@ -377,7 +377,7 @@ A fence client for iloMP cards of HP inegrity servers.
 #BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 #
 #%description fenceclient-vmware
-#Fencing for vmware client
+#Fencing for vmware clientschlegel
 #
 #%package fencemaster-vmware
 #Version: 0.1
@@ -446,10 +446,8 @@ BEGIN { exit_c=1; }
 { if ($5) {  print $5; exit_c=0; } }
 END{ exit exit_c}')
   if [ "$root_fstype" != "gfs" ]; then
-    /sbin/chkconfig --add cman &>/dev/null
-    /sbin/chkconfig --list cman
-    /sbin/chkconfig --add gfs &>/dev/null
-    /sbin/chkconfig --list gfs
+    chkconfig --list cman &>/dev/null && /sbin/chkconfig --add cman &>/dev/null && /sbin/chkconfig --list cman
+    chkconfig --list gfs &>/dev/null && /sbin/chkconfig --add gfs &>/dev/null && /sbin/chkconfig --list gfs
   fi
   rm %{APPDIR}/mkinitrd
   rm %{ENVFILE}
@@ -474,16 +472,13 @@ fi
 
 echo "Disabling services ($services)"
 for service in $services; do
-   /sbin/chkconfig --del $service &> /dev/null
+   chkconfig --list $service &>/dev/null && chkconfig --del $service &> /dev/null
 done
 /bin/true
 
 echo 'Information:
 Cluster services will be started in a chroot environment. Check out latest documentation
 on http://www.open-sharedroot.org
-If you want syslog to log fence messages you should add an additional logdevice
-to the syslog configuration
-(command switch syslogd -a $(cat /var/comoonics/chrootpath)/dev/log)
 '
 
 %post fenceacksv
@@ -540,9 +535,11 @@ fi
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/xen-lib.sh
 #%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/passwd
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/stdfs-lib.sh
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/stdlib.py
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/std-lib.sh
 #%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/sysconfig/comoonics
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel4/boot-lib.sh
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel4/gfs-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel4/hardware-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel4/network-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel5/boot-lib.sh
@@ -567,7 +564,6 @@ fi
 %dir %{CONFIGDIR}/bootimage-chroot/rpms.initrd.d
 
 %config(noreplace) %attr(0644, root, root) %{CONFIGDIR}/comoonics-bootimage.cfg
-%config(noreplace) %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/user_edit.list
 
 %doc %attr(0644, root, root) CHANGELOG
 
@@ -633,6 +629,10 @@ fi
 %files listfiles-all
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/basefiles.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/filters.list
+%dir %{CONFIGDIR}/bootimage/files.initrd.d
+%dir %{CONFIGDIR}/bootimage/rpms.initrd.d
+%dir %{CONFIGDIR}/bootimage/filters.initrd.d
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/base.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/bonding.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/comoonics.list
@@ -648,6 +648,9 @@ fi
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/hardware.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/lvm.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/python.list
+%config %attr(0644, root, root)  %{CONFIGDIR}/bootimage/filters.initrd.d/empty.list
+
+%config(noreplace) %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/user_edit.list
 
 %files listfiles-rhel
 %dir %{CONFIGDIR}/bootimage/files.initrd.d/rhel
@@ -754,6 +757,21 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Tue Apr 14 2009 Marc Grimme <grimme@atix.de> 1.4-18
+- Rework on chroot build, nfs4 stabilized, fedora10 stabilized
+* Tue Apr 09 2009 Marc Grimme <grimme@atix.de> 1.4-17
+- Moved some functions
+* Mon Apr 06 2009 Marc Grimme <grimme@atix.de> 1.4-16
+- Implemented new concept of initscripts and xtab,xrootfs,xkillall_procs
+* Mon Mar 30 2009 Marc Grimme <grimme@atix.de> 1.4-15
+- Extended Bug #340 update mode for mkinitrd and adding/removing kernels with iscsi, xen
+* Thu Mar 26 2009 Marc Grimme <grimme@atix.de> 1.4-14
+- Implemented Bug #340 update mode for mkinitrd and adding/removing kernels
+* Wed Mar 25 2009 Marc Grimme <grimme@atix.de> 1.4-13
+- Fixed Bug#338 (klogd not being started in initrd)
+- Implemented global filters (for lite version)
+* Tue Mar 17 2009 Marc Grimme <grimme@atix.de> 1.4-12
+- Fence_tool -m bugfix (#335)
 * Fri Mar 06 2009 Marc Grimme <grimme@atix.de> 1.4-11
 - Udevd will be started implicitly
 - Fixed bug in network setup because NICs would be detected multiple times
@@ -814,7 +832,7 @@ rm -rf %{buildroot}
 * Tue Jun 10 2008 Marc Grimme <grimme@atix.de> 1.3-32
 - first ocfs2 devel version
 - rewrote reboot and fs dependencies
-* Wed May 28 2008 Mark Hlawatschek <hlawatschek@atix.de> 1.3-31
+* Wed May 28 2008 Mark Hlawatschek <hlawatschekImplemented@atix.de> 1.3-31
 - stabilize lvm operations (fix for BZ 193)
 - change permissions for chroot path (fix for BZ 210)
 * Fri May 16 2008 Marc Grimme <grimme@atix.de> 1.3-30
@@ -836,7 +854,7 @@ rm -rf %{buildroot}
 - Fixed Bug#179 xen guest will not be detected with rhel4
 - rewrote iscsilibs to be more generix
 - Implemented RFE#144 Mac-Address in configuration files.
-* Mon Oct 17 2007 Marc Grimme <grimme@atix.de> 1.3-21
+* Mon Oct 17 2007 Marc Grimme <grimme@atix.de> Implemented1.3-21
 - Fixed Bug 144, where mounoptions where not used
 - Added ISCSI Support preview (thanks to Gordan Bobic)
 - Fixed Bug 142, where in RHEL4 qdiskd could not be started
@@ -927,6 +945,10 @@ rm -rf %{buildroot}
 - first release
 
 %changelog extras-iscsi
+* Tue Apr 14 2009 Marc Grimme <grimme@atix.de> - 0.1-5
+- get_drivers function implemented
+* Mon Mar 30 2009 Marc Grimme <grimme@atix.de> - 0.1-4
+- Extended Bug #340 update mode for mkinitrd and adding/removing kernels with iscsi
 * Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-3
 - First version on the way to rpmlint BUG#290
 * Tue Jun 10 2008 Marc Grimme <grimme@atix.de> - 0.1-2
@@ -935,6 +957,10 @@ rm -rf %{buildroot}
 - first release
 
 %changelog extras-drbd
+* Tue Apr 14 2009 Marc Grimme <grimme@atix.de> - 0.1-5
+- get_drivers function implemented
+* Mon Mar 30 2009 Marc Grimme <grimme@atix.de> - 0.1-4
+- Extended Bug #340 update mode for mkinitrd and adding/removing kernels with drbd
 * Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-3
 - First version on the way to rpmlint BUG#290
 * Tue Jun 10 2008 Marc Grimme <grimme@atix.de> - 0.1-2
@@ -943,6 +969,10 @@ rm -rf %{buildroot}
 - first release
 
 %changelog extras-nfs
+* Tue Apr 14 2009 Marc Grimme <grimme@atix.de> - 0.1-10
+- nfs4 stabilized
+* Fri Mar 27 2009 Marc Grimme <grimme@atix.de> 0.1-9
+- Added nfs_get_drivers
 * Tue Jan 29 2009 Marc Grimme <grimme@atix.de> 0.1-7
 - First version with new hardware detection Bug#325
 - First version with Usability review Parent-Bug#323
@@ -955,6 +985,10 @@ rm -rf %{buildroot}
 - bugfixes upstream
 * Tue Jun 10 2008 Marc Grimme <grimme@atix.de> - 0.1-2
 - added nfs-lib.sh file
+
+%changelog extras-ocfs2
+* Fri Mar 27 2009 Marc Grimme <grimme@atix.de> 0.1-3
+- Added ocfs2_get_drivers
 
 %changelog extras-md
 * Sun Feb 08 2009 Marc Grimme <grimme@atix.de> - 0.1-1
@@ -973,6 +1007,8 @@ rm -rf %{buildroot}
 - introduced the changelog
 
 %changelog extras-glusterfs
+* Mon Mar 30 2009 Marc Grimme <grimme@atix.de> - 0.1-3
+- Extended Bug #340 update mode for mkinitrd and adding/removing kernels with glusterfs
 * Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-1
 - initial revision (thanks to Gordan)
 
@@ -981,6 +1017,8 @@ rm -rf %{buildroot}
 - initial revision
 
 %changelog listfiles-all
+* Wed Mar 25 2009 Marc Grimme <grimme@atix.de> - 0.1-5
+- Implemented global filters
 * Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-4
 - Updated the listfiles to latest deps
 * Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-2
@@ -1063,7 +1101,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.96  2009-03-06 13:27:26  marc
+# Revision 1.97  2009-04-14 15:03:41  marc
+# *** empty log message ***
+#
+# Revision 1.96  2009/03/06 13:27:26  marc
 # - removed initial start of udev as it should be started implicitly on demand
 # - fixed bug in network setup because devices would have been created multiple times
 # - some typos

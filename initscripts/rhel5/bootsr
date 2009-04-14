@@ -2,7 +2,7 @@
 #****h* comoonics-bootimage/bootsr
 #  NAME
 #    bootsr
-#    $Id: bootsr,v 1.19 2009-02-25 10:34:11 marc Exp $
+#    $Id: bootsr,v 1.20 2009-04-14 15:01:27 marc Exp $
 #  DESCRIPTION
 #    Comoonics Shared Root post boot settings
 #  AUTHOR
@@ -37,6 +37,11 @@ BUILD_FILE="/etc/comoonics-build.txt"
 VAR_RUN_FILES="cman_admin cman_client"
 
 RETVAL=0
+
+if [ -f /etc/sysconfig/comoonics-chroot ]; then
+	source /etc/sysconfig/comoonics-chroot
+fi
+
 . ${BOOTIMAGE_PATH}/boot-scripts/etc/std-lib.sh
 sourceLibs ${BOOTIMAGE_PATH}/boot-scripts
 sourceRootfsLibs ${BOOTIMAGE_PATH}/boot-scripts
@@ -236,8 +241,12 @@ case "$1" in
       fi
       
 	  # Update chroot environment with files from /etc/comoonics/bootimage-chroot
-	  clusterfs_chroot_needed init
-	  if [ $? -eq 0 ]; then
+      if [ -z "$chrootneeded" ]; then
+        clusterfs_chroot_needed init
+        __default=$?
+        chrootneeded=$(getParameter chroot $__default)
+      fi
+	  if [ $chrootneeded -eq 0 ]; then
 	  	action "Updating chroot environment" $UPDATE_CHROOT
  	  	action "Mounting filesystems to chroot" $MOUNT_CHROOT
  	  
@@ -290,7 +299,10 @@ exit $RETVAL
 #************ main
 ###############
 # $Log: bootsr,v $
-# Revision 1.19  2009-02-25 10:34:11  marc
+# Revision 1.20  2009-04-14 15:01:27  marc
+# *** empty log message ***
+#
+# Revision 1.19  2009/02/25 10:34:11  marc
 # moved the rootfs/clutype for all
 #
 # Revision 1.18  2009/02/02 20:14:03  marc
