@@ -1,5 +1,5 @@
 #
-# $Id: nfs-lib.sh,v 1.1 2009-01-28 12:45:29 marc Exp $
+# $Id: nfs-lib.sh,v 1.2 2009-04-14 14:48:50 marc Exp $
 #
 # @(#)$File$
 #
@@ -66,7 +66,7 @@ function nfs_getdefaults {
 #
 function nfs_load {
 
-  NFS_MODULES="nfs"
+  NFS_MODULES=$(nfs_get_drivers)
 
   echo_local -n "Loading NFS modules ($NFS_MODULES)..."
   for module in ${NFS_MODULES}; do
@@ -100,32 +100,24 @@ function nfs_services_start {
 }
 #************ nfs_services_start
 
-#****f* nfs-lib.sh/nfs_services_restart
+#****f* nfs-lib.sh/nfs_services_stop
 #  NAME
-#    nfs_services_restart
+#    nfs_services_stop
 #  SYNOPSIS
-#    function nfs_services_restart(lockmethod)
+#    function nfs_services_stop
 #  DESCRIPTION
-#    This function loads all relevant gfs modules
+#    This function starts all relevant services
 #  IDEAS
 #  SOURCE
 #
-function nfs_services_restart {
-  local old_root=$1
-  local new_root=$2
-
-  services="rpcbind"
+function nfs_services_stop {
+  local services="rpcbind"
   for service in $services; do
-    nfs_restart_$service $old_root $new_root
-    if [ $? -ne 0 ]; then
-      echo $service > $new_root/${cdsl_local_dir}/FAILURE_$service
-#      return $?
-    fi
+    nfs_stop_$service
   done
-  
-  return $return_c
+  return 0
 }
-#************ nfs_services_restart
+#************ nfs_services_stop
 
 #****f* nfs-lib.sh/nfs_services_restart_newroot
 #  NAME
@@ -138,12 +130,27 @@ function nfs_services_restart {
 #  SOURCE
 #
 function nfs_services_restart_newroot {
-  local chroot_path=$1
+  local new_root=$1
   local lock_method=$2
   local lvm_sup=$3
 
-  echo "Umounting $chroot_path/proc"
-  exec_local umount $chroot_path/proc
+  services="rpcbind"
+  for service in $services; do
+    nfs_stop_$service $new_root
+    if [ $? -ne 0 ]; then
+      echo $service > $new_root/${cdsl_local_dir}/FAILURE_$service
+    fi
+  done
+  services="rpcpipefs rpcbind"
+  for service in $services; do
+    nfs_start_$service $new_root
+    if [ $? -ne 0 ]; then
+      echo $service > $new_root/${cdsl_local_dir}/FAILURE_$service
+    fi
+  done
+
+  echo "Umounting $new_root/proc"
+  exec_local umount $new_root/proc
   return_code
 }
 #************ nfs_services_restart_newroot
@@ -168,7 +175,10 @@ function nfs_init {
 #********* nfs_init
 
 # $Log: nfs-lib.sh,v $
-# Revision 1.1  2009-01-28 12:45:29  marc
+# Revision 1.2  2009-04-14 14:48:50  marc
+# now restarting rpcbind with nfs
+#
+# Revision 1.1  2009/01/28 12:45:29  marc
 # initial revision.
 # Support for fedora
 #
