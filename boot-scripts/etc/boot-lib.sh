@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.72 2009-03-06 15:02:33 marc Exp $
+# $Id: boot-lib.sh,v 1.73 2009-04-14 14:50:55 marc Exp $
 #
 # @(#)$File$
 #
@@ -412,7 +412,7 @@ function initBootProcess() {
   is_mounted /sys
   if [ $? -ne 0 ]; then
   	[ -d /sys ] || mkdir /sys 
-    exec_local /bin/mount -t sysfs none /sys
+    exec_local /bin/mount -t sysfs sysfs /sys
     return_code
   else
     passed
@@ -744,7 +744,7 @@ function create_builddate_file {
 #
 function mountDev {
 	mount -t proc proc /proc
-	mount -t sysfs none /sys
+	mount -t sysfs sysfs /sys
 	mount -o mode=0755 -t tmpfs none /dev
 	mknod /dev/console c 5 1
 	mknod /dev/null c 1 3
@@ -865,8 +865,91 @@ function ipaddress_from_dev() {
 }
 #************ ipaddress_from_dev
 
+#****f* boot-lib.sh/create_xtab
+#  NAME
+#    create_xtab build a chroot environment
+#  SYNOPSIS
+#    function create_xtab($xtabfile, $dirs) {
+#  MODIFICATION HISTORY
+#  USAGE
+#  create_xtab
+#  IDEAS
+#
+#  SOURCE
+#
+function create_xtab () {
+	local xtabfile="$1"
+	local _dir
+	shift
+	# truncate
+	echo -n > $xtabfile
+	for _dir in $*; do
+	  echo "$_dir" >> $xtabfile
+	done
+}
+#************** create_xtab
+
+#****f* boot-lib.sh/create_xrootfs
+#  NAME
+#    create_xrootfs build a chroot environment
+#  SYNOPSIS
+#    function create_xrootfs($xrootfsfile, $rootfss) {
+#  MODIFICATION HISTORY
+#  USAGE
+#  create_xrootfs
+#  IDEAS
+#
+#  SOURCE
+#
+function create_xrootfs () {
+	local xrootfsfile="$1"
+	local _rootfs
+	shift
+	# truncate
+	echo -n > $xrootfsfile
+	for _rootfs in $*; do
+	  echo "$_rootfs" >> $xrootfsfile
+	done
+}
+#************** create_xrootfs
+
+#****f* boot-lib.sh/create_xkillall_procs
+#  NAME
+#    create_xkillall_procs build a chroot environment
+#  SYNOPSIS
+#    function create_xkillall_procs($xkillall_procsfile, $rootfss) {
+#  MODIFICATION HISTORY
+#  USAGE
+#  create_xkillall_procs
+#  IDEAS
+#
+#  SOURCE
+#
+function create_xkillall_procs () {
+	local xkillall_procsfile="$1"
+	local _clutype="$2"
+	local _rootfs="$3"
+	local _proc=
+	shift
+	# truncate
+	echo -n > $xkillall_procsfile
+	for _proc in $(cc_get_userspace_procs $_clutype); do
+	  echo "$_proc" >> $xkillall_procsfile
+	done
+	if [ "$_clutype" != "$_rootfs" ]; then
+	  for _proc in $(clusterfs_get_userspace_procs $_rootfs); do
+	    echo "$_proc" >> $xkillall_procsfile
+	  done
+	fi
+}
+#************** create_xkillall_procs
+
 # $Log: boot-lib.sh,v $
-# Revision 1.72  2009-03-06 15:02:33  marc
+# Revision 1.73  2009-04-14 14:50:55  marc
+# - added xfiles functions
+# - sys=>sysfs
+#
+# Revision 1.72  2009/03/06 15:02:33  marc
 # fixed typos
 #
 # Revision 1.71  2009/03/06 13:22:03  marc
