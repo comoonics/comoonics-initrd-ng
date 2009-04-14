@@ -19,3 +19,4 @@ tcp_wrappers-libs   \.so
 openldap        \.so
 libcap          \.so
 audit-libs
+upstart         ^/sbin/.*
