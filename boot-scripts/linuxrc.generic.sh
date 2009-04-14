@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.76 2009-03-06 15:03:02 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.77 2009-04-14 14:58:49 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.76 2009-03-06 15:03:02 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.77 2009-04-14 14:58:49 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -68,6 +68,9 @@ repository_store_value shellissuetmp ${predir}/tmp/issue
 repository_store_value shell "/bin/bash --rcfile $(repository_get_value shellrcfile)"
 repository_store_value logo "${predir}/$atixlogofile"
 repository_store_value sysctlfile "${predir}/etc/sysctl.conf"
+repository_store_value xtabfile /etc/xtab
+repository_store_value xrootfsfile /etc/xrootfs
+repository_store_value xkillallprocsfile /etc/xkillallprocs_file
 
 if [ $# -gt 1 ]; then
   echo_local -n "Checking commandline parmeters \"$*\""
@@ -79,7 +82,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.76 $ $Date: 2009-03-06 15:03:02 $'
+echo_local 'Internal Version $Revision: 1.77 $ $Date: 2009-04-14 14:58:49 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -113,7 +116,7 @@ echo_local
 read -n1 -t5 confirm
 if [ "$confirm" = "i" ]; then
   echo_local -e "\t\tInteractivemode recognized. Switching step_mode to on"
-  repository_store_value step 1
+  repository_store_value step
 fi
 wait
 
@@ -332,9 +335,6 @@ step "Cluster, modules loaded" "clusterload"
 
 cc_auto_hosts $(repository_get_value cluster_conf)
 
-# FIXME:
-# Do we have to build it in any case?
-# For ext3?
 if [ $(repository_get_value chrootneeded) -eq 0 ]; then
   echo_local -n "Building comoonics chroot environment"
   res=( $(build_chroot $(repository_get_value cluster_conf) $(repository_get_value nodename)) )
@@ -477,13 +477,34 @@ if [ $(repository_get_value chrootneeded) -eq 0 ]; then
   echo $(repository_get_value chroot_path) > $(repository_get_value newroot)/var/comoonics/chrootpath
   return_code
   step "Moving chroot successfully done." "movechroot"
+else
+  echo_local -n "Removing reference to chrootpath."
+  rm -f $(repository_get_value newroot)/var/comoonics/chrootpath 2>/dev/null
+  success
 fi
 
+echo_local -n "Writing xtab.. "
+if [ $(repository_get_value chrootneeded) -eq 0 ]; then
+  create_xtab "$(repository_get_value newroot)/$(repository_get_value xtabfile)" "$(repository_get_value cdsl_local_dir)" "$(repository_get_value chroot_mount)" 
+else  
+  create_xtab "$(repository_get_value newroot)/$(repository_get_value xtabfile)" "$(repository_get_value cdsl_local_dir)"
+fi
+success
+
+echo_local -n "Writing xrootfs.. "
+create_xrootfs $(repository_get_value newroot)/$(repository_get_value xrootfsfile) $(repository_get_value rootfs)
+success
+
+echo_local -n "Writing xkillall_procs.. "
+create_xkillall_procs "$(repository_get_value newroot)/$(repository_get_value xkillallprocsfile)" "$(repository_get_value clutype)" "$(repository_get_value rootfs)"
+success
+step "Created xtab,xrootfs,xkillall_procs file" "xfiles"
+	 
 echo_local -n "cleaning up initrd ..."
 exec_local clean_initrd
 success
 echo
-set "Cleaned up initrd" "cleanup"
+step "Cleaned up initrd" "cleanup"
 
 #TODO umount $newroot/proc again
 
@@ -501,7 +522,11 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.76  2009-03-06 15:03:02  marc
+# Revision 1.77  2009-04-14 14:58:49  marc
+# - small bugfix with stepmode and i being pressed and step instead of set
+# - added support for xfiles
+#
+# Revision 1.76  2009/03/06 15:03:02  marc
 # fixed typos
 #
 # Revision 1.75  2009/03/06 13:25:48  marc
