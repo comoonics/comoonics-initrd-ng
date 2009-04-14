@@ -1,5 +1,5 @@
 #
-# $Id: chroot-lib.sh,v 1.8 2009-03-25 13:49:06 marc Exp $
+# $Id: chroot-lib.sh,v 1.9 2009-04-14 14:52:13 marc Exp $
 #
 # @(#)$File$
 #
@@ -441,6 +441,19 @@ function get_all_files_dependent() {
 	      create_dir ${mountpoint}$dirname
 	      perlcc_file $filename ${mountpoint}$filename
 	      get_dependent_files ${mountpoint}$filename
+        elif [ ! -e "$line" ] && [ "${line:0:4}" = '@mapfile' ]; then
+          declare -a aline
+          aline=( $(echo $line | tr '&' ' ') )
+	      mapdir=${aline[2]}
+     	  mapto=${aline[3]}
+          line=${aline[1]}
+          [ -n "$verbose" ] && echo "Mapping $line from $mapdir to $mapto" >&2
+	      local filename=`which $line 2>/dev/null`
+	      if [ -z $filename ]; then
+	        filename=$line
+  	      fi
+	      echo "@mapfile&$filename&$mapdir&$mapto"
+          # get_dependent_files $filename
         elif [ ! -e "$line" ] && [ "${line:0:4}" = '@map' ]; then
           declare -a aline
           aline=( $(echo $line | tr '&' ' ') )
@@ -507,21 +520,25 @@ function get_all_files_dependent() {
 #  SOURCE
 #
 function get_min_modules() {
-	local loaded_modules="/proc/modules"
-	echo $@
-    awk '{ sub("_", "[_-]", $1); print $1; }' $loaded_modules
-	awk '$1="alias" { print $3; }' $modules_conf
-	cc_get_all_drivers "" "" "" $(repository_get_value cluster_conf)
+	#local loaded_modules="/proc/modules"
+	echo $@ | tr ' ' '\n' | awk '{ gsub("_", "[_-]", $1); print $1; }'
+    #awk '{ gsub("_", "[_-]", $1); print $1; }' $loaded_modules
+	awk '$1=="alias" { print $3; }{next;}' $modules_conf | tr ' ' '\n' | awk '{ gsub("_", "[_-]", $1); print $1; }'
+	cc_get_all_drivers "" "" "" $(repository_get_value cluster_conf) | tr ' ' '\n' | awk '{ gsub("_", "[_-]", $1); print $1; }'
 	if clusterfs_blkstorage_needed $(repository_get_value rootfs); then
-		storage_get_drivers $(repository_get_value cluster_conf)
+		storage_get_drivers $(repository_get_value cluster_conf) | tr ' ' '\n' | awk '{ gsub("_", "[_-]", $1); print $1; }'
 	fi
-	get_default_drivers
+	get_default_drivers | tr ' ' '\n' | awk '{ gsub("_", "[_-]", $1); print $1; }'
 }
 #************ get_min_modules
 
 #####################
 # $Log: chroot-lib.sh,v $
-# Revision 1.8  2009-03-25 13:49:06  marc
+# Revision 1.9  2009-04-14 14:52:13  marc
+# - added mapfile needed for update initrd
+# - fixed bug in get_min_modules where not all modules are constructed with  [-_]
+#
+# Revision 1.8  2009/03/25 13:49:06  marc
 # - fixed BUG 338 (klogd not being started in initrd)
 # - added global filters to filter files from initrd
 # - cleanups
