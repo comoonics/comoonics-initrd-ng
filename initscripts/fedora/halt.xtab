@@ -8,10 +8,6 @@
 #               Modified for RHS Linux by Damien Neil
 #
 
-# Patched for comoonics patch 1.4
-
-KILLALL_OPTS=$(awk '{ print "-x " $0; }' /etc/xkillall_procs 2>/dev/null)
-
 NOLOCALE=1
 . /etc/init.d/functions
 
@@ -75,9 +71,9 @@ esac
 # don't umount everything specified in xtab
 xtab=$(awk 'BEGIN{printf"/("}{ gsub(/\//, "\\/"); printf $0"|";}END{printf"^$)/"}' /etc/xtab 2>/dev/null)
 
-action $"Sending all processes the TERM signal..." /sbin/killall5 -15 ${KILLALL_OPTS}
+action $"Sending all processes the TERM signal..." /sbin/killall5 -15
 sleep 2
-action $"Sending all processes the KILL signal..."  /sbin/killall5 -9 ${KILLALL_OPTS}
+action $"Sending all processes the KILL signal..."  /sbin/killall5 -9
 
 # Write to wtmp file before unmounting /var
 /sbin/halt -w
@@ -153,7 +149,7 @@ awk ''$xtab'{ next; }
 done
 
 if [ -x /sbin/halt.local ]; then
-   /sbin/halt.local "$message" "$HALTARGS" "$kexec_command" "$command"
+   /sbin/halt.local
 fi
 
 # Remount read only anything that's left mounted.

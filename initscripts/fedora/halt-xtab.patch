@@ -1,0 +1,33 @@
+--- halt.orig	2009-04-07 07:36:04.000000000 +0200
++++ halt	2009-04-07 07:39:26.000000000 +0200
+@@ -87,8 +87,12 @@
+ 
+ [ -x /sbin/hwclock ] && action $"Syncing hardware clock to system time" /sbin/hwclock --systohc
+ 
++# don't umount everything specified in xtab
++xtab=$(awk 'BEGIN{printf"/("}{ gsub(/\//, "\\/"); printf $0"|";}END{printf"^$)/"}' /etc/xtab 2>/dev/null)
++
+ # Try to unmount tmpfs filesystems to avoid swapping them in.  Ignore failures.
+ tmpfs=$(awk '$2 ~ /^\/($|proc|dev)/ { next; }
++            '$xtab' { next; }
+ 	     $3 == "tmpfs" { print $2; }' /proc/mounts | sort -r)
+ [ -n "$tmpfs" ] && fstab-decode $UMOUNT $tmpfs 2>/dev/null
+ 
+@@ -120,6 +124,7 @@
+     -f
+ 
+ LANG=C __umount_loop '$2 ~ /^\/$|^\/proc|^\/dev/{next}
++        '$xtab' { next; }
+ 	$3 == "tmpfs" || $3 == "proc" {print $2 ; next}
+ 	/(loopfs|autofs|nfs|cifs|smbfs|ncpfs|sysfs|^none|^\/dev\/ram|^\/dev\/root$)/ {next}
+ 	{print $2}' /proc/mounts \
+@@ -136,7 +141,8 @@
+ 
+ # Try all file systems other than root, essential filesystems and RAM disks,
+ # one last time.
+-awk '$2 !~ /\/(|dev|proc|selinux|sys)$/ && $1 !~ /^\/dev\/ram/ { print $2 }' \
++awk ''$xtab'{ next; }
++    $2 !~ /\/(|dev|proc|selinux|sys)$/ && $1 !~ /^\/dev\/ram/ { print $2 }' \
+     /proc/mounts | sort -r | \
+   while read line; do
+     fstab-decode $UMOUNT -f $line

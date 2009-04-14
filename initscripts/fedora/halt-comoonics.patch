@@ -1,0 +1,11 @@
+--- halt.orig	2009-04-06 21:47:08.000000000 +0200
++++ halt	2009-04-06 21:47:04.000000000 +0200
+@@ -8,6 +8,8 @@
+ #               Modified for RHS Linux by Damien Neil
+ #
+ 
++# Patched for comoonics patch 1.5
++
+ NOLOCALE=1
+ . /etc/init.d/functions
+ 

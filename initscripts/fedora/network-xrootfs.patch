@@ -1,0 +1,20 @@
+--- network.orig	2009-04-06 11:22:38.000000000 +0200
++++ network	2009-04-06 11:30:13.000000000 +0200
+@@ -26,6 +26,8 @@
+ 	. /etc/sysconfig/pcmcia
+ fi
+ 
++# don't umount everything specified in xrootfs
++xrootfs=$(awk 'BEGIN{printf"/("}{ gsub(/\//, "\\/"); printf $0"|";}END{printf"^$)/"}' /etc/xrootfs 2>/dev/null)
+ 
+ # Check that networking is up.
+ [ "${NETWORKING}" = "no" ] && exit 0
+@@ -173,7 +175,7 @@
+         rootfs=$(awk '{ if ($1 !~ /^[ \t]*#/ && $2 == "/" && $3 != "rootfs") { print $3; }}' /proc/mounts)
+         rootopts=$(awk '{ if ($1 !~ /^[ \t]*#/ && $2 == "/") { print $4; }}' /etc/mtab)
+ 	
+-	if [[ "$rootfs" =~ ^nfs ]] || [[ "$rootopts" =~ "_netdev|_rnetdev" ]] ; then
++	if [[ "$rootfs" =~ ^nfs ]] || [[ "$rootfs" =~ $xrootfs ]] || [[ "$rootopts" =~ "_netdev|_rnetdev" ]] ; then
+ 		exit 1
+ 	fi
+   

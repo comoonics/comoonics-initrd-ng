@@ -1,0 +1,11 @@
+--- network.xrootfs	2009-04-06 11:31:30.000000000 +0200
++++ network	2009-04-06 11:31:43.000000000 +0200
+@@ -13,6 +13,8 @@
+ # Description: Bring up/down networking
+ ### END INIT INFO
+ 
++# Patched for comoonics patch 1.6
++
+ # Source function library.
+ . /etc/init.d/functions
+ 

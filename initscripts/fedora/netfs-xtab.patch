@@ -1,0 +1,33 @@
+--- netfs.orig	2009-04-06 11:33:08.000000000 +0200
++++ netfs	2009-04-06 11:32:54.000000000 +0200
+@@ -19,17 +19,19 @@
+ . /etc/init.d/functions
+ . /etc/sysconfig/network
+ 
++xtab=$(awk 'BEGIN{printf"/("}{ gsub(/\//, "\\/"); printf $0"|";}END{printf"^$)/"}' /etc/xtab 2>/dev/null)
++
+ NFSFSTAB=`LC_ALL=C awk '!/^#/ && $3 ~ /^nfs/ && $3 != "nfsd" && $4 !~ /noauto/ { print $2 }' /etc/fstab`
+ SMBFSTAB=`LC_ALL=C awk '!/^#/ && $3 == "smbfs" && $4 !~ /noauto/ { print $2 }' /etc/fstab`
+ CIFSFSTAB=`LC_ALL=C awk '!/^#/ && $3 == "cifs" && $4 !~ /noauto/ { print $2 }' /etc/fstab`
+ NCPFSTAB=`LC_ALL=C awk '!/^#/ && $3 == "ncpfs" && $4 !~ /noauto/ { print $2 }' /etc/fstab`
+ NETDEVFSTAB=`LC_ALL=C awk '!/^#/ && $4 ~/_netdev/ && $4 !~ /noauto/ { print $1 }' /etc/fstab`
+ 
+-NFSMTAB=`LC_ALL=C awk '$3 ~ /^nfs/ && $3 != "nfsd" && $2 != "/" { print $2 }' /proc/mounts`
++NFSMTAB=`LC_ALL=C awk ''$xtab' { next; } $3 ~ /^nfs/ && $3 != "nfsd" && $2 != "/" { print $2 }' /proc/mounts`
+ SMBMTAB=`LC_ALL=C awk '$3 == "smbfs" { print $2 }' /proc/mounts`
+ CIFSMTAB=`LC_ALL=C awk '$3 == "cifs" { print $2 }' /proc/mounts`
+ NCPMTAB=`LC_ALL=C awk '$3 == "ncpfs" { print $2 }' /proc/mounts`
+-NETDEVMTAB=`LC_ALL=C awk '$4 ~ /_netdev/ && $2 != "/" { print $2 }' /etc/mtab`
++NETDEVMTAB=`LC_ALL=C awk ''$xtab'{ next; } $4 ~ /_netdev/ && $2 != "/" { print $2 }' /etc/mtab`
+ 
+ # See how we were called.
+ case "$1" in
+@@ -104,7 +106,7 @@
+ 			$"Unmounting network block filesystems (retry): "
+ 	fi
+   	if [ -n "$NFSMTAB" ]; then
+-		__umount_loop '$3 ~ /^nfs/ && $2 != "/" {print $2}' \
++		__umount_loop ''$xtab' { next; } $3 ~ /^nfs/ && $2 != "/" {print $2}' \
+ 			/proc/mounts \
+ 			$"Unmounting NFS filesystems: " \
+ 			$"Unmounting NFS filesystems (retry): " \

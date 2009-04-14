@@ -15,8 +15,6 @@
 # Description: Mount and unmount network filesystems.
 ### END INIT INFO
 
-# Patched for comoonics patch 1.2
-
 [ -f /etc/sysconfig/network ] || exit 0
 . /etc/init.d/functions
 . /etc/sysconfig/network

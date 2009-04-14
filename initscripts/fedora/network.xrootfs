@@ -13,8 +13,6 @@
 # Description: Bring up/down networking
 ### END INIT INFO
 
-# Patched for comoonics patch 1.5
-
 # Source function library.
 . /etc/init.d/functions
 
