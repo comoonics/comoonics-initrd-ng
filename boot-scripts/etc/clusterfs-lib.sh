@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.34 2009-03-25 13:50:26 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.35 2009-04-14 14:53:47 marc Exp $
 #
 # @(#)$File$
 #
@@ -528,6 +528,24 @@ function cc_get_rootfs {
 }
 #******** cc_get_rootfs
 
+#****f* clusterfs-lib.sh/cc_get_userspace_procs
+#  NAME
+#    cc_get_userspace_procs
+#  SYNOPSIS
+#    function cc_get_userspace_procs(cluster_conf, nodename)
+#  DESCRIPTION
+#    gets userspace programs that are to be running dependent on rootfs
+#  SOURCE
+function cc_get_userspace_procs {
+  local clutype=$1
+
+  typeset -f ${clutype}_userspace_procs >/dev/null 2>/dev/null
+  if [ $? -eq 0 ]; then
+    ${clutype}_get_userspace_procs $*
+  fi
+}
+#******** cc_get_userspace_procs
+
 #****f* clusterfs-lib.sh/cc_get_mountopts
 #  NAME
 #    cc_get_mountopts
@@ -753,6 +771,7 @@ function cc_auto_syslogconfig {
   local local_log=$4
   local syslog_logfile=$5
   local clutype=$(repository_get_value clutype)
+  local debug=$(repository_get_value debug)
   
   local syslog_server_list=""
   local syslog_conf="/etc/syslog.conf"
@@ -772,9 +791,13 @@ function cc_auto_syslogconfig {
   which syslogd >/dev/null
   if [ $? -eq 0 ]; then
     echo_local -n "Creating syslog config for syslog servers: $syslog_server_list"
-    cat <<EOSYSLOG > ${chroot_path}${syslog_conf}
+    if [ -n "$debug" ]; then
+      cat <<EOSYSLOG > ${chroot_path}${syslog_conf}
 kern,daemon.*   /dev/console
 EOSYSLOG
+    else
+      echo -n > ${chroot_path}${syslog_conf}
+    fi
   
     for syslog_server in $syslog_server_list; do
       echo '*.* @'"$syslog_server" >> ${chroot_path}${syslog_conf}
@@ -971,7 +994,7 @@ function clusterfs_services_restart {
 #
 function clusterfs_services_restart_newroot {
   local rootfs=$(repository_get_value rootfs)
-  ${rootfs}_services_restart_newroot $*
+  ${rootfs}_services_restart_newroot "$1" "$2" "$3" "$4"
 }
 #***** clusterfs_services_restart_newroot
 
@@ -1014,6 +1037,24 @@ function clusterfs_mount {
   return_code
 }
 #***** clusterfs_mount
+
+#****f* clusterfs-lib.sh/clusterfs_get_userspace_procs
+#  NAME
+#    clusterfs_get_userspace_procs
+#  SYNOPSIS
+#    function clusterfs_get_userspace_procs(cluster_conf, nodename)
+#  DESCRIPTION
+#    gets userspace programs that are to be running dependent on rootfs
+#  SOURCE
+function clusterfs_get_userspace_procs {
+  local rootfs=$1
+
+  typeset -f ${rootfs}_userspace_procs >/dev/null 2>/dev/null
+  if [ $? -eq 0 ]; then
+    ${rootfs}_get_userspace_procs $*
+  fi
+}
+#******** clusterfs_get_userspace_procs
 
 #****f* gfs-lib.sh/cluster_restart_cluster_services
 #  NAME
@@ -1249,7 +1290,11 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.34  2009-03-25 13:50:26  marc
+# Revision 1.35  2009-04-14 14:53:47  marc
+# - added cc_get_userspace_procs and clusterfs_get_userspace_procs
+# - fixed syslog/klog bug and changed default loglevel for console only if debug is on
+#
+# Revision 1.34  2009/03/25 13:50:26  marc
 # - added get_drivers functions to return modules in more general
 # - fixed Bug 338 (klogd not being started in initrd)
 #
