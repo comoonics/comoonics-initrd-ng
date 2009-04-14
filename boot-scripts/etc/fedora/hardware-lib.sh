@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.4 2009-03-06 13:20:39 marc Exp $
+# $Id: hardware-lib.sh,v 1.5 2009-04-14 14:47:45 marc Exp $
 #
 # @(#)$File$
 #
@@ -24,6 +24,16 @@
 #    Libraryfunctions for hardware support functions for Red Hat
 #    Enterprise Linux 5.
 #*******
+
+function fedora10_hardware_detect() {
+	fedora9_hardware_detect $*
+}
+function fedora10_udev_start() {
+	fedora9_udev_start $*
+}
+function fedora10_udev_stop() {
+	fedora9_udev_stop $*
+}
 
 #****f* hardware-lib.sh/rhel5_hardware_detect
 #  NAME
@@ -84,7 +94,10 @@ function fedora9_udev_stop() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.4  2009-03-06 13:20:39  marc
+# Revision 1.5  2009-04-14 14:47:45  marc
+# added fedora10 functions
+#
+# Revision 1.4  2009/03/06 13:20:39  marc
 # start udev implicitly
 #
 # Revision 1.3  2009/02/20 09:50:42  marc
