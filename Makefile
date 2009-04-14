@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.50 2009-02-26 07:12:57 marc Exp $
+# $Id: Makefile,v 1.51 2009-04-14 15:06:18 marc Exp $
 #
 # @(#)$file$
 #
@@ -144,6 +144,7 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/std-lib.sh \
   boot-scripts/etc/xen-lib.sh \
   boot-scripts/etc/rhel4/boot-lib.sh \
+  boot-scripts/etc/rhel4/gfs-lib.sh \
   boot-scripts/etc/rhel4/hardware-lib.sh \
   boot-scripts/etc/rhel4/network-lib.sh \
   boot-scripts/etc/rhel5/boot-lib.sh \
@@ -159,7 +160,8 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/fedora/gfs-lib.sh \
   boot-scripts/etc/fedora/hardware-lib.sh \
   boot-scripts/etc/fedora/network-lib.sh \
-  boot-scripts/etc/fedora/nfs-lib.sh
+  boot-scripts/etc/fedora/nfs-lib.sh \
+  boot-scripts/etc/stdlib.py
 #************ LIB_FILES 
 #****d* Makefile/SYSTEM_CFG_DIR
 #  NAME
@@ -268,7 +270,9 @@ CFG_FILES=basefiles.list \
     rpms.initrd.d/fedora/dm_multipath.list \
     rpms.initrd.d/fedora/hardware.list \
     rpms.initrd.d/fedora/python.list \
-    rpms.initrd.d/fedora/nfs.list    
+    rpms.initrd.d/fedora/nfs.list \
+    filters.list \
+    filters.initrd.d/empty.list
 	
 #************ CFG_FILES 
 
@@ -536,7 +540,6 @@ channelbuild:
 
 .PHONY:rpm	
 rpm: rpmbuild rpmbuild-initscripts-el4 rpmbuild-initscripts-el5 rpmbuild-initscripts-sles10 rpmbuild-initscripts-fedora \
-rpmbuild-listfiles-el4 rpmbuild-listfiles-el5 \
 rpmsign
 
 .PHONY: channel
@@ -545,7 +548,10 @@ channel: rpm channelcopy channelbuild
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.50  2009-02-26 07:12:57  marc
+# Revision 1.51  2009-04-14 15:06:18  marc
+# new files
+#
+# Revision 1.50  2009/02/26 07:12:57  marc
 # added a sleep
 #
 # Revision 1.49  2009/02/25 13:44:16  marc
