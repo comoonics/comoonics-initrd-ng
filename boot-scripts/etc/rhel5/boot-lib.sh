@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.3 2008-05-28 08:49:22 mark Exp $
+# $Id: boot-lib.sh,v 1.4 2009-04-14 14:49:22 marc Exp $
 #
 # @(#)$File$
 #
@@ -44,7 +44,12 @@ function create_chroot () {
   exec_local cp -a /dev $chroot_path/
   exec_local mount -t devpts none $chroot_path/dev/pts
   exec_local mount -t proc proc $chroot_path/proc
-  exec_local mount -t sysfs none $chroot_path/sys
+  exec_local mount -t sysfs sysfs $chroot_path/sys
 }
 #************ create_chroot
 
+#################
+# $Log: boot-lib.sh,v $
+# Revision 1.4  2009-04-14 14:49:22  marc
+# sys=>sysfs
+#
