@@ -1,5 +1,5 @@
 #
-# $Id: nfs-lib.sh,v 1.11 2009-03-25 13:52:35 marc Exp $
+# $Id: nfs-lib.sh,v 1.12 2009-04-14 14:57:01 marc Exp $
 #
 # @(#)$File$
 #
@@ -47,6 +47,13 @@ function nfs4_services_start {
   done
   return 0
 }
+function nfs4_services_stop {
+  local services="rpc_idmapd rpcbind rpcpipefs"
+  for service in $services; do
+    nfs4_stop_$service $*
+  done
+  return 0
+}
 # obsolete
 #function nfs4_services_restart {
 #	return nfs_services_restart $* 
@@ -54,7 +61,12 @@ function nfs4_services_start {
 function nfs4_start_rpcpipefs {
 	nfs_start_rpcpipefs $*
 }
-
+function nfs4_stop_rpcpipefs {
+	nfs_stop_rpcpipefs $*
+}
+function nfs4_get_drivers {
+	nfs_get_drivers $*
+}
 function nfs4_services_restart_newroot {
   local newroot=$1
   local lock_method=$2
@@ -64,21 +76,28 @@ function nfs4_services_restart_newroot {
   local services=""
   if [ -n "$services" ]; then
     for service in $services; do
-      nfs_stop_$service "no_chroot"
+      exec_local nfs4_stop_$service "no_chroot"
       if [ $? -ne 0 ]; then
         return $?
       fi
     done
 
     for service in $services; do
-      nfs_start_$service $newroot/$chroot_path
+      exec_local nfs4_start_$service "$newroot" "$lock_method" "$lvm_sup" "$chroot_path"
       if [ $? -ne 0 ]; then
         return $?
       fi
     done
   fi
 
-  nfs_services_restart_newroot $*
+#  nfs_services_restart_newroot $*
+
+  if [ -d "$newroot/var/lib/nfs/rpc_pipefs" ]; then
+    rm -rf $newroot/var/lib/nfs/rpc_pipefs
+    ln -s $newroot/$chroot_path/var/lib/nfs/rpc_pipefs $newroot/var/lib/nfs/rpc_pipefs
+  fi
+
+  touch $newroot/var/lock/subsys/rpcbind
 
   return $return_c
 }
@@ -164,6 +183,20 @@ function nfs4_stop_rpc_idmapd {
 function nfs4_checkhosts_alive {
 	nfs_checkhosts_alive $*
 }
+#************* nfs4_chroot_needed
+#  NAME
+#    nfs4_blkstorage_needed
+#  SYNOPSIS
+#    function nfs4_blkstorage_needed(initrd|init|..)
+#  DESCRIPTION
+#    Returns 0 if this rootfilesystem needs a blkstorage inside initrd or init.
+#  IDEAS
+#  SOURCE
+#
+function nfs4_blkstorage_needed {
+	return 1
+}
+#************ nfs_blkstorage_needed
 
 # for nfsv4 we need a chroot cause some services (rpc.idmapd, rpcbind) have to be running
 # not on the rootfs. 
@@ -284,6 +317,26 @@ function nfs_services_start {
   return 0
 }
 #************ nfs_services_start
+
+#****f* nfs-lib.sh/nfs_services_stop
+#  NAME
+#    nfs_services_stop
+#  SYNOPSIS
+#    function nfs_services_stop
+#  DESCRIPTION
+#    This function starts all relevant services
+#  IDEAS
+#  SOURCE
+#
+function nfs_services_stop {
+  local services="portmap"
+  for service in $services; do
+    nfs_stop_$service $*
+  done
+  return 0
+}
+#************ nfs_services_stop
+
 #****f* nfs-lib.sh/nfs_start_rpcpipefs
 #  NAME
 #    nfs_start_rpcpipefs
@@ -295,21 +348,53 @@ function nfs_services_start {
 #  SOURCE
 #
 function nfs_start_rpcpipefs {
-  local chrootpath=$1
+  local newrootpath=$1
+  local chroot_path=$4
+  echo_local "nfs_start_rpcpipefs($newrootpath, $chroot_path)"
   local pipefspath="/var/lib/nfs/rpc_pipefs"
-  if [ -n "$chrootpath" ] && [ ! -d ${chrootpath}${pipefspath} ]; then
-    if [ -e ${chrootpath}${pipefspath} ] || [ -L ${chrootpath}${pipefspath} ]; then
-      rm -f ${chrootpath}${pipefspath}
+  if [ -n "$newrootpath" ] && [ ! -d $(dirname ${newrootpath}${pipefspath}) ]; then
+    if [ -e ${newrootpath}$(dirname ${pipefspath}) ] || [ -L ${newrootpath}$(dirname ${pipefspath}) ]; then
+      rm -f ${newrootpath}$(dirname ${pipefspath})
     fi
-  	mkdir -p ${chrootpath}${pipefspath}
+    if [ -z "$chroot_path" ] && [ ! -d ${newrootpath}$(dirname ${pipefspath}) ]; then
+  		mkdir -p ${newrootpath}$(dirname ${pipefspath})
+	fi
   fi
-  exec_local mount -t rpc_pipefs sunrpc ${chrootpath}${pipefspath}
-  if [ -n "$chrootpath" ] && [ -e ${pipefspath} ]; then
+  if [ -n "$newrootpath" ] && [ ! -d ${newrootpath}${pipefspath} ]; then
+    if [ -e ${newrootpath}${pipefspath} ] || [ -L ${newrootpath}${pipefspath} ]; then
+      rm -f ${newrootpath}${pipefspath}
+    fi
+    if [ -z "$chroot_path" ] && [ ! -d "${newrootpath}${pipefspath}" ]; then
+  		mkdir -p ${newrootpath}${pipefspath}
+	fi
+  fi
+  exec_local mount -t rpc_pipefs sunrpc ${newrootpath}/${chroot_path}/${pipefspath}
+  if [ -n "$newrootpath" ] && [ -e ${pipefspath} ]; then
   	mv ${pipefspath} ${pipefspath}.old
   fi
-  ln -s ${chrootpath}${pipefspath} ${pipefspath}
+  if [ -n "$newrootpath" ] && [ -z "$chroot_path" ]; then
+    ln -s ${newrootpath}${pipefspath} ${pipefspath}
+  fi
+  if [ -n "$newrootpath" ] && [ -n "$chroot_path" ]; then
+    ln -s ${newrootpath}/${chroot_path}/${pipefspath} ${newrootpath}/${pipefspath}
+  fi
 }
 #************ nfs_start_rpcpipefs
+
+#****f* nfs-lib.sh/nfs_stop_rpcpipefs
+#  NAME
+#    nfs_stop_rpcpipefs
+#  SYNOPSIS
+#    function nfs_stop_rpcpipefs
+#  DESCRIPTION
+#    This function mounts the rpcpipefs and creates the link for it.
+#  IDEAS
+#  SOURCE
+#
+function nfs_stop_rpcpipefs {
+	true
+}
+#************ nfs_stop_rpcpipefs
 
 #****f* nfs-lib.sh/nfs_start_rpcbind
 #  NAME
@@ -341,7 +426,7 @@ function nfs_start_rpcbind {
 #  SOURCE
 #
 function nfs_stop_rpcbind {
-  killall rpcbind
+  killall rpcbindrpcpipefs
 }
 #************ nfs_stop_rpcbind
 
@@ -464,7 +549,11 @@ function nfs_init {
 #********* nfs_init
 
 # $Log: nfs-lib.sh,v $
-# Revision 1.11  2009-03-25 13:52:35  marc
+# Revision 1.12  2009-04-14 14:57:01  marc
+# - many fixes with nfs4 and rebooting and starting rpc.idmapd in chroot
+# - dependent fixes with nfs and pipefs being liked if need be.
+#
+# Revision 1.11  2009/03/25 13:52:35  marc
 # - added get_drivers functions to return modules in more general
 #
 # Revision 1.10  2009/02/24 12:03:04  marc
