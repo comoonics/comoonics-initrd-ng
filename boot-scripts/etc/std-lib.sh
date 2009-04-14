@@ -1,5 +1,5 @@
 #
-# $Id: std-lib.sh,v 1.7 2009-02-27 08:38:59 marc Exp $
+# $Id: std-lib.sh,v 1.8 2009-04-14 14:57:35 marc Exp $
 #
 # @(#)$File$
 #
@@ -776,9 +776,177 @@ function usage() {
 }
 #************ usage
 
+#****f* std-lib.sh/cpio_and_zip_initrd
+#  NAME
+#    cpio_and_zip_initrd
+#  SYNOPSIS
+#    function cpio_and_zip_initrd() {
+#  DESCRIPTION
+#    Creates an imagefile with cpio and compresses it with zip
+#
+function cpio_and_zip_initrd() {
+  local mountpoint=$1
+  local filename=$2
+  local force=$3
+  local opts=""
+  [ -z "$compression_cmd" ] && compression_cmd="gzip"
+  [ -z "$compression_opts" ] && compression_opts="-c -9"
+  [ -n "$force" ] && [ $force -gt 0 ] && opts="-f"
+  ((cd $mountpoint; find . | cpio --quiet -c -o) >| ${filename}.tmp && $compression_cmd $compression_opts $opts ${filename}.tmp > $filename && rm ${filename}.tmp)|| (fuser -mv "$mountpoint" && exit 1)
+}
+#************ cpio_and_zip_initrd
+
+#****f* std-lib.sh/unzip_and_uncpio_initrd
+#  NAME
+#    unzip_and_uncpio_initrd
+#  SYNOPSIS
+#    function unzip_and_uncpio_initrd() {
+#  DESCRIPTION
+#    Unpacks a zipped cpio image
+#
+function unzip_and_uncpio_initrd() {
+  local mountpoint=$1
+  local filename=$2
+  local force=$3
+  local opts=""
+  [ -z "$compression_cmd" ] && compression_cmd="gzip"
+  [ -z "$compression_opts_un" ] && compression_opts_un="-c -d"
+  [ -n "$force" ] && [ $force -gt 0 ] && opts="-f"
+  pushd $mountpoint >/dev/null 2>&1
+  $compression_cmd $compression_opts_un $filename | cpio -i -d -m
+  popd >/dev/null 2>&1
+}
+#************ unzip_and_uncpio_initrd
+
+#****f* std-lib.sh/get_files_newer
+#  NAME
+#    get_files_newer
+#  SYNOPSIS
+#    function get_files_newer(PATHS) {
+#  DESCRIPTION
+#    reads a list of files from stdin and finds then relative to paths.
+#
+function get_files_newer() {
+	local file=
+	local line=
+	local mtime=
+	local file2=
+	local paths=$@
+	while read line; do
+		file=$(echo $line | cut -s -d';' -f1)
+	    mtime=$(echo $line | cut -s -d';' -f2)
+		file2=$(find_file $file $paths)
+		if is_newer $file "$mtime" $file2 ""; then
+			echo $file2
+		fi
+	done
+}
+#******* get_files_newer
+
+#****f* std-lib.sh/create_filelist
+#  NAME
+#    create_filelist
+#  SYNOPSIS
+#    function create_filelist(path) {
+#  DESCRIPTION
+#    Creates a filelist for a given path.
+#
+function create_filelist() {
+	path=$1
+	pushd $path >/dev/null 2>&1
+    find ./ -not -type d -printf "%p;%T@\n"
+    popd >/dev/null 2>&1 
+}
+#******* create_filelist
+
+#****f* std-lib.sh/get_mappaths_from_depfiles
+#  NAME
+#    get_mappaths_from_depfiles
+#  SYNOPSIS
+#    function get_mappaths_from_depfiles(PATHS) {
+#  DESCRIPTION
+#    finds a files in paths and outputs the full path.
+#
+function get_mappaths_from_depfiles() {
+   local depfile=$1
+   resolve_file $depfile | grep "@map" | cut -s -d'&' -f2
+}
+#******* get_mappaths_from_depfiles
+
+function create_python_dict_from_mappaths {
+	local mappaths=$@
+	local mappath=
+	for mappath in $mappaths; do
+		echo '"'$mappaths'":"/",'
+	done
+}
+
+#****f* std-lib.sh/find_file
+#  NAME
+#    find_file
+#  SYNOPSIS
+#    function find_file(PATHS) {
+#  DESCRIPTION
+#    finds a files in paths and outputs the full path.
+#
+function find_file() {
+	local file=$1
+	local paths=${@:2}
+	local path
+	
+	if [ -z "$paths" ]; then
+		paths="/ ."
+	fi
+	
+	for path in $paths; do
+		if [ -e ${path}/$file ]; then
+			echo ${path}/$file | sed -e 's/\/\//\//g'
+			return 0
+		fi
+	done
+	return 1
+}
+#********* find_file
+
+#****f* std-lib.sh/is_newer
+#  NAME
+#    is_newer
+#  SYNOPSIS
+#    function is_newer(file1, file2) {
+#  DESCRIPTION
+#    returns 0 if file2 is newer (modification time) then file1.
+#
+function is_newer() {
+	local file1=$1
+	local mtime1=$2
+	local file2=$3
+	local mtime2=$4
+
+	if [ -z "$mtime1" ]; then
+		mtime1=$(stat -c "%Y" $file1 2>/dev/null)
+	fi
+	if [ -z "$mtime2" ]; then
+		mtime2=$(stat -c "%Y" $file2 2>/dev/null)
+	fi
+
+	if [ -z "$mtime1" ] || [ -z "$mtime2" ]; then
+		return 2
+	fi
+	
+	if [ $mtime1 -lt $mtime2 ]; then
+		return 0
+	else
+		return 1
+    fi	
+}
+#********* is_newer
+
 #################
 # $Log: std-lib.sh,v $
-# Revision 1.7  2009-02-27 08:38:59  marc
+# Revision 1.8  2009-04-14 14:57:35  marc
+# added functions to unpack the initrd and find newer files
+#
+# Revision 1.7  2009/02/27 08:38:59  marc
 # fixed bash strangeness with rhel4
 #
 # Revision 1.6  2009/01/28 12:56:01  marc
