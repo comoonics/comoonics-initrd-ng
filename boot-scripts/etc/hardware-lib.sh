@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.30 2009-03-25 13:52:14 marc Exp $
+# $Id: hardware-lib.sh,v 1.31 2009-04-14 14:56:04 marc Exp $
 #
 # @(#)$File$
 #
@@ -103,7 +103,7 @@ function dev_start() {
 #  SOURCE
 #
 function scsi_get_drivers {
-	echo "sd[-_]mod sg libata scsi[-_]transport_fc sata[-_]svw sata[-_]mv scsi[-_]mod"
+	echo "sd_mod sg libata scsi_transport_fc sata_svw sata_mv scsi_mod"
 }
 #************ scsi_get_drivers
 
@@ -295,7 +295,7 @@ function dm_start {
 #  SOURCE
 #
 function dm_get_drivers {
-	echo "dm_mod dm-mirror dm-snapshot dm-multipath"
+	echo "dm_round_robin dm_multipath dm_snapshot dm_mirror dm_mod"
 }
 #************ dm_get_drivers
 
@@ -590,8 +590,25 @@ function validate_storage() {
 #  SOURCE
 #
 function storage_get_drivers {
-	scsi_get_drivers
-	dm_get_drivers
+	xen_domx_detect
+	if [ $? -eq 0 ]; then
+		xen_get_drivers
+	else
+		scsi_get_drivers
+		dm_get_drivers
+	fi
+
+	# check for drbd
+	typeset -f isDRBDRootsource >/dev/null 2>&1 && isDRBDRootsource $(repository_get_value rootsource)
+	if [ $? -eq 0 ]; then
+		drbd_get_drivers
+	fi		
+	# check for iscsi
+	typeset -f isISCSIRootsource >/dev/null 2>&1 && isISCSIRootsource $(repository_get_value rootsource)
+	if [ $? -eq 0 ]; then
+		scsi_get_drivers
+		iscsi_get_drivers
+	fi
 }
 #************ storage_get_drivers
 
@@ -632,7 +649,11 @@ function sysctl_load() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.30  2009-03-25 13:52:14  marc
+# Revision 1.31  2009-04-14 14:56:04  marc
+# - extended storage_get_drivers to work with drbd, iscsi and xen
+# - more modules for dm_multipath and ..
+#
+# Revision 1.30  2009/03/25 13:52:14  marc
 # - added get_drivers functions to return modules in more general
 #
 # Revision 1.29  2009/03/06 13:22:47  marc
