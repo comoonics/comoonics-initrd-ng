@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.20 2009-02-27 08:42:26 marc Exp $
+# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.21 2009-04-14 15:03:33 marc Exp $
 #
 ##
 ##
@@ -51,7 +51,7 @@ Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-rhel
 Requires: comoonics-bootimage-listfiles-rhel5
 #Conflicts: 
-Release: 2.rhel5
+Release: 3.rhel5
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -150,6 +150,8 @@ done
 rm -rf %{buildroot}
 
 %changelog
+* Fri Mar 27 2009 Marc Grimme <grimme@atix.de> 1.4-3el5
+- Fixed a BUG with RHEL5 and gfs as rootfs
 * Mon Feb 02 2009 Marc Grimme <grimme@atix.de> 1.3-12el5
 - Bugfix in support for other filesystems
 * Tue Nov 18 2008 Marc Grimme <grimme@atix.de> 1.3-11el5
@@ -174,7 +176,10 @@ rm -rf %{buildroot}
 - first revision
 # ------
 # $Log: comoonics-bootimage-initscripts-el5.spec,v $
-# Revision 1.20  2009-02-27 08:42:26  marc
+# Revision 1.21  2009-04-14 15:03:33  marc
+# new version
+#
+# Revision 1.20  2009/02/27 08:42:26  marc
 # fixed bug with halt and localfilesystems
 #
 # Revision 1.19  2009/02/18 18:06:59  marc
