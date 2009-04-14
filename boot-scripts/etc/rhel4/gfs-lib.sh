@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.2 2009-03-25 13:52:52 marc Exp $
+# $Id: gfs-lib.sh,v 1.3 2009-04-14 14:50:03 marc Exp $
 #
 # @(#)$File$
 #
@@ -35,8 +35,28 @@ function gfs_get_drivers {
 }
 #*********** gfs_get_drivers
 
+#****f* gfs-lib.sh/gfs_get_userspace_procs
+#  NAME
+#    gfs_get_userspace_procs
+#  SYNOPSIS
+#    function gfs_get_userspace_procs(cluster_conf, nodename)
+#  DESCRIPTION
+#    gets userspace programs that are to be running dependent on rootfs
+#  SOURCE
+function gfs_get_userspace_procs {
+  local clutype=$1
+  local rootfs=$2
+
+  echo ""
+
+}
+#******** gfs_get_userspace_procs
+
 ###############
 # $Log: gfs-lib.sh,v $
-# Revision 1.2  2009-03-25 13:52:52  marc
+# Revision 1.3  2009-04-14 14:50:03  marc
+# overwritten gfs_get_userspaceprocs are there are none needed in RHEL4
+#
+# Revision 1.2  2009/03/25 13:52:52  marc
 # initial revision
 #
