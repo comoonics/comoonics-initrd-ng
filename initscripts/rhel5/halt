@@ -8,7 +8,7 @@
 #               Modified for RHS Linux by Damien Neil
 #
 
-# Patched for comoonics patch 1.5
+# Patched for comoonics patch 1.6
 
 
 COM_KILLALL_OPTS="-x aisexec \
@@ -182,7 +182,7 @@ __umount_loop '$3 ~ /^rpc_pipefs$/ || $3 ~ /^rpc_svc_gss_pipefs$/ {print $2}' \
     -f
 
 LANG=C __umount_loop '$2 ~ /^\/$|^\/proc|^\/dev/{next}
-	"'$COM_CHROOT_PATH'" != "" && ($2 ~ /'$COM_CHROOT_PATH'/ || $2 ~/^\/cdsl.local/) {next}
+	"'$COM_CHROOT_PATH_REAL'" != "" && ($2 ~ /'$COM_CHROOT_PATH'/ || $2 ~/^\/cdsl.local/) {next}
 	$3 == "tmpfs" || $3 == "proc" {print $2 ; next}
 	/(loopfs|autofs|nfs|cifs|smbfs|ncpfs|sysfs|^none|^\/dev\/ram|^\/dev\/root$)/ {next}
 	{print $2}' /proc/mounts \
@@ -201,7 +201,7 @@ rm -f /.autofsck
 # Try all file systems other than root, essential filesystems and RAM disks,
 # one last time.
 awk '
-"'$COM_CHROOT_PATH'" != "" && $2 ~ /'$COM_CHROOT_PATH'/ || $2 ~/^\/cdsl.local/ {next}
+"'$COM_CHROOT_PATH_REAL'" != "" && $2 ~ /'$COM_CHROOT_PATH'/ || $2 ~/^\/cdsl.local/ {next}
 $2 !~ /\/(|dev|proc|selinux)$/ && $1 !~ /^\/dev\/ram/ { print $2 }' \
     /proc/mounts | sort -r | \
   while read line; do
@@ -213,7 +213,7 @@ if [ -x /sbin/halt.local ]; then
 fi
 
 # Remount read only anything that's left mounted.
-if [ -z "$COM_CHROOT_PATH" ]; then
+if [ -z "$COM_CHROOT_PATH_REAL" ]; then
   echo $"Remounting remaining filesystems readonly"
   mount | awk '{ print $3 }' | while read line; do
     fstab-decode mount -n -o ro,remount $line
@@ -243,5 +243,8 @@ fi
 HALTARGS="-d"
 [ -f /poweroff -o ! -f /halt ] && HALTARGS="$HALTARGS -p"
 
-[ -n "$COM_CHROOT_PATH_REAL" ] && [ -f "$COM_CHROOT_PATH_REAL/com-halt.sh" ] && $COM_CHROOT_PATH_REAL/com-halt.sh "$command $HALTARGS"
-exec $command $HALTARGS
+if [ -z "$COM_CHROOT_PATH_REAL" ]; then
+   exec $command $HALTARGS
+else
+   $COM_CHROOT_PATH_REAL/com-halt.sh "$command $HALTARGS"
+fi

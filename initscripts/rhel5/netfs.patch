@@ -1,10 +1,10 @@
---- netfs.orig	2009-02-04 10:35:06.000000000 +0100
-+++ netfs	2009-02-04 10:35:57.000000000 +0100
+--- netfs.orig  2009-03-06 12:00:06.000000000 +0100
++++ netfs       2009-03-06 12:03:19.000000000 +0100
 @@ -13,6 +13,8 @@
  # Provides: $local_fs $remote_fs
  ### END INIT INFO
  
-+# Patched for comoonics patch 1.1
++# Patched for comoonics patch 1.2
 +
  [ -f /etc/sysconfig/network ] || exit 0
  . /etc/init.d/functions
