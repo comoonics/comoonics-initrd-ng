@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.62 2009-03-25 13:51:47 marc Exp $
+# $Id: gfs-lib.sh,v 1.63 2009-04-14 14:55:06 marc Exp $
 #
 # @(#)$File$
 #
@@ -254,6 +254,31 @@ function gfs_get_rootfs {
    fi
 }
 #************ gfs_get_rootfs
+
+#****f* gfs-lib.sh/gfs_get_userspace_procs
+#  NAME
+#    gfs_get_userspace_procs
+#  SYNOPSIS
+#    function gfs_get_userspace_procs(cluster_conf, nodename)
+#  DESCRIPTION
+#    gets userspace programs that are to be running dependent on rootfs
+#  SOURCE
+function gfs_get_userspace_procs {
+  local clutype=$1
+  local rootfs=$2
+
+  echo "aisexec \
+ccsd \
+fenced \
+gfs_controld \
+dlm_controld \
+groupd \
+qdiskd \
+clvmd"
+
+}
+#******** gfs_get_userspace_procs
+
 
 #****f* gfs-lib.sh/gfs_get_mountopts
 #  NAME
@@ -646,7 +671,7 @@ function gfs_get_bridge_param {
   fi
 }
 
-#****f* clusterfs-lib.sh/gfs_get_nic_names
+#****f* gfs-lib.sh/gfs_get_nic_names
 #  NAME
 #    gfs_get_nic_names
 #  SYNOPSIS
@@ -660,7 +685,7 @@ function gfs_get_nic_names {
 }
 #*********** gfs_get_nic_names
 
-#****f* clusterfs-lib.sh/gfs_get_nic_drivers
+#****f* gfs-lib.sh/gfs_get_nic_drivers
 #  NAME
 #    gfs_get_nic_drivers
 #  SYNOPSIS
@@ -674,7 +699,7 @@ function gfs_get_nic_drivers {
 }
 #*********** gfs_get_nic_drivers
 
-#****f* clusterfs-lib.sh/gfs_get_nic_drivers
+#****f* gfs-lib.sh/gfs_get_nic_drivers
 #  NAME
 #    gfs_get_nic_drivers
 #  SYNOPSIS
@@ -688,7 +713,7 @@ function gfs_get_all_drivers {
 }
 #*********** gfs_get_nic_drivers
 
-#****f* clusterfs-lib.sh/gfs_get_node_attrs
+#****f* gfs-lib.sh/gfs_get_node_attrs
 #  NAME
 #    gfs_get_node_attrs
 #  SYNOPSIS
@@ -723,7 +748,7 @@ function gfs_get_node_attrs {
 }
 #*********** gfs_get_node_attrs
 
-#****f* clusterfs-lib.sh/gfs_get_drivers
+#****f* gfs-lib.sh/gfs_get_drivers
 #  NAME
 #    gfs_get_drivers
 #  SYNOPSIS
@@ -732,7 +757,7 @@ function gfs_get_node_attrs {
 #    Returns the all drivers for this clusterfs. 
 #  SOURCE
 function gfs_get_drivers {
-	echo "dlm lock_dlm gfs configfs lock_nolock"
+	echo "dlm lock_dlm gfs gfs2 configfs lock_nolock"
 }
 #*********** gfs_get_drivers
 
@@ -1229,7 +1254,7 @@ function gfs_start_gfs_controld {
 
 
 
-#****f* clusterfs-lib.sh/gfs_checkhosts_alive
+#****f* gfs-lib.sh/gfs_checkhosts_alive
 #  NAME
 #    gfs_checkhosts_alive
 #  SYNOPSIS
@@ -1297,7 +1322,11 @@ function gfs_fsck {
 #********* gfs_fsck
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.62  2009-03-25 13:51:47  marc
+# Revision 1.63  2009-04-14 14:55:06  marc
+# - added gfs2 module
+# - added gfs_get_userspace_procs
+#
+# Revision 1.62  2009/03/25 13:51:47  marc
 # - added get_drivers functions to return modules in more general
 # - implemented function to get drivers specified in initrd in more general
 #
