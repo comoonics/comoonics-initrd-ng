@@ -6,7 +6,7 @@
 #    Library for the creating of initrds for sharedroot
 #*******
 #
-# $Id: create-gfs-initrd-lib.sh,v 1.14 2009-02-17 20:04:46 marc Exp $
+# $Id: create-gfs-initrd-lib.sh,v 1.15 2009-04-14 15:05:47 marc Exp $
 #
 # @(#)$File$
 #
@@ -119,33 +119,12 @@ function umount_and_zip_initrd() {
    $compression_cmd $compression_opts $opts ${filename}.tmp > $filename && rm ${filename}.tmp) || (fuser -mv "$mountpoint" && exit 1)
 }
 
-#
-# Creates an imagefile with cpio and compresses it with zip
-#************ umount_and_zip_initrd
-#****f* create-gfs-initrd-lib.sh/cpio_and_zip_initrd
-#  NAME
-#    cpio_and_zip_initrd
-#  SYNOPSIS
-#    function cpio_and_zip_initrd() {
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function cpio_and_zip_initrd() {
-  local mountpoint=$1
-  local filename=$2
-  local force=$3
-  local opts=""
-  [ -z "$compression_cmd" ] && compression_cmd="gzip"
-  [ -z "$compression_opts" ] && compression_opts="-c -9"
-  [ -n "$force" ] && [ $force -gt 0 ] && opts="-f"
-  ((cd $mountpoint; find . | cpio --quiet -c -o) >| ${filename}.tmp && $compression_cmd $compression_opts $opts ${filename}.tmp > $filename && rm ${filename}.tmp)|| (fuser -mv "$mountpoint" && exit 1)
-}
-#************ cpio_and_zip_initrd
-
 ######################
 # $Log: create-gfs-initrd-lib.sh,v $
-# Revision 1.14  2009-02-17 20:04:46  marc
+# Revision 1.15  2009-04-14 15:05:47  marc
+# clean up
+#
+# Revision 1.14  2009/02/17 20:04:46  marc
 # bug 330 fixed (compression_cmd & compression_opts).
 #
 # Revision 1.13  2007/12/07 16:39:59  reiner
