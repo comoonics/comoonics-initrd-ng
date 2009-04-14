@@ -1,5 +1,5 @@
 #
-# $Id: ocfs2-lib.sh,v 1.3 2008-08-14 14:36:21 marc Exp $
+# $Id: ocfs2-lib.sh,v 1.4 2009-04-14 14:54:16 marc Exp $
 #
 # @(#)$File$
 #
@@ -94,6 +94,21 @@ function ocfs2_getdefaults {
 }
 #********** ocfs2_getdefaults
 
+#****f* ocfs2-lib.sh/ocfs2_get_drivers
+#  NAME
+#    ocfs2_get_drivers
+#  SYNOPSIS
+#    function ocfs2_get_drivers
+#  DESCRIPTION
+#    This function loads all relevant ocfs2 modules
+#  IDEAS
+#  SOURCE
+#
+function ocfs2_get_drivers {
+	echo "configfs ocfs2_nodemanager ocfs2_dlm ocfs2_dlmfs"
+}
+#************ ocfs2_get_drivers
+
 #****f* ocfs2-lib.sh/ocfs2_load
 #  NAME
 #    ocfs2_load
@@ -105,7 +120,7 @@ function ocfs2_getdefaults {
 #  SOURCE
 #
 function ocfs2_load {
-   MODULES="configfs ocfs2_nodemanager ocfs2_dlm ocfs2_dlmfs"
+   MODULES=$(ocfs2_get_drivers)
    echo_local -n "Loading OCFS2 modules ($MODULES)..."
    for module in $MODULES; do
       exec_local /sbin/modprobe ${module}
@@ -273,7 +288,10 @@ function ocfs2_init {
 #********* ocfs2_init
 
 # $Log: ocfs2-lib.sh,v $
-# Revision 1.3  2008-08-14 14:36:21  marc
+# Revision 1.4  2009-04-14 14:54:16  marc
+# - added get_drivers functions
+#
+# Revision 1.3  2008/08/14 14:36:21  marc
 # - added getdefaults
 # - bugfix when a cluster.conf could not be created
 # - setting of hostname as ocfs2 will not come up without hostname set

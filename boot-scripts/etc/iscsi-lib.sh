@@ -1,5 +1,5 @@
 #
-# $Id: iscsi-lib.sh,v 1.12 2008-06-10 09:58:43 marc Exp $
+# $Id: iscsi-lib.sh,v 1.13 2009-04-14 14:54:16 marc Exp $
 #
 # @(#)$File$
 #
@@ -86,6 +86,20 @@ function createCiscoISCSICfgString {
 }
 #************ createCiscoISCSICfgString
 
+#****f* iscsi-lib.sh/iscsi_get_drivers
+#  NAME
+#    iscsi_get_drivers
+#  SYNOPSIS
+#    function iscsi_get_drivers() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function iscsi_get_drivers {
+	echo "iscsi_tcp scsi_transport_iscsi libiscsi"
+}
+#************ iscsi_get_drivers
+
 #****f* iscsi-lib.sh/loadISCSI
 #  NAME
 #    loadISCSI
@@ -96,7 +110,7 @@ function createCiscoISCSICfgString {
 #  SOURCE
 #
 function loadISCSI {
-	local iscsimodules="iscsi_tcp"
+	local iscsimodules=$(iscsi_get_drivers)
 	echo_local -n "Loading iscsimodules"
 	for module in $iscsimodules; do
 		exec_local modprobe $module
@@ -164,7 +178,10 @@ function isISCSIRootsource {
 #************ isISCSIRootsource
 
 # $Log: iscsi-lib.sh,v $
-# Revision 1.12  2008-06-10 09:58:43  marc
+# Revision 1.13  2009-04-14 14:54:16  marc
+# - added get_drivers functions
+#
+# Revision 1.12  2008/06/10 09:58:43  marc
 # - fixed bug with parser
 #
 # Revision 1.11  2008/01/24 13:32:13  marc

@@ -1,5 +1,5 @@
 #
-# $Id: glusterfs-lib.sh,v 1.2 2009-01-28 10:01:42 marc Exp $
+# $Id: glusterfs-lib.sh,v 1.3 2009-04-14 14:54:16 marc Exp $
 #
 # @(#)$File$
 #
@@ -84,6 +84,20 @@ function glusterfs_get_mountopts {
 }
 #************ glusterfs_get_mountopts
 
+#****f* glusterfs-lib.sh/glusterfs_get_drivers
+#  NAME
+#    glusterfs_get_drivers
+#  SYNOPSIS
+#    function glusterfs_get_drivers() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function glusterfs_get_drivers {
+	echo "fuse"
+}
+#************ glusterfs_get_drivers
+
 #****f* glusterfs-lib.sh/glusterfs_load
 #  NAME
 #    glusterfs_load
@@ -97,7 +111,7 @@ function glusterfs_get_mountopts {
 function glusterfs_load {
   ## THIS will be overwritten for rhel5 ##
 
-  GLUSTERFS_MODULES="fuse"
+  GLUSTERFS_MODULES=$(glusterfs_get_drivers)
 
   echo_local -n "Loading GlusterFS modules ($GLUSTERFS_MODULES)..."
   for module in ${GLUSTERFS_MODULES}; do
@@ -169,7 +183,10 @@ function glusterfs_init {
 #********* glusterfs_init
 
 # $Log: glusterfs-lib.sh,v $
-# Revision 1.2  2009-01-28 10:01:42  marc
+# Revision 1.3  2009-04-14 14:54:16  marc
+# - added get_drivers functions
+#
+# Revision 1.2  2009/01/28 10:01:42  marc
 # First shot for:
 # Removed everything that is defined and therefore called from gfs-lib.sh ({clutype}_lib.sh) and left everything that is defined by glusterfs-lib.sh ({rootfs}-lib.sh).
 #

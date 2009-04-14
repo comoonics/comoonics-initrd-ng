@@ -1,5 +1,5 @@
 #
-# $Id: drbd-lib.sh,v 1.2 2008-06-10 09:54:45 marc Exp $
+# $Id: drbd-lib.sh,v 1.3 2009-04-14 14:54:16 marc Exp $
 #
 # @(#)$File$
 #
@@ -31,6 +31,20 @@
 
 drbdparser3="^drbd"
 
+#****f* drbd-lib.sh/drbd_get_drivers
+#  NAME
+#    drbd_get_drivers
+#  SYNOPSIS
+#    function drbd_get_drivers() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function drbd_get_drivers {
+	echo "drbd"
+}
+#************ drbd_get_drivers
+
 #****f* drbd-lib.sh/loadDRBD
 #  NAME
 #    loadDRBD
@@ -41,7 +55,7 @@ drbdparser3="^drbd"
 #  SOURCE
 #
 function loadDRBD {
-	local drbdmodules="drbd"
+	local drbdmodules=$(drbd_get_drivers)
 	echo_local -n "Loading drbdmodules"
 	for module in $drbdmodules; do
 		exec_local modprobe $module
@@ -106,7 +120,10 @@ function isDRBDRootsource {
 #************ isDRBDRootsource
 
 # $Log: drbd-lib.sh,v $
-# Revision 1.2  2008-06-10 09:54:45  marc
+# Revision 1.3  2009-04-14 14:54:16  marc
+# - added get_drivers functions
+#
+# Revision 1.2  2008/06/10 09:54:45  marc
 # - fixed bug with parser
 #
 # Revision 1.1  2008/03/18 17:40:11  marc
