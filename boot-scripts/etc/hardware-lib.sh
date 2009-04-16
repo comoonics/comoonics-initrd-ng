@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.31 2009-04-14 14:56:04 marc Exp $
+# $Id: hardware-lib.sh,v 1.32 2009-04-16 12:04:06 reiner Exp $
 #
 # @(#)$File$
 #
@@ -246,7 +246,7 @@ function usb_get_drivers {
 #
 function usbLoad() {
 	local modules=$(usb_get_drivers)
-	for module in modules; do
+	for module in $modules; do
 		grep $module /proc/modules >/dev/null 2>/dev/null && modprobe $module
 	done
 	is_mounted /proc/bus/usb
@@ -649,7 +649,10 @@ function sysctl_load() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.31  2009-04-14 14:56:04  marc
+# Revision 1.32  2009-04-16 12:04:06  reiner
+# Fixed typo in usbLoad function that prohibited proper usb keyboard detection. See bz341.
+#
+# Revision 1.31  2009/04/14 14:56:04  marc
 # - extended storage_get_drivers to work with drbd, iscsi and xen
 # - more modules for dm_multipath and ..
 #
