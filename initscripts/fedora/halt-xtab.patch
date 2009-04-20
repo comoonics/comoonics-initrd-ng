@@ -1,5 +1,5 @@
---- halt.orig	2009-04-07 07:36:04.000000000 +0200
-+++ halt	2009-04-07 07:39:26.000000000 +0200
+--- halt.orig.orig	2009-04-17 14:49:40.000000000 +0200
++++ halt	2009-04-17 14:48:44.000000000 +0200
 @@ -87,8 +87,12 @@
  
  [ -x /sbin/hwclock ] && action $"Syncing hardware clock to system time" /sbin/hwclock --systohc
@@ -13,7 +13,16 @@
  	     $3 == "tmpfs" { print $2; }' /proc/mounts | sort -r)
  [ -n "$tmpfs" ] && fstab-decode $UMOUNT $tmpfs 2>/dev/null
  
-@@ -120,6 +124,7 @@
+@@ -113,13 +117,15 @@
+ __umount_loopback_loop
+ 
+ # Unmount RPC pipe file systems
+-__umount_loop '$3 ~ /^rpc_pipefs$/ || $3 ~ /^rpc_svc_gss_pipefs$/ {print $2}' \
++__umount_loop ''$xtab' { next; }
++    $3 ~ /^rpc_pipefs$/ || $3 ~ /^rpc_svc_gss_pipefs$/ {print $2}' \
+     /proc/mounts \
+     $"Unmounting pipe file systems: " \
+     $"Unmounting pipe file systems (retry): " \
      -f
  
  LANG=C __umount_loop '$2 ~ /^\/$|^\/proc|^\/dev/{next}
@@ -21,7 +30,7 @@
  	$3 == "tmpfs" || $3 == "proc" {print $2 ; next}
  	/(loopfs|autofs|nfs|cifs|smbfs|ncpfs|sysfs|^none|^\/dev\/ram|^\/dev\/root$)/ {next}
  	{print $2}' /proc/mounts \
-@@ -136,7 +141,8 @@
+@@ -136,7 +142,8 @@
  
  # Try all file systems other than root, essential filesystems and RAM disks,
  # one last time.
