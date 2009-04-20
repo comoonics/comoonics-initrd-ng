@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.32 2009-04-16 12:04:06 reiner Exp $
+# $Id: hardware-lib.sh,v 1.33 2009-04-20 12:23:55 marc Exp $
 #
 # @(#)$File$
 #
@@ -295,7 +295,7 @@ function dm_start {
 #  SOURCE
 #
 function dm_get_drivers {
-	echo "dm_round_robin dm_multipath dm_snapshot dm_mirror dm_mod"
+	echo "dm_round_robin dm_multipath dm_snapshot dm_mirror dm_mod scsi_dh scsi_dh_rdac"
 }
 #************ dm_get_drivers
 
@@ -649,7 +649,10 @@ function sysctl_load() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.32  2009-04-16 12:04:06  reiner
+# Revision 1.33  2009-04-20 12:23:55  marc
+# added dm_multipath modules needed with rhel5
+#
+# Revision 1.32  2009/04/16 12:04:06  reiner
 # Fixed typo in usbLoad function that prohibited proper usb keyboard detection. See bz341.
 #
 # Revision 1.31  2009/04/14 14:56:04  marc
