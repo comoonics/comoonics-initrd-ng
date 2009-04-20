@@ -51,7 +51,7 @@ Requires: comoonics-bootimage >= 1.4-16
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-fedora
 #Conflicts: 
-Release: 7.fedora
+Release: 10.fedora
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -83,6 +83,9 @@ install -m600 initscripts/fedora/netfs-xtab.patch $RPM_BUILD_ROOT/%{APPDIR}/patc
 install -m600 initscripts/fedora/netfs-comoonics.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/netfs-comoonics.patch
 install -m600 initscripts/fedora/network-xrootfs.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/network-xrootfs.patch
 install -m600 initscripts/fedora/network-comoonics.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/network-comoonics.patch
+install -m600 initscripts/fedora/halt.orig $RPM_BUILD_ROOT/%{APPDIR}/patches/halt.orig
+install -m600 initscripts/fedora/network.orig $RPM_BUILD_ROOT/%{APPDIR}/patches/network.orig
+install -m600 initscripts/fedora/netfs.orig $RPM_BUILD_ROOT/%{APPDIR}/patches/netfs.orig
 install -d $RPM_BUILD_ROOT/%{SBINDIR}
 install -m755 initscripts/fedora/halt.local $RPM_BUILD_ROOT/%{SBINDIR}/halt.local
 
@@ -93,13 +96,40 @@ if [ "$1" -eq 0 ]; then
   # we patch all versions here
   for initscript in halt network netfs; do
 	if grep "comoonics patch " /etc/init.d/$initscript > /dev/null; then
-		echo -n "Unpatching $initscript ("
-		for patchfile in $(ls -1 /opt/atix/comoonics-bootimage/patches/${initscript}*.patch | sort -r); do
-			echo -n $(basename $patchfile)", "
-			cd /etc/init.d/ && patch -R -f -r /tmp/$(basename ${patchfile}).patch.rej > /dev/null < $patchfile || \
-			echo "Failure patching $initscript with patch $patchfile" >&2
-		done
-		echo ")"
+		# the old way
+		if [ -e /opt/atix/comoonics-bootimage/patches/${initscript}.patch ]; then
+		   patchfile="/opt/atix/comoonics-bootimage/patches/${initscript}.patch"
+		   echo -n "Unpatching initscript($patchfile)"
+		   cd /etc/init.d/ && patch -R -f -r /tmp/$(basename ${patchfile}).patch.rej > /dev/null < $patchfile
+		   if [ $? -ne 0 ]; then
+		      echo >&2
+		      echo >&2
+		      echo "FAILURE!!!!" >&2
+		      echo "Patching $initscript with patch $patchfile" >&2
+		      echo "You might want to consider restoring the original initscript and the patch again by:" >&2
+		      echo "cp /opt/atix/comoonics-bootimage/patches/${initscript}.orig /etc/init.d/${initscript}"
+		      echo "/opt/atix/comoonics-bootimage/manage_chroot.sh -a patch_files ${initscript}"
+		      echo >&2
+		   fi
+		   echo
+		else
+		   echo -n "Unpatching $initscript ("
+		   for patchfile in $(ls -1 /opt/atix/comoonics-bootimage/patches/${initscript}-*.patch | sort -r); do
+			  echo -n $(basename $patchfile)", "
+			  cd /etc/init.d/ && patch -R -f -r /tmp/$(basename ${patchfile}).patch.rej > /dev/null < $patchfile
+		      if [ $? -ne 0 ]; then
+		      echo >&2
+		      echo >&2
+		      echo "FAILURE!!!!" >&2
+		      echo "Patching $initscript with patch $patchfile" >&2
+		      echo "You might want to consider restoring the original initscript and the patch again by:" >&2
+		      echo "cp /opt/atix/comoonics-bootimage/patches/${initscript}.orig /etc/init.d/${initscript}"
+		      echo "/opt/atix/comoonics-bootimage/manage_chroot.sh -a patch_files ${initscript}"
+		      echo >&2
+		      fi
+		   done
+		   echo ")"
+		fi
 	fi
   done
 fi
@@ -112,13 +142,40 @@ if [ "$1" -eq 2 ]; then
   # we patch all versions here
   for initscript in halt network netfs; do
 	if grep "comoonics patch " /etc/init.d/$initscript > /dev/null; then
-		echo -n "Unpatching $initscript ("
-		for patchfile in $(ls -1 /opt/atix/comoonics-bootimage/patches/${initscript}*.patch | sort -r); do
-			echo -n $(basename $patchfile)", "
-			cd /etc/init.d/ && patch -R -f -r /tmp/$(basename ${patchfile}).patch.rej > /dev/null < $patchfile || \
-			echo "Failure patching $initscript with patch $patchfile" >&2
-		done
-		echo ")"
+		# the old way
+		if [ -e /opt/atix/comoonics-bootimage/patches/${initscript}.patch ]; then
+		   patchfile="/opt/atix/comoonics-bootimage/patches/${initscript}.patch"
+		   echo -n "Unpatching initscript($patchfile)"
+		   cd /etc/init.d/ && patch -R -f -r /tmp/$(basename ${patchfile}).patch.rej > /dev/null < $patchfile
+		   if [ $? -ne 0 ]; then
+		      echo >&2
+		      echo >&2
+		      echo "FAILURE!!!!" >&2
+		      echo "Patching $initscript with patch $patchfile" >&2
+		      echo "You might want to consider restoring the original initscript and the patch again by:" >&2
+		      echo "cp /opt/atix/comoonics-bootimage/patches/${initscript}.orig /etc/init.d/${initscript}"
+		      echo "/opt/atix/comoonics-bootimage/manage_chroot.sh -a patch_files ${initscript}"
+		      echo >&2
+		   fi
+		   echo
+		else
+		   echo -n "Unpatching $initscript ("
+		   for patchfile in $(ls -1 /opt/atix/comoonics-bootimage/patches/${initscript}-*.patch | sort -r); do
+			  echo -n $(basename $patchfile)", "
+			  cd /etc/init.d/ && patch -R -f -r /tmp/$(basename ${patchfile}).patch.rej > /dev/null < $patchfile
+		      if [ $? -ne 0 ]; then
+		      echo >&2
+		      echo >&2
+		      echo "FAILURE!!!!" >&2
+		      echo "Patching $initscript with patch $patchfile" >&2
+		      echo "You might want to consider restoring the original initscript and the patch again by:" >&2
+		      echo "cp /opt/atix/comoonics-bootimage/patches/${initscript}.orig /etc/init.d/${initscript}"
+		      echo "/opt/atix/comoonics-bootimage/manage_chroot.sh -a patch_files ${initscript}"
+		      echo >&2
+		      fi
+		   done
+		   echo ")"
+		fi
 	fi
   done
 fi 
@@ -140,8 +197,6 @@ echo "Disabling services ($services)"
 for service in $services; do
    /sbin/chkconfig --del $service &> /dev/null
 done
-/opt/atix/comoonics-bootimage/manage_chroot.sh -a patch_files
-/opt/atix/comoonics-bootimage/manage_chroot.sh -a createxfiles
 
 /bin/true
 
@@ -156,12 +211,21 @@ done
 %attr(644, root, root) %{APPDIR}/patches/netfs-xtab.patch
 %attr(644, root, root) %{APPDIR}/patches/network-comoonics.patch
 %attr(644, root, root) %{APPDIR}/patches/network-xrootfs.patch
+%attr(755, root, root) %{APPDIR}/patches/halt.orig
+%attr(755, root, root) %{APPDIR}/patches/network.orig
+%attr(755, root, root) %{APPDIR}/patches/netfs.orig
 %attr(755, root, root) %{SBINDIR}/halt.local
 
 %clean
 rm -rf %{buildroot}
 
 %changelog
+* Mon Apr 20 2009 Marc Grimme <grimme@atix.de> 1.4-10el5
+- RC1
+* Tue Apr 16 2009 Marc Grimme <grimme@atix.de> 1.4-9.fedora
+- Syncronized bootsr and fixed calling of _init
+* Wed Apr 15 2009 Marc Grimme <grimme@atix.de> 1.4-8.fedora
+- Backport of bugfixes from rhel5
 * Tue Apr 14 2009 Marc Grimme <grimme@atix.de> 1.4-7.fedora
 - Multipatches and rework on building of chroot
 * Wed Apr 08 2009 Marc Grimme <grimme@atix.de> 1.4-4.fedora

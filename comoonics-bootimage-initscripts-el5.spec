@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.21 2009-04-14 15:03:33 marc Exp $
+# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.22 2009-04-20 07:21:22 marc Exp $
 #
 ##
 ##
@@ -36,6 +36,7 @@
 %define _user root
 %define CONFIGDIR /%{_sysconfdir}/comoonics
 %define APPDIR    /opt/atix/comoonics-bootimage
+%define SBINDIR   /sbin
 %define ENVDIR    /etc/profile.d
 %define ENVFILE   %{ENVDIR}/%{name}.sh
 %define INITDIR   /etc/rc.d/init.d
@@ -51,7 +52,7 @@ Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-rhel
 Requires: comoonics-bootimage-listfiles-rhel5
 #Conflicts: 
-Release: 3.rhel5
+Release: 10.rhel5
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -75,27 +76,63 @@ Initscripts used by the OSR cluster environment.
 install -d -m 755 $RPM_BUILD_ROOT/%{INITDIR}
 install -m755 initscripts/rhel5/bootsr $RPM_BUILD_ROOT/%{INITDIR}/bootsr
 install -d -m 755 $RPM_BUILD_ROOT/%{APPDIR}/patches
-install -m600 initscripts/rhel5/halt.el5.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/halt.patch
-install -m600 initscripts/rhel5/netfs.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/netfs.patch
-install -m600 initscripts/rhel5/network.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/network.patch
+install -m600 initscripts/rhel5/halt-xtab.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/halt-xtab.patch
+install -m600 initscripts/rhel5/halt-local.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/halt-local.patch
+install -m600 initscripts/rhel5/halt-killall.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/halt-killall.patch
+install -m600 initscripts/rhel5/halt-comoonics.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/halt-comoonics.patch
+install -m600 initscripts/rhel5/netfs-xtab.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/netfs-xtab.patch
+install -m600 initscripts/rhel5/netfs-comoonics.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/netfs-comoonics.patch
+install -m600 initscripts/rhel5/network-xrootfs.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/network-xrootfs.patch
+install -m600 initscripts/rhel5/network-comoonics.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/network-comoonics.patch
+install -m600 initscripts/rhel5/halt.orig $RPM_BUILD_ROOT/%{APPDIR}/patches/halt.orig
+install -m600 initscripts/rhel5/network.orig $RPM_BUILD_ROOT/%{APPDIR}/patches/network.orig
+install -m600 initscripts/rhel5/netfs.orig $RPM_BUILD_ROOT/%{APPDIR}/patches/netfs.orig
+install -d $RPM_BUILD_ROOT/%{SBINDIR}
+install -m755 initscripts/rhel5/halt.local $RPM_BUILD_ROOT/%{SBINDIR}/halt.local
 
 %preun
 if [ "$1" -eq 0 ]; then
   echo "Preuninstalling comoonics-bootimage-initscripts"
-# root_fstype=$(awk '{ if ($1 !~ /^rootfs/ && $1 !~ /^[ \t]*#/ && $2 == "/") { print $3; }}' /etc/mtab)
-	/sbin/chkconfig --del bootsr
-	if grep "comoonics patch " /etc/init.d/halt > /dev/null; then
-		echo "Unpatching halt"
-		cd /etc/init.d/ && patch -R -f -r /tmp/halt.patch.rej > /dev/null < /opt/atix/comoonics-bootimage/patches/halt.patch
+  /sbin/chkconfig --del bootsr
+  # we patch all versions here
+  for initscript in halt network netfs; do
+	if grep "comoonics patch " /etc/init.d/$initscript > /dev/null; then
+		# the old way
+		if [ -e /opt/atix/comoonics-bootimage/patches/${initscript}.patch ]; then
+		   patchfile="/opt/atix/comoonics-bootimage/patches/${initscript}.patch"
+		   echo -n "Unpatching initscript($patchfile)"
+		   cd /etc/init.d/ && patch -R -f -r /tmp/$(basename ${patchfile}).patch.rej > /dev/null < $patchfile
+		   if [ $? -ne 0 ]; then
+		      echo >&2
+		      echo >&2
+		      echo "FAILURE!!!!" >&2
+		      echo "Patching $initscript with patch $patchfile" >&2
+		      echo "You might want to consider restoring the original initscript and the patch again by:" >&2
+		      echo "cp /opt/atix/comoonics-bootimage/patches/${initscript}.orig /etc/init.d/${initscript}"
+		      echo "/opt/atix/comoonics-bootimage/manage_chroot.sh -a patch_files ${initscript}"
+		      echo >&2
+		   fi
+		   echo
+		else
+		   echo -n "Unpatching $initscript ("
+		   for patchfile in $(ls -1 /opt/atix/comoonics-bootimage/patches/${initscript}-*.patch | sort -r); do
+			  echo -n $(basename $patchfile)", "
+			  cd /etc/init.d/ && patch -R -f -r /tmp/$(basename ${patchfile}).patch.rej > /dev/null < $patchfile
+		      if [ $? -ne 0 ]; then
+		      echo >&2
+		      echo >&2
+		      echo "FAILURE!!!!" >&2
+		      echo "Patching $initscript with patch $patchfile" >&2
+		      echo "You might want to consider restoring the original initscript and the patch again by:" >&2
+		      echo "cp /opt/atix/comoonics-bootimage/patches/${initscript}.orig /etc/init.d/${initscript}"
+		      echo "/opt/atix/comoonics-bootimage/manage_chroot.sh -a patch_files ${initscript}"
+		      echo >&2
+		      fi
+		   done
+		   echo ")"
+		fi
 	fi
-	if grep "comoonics patch " /etc/init.d/netfs > /dev/null; then
-		echo "Unpatching netfs"
-		cd /etc/init.d/ && patch -R -f -r /tmp/netfs.patch.rej > /dev/null < /opt/atix/comoonics-bootimage/patches/netfs.patch
-	fi
-	if grep "comoonics patch " /etc/init.d/network > /dev/null; then
-		echo "Unpatching network"
-		cd /etc/init.d/ && patch -R -f -r /tmp/network.patch.rej > /dev/null < /opt/atix/comoonics-bootimage/patches/network.patch
-	fi
+  done
 fi
 
 
@@ -103,19 +140,45 @@ fi
 
 #if this is an upgrade we need to unpatch all files
 if [ "$1" -eq 2 ]; then
-	if grep "comoonics patch " /etc/init.d/halt > /dev/null; then
-		echo "Unpatching halt"
-		cd /etc/init.d/ && patch -R -f -r /tmp/halt.patch.rej > /dev/null < /opt/atix/comoonics-bootimage/patches/halt.patch
+  # we patch all versions here
+  for initscript in halt network netfs; do
+	if grep "comoonics patch " /etc/init.d/$initscript > /dev/null; then
+		# the old way
+		if [ -e /opt/atix/comoonics-bootimage/patches/${initscript}.patch ]; then
+		   patchfile="/opt/atix/comoonics-bootimage/patches/${initscript}.patch"
+		   echo -n "Unpatching initscript($patchfile)"
+		   cd /etc/init.d/ && patch -R -f -r /tmp/$(basename ${patchfile}).patch.rej > /dev/null < $patchfile
+		   if [ $? -ne 0 ]; then
+		      echo >&2
+		      echo >&2
+		      echo "FAILURE!!!!" >&2
+		      echo "Patching $initscript with patch $patchfile" >&2
+		      echo "You might want to consider restoring the original initscript and the patch again by:" >&2
+		      echo "cp /opt/atix/comoonics-bootimage/patches/${initscript}.orig /etc/init.d/${initscript}"
+		      echo "/opt/atix/comoonics-bootimage/manage_chroot.sh -a patch_files ${initscript}"
+		      echo >&2
+		   fi
+		   echo
+		else
+		   echo -n "Unpatching $initscript ("
+		   for patchfile in $(ls -1 /opt/atix/comoonics-bootimage/patches/${initscript}-*.patch | sort -r); do
+			  echo -n $(basename $patchfile)", "
+			  cd /etc/init.d/ && patch -R -f -r /tmp/$(basename ${patchfile}).patch.rej > /dev/null < $patchfile
+		      if [ $? -ne 0 ]; then
+		      echo >&2
+		      echo >&2
+		      echo "FAILURE!!!!" >&2
+		      echo "Patching $initscript with patch $patchfile" >&2
+		      echo "You might want to consider restoring the original initscript and the patch again by:" >&2
+		      echo "cp /opt/atix/comoonics-bootimage/patches/${initscript}.orig /etc/init.d/${initscript}"
+		      echo "/opt/atix/comoonics-bootimage/manage_chroot.sh -a patch_files ${initscript}"
+		      echo >&2
+		      fi
+		   done
+		   echo ")"
+		fi
 	fi
-	if grep "comoonics patch " /etc/init.d/netfs > /dev/null; then
-		echo "Unpatching netfs"
-		cd /etc/init.d/ && patch -R -f -r /tmp/netfs.patch.rej > /dev/null < /opt/atix/comoonics-bootimage/patches/netfs.patch
-	fi
-	if grep "comoonics patch " /etc/init.d/network > /dev/null; then
-		echo "Unpatching network"
-		cd /etc/init.d/ && patch -R -f -r /tmp/network.patch.rej > /dev/null < /opt/atix/comoonics-bootimage/patches/network.patch
-	fi
-	true
+  done
 fi 
 
 %post
@@ -135,21 +198,37 @@ echo "Disabling services ($services)"
 for service in $services; do
    /sbin/chkconfig --del $service &> /dev/null
 done
-/etc/init.d/bootsr patch_files
 
 /bin/true
 
 %files
 
 %attr(755, root, root) %{INITDIR}/bootsr
-%attr(644, root, root) %{APPDIR}/patches/halt.patch
-%attr(644, root, root) %{APPDIR}/patches/netfs.patch
-%attr(644, root, root) %{APPDIR}/patches/network.patch
+%attr(644, root, root) %{APPDIR}/patches/halt-comoonics.patch
+%attr(644, root, root) %{APPDIR}/patches/halt-killall.patch
+%attr(644, root, root) %{APPDIR}/patches/halt-local.patch
+%attr(644, root, root) %{APPDIR}/patches/halt-xtab.patch
+%attr(644, root, root) %{APPDIR}/patches/netfs-comoonics.patch
+%attr(644, root, root) %{APPDIR}/patches/netfs-xtab.patch
+%attr(644, root, root) %{APPDIR}/patches/network-comoonics.patch
+%attr(644, root, root) %{APPDIR}/patches/network-xrootfs.patch
+%attr(755, root, root) %{APPDIR}/patches/halt.orig
+%attr(755, root, root) %{APPDIR}/patches/network.orig
+%attr(755, root, root) %{APPDIR}/patches/netfs.orig
+%attr(755, root, root) %{SBINDIR}/halt.local
 
 %clean
 rm -rf %{buildroot}
 
 %changelog
+* Mon Apr 20 2009 Marc Grimme <grimme@atix.de> 1.4-10el5
+- RC1
+* Tue Apr 16 2009 Marc Grimme <grimme@atix.de> 1.4-9el5
+- Syncronized bootsr and fixed calling of _init
+* Wed Apr 15 2009 Marc Grimme <grimme@atix.de> 1.4-8el5
+- Working release with gfs
+* Wed Apr 15 2009 Marc Grimme <grimme@atix.de> 1.4-4el5
+- XFiles patch and small patches ported to rhel5 first version.
 * Fri Mar 27 2009 Marc Grimme <grimme@atix.de> 1.4-3el5
 - Fixed a BUG with RHEL5 and gfs as rootfs
 * Mon Feb 02 2009 Marc Grimme <grimme@atix.de> 1.3-12el5
@@ -176,7 +255,10 @@ rm -rf %{buildroot}
 - first revision
 # ------
 # $Log: comoonics-bootimage-initscripts-el5.spec,v $
-# Revision 1.21  2009-04-14 15:03:33  marc
+# Revision 1.22  2009-04-20 07:21:22  marc
+# RC1 version 10
+#
+# Revision 1.21  2009/04/14 15:03:33  marc
 # new version
 #
 # Revision 1.20  2009/02/27 08:42:26  marc
