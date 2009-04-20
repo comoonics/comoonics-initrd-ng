@@ -35,6 +35,7 @@ MOUNT_CDSL="${BOOTIMAGE_PATH}/manage_chroot.sh -a mount_cdsl"
 CLEAN_START="${BOOTIMAGE_PATH}/manage_chroot.sh -a clean"
 PATCH_FILES="${BOOTIMAGE_PATH}/manage_chroot.sh -a patch_files"
 UNPATCH_FILES="${BOOTIMAGE_PATH}/manage_chroot.sh -a unpatch_files"
+CREATE_XFILES="${BOOTIMAGE_PATH}/manage_chroot.sh -a createxfiles"
 BUILD_FILE="/etc/comoonics-build.txt"
 VAR_RUN_FILES="cman_admin cman_client"
 
@@ -221,18 +222,18 @@ case "$1" in
 	  if [ $chrootneeded -eq 0 ]; then
  	  	action "Mounting filesystems to chroot" $MOUNT_CHROOT
 	  	action "Updating chroot environment" $UPDATE_CHROOT
- 	  
- 	  	typeset -f ${clutype}_init >/dev/null && action "Starting ${clutype} dependent services" ${clutype}_init start
- 	  	if [ "${clutype}" != "${rootfs}" ]; then
- 	    	typeset -f ${rootfs}_init >/dev/null && action "Starting ${rootfs} dependent services" ${rootfs}_init start
- 	  	fi
   	  fi 
+ 	  
+   	  typeset -f cc_init >/dev/null && action "Starting ${clutype} dependent services" cc_init start
+ 	  if [ "${clutype}" != "${rootfs}" ]; then
+ 	   	typeset -f clusterfs_init >/dev/null && action "Starting ${rootfs} dependent services" clusterfs_init start
+ 	  fi
     fi
     ;;
   stop)
- 	  typeset -f ${clutype}_init >/dev/null && action "Stopping ${clutype} dependent services" ${clutype}_init stop
+ 	  typeset -f cc_init >/dev/null && action "Stopping ${clutype} dependent services" cc_init stop
  	  if [ "${clutype}" != "${rootfs}" ]; then
-   	    typeset -f ${rootfs}_init >/dev/null && action "Stopping ${rootfs} dependent services" ${rootfs}_init stop
+   	    typeset -f clusterfs_init >/dev/null && action "Stopping ${rootfs} dependent services" clusterfs_init stop
  	  fi 
   	  [ -e /var/lock/subsys/bootsr ] && rm -f /var/lock/subsys/bootsr 
 	  typeset -f ${rootfs}_needed >/dev/null && ${rootfs}_chroot_needed init
@@ -240,13 +241,14 @@ case "$1" in
 	    action "Cleaning up chroot environment" $UMOUNT_CHROOT
 	  fi
   	  $PATCH_FILES
+  	  $CREATE_XFILES
         ;;
   status)
       exit 0
       ;;
   reload)
       if [ check_sharedroot ]; then
-  	    typeset -f ${rootfs}_init >/dev/null && ${rootfs}_chroot_needed init
+  	    typeset -f ${rootfs}_needed >/dev/null && ${rootfs}_chroot_needed init
 	    if [ $? -eq 0 ]; then
 	      action "Updating chroot environment" $UPDATE_CHROOT
 	    fi
