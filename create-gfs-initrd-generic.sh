@@ -6,7 +6,7 @@
 #  DESCRIPTION
 #*******
 #
-# $Id: create-gfs-initrd-generic.sh,v 1.23 2009-04-14 15:05:24 marc Exp $
+# $Id: create-gfs-initrd-generic.sh,v 1.24 2009-04-20 07:42:54 marc Exp $
 #
 # @(#)$File$
 #
@@ -116,7 +116,7 @@ function getoptions() {
     while getopts LUoRFVvhlm:fd:s:r:b:A:D: option ; do
 	case "$option" in
 	    v) # version
-		echo "$0 Version "'$Revision: 1.23 $'
+		echo "$0 Version "'$Revision: 1.24 $'
 		exit 0
 		;;
 	    h) # help
@@ -265,22 +265,30 @@ fi
 if [ -z "$initramfs" ] || [ $initramfs -eq 0 ] && [ -n "$update" ]; then
 	echo "You selected updatemode with old initrd method <ramfs>." >&2
 	echo "This is not supported." >&2
+    rm $lockfile
 	exit 3
 fi
 
 if [ ! -e "$(dirname $initrdname)" ]; then
 	echo "Path for initrd \"$initrdname\" does not exist. Please create path or validate the initrdname." >&2
+    rm $lockfile
 	exit 4
 fi
 
 if [ ! -e "$initrdname" ] && [ -n "$update" ]; then
 	echo "You selected update but initrd \"$initrdname\" does not exist. Please fix." >&2
+    rm $lockfile
 	exit 5
 fi
 
 echo_local -n "Validating cluster configuration."
 exec_local cc_validate
-return_code || (failure && errormsg err_cc_validate && exit 10)
+return_code
+if [ $? -ne 0 ]; then
+   errormsg err_cc_validate
+   rm $lockfile
+   exit 10
+fi
 
 if [ -z "$initramfs" ] || [ $initramfs -eq 0 ]; then
   echo -n "Makeing initrd ..."
@@ -471,7 +479,10 @@ ls -lk $initrdname
 
 ##########################################
 # $Log: create-gfs-initrd-generic.sh,v $
-# Revision 1.23  2009-04-14 15:05:24  marc
+# Revision 1.24  2009-04-20 07:42:54  marc
+# - fixed error detection
+#
+# Revision 1.23  2009/04/14 15:05:24  marc
 # bugfix for Bug#343
 #
 # Revision 1.22  2009/04/03 17:30:43  marc
