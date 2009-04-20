@@ -1,5 +1,5 @@
 #
-# $Id: nfs-lib.sh,v 1.2 2009-04-14 14:48:50 marc Exp $
+# $Id: nfs-lib.sh,v 1.3 2009-04-20 07:05:02 marc Exp $
 #
 # @(#)$File$
 #
@@ -133,6 +133,8 @@ function nfs_services_restart_newroot {
   local new_root=$1
   local lock_method=$2
   local lvm_sup=$3
+  local services=
+  local service=
 
   services="rpcbind"
   for service in $services; do
@@ -174,8 +176,29 @@ function nfs_init {
 }
 #********* nfs_init
 
+#****f* nfs-lib.sh/nfs_get_userspace_procs
+#  NAME
+#    nfs_get_userspace_procs
+#  SYNOPSIS
+#    function nfs_get_userspace_procs(cluster_conf, nodename)
+#  DESCRIPTION
+#    gets userspace programs that are to be running dependent on rootfs
+#  SOURCE
+function nfs_get_userspace_procs {
+  local clutype=$1
+  local rootfs=$2
+
+  echo -e "rpcbind"
+}
+#******** nfs_get_userspace_procs
+
+
 # $Log: nfs-lib.sh,v $
-# Revision 1.2  2009-04-14 14:48:50  marc
+# Revision 1.3  2009-04-20 07:05:02  marc
+# - added nfs_get_userspace_procs
+# - added local calls
+#
+# Revision 1.2  2009/04/14 14:48:50  marc
 # now restarting rpcbind with nfs
 #
 # Revision 1.1  2009/01/28 12:45:29  marc
