@@ -1,5 +1,5 @@
 #
-# $Id: nfs-lib.sh,v 1.12 2009-04-14 14:57:01 marc Exp $
+# $Id: nfs-lib.sh,v 1.13 2009-04-20 07:10:46 marc Exp $
 #
 # @(#)$File$
 #
@@ -43,7 +43,7 @@ function nfs4_load {
 function nfs4_services_start {
   local services="rpcpipefs rpcbind rpc_idmapd"
   for service in $services; do
-    nfs4_start_$service $*
+    nfs4_start_$service $*    
   done
   return 0
 }
@@ -93,11 +93,9 @@ function nfs4_services_restart_newroot {
 #  nfs_services_restart_newroot $*
 
   if [ -d "$newroot/var/lib/nfs/rpc_pipefs" ]; then
-    rm -rf $newroot/var/lib/nfs/rpc_pipefs
-    ln -s $newroot/$chroot_path/var/lib/nfs/rpc_pipefs $newroot/var/lib/nfs/rpc_pipefs
+    rm -rf $newroot/var/lib/nfs/rpc_pipefs 2>/dev/null
+    ln -s $newroot/$chroot_path/var/lib/nfs/rpc_pipefs $newroot/var/lib/nfs/rpc_pipefs 2>/dev/null
   fi
-
-  touch $newroot/var/lock/subsys/rpcbind
 
   return $return_c
 }
@@ -113,11 +111,7 @@ function nfs4_services_restart_newroot {
 #  SOURCE
 #
 function nfs4_start_rpcbind {
-  local chrootpath=$1
-  if [ -z $chrootpath ]; then
-  	chrootpath="no_chroot"
-  fi
-  start_service_chroot $chrootpath /sbin/rpcbind
+  nfs_start_rpcbind $*
 }
 #************ nfs4_start_rpcbind
 
@@ -132,11 +126,7 @@ function nfs4_start_rpcbind {
 #  SOURCE
 #
 function nfs4_stop_rpcbind {
-  local chrootpath=$1
-  if [ -z $chrootpath ]; then
-  	chrootpath="no_chroot"
-  fi
-  killall rpcbind
+  nfs_stop_rpcbind $*
 }
 #************ nfs4_stop_rpcbind
 
@@ -152,11 +142,13 @@ function nfs4_stop_rpcbind {
 #
 function nfs4_start_rpc_idmapd {
   local chrootpath=$1
-  if [ -z $chrootpath ]; then
-  	chrootpath="no_chroot"
+  if [ -z $chrootpath ] || [ "$chrootpath" = "no_chroot" ]; then
+	  start_service $chrootpath rpc.idmapd && \
+	  touch /var/lock/subsys/rpcidmapd 2>/dev/null
+  else
+      start_service_chroot $chrootpath rpc.idmapd && \
+	  touch $chrootpath/var/lock/subsys/rpcidmapd 2>/dev/null
   fi
-	
-  start_service_chroot $chrootpath /usr/sbin/rpc.idmapd
 }
 #************ nfs4_start_rpc_idmapd
 
@@ -171,14 +163,10 @@ function nfs4_start_rpc_idmapd {
 #  SOURCE
 #
 function nfs4_stop_rpc_idmapd {
-  local chrootpath=$1
-  if [ -z $chrootpath ]; then
-  	chrootpath="no_chroot"
-  fi
-	
-  killall rpc.idmapd
+  killall rpc.idmapd && \
+  rm $1/var/lock/subsys/rpcidmapd 2>/dev/null
 }
-#************ nfs4_start_rpc_statd
+#************ nfs4_stop_rpc_statd
 
 function nfs4_checkhosts_alive {
 	nfs_checkhosts_alive $*
@@ -203,6 +191,23 @@ function nfs4_blkstorage_needed {
 function nfs4_chroot_needed {
 	return 0
 }
+
+#****f* nfs-lib.sh/nfs4_get_userspace_procs
+#  NAME
+#    nfs4_get_userspace_procs
+#  SYNOPSIS
+#    function nfs4_get_userspace_procs(cluster_conf, nodename)
+#  DESCRIPTION
+#    gets userspace programs that are to be running dependent on rootfs
+#  SOURCE
+function nfs4_get_userspace_procs {
+  local clutype=$1
+  local rootfs=$2
+
+  echo -e "rpcbind \n\
+rpc.idmapd"
+}
+#******** nfs4_get_userspace_procs
 
 #************* nfs_chroot_needed
 #  NAME
@@ -252,6 +257,9 @@ function nfs_getdefaults {
 		mount_opts|mountopts)
 		    echo "nolock"
 		    ;;
+		mounttimes|mountwait)
+			echo "2"
+			;;
 	    *)
 	        return 0
 	        ;;
@@ -354,30 +362,31 @@ function nfs_start_rpcpipefs {
   local pipefspath="/var/lib/nfs/rpc_pipefs"
   if [ -n "$newrootpath" ] && [ ! -d $(dirname ${newrootpath}${pipefspath}) ]; then
     if [ -e ${newrootpath}$(dirname ${pipefspath}) ] || [ -L ${newrootpath}$(dirname ${pipefspath}) ]; then
-      rm -f ${newrootpath}$(dirname ${pipefspath})
+      rm -f ${newrootpath}$(dirname ${pipefspath}) 2>/dev/null
     fi
     if [ -z "$chroot_path" ] && [ ! -d ${newrootpath}$(dirname ${pipefspath}) ]; then
-  		mkdir -p ${newrootpath}$(dirname ${pipefspath})
+  		mkdir -p ${newrootpath}$(dirname ${pipefspath}) 2>/dev/null
 	fi
   fi
   if [ -n "$newrootpath" ] && [ ! -d ${newrootpath}${pipefspath} ]; then
     if [ -e ${newrootpath}${pipefspath} ] || [ -L ${newrootpath}${pipefspath} ]; then
-      rm -f ${newrootpath}${pipefspath}
+      rm -f ${newrootpath}${pipefspath} 2>/dev/null
     fi
     if [ -z "$chroot_path" ] && [ ! -d "${newrootpath}${pipefspath}" ]; then
-  		mkdir -p ${newrootpath}${pipefspath}
+  		mkdir -p ${newrootpath}${pipefspath} 2>/dev/null
 	fi
   fi
   exec_local mount -t rpc_pipefs sunrpc ${newrootpath}/${chroot_path}/${pipefspath}
   if [ -n "$newrootpath" ] && [ -e ${pipefspath} ]; then
-  	mv ${pipefspath} ${pipefspath}.old
+  	mv ${pipefspath} ${pipefspath}.old 2>/dev/null
   fi
   if [ -n "$newrootpath" ] && [ -z "$chroot_path" ]; then
-    ln -s ${newrootpath}${pipefspath} ${pipefspath}
+    ln -s ${newrootpath}${pipefspath} ${pipefspath} 2>/dev/null
   fi
   if [ -n "$newrootpath" ] && [ -n "$chroot_path" ]; then
-    ln -s ${newrootpath}/${chroot_path}/${pipefspath} ${newrootpath}/${pipefspath}
+    ln -s ${newrootpath}/${chroot_path}/${pipefspath} ${newrootpath}/${pipefspath} 2>/dev/null
   fi
+  touch $newrootpath/var/lock/subsys/rpcpipefs 2>/dev/null
 }
 #************ nfs_start_rpcpipefs
 
@@ -392,6 +401,7 @@ function nfs_start_rpcpipefs {
 #  SOURCE
 #
 function nfs_stop_rpcpipefs {
+	rm $1/var/lock/subsys/rpcpipefs 2>/dev/null
 	true
 }
 #************ nfs_stop_rpcpipefs
@@ -408,10 +418,13 @@ function nfs_stop_rpcpipefs {
 #
 function nfs_start_rpcbind {
   local chrootpath=$1
-  if [ -z $chrootpath ]; then
-  	chrootpath="no_chroot"
+  if [ -z $chrootpath ] || [ "$chrootpath" = "no_chroot" ]; then
+	  start_service $chrootpath /sbin/rpcbind && \
+	  touch /var/lock/subsys/rpcbind 2>/dev/null
+  else
+      start_service_chroot $chrootpath /sbin/rpcbind && \
+	  touch $chrootpath/var/lock/subsys/rpcbind 2>/dev/null
   fi
-  start_service /sbin/rpcbind
 }
 #************ nfs_start_rpcbind
 
@@ -426,7 +439,8 @@ function nfs_start_rpcbind {
 #  SOURCE
 #
 function nfs_stop_rpcbind {
-  killall rpcbindrpcpipefs
+  killall rpcbind && \
+  rm $1/var/lock/subsys/rpcbind  2>/dev/null
 }
 #************ nfs_stop_rpcbind
 
@@ -442,10 +456,13 @@ function nfs_stop_rpcbind {
 #
 function nfs_start_portmap {
   local chrootpath=$1
-  if [ -z $chrootpath ]; then
-  	chrootpath="no_chroot"
+  if [ -z $chrootpath ] || [ "$chrootpath" = "no_chroot" ]; then
+	  start_service $chrootpath /sbin/portmap && \
+	  touch /var/lock/subsys/portmap 2>/dev/null
+  else
+      start_service_chroot $chrootpath /sbin/portmap && \
+	  touch $chrootpath/var/lock/subsys/portmap 2>/dev/null
   fi
-  start_service /sbin/portmap
 }
 #************ nfs_start_portmap
 
@@ -460,11 +477,8 @@ function nfs_start_portmap {
 #  SOURCE
 #
 function nfs_stop_portmap {
-  local chrootpath=$1
-  if [ -z $chrootpath ]; then
-  	chrootpath="no_chroot"
-  fi
-  killall portmap
+  killall portmap 2>/dev/null && \
+  rm $1/var/lock/subsys/portmap 2>/dev/null
 }
 #************ nfs_stop_portmap
 
@@ -480,10 +494,13 @@ function nfs_stop_portmap {
 #
 function nfs_start_rpc_lockd {
   local chrootpath=$1
-  if [ -z $chrootpath ]; then
-  	chrootpath="no_chroot"
+  if [ -z $chrootpath ] || [ "$chrootpath" = "no_chroot" ]; then
+	  start_service $chrootpath /sbin/rpc.lockd && \
+	  touch /var/lock/subsys/rpclockd 2>/dev/null
+  else
+      start_service_chroot $chrootpath /sbin/rpc.lockd && \
+	  touch $chrootpath/var/lock/subsys/rpclockd 2>/dev/null
   fi
-  start_service /sbin/rpc.lockd
 }
 #************ nfs_start_rpc_statd
 
@@ -499,10 +516,13 @@ function nfs_start_rpc_lockd {
 #
 function nfs_start_rpc_statd {
   local chrootpath=$1
-  if [ -z $chrootpath ]; then
-  	chrootpath="no_chroot"
+  if [ -z $chrootpath ] || [ "$chrootpath" = "no_chroot" ]; then
+	  start_service $chrootpath /sbin/rpc.statd && \
+	  touch /var/lock/subsys/rpcstatd 2>/dev/null
+  else
+      start_service_chroot $chrootpath /sbin/rpc.statd && \
+	  touch $chrootpath/var/lock/subsys/rpcstatd 2>/dev/null
   fi
-  start_service /sbin/rpc.statd
 }
 #************ nfs_start_rpc_statd
 
@@ -517,14 +537,22 @@ function nfs_start_rpc_statd {
 #  SOURCE
 #
 function nfs_services_restart_newroot {
-  local chroot_path=$1
+  local new_root=$1
   local lock_method=$2
   local lvm_sup=$3
 
-  nfs_stop_portmap $chroot_path
+  services="portmap"
+  for service in $services; do
+    nfs_stop_$service $new_root
+  done
+  services="rpcpipefs"
+  for service in $services; do
+    nfs_start_$service $new_root
+  done
+#  nfs_stop_portmap $chroot_path
 
-  echo "Umounting $chroot_path/proc"
-  exec_local umount $chroot_path/proc
+  echo "Umounting $new_root/proc"
+  exec_local umount $new_root/proc
   return_code
 }
 #************ nfs_services_restart_newroot
@@ -548,8 +576,27 @@ function nfs_init {
 }
 #********* nfs_init
 
+#****f* nfs-lib.sh/nfs_get_userspace_procs
+#  NAME
+#    nfs_get_userspace_procs
+#  SYNOPSIS
+#    function nfs_get_userspace_procs(cluster_conf, nodename)
+#  DESCRIPTION
+#    gets userspace programs that are to be running dependent on rootfs
+#  SOURCE
+function nfs_get_userspace_procs {
+  local clutype=$1
+  local rootfs=$2
+
+  echo -e ""
+}
+#******** nfs_get_userspace_procs
+
 # $Log: nfs-lib.sh,v $
-# Revision 1.12  2009-04-14 14:57:01  marc
+# Revision 1.13  2009-04-20 07:10:46  marc
+# - more fixes to get it working as expected (rhel5/fc)
+#
+# Revision 1.12  2009/04/14 14:57:01  marc
 # - many fixes with nfs4 and rebooting and starting rpc.idmapd in chroot
 # - dependent fixes with nfs and pipefs being liked if need be.
 #
