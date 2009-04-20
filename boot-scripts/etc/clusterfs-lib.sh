@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.35 2009-04-14 14:53:47 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.36 2009-04-20 07:07:26 marc Exp $
 #
 # @(#)$File$
 #
@@ -538,8 +538,9 @@ function cc_get_rootfs {
 #  SOURCE
 function cc_get_userspace_procs {
   local clutype=$1
+  [ -z "$clutype" ] && clutype=$(repository_get_value clutype)
 
-  typeset -f ${clutype}_userspace_procs >/dev/null 2>/dev/null
+  typeset -f ${clutype}_get_userspace_procs >/dev/null 2>/dev/null
   if [ $? -eq 0 ]; then
     ${clutype}_get_userspace_procs $*
   fi
@@ -684,6 +685,28 @@ function cc_get_chroot_dir {
 }
 #******** cc_get_chroot_dir
 
+
+#****f* clusterfs-lib.sh/cc_init
+#  NAME
+#    cc_init
+#  SYNOPSIS
+#    function cc_init(start|stop|restart)
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function cc_init {
+  local proc=
+  local clutype=
+  [ -z "$clutype" ] && clutype=$(repository_get_value clutype)
+
+  typeset -f ${clutype}_init >/dev/null 2>/dev/null
+  if [ $? -eq 0 ]; then
+    ${clutype}_init $*
+  fi
+  return 0
+}
+#********* cc_init
 
 #****f* clusterfs-lib.sh/cc_get_scsifailover
 #  NAME
@@ -1048,15 +1071,42 @@ function clusterfs_mount {
 #  SOURCE
 function clusterfs_get_userspace_procs {
   local rootfs=$1
+  [ -z "$rootfs" ] && rootfs=$(repository_get_value rootfs)
 
-  typeset -f ${rootfs}_userspace_procs >/dev/null 2>/dev/null
+  typeset -f ${rootfs}_get_userspace_procs >/dev/null 2>/dev/null
   if [ $? -eq 0 ]; then
     ${rootfs}_get_userspace_procs $*
   fi
 }
 #******** clusterfs_get_userspace_procs
 
-#****f* gfs-lib.sh/cluster_restart_cluster_services
+#****f* clusterfs-lib.sh/clusterfs_init
+#  NAME
+#    clusterfs_init
+#  SYNOPSIS
+#    function clusterfs_init(start|stop|restart)
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function clusterfs_init {
+  local proc=
+  local rootfs=
+  [ -z "$rootfs" ] && rootfs=$(repository_get_value rootfs)
+
+  typeset -f ${rootfs}_init >/dev/null 2>/dev/null
+  if [ $? -eq 0 ]; then
+    ${rootfs}_init $*
+  fi
+  for proc in $(clusterfs_get_userspace_procs); do
+	touch /var/lock/subsys/$(echo $proc | sed -e s/[-_.]//g)
+  done
+  return 0
+}
+#********* clusterfs_init
+
+
+#****f* clusterfs-lib.sh/cluster_restart_cluster_services
 #  NAME
 #    cluster_restart_cluster_services
 #  SYNOPSIS
@@ -1290,7 +1340,11 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.35  2009-04-14 14:53:47  marc
+# Revision 1.36  2009-04-20 07:07:26  marc
+# - bugfixes
+# - added cc_init and clusterfs_init
+#
+# Revision 1.35  2009/04/14 14:53:47  marc
 # - added cc_get_userspace_procs and clusterfs_get_userspace_procs
 # - fixed syslog/klog bug and changed default loglevel for console only if debug is on
 #
