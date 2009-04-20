@@ -1,17 +1,17 @@
---- halt.xtab.local	2009-04-06 11:43:11.000000000 +0200
-+++ halt	2009-04-06 12:05:56.000000000 +0200
+--- halt.orig.orig	2009-04-14 18:11:07.000000000 +0200
++++ halt	2009-04-14 18:13:44.000000000 +0200
 @@ -8,6 +8,8 @@
  #               Modified for RHS Linux by Damien Neil
  #
  
-+KILLALL_OPTS=$(awk '{ print "-x " $0; }' /etc/xkillall_procs 2>/dev/null)
++KILLALL_OPTS=$(awk '{ printf "-x %s ", $0; }' /etc/xkillall_procs 2>/dev/null)
 +
  NOLOCALE=1
  . /etc/init.d/functions
  
-@@ -71,9 +73,9 @@
- # don't umount everything specified in xtab
- xtab=$(awk 'BEGIN{printf"/("}{ gsub(/\//, "\\/"); printf $0"|";}END{printf"^$)/"}' /etc/xtab 2>/dev/null)
+@@ -65,9 +67,9 @@
+ # Kill all processes.
+ [ "${BASH+bash}" = bash ] && enable kill
  
 -action $"Sending all processes the TERM signal..." /sbin/killall5 -15
 +action $"Sending all processes the TERM signal..." /sbin/killall5 -15 ${KILLALL_OPTS}
