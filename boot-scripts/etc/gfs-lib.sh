@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.64 2009-04-20 07:09:05 marc Exp $
+# $Id: gfs-lib.sh,v 1.65 2009-04-20 07:41:56 marc Exp $
 #
 # @(#)$File$
 #
@@ -1074,11 +1074,11 @@ function gfs_restart_ccsd {
 #  SOURCE
 #
 function gfs_start_clvmd {
-   chroot_path=$1
+   local chroot_path=$1
 
    #echo_local -n "Starting clvmd ($chroot_path) "
    start_service_chroot $chroot_path /usr/sbin/clvmd
-   return_code $?
+#   return_code $?
    sleep 10
    echo_local -n "Activating VGs:"
    exec_local_stabilized 5 10 chroot $chroot_path /sbin/lvm vgscan --mknodes >/dev/null 2>&1
@@ -1112,6 +1112,7 @@ function gfs_stop_clvmd {
    return_code $?
    sleep 10
    rm $chroot_path/var/lock/subsys/clvmd 2>/dev/null
+   return $return_c
 }
 #******gfs_stop_clvmd
 
@@ -1126,8 +1127,8 @@ function gfs_stop_clvmd {
 #  SOURCE
 #
 function gfs_restart_clvmd {
-   old_root=$1
-   new_root=$2
+   local old_root=$1
+   local new_root=$2
 
 #   set -x
    echo_local -n "Starting clvmd ($new_root) "$(pwd)
@@ -1335,7 +1336,10 @@ function gfs_fsck {
 #********* gfs_fsck
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.64  2009-04-20 07:09:05  marc
+# Revision 1.65  2009-04-20 07:41:56  marc
+# - fixed bug in restarting clvmd
+#
+# Revision 1.64  2009/04/20 07:09:05  marc
 # - added lockfiles although senseless
 #
 # Revision 1.63  2009/04/14 14:55:06  marc
