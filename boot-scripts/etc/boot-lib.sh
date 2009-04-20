@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.73 2009-04-14 14:50:55 marc Exp $
+# $Id: boot-lib.sh,v 1.74 2009-04-20 07:06:29 marc Exp $
 #
 # @(#)$File$
 #
@@ -447,11 +447,14 @@ function initBootProcess() {
 #  SOURCE
 #
 function start_service_chroot() {
+	local chroot_dir=
+	local service_name=
+	
 	chroot_dir=$1
 	shift
 	service_name=$1
 	shift
-	echo_local -n "Starting service $service_name"
+	echo_local -n "Starting service [$chroot_dir] $service_name"
 	exec_local /usr/sbin/chroot $chroot_dir $service_name $*
 	return_code
 }
@@ -471,16 +474,26 @@ function start_service_chroot() {
 #
 function start_service {
 #  if [ -n "$debug" ]; then set -x; fi
-  nochroot=
-  onlycopy=
-  nofailback=
-  dir=/etc
+  local nochroot=
+  local onlycopy=
+  local nofailback=
+  local dir=/etc
+  local chroot_dir=""
+  local service=
+  local aservice=
+  local service_name=
+  local service_dirs=
+  local service_mv_files=
+  local service_cp_files=
+  local file=
+  
   [ -d "$1" ] && chroot_dir=$1 && shift
   service=$1
   shift
   aservice=( $service )
   service_name=$(basename ${aservice[0]})
-  [ -n "$1" ] && [ "$1" = "no_chroot" ] && nochroot=1 && shift
+  [ -n "$chroot_dir" ] && [ "$chroot_dir" = "no_chroot" ] && nochroot=1
+  [ -z "$chroot_dir" ] && nochroot=1
   [ -n "$1" ] && [ -d $1 ] && dir=$1 && shift
   [ -n "$1" ] && [ "$1" = "onlycopy" ] && onlycopy=$1 && shift
   [ -n "$1" ] && [ "$1" = "nofailback" ] && nofailback=$1 && shift
@@ -945,7 +958,11 @@ function create_xkillall_procs () {
 #************** create_xkillall_procs
 
 # $Log: boot-lib.sh,v $
-# Revision 1.73  2009-04-14 14:50:55  marc
+# Revision 1.74  2009-04-20 07:06:29  marc
+# - declared some variables as lokals (as they should have been)
+# - fixed a no_chroot behaviour at start_service
+#
+# Revision 1.73  2009/04/14 14:50:55  marc
 # - added xfiles functions
 # - sys=>sysfs
 #
