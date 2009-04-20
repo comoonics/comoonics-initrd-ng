@@ -8,20 +8,9 @@
 #               Modified for RHS Linux by Damien Neil
 #
 
-# Patched for comoonics patch 1.6
+# Patched for comoonics patch 1.5
 
-
-COM_KILLALL_OPTS="-x aisexec \
--x ccsd \
--x fenced \
--x gfs_controld \
--x dlm_controld \
--x groupd \
--x qdiskd \
--x clvmd"
-
-COM_CHROOT_PATH=$(/opt/atix/comoonics-bootimage/manage_chroot.sh -p | sed s#/#\\\\\/#g)
-COM_CHROOT_PATH_REAL=$(/opt/atix/comoonics-bootimage/manage_chroot.sh -p)
+KILLALL_OPTS=$(awk '{ print "-x " $0; }' /etc/xkillall_procs 2>/dev/null)
 
 NOLOCALE=1
 . /etc/init.d/functions
@@ -80,11 +69,9 @@ esac
 # Kill all processes.
 [ "${BASH+bash}" = bash ] && enable kill
 
-action $"Sending all processes the TERM signal..." /usr/comoonics/sbin/killall5 -15 $COM_KILLALL_OPTS 
+action $"Sending all processes the TERM signal..." /usr/comoonics/killall5 -15 ${KILLALL_OPTS}
 sleep 5
-action $"Sending all processes the KILL signal..."  /usr/comoonics/sbin/killall5 -9 $COM_KILLALL_OPTS 
-
-/sbin/ifup lo &> /dev/null
+action $"Sending all processes the KILL signal..."  /usr/comoonics/killall5 -9 ${KILLALL_OPTS}
 
 # Write to wtmp file before unmounting /var
 /sbin/halt -w
@@ -145,10 +132,12 @@ esac
 
 [ -x /sbin/hwclock ] && action $"Syncing hardware clock to system time" /sbin/hwclock $CLOCKFLAGS
 
+# don't umount everything specified in xtab
+xtab=$(awk 'BEGIN{printf"/("}{ gsub(/\//, "\\/"); printf $0"|";}END{printf"^$)/"}' /etc/xtab 2>/dev/null)
+
 # Try to unmount tmpfs filesystems to avoid swapping them in.  Ignore failures.
-tmpfs=$(awk '
-$2 ~ /'$COM_CHROOT_PATH'/ || $2 ~/^\/cdsl.local/ {next}
-$2 ~ /^\/($|proc|dev)/ { next; }
+tmpfs=$(awk '$2 ~ /^\/($|proc|dev)/ { next; }
+            '$xtab' { next; }
 	     $3 == "tmpfs" { print $2; }' /proc/mounts | sort -r)
 [ -n "$tmpfs" ] && fstab-decode umount $tmpfs 2>/dev/null
 
@@ -182,7 +171,7 @@ __umount_loop '$3 ~ /^rpc_pipefs$/ || $3 ~ /^rpc_svc_gss_pipefs$/ {print $2}' \
     -f
 
 LANG=C __umount_loop '$2 ~ /^\/$|^\/proc|^\/dev/{next}
-	"'$COM_CHROOT_PATH_REAL'" != "" && ($2 ~ /'$COM_CHROOT_PATH'/ || $2 ~/^\/cdsl.local/) {next}
+        '$xtab' { next; }
 	$3 == "tmpfs" || $3 == "proc" {print $2 ; next}
 	/(loopfs|autofs|nfs|cifs|smbfs|ncpfs|sysfs|^none|^\/dev\/ram|^\/dev\/root$)/ {next}
 	{print $2}' /proc/mounts \
@@ -200,25 +189,22 @@ rm -f /.autofsck
 
 # Try all file systems other than root, essential filesystems and RAM disks,
 # one last time.
-awk '
-"'$COM_CHROOT_PATH_REAL'" != "" && $2 ~ /'$COM_CHROOT_PATH'/ || $2 ~/^\/cdsl.local/ {next}
-$2 !~ /\/(|dev|proc|selinux)$/ && $1 !~ /^\/dev\/ram/ { print $2 }' \
+awk ''$xtab'{ next; }
+    $2 !~ /\/(|dev|proc|selinux|sys)$/ && $1 !~ /^\/dev\/ram/ { print $2 }' \
     /proc/mounts | sort -r | \
   while read line; do
     fstab-decode umount -f $line
 done
 
 if [ -x /sbin/halt.local ]; then
-   /sbin/halt.local
+   /sbin/halt.local "$message" "$HALTARGS" "$kexec_command" "$command"
 fi
 
 # Remount read only anything that's left mounted.
-if [ -z "$COM_CHROOT_PATH_REAL" ]; then
-  echo $"Remounting remaining filesystems readonly"
-  mount | awk '{ print $3 }' | while read line; do
+# echo $"Remounting remaining filesystems readonly"
+mount | awk '{ print $3 }' | while read line; do
     fstab-decode mount -n -o ro,remount $line
-  done
-fi
+done
 
 # Now halt or reboot.
 echo $"$message"
@@ -243,8 +229,4 @@ fi
 HALTARGS="-d"
 [ -f /poweroff -o ! -f /halt ] && HALTARGS="$HALTARGS -p"
 
-if [ -z "$COM_CHROOT_PATH_REAL" ]; then
-   exec $command $HALTARGS
-else
-   $COM_CHROOT_PATH_REAL/com-halt.sh "$command $HALTARGS"
-fi
+exec $command $HALTARGS
