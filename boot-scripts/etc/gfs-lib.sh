@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.63 2009-04-14 14:55:06 marc Exp $
+# $Id: gfs-lib.sh,v 1.64 2009-04-20 07:09:05 marc Exp $
 #
 # @(#)$File$
 #
@@ -267,15 +267,14 @@ function gfs_get_userspace_procs {
   local clutype=$1
   local rootfs=$2
 
-  echo "aisexec \
-ccsd \
-fenced \
-gfs_controld \
-dlm_controld \
-groupd \
-qdiskd \
+  echo -e "aisexec \n\
+ccsd \n\
+fenced \n\
+gfs_controld \n\
+dlm_controld \n\
+groupd \n\
+qdiskd \n\
 clvmd"
-
 }
 #******** gfs_get_userspace_procs
 
@@ -887,6 +886,7 @@ function gfs_services_restart {
 function gfs_start_lock_gulm {
   local chroot_path=$1
   start_service_chroot $chroot_path '/sbin/lock_gulmd'
+  touch $chroot_path/var/lock/lockgulmd
   sts=1
   if [ $? -eq 0 ]; then
     echo_local -n "   check Lockgulmd.."
@@ -938,15 +938,15 @@ function gfs_start_cman {
 	echo_local_debug "Votes value has been set to $votes"
   fi
 
-  echo_local -n "Joining the cluster manager"
+  echo_local "Joining the cluster manager"
   sleep 5
   start_service_chroot $chroot_path $cmd
   if [ -n "$votes" ]; then
 	start_service_chroot $chroot_path cman_tool votes -v $votes
   fi
-
-  return_code
-  
+  touch $chroot_path/var/lock/subsys/cman 2>/dev/null
+  return $return_c
+#  return_code
 }
 #************ gfs_start_cman
 
@@ -981,9 +981,8 @@ function gfs_start_fenced {
   ## THIS will be overwritten for rhel5 ##
   local chroot_path=$1
   #start_service_chroot $chroot_path 'fenced -c'
-  start_service_chroot $chroot_path '/sbin/fence_tool -c -w join'
-  #echo_local "Waiting for fenced to complete join"
-  #exec_local fence_tool wait
+  start_service_chroot $chroot_path '/sbin/fence_tool -c -w join' && \
+  touch $chroot_path/var/lock/subsys/fenced 2>/dev/null
   return_code
 }
 #************ gfs_start_fenced
@@ -1001,7 +1000,8 @@ function gfs_start_fenced {
 function gfs_stop_fenced {
   local chroot_path=$1
   echo_local "stopping fenced"
-  exec_local '/sbin/fence_tool leave -w'
+  exec_local '/sbin/fence_tool leave -w' && \
+  rm $chroot_path/var/lock/subsys/fenced 2>/dev/null
   return_code
 }
 #************ gfs_start_fenced
@@ -1018,7 +1018,9 @@ function gfs_stop_fenced {
 #
 function gfs_start_ccsd {
   local chroot_path=$1
-  start_service_chroot $chroot_path /sbin/ccsd
+  start_service_chroot $chroot_path /sbin/ccsd && \
+  touch $chroot_path/var/lock/subsys/ccsd 2>/dev/null
+  return $return_c
 }
 
 #************ gfs_start_ccsd
@@ -1084,6 +1086,8 @@ function gfs_start_clvmd {
    exec_local_stabilized 5 10 /sbin/lvm vgscan --mknodes >/dev/null 2>&1
    exec_local_stabilized 5 10 /sbin/lvm vgchange -ay >/dev/null 2>&1
    return_code $?
+   touch $chroot_path/var/lock/subsys/clvmd 2>/dev/null
+   return $return_c
 }
 #******gfs_start_clvmd
 
@@ -1105,8 +1109,9 @@ function gfs_stop_clvmd {
    if pidof clvmd > /dev/null; then
        killall -9 clvmd
    fi
-   sleep 10
    return_code $?
+   sleep 10
+   rm $chroot_path/var/lock/subsys/clvmd 2>/dev/null
 }
 #******gfs_stop_clvmd
 
@@ -1193,12 +1198,14 @@ function gfs_start_qdiskd {
 
   $ccs_xml_query query_xml /cluster/quorumd >/dev/null 2>&1
   if [ $? -eq 0 ]; then
-     start_service_chroot $chroot_path /sbin/qdiskd -Q
+     start_service_chroot $chroot_path /sbin/qdiskd -Q && \
+     touch $chroot_path/var/lock/subsys/qdisk 2>/dev/null
   else
   	 echo_local -n "Starting qdiskd"
      passed
      echo_local
   fi
+  return $return_c
 }
 #************ gfs_start_qdiskd
 
@@ -1214,7 +1221,9 @@ function gfs_start_qdiskd {
 #
 function gfs_start_groupd {
   local chroot_path=$1
-  start_service_chroot $chroot_path  /sbin/groupd
+  start_service_chroot $chroot_path  /sbin/groupd && \
+  touch $chroot_path/var/lock/subsys/groupd 2>/dev/null
+  return $return_c
 }
 #************ gfs_start_groupd
 
@@ -1231,7 +1240,9 @@ function gfs_start_groupd {
 #
 function gfs_start_dlm_controld {
   local chroot_path=$1
-  start_service_chroot $chroot_path /sbin/dlm_controld
+  start_service_chroot $chroot_path /sbin/dlm_controld && \
+  touch $chroot_path/var/lock/subsys/dlmcontrold 2>/dev/null
+  return $return_c
 }
 #************ gfs_start_dlm_controld
 
@@ -1248,7 +1259,9 @@ function gfs_start_dlm_controld {
 #
 function gfs_start_gfs_controld {
   local chroot_path=$1
-  start_service_chroot $chroot_path /sbin/gfs_controld
+  start_service_chroot $chroot_path /sbin/gfs_controld && \
+  touch $chroot_path/var/lock/subsys/gfscontrold 2>/dev/null
+  return $return_c
 }
 #************ gfs_start_gfs_controld
 
@@ -1322,7 +1335,10 @@ function gfs_fsck {
 #********* gfs_fsck
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.63  2009-04-14 14:55:06  marc
+# Revision 1.64  2009-04-20 07:09:05  marc
+# - added lockfiles although senseless
+#
+# Revision 1.63  2009/04/14 14:55:06  marc
 # - added gfs2 module
 # - added gfs_get_userspace_procs
 #
