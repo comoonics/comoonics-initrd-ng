@@ -1,0 +1,11 @@
+--- network.orig.orig	2009-04-14 17:37:45.000000000 +0200
++++ network	2009-04-14 17:53:33.000000000 +0200
+@@ -10,6 +10,8 @@
+ # Provides: $network
+ ### END INIT INFO
+ 
++# Patched for comoonics patch 1.6
++
+ # Source function library.
+ . /etc/init.d/functions
+ 

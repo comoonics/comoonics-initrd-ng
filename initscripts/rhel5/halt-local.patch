@@ -1,0 +1,11 @@
+--- halt.orig.orig	2009-04-14 18:11:07.000000000 +0200
++++ halt	2009-04-14 18:15:51.000000000 +0200
+@@ -187,7 +187,7 @@
+ done
+ 
+ if [ -x /sbin/halt.local ]; then
+-   /sbin/halt.local
++   /sbin/halt.local "$message" "$HALTARGS" "$kexec_command" "$command"
+ fi
+ 
+ # Remount read only anything that's left mounted.

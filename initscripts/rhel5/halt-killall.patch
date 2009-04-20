@@ -1,0 +1,23 @@
+--- halt.orig.orig	2009-04-14 18:11:07.000000000 +0200
++++ halt	2009-04-14 18:13:44.000000000 +0200
+@@ -8,6 +8,8 @@
+ #               Modified for RHS Linux by Damien Neil
+ #
+ 
++KILLALL_OPTS=$(awk '{ printf "-x %s ", $0; }' /etc/xkillall_procs 2>/dev/null)
++
+ NOLOCALE=1
+ . /etc/init.d/functions
+ 
+@@ -65,9 +67,9 @@
+ # Kill all processes.
+ [ "${BASH+bash}" = bash ] && enable kill
+ 
+-action $"Sending all processes the TERM signal..." /sbin/killall5 -15
++action $"Sending all processes the TERM signal..." /usr/comoonics/sbin/killall5 -15 ${KILLALL_OPTS}
+ sleep 5
+-action $"Sending all processes the KILL signal..."  /sbin/killall5 -9
++action $"Sending all processes the KILL signal..."  /usr/comoonics/sbin/killall5 -9 ${KILLALL_OPTS}
+ 
+ # Write to wtmp file before unmounting /var
+ /sbin/halt -w

@@ -1,0 +1,27 @@
+--- netfs.orig.orig	2009-04-16 18:01:51.912619357 +0200
++++ netfs	2009-04-16 18:30:15.181781820 +0200
+@@ -17,6 +17,8 @@
+ . /etc/init.d/functions
+ . /etc/sysconfig/network
+ 
++xtab=$(awk 'BEGIN{printf"/("}{ gsub(/\//, "\\/"); printf $0"|";}END{printf"^$)/"}' /etc/xtab 2>/dev/null)
++
+ # Check that networking is up.
+ [ "${NETWORKING}" = "no" ] && exit 0
+ 
+@@ -98,13 +100,13 @@
+         # Unmount loopback stuff first
+ 	__umount_loopback_loop
+   	if [ -n "$NETDEVMTAB" ]; then
+-		__umount_loop '$4 ~ /_netdev/ && $2 != "/" {print $2}' \
++		__umount_loop ''$xtab' { next; } $4 ~ /_netdev/ && $2 != "/" {print $2}' \
+ 			/etc/mtab \
+ 			$"Unmounting network block filesystems: " \
+ 			$"Unmounting network block filesystems (retry): "
+ 	fi
+   	if [ -n "$NFSMTAB" ]; then
+-		__umount_loop '$3 ~ /^nfs/ && $2 != "/" {print $2}' \
++		__umount_loop ''$xtab' { next; } $3 ~ /^nfs/ && $2 != "/" {print $2}' \
+ 			/proc/mounts \
+ 			$"Unmounting NFS filesystems: " \
+ 			$"Unmounting NFS filesystems (retry): " \

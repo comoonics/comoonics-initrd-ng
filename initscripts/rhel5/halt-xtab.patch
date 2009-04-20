@@ -1,0 +1,42 @@
+--- halt.orig.orig	2009-04-14 18:11:07.000000000 +0200
++++ halt	2009-04-17 15:03:43.000000000 +0200
+@@ -128,8 +128,12 @@
+ 
+ [ -x /sbin/hwclock ] && action $"Syncing hardware clock to system time" /sbin/hwclock $CLOCKFLAGS
+ 
++# don't umount everything specified in xtab
++xtab=$(awk 'BEGIN{printf"/("}{ gsub(/\//, "\\/"); printf $0"|";}END{printf"^$)/"}' /etc/xtab 2>/dev/null)
++
+ # Try to unmount tmpfs filesystems to avoid swapping them in.  Ignore failures.
+ tmpfs=$(awk '$2 ~ /^\/($|proc|dev)/ { next; }
++            '$xtab' { next; }
+ 	     $3 == "tmpfs" { print $2; }' /proc/mounts | sort -r)
+ [ -n "$tmpfs" ] && fstab-decode umount $tmpfs 2>/dev/null
+ 
+@@ -156,13 +160,15 @@
+ __umount_loopback_loop
+ 
+ # Unmount RPC pipe file systems
+-__umount_loop '$3 ~ /^rpc_pipefs$/ || $3 ~ /^rpc_svc_gss_pipefs$/ {print $2}' \
++__umount_loop ''$xtab' { next; }
++    $3 ~ /^rpc_pipefs$/ || $3 ~ /^rpc_svc_gss_pipefs$/ {print $2}' \
+     /proc/mounts \
+     $"Unmounting pipe file systems: " \
+     $"Unmounting pipe file systems (retry): " \
+     -f
+ 
+ LANG=C __umount_loop '$2 ~ /^\/$|^\/proc|^\/dev/{next}
++        '$xtab' { next; }
+ 	$3 == "tmpfs" || $3 == "proc" {print $2 ; next}
+ 	/(loopfs|autofs|nfs|cifs|smbfs|ncpfs|sysfs|^none|^\/dev\/ram|^\/dev\/root$)/ {next}
+ 	{print $2}' /proc/mounts \
+@@ -180,7 +186,8 @@
+ 
+ # Try all file systems other than root, essential filesystems and RAM disks,
+ # one last time.
+-awk '$2 !~ /\/(|dev|proc|selinux)$/ && $1 !~ /^\/dev\/ram/ { print $2 }' \
++awk ''$xtab'{ next; }
++    $2 !~ /\/(|dev|proc|selinux|sys)$/ && $1 !~ /^\/dev\/ram/ { print $2 }' \
+     /proc/mounts | sort -r | \
+   while read line; do
+     fstab-decode umount -f $line
