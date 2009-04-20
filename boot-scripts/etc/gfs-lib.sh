@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.65 2009-04-20 07:41:56 marc Exp $
+# $Id: gfs-lib.sh,v 1.66 2009-04-20 20:18:56 marc Exp $
 #
 # @(#)$File$
 #
@@ -41,7 +41,7 @@
 #*******
 
 default_lockmethod="lock_dlm"
-default_mountopts="noatime,nodiratime"
+default_mountopts="noatime"
 #ccs_xml_query="/opt/atix/comoonics-cs/ccs_xml_query"
 ccs_xml_query="/usr/bin/com-queryclusterconf"
 cl_check_nodes="/usr/bin/cl_checknodes"
@@ -114,7 +114,7 @@ function gfs_getdefaults {
 		    echo "lock_dlm"
 		    ;;
 		mount_opts|mountopts)
-		    echo "noatime,nodiratime"
+		    echo "noatime"
 		    ;;
 		root_source|rootsource)
 		    echo "scsi"
@@ -1336,7 +1336,10 @@ function gfs_fsck {
 #********* gfs_fsck
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.65  2009-04-20 07:41:56  marc
+# Revision 1.66  2009-04-20 20:18:56  marc
+# - removed nodiratime option
+#
+# Revision 1.65  2009/04/20 07:41:56  marc
 # - fixed bug in restarting clvmd
 #
 # Revision 1.64  2009/04/20 07:09:05  marc
