@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.97 2009-04-14 15:03:41 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.98 2009-04-20 07:42:31 marc Exp $
 #
 ##
 ##
@@ -58,7 +58,7 @@ Requires: comoonics-cluster-py >= 0.1-2
 Requires: comoonics-bootimage-initscripts >= 1.4 
 Requires: comoonics-bootimage-listfiles-all
 #Conflicts:
-Release: 18
+Release: 20
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -84,7 +84,7 @@ Extra listfiles for special network configurations
 
 %package extras-nfs
 Version: 0.1
-Release: 10
+Release: 12
 Requires: comoonics-bootimage >= 1.4
 Summary: Listfiles for nfs sharedroot configurations
 Group:   System Environment/Base
@@ -757,6 +757,12 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Mon Apr 20 2009 Marc Grimme <grimme@atix.de> 1.4-20
+- RC1
+- gfs bugfix
+* Tue Apr 16 2009 Marc Grimme <grimme@atix.de> 1.4-19
+- fixes in service starting and handling
+- fix in hardware-lib.sh
 * Tue Apr 14 2009 Marc Grimme <grimme@atix.de> 1.4-18
 - Rework on chroot build, nfs4 stabilized, fedora10 stabilized
 * Tue Apr 09 2009 Marc Grimme <grimme@atix.de> 1.4-17
@@ -1101,7 +1107,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.97  2009-04-14 15:03:41  marc
+# Revision 1.98  2009-04-20 07:42:31  marc
+# - new version 20, nfs 11
+#
+# Revision 1.97  2009/04/14 15:03:41  marc
 # *** empty log message ***
 #
 # Revision 1.96  2009/03/06 13:27:26  marc
