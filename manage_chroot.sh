@@ -7,7 +7,7 @@
 #  DESCRIPTION
 #*******
 #
-# $Id: manage_chroot.sh,v 1.13 2009-04-14 15:07:11 marc Exp $
+# $Id: manage_chroot.sh,v 1.14 2009-04-20 07:43:18 marc Exp $
 #
 # @(#)$File$
 #
@@ -237,25 +237,31 @@ function mount_cdsl {
 function createxfiles {
 	repository_store_value xtabfile /etc/xtab
 	repository_store_value xrootfsfile /etc/xrootfs
-	repository_store_value xkillallprocsfile /etc/xkillallprocs_file
+	repository_store_value xkillallprocsfile /etc/xkillall_procs
 	clusterfs_chroot_needed initrd
 	__default=$?
 	getParameter chrootneeded $__default &>/dev/null
-	echo_local -n "Writing xtab.. "
-	if [ $(repository_get_value chrootneeded) -eq 0 ]; then
+	if  [ ! -e $(repository_get_value xtabfile) ]; then
+	  echo_local -n "Writing xtab.. "
+	  if [ $(repository_get_value chrootneeded) -eq 0 ]; then
   		create_xtab "$(repository_get_value xtabfile)" "$(repository_get_value cdsl_local_dir)" "$(repository_get_value chroot_mount)" 
-	else  
+	  else  
   		create_xtab "$(repository_get_value xtabfile)" "$(repository_get_value cdsl_local_dir)"
+	  fi
+	  success
+    fi
+
+	if [ ! -e $(repository_get_value xrootfsfile) ]; then
+	  echo_local -n "Writing xrootfs.. "
+	  create_xrootfs $(repository_get_value xrootfsfile) $(repository_get_value rootfs)
+	  success
 	fi
-	success
 
-	echo_local -n "Writing xrootfs.. "
-	create_xrootfs $(repository_get_value newroot)/$(repository_get_value xrootfsfile) $(repository_get_value rootfs)
-	success
-
-	echo_local -n "Writing xkillall_procs.. "
-	create_xkillall_procs "$(repository_get_value newroot)/$(repository_get_value xkillallprocsfile)" "$(repository_get_value clutype)" "$(repository_get_value rootfs)"
-	success
+    if [ ! -e $(repository_get_value xkillallprocsfile) ]; then
+	  echo_local -n "Writing xkillall_procs.. "
+	  create_xkillall_procs $(repository_get_value xkillallprocsfile) "$(repository_get_value clutype)" "$(repository_get_value rootfs)"
+	  success
+    fi
 }	
 
 #****f* bootsr/patch_files
@@ -268,14 +274,27 @@ function createxfiles {
 #  SOURCE
 #
 function patch_files {
+  local files="halt network netfs"
+  if [ -n "$1" ]; then
+    files=$*
+  fi
   # we patch all versions here
-  for initscript in halt network netfs; do
+  for initscript in $files; do
 	if ! grep "comoonics patch " /etc/init.d/$initscript > /dev/null; then
 		echo -n "Patching $initscript ("
-		for patchfile in $(ls -1 /opt/atix/comoonics-bootimage/patches/${initscript}*.patch | sort); do
+		for patchfile in $(ls -1 /opt/atix/comoonics-bootimage/patches/${initscript}-*.patch | sort); do
 			echo -n $(basename $patchfile)", "
-			cd /etc/init.d/ && patch -f -r /tmp/$(basename ${patchfile}).patch.rej > /dev/null < $patchfile || \
-			echo "Failure patching $initscript with patch $patchfile" >&2
+			cd /etc/init.d/ && patch -f -r /tmp/$(basename ${patchfile}).patch.rej > /dev/null < $patchfile
+	        if [ $? -ne 0 ]; then
+		      echo >&2
+		      echo >&2
+		      echo "FAILURE!!!!" >&2
+		      echo "Patching $initscript with patch $patchfile" >&2
+		      echo "You might want to consider restoring the original initscript and the patch again by:" >&2
+		      echo "cp %{APPDIR}/patches/${initscript}.orig /etc/init.d/${initscript}"
+		      echo "%{APPDIR}/manage_chroot.sh -a patch_files ${initscript}"
+		      echo >&2
+		    fi
 		done
 	    echo ")"
 	fi
@@ -293,14 +312,27 @@ function patch_files {
 #  SOURCE
 #
 function unpatch_files {
+  local files="halt network netfs"
+  if [ -n "$1" ]; then
+    files=$*
+  fi
   # we patch all versions here
-  for initscript in halt network netfs; do
+  for initscript in $files; do
 	if grep "comoonics patch " /etc/init.d/$initscript > /dev/null; then
 		echo -n "Unpatching $initscript ("
-		for patchfile in $(ls -1 /opt/atix/comoonics-bootimage/patches/${initscript}*.patch | sort -r); do
+		for patchfile in $(ls -1 /opt/atix/comoonics-bootimage/patches/${initscript}-*.patch | sort -r); do
 			echo -n $(basename $patchfile)", "
-			cd /etc/init.d/ && patch -R -f -r /tmp/$(basename ${patchfile}).patch.rej > /dev/null < $patchfile || \
-			echo "Failure patching $initscript with patch $patchfile" >&2
+			cd /etc/init.d/ && patch -R -f -r /tmp/$(basename ${patchfile}).patch.rej > /dev/null < $patchfile
+	        if [ $? -ne 0 ]; then
+		      echo >&2
+		      echo >&2
+		      echo "FAILURE!!!!" >&2
+		      echo "Patching $initscript with patch $patchfile" >&2
+		      echo "You might want to consider restoring the original initscript and the patch again by:" >&2
+		      echo "cp %{APPDIR}/patches/${initscript}.orig /etc/init.d/${initscript}"
+		      echo "%{APPDIR}/manage_chroot.sh -a patch_files ${initscript}"
+		      echo >&2
+		    fi
 		done
 		echo ")"
 	fi
@@ -424,14 +456,14 @@ case "$action" in
   	 	check_sharedroot $rootfs
      	sharedroot=$?
      	if  [ -n "$rootfs" ] && [ $sharedroot ]; then
-  	      patch_files
+  	      patch_files $*
       	fi
      	;;
 	"unpatch_files")
   	 	check_sharedroot $rootfs
      	sharedroot=$?
      	if  [ -n "$rootfs" ] && [ $sharedroot ]; then
-  	      unpatch_files
+  	      unpatch_files $*
       	fi
      	;;
 	 "createxfiles")
