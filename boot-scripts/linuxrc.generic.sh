@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.77 2009-04-14 14:58:49 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.78 2009-04-20 07:12:44 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.77 2009-04-14 14:58:49 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.78 2009-04-20 07:12:44 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -70,7 +70,7 @@ repository_store_value logo "${predir}/$atixlogofile"
 repository_store_value sysctlfile "${predir}/etc/sysctl.conf"
 repository_store_value xtabfile /etc/xtab
 repository_store_value xrootfsfile /etc/xrootfs
-repository_store_value xkillallprocsfile /etc/xkillallprocs_file
+repository_store_value xkillallprocsfile /etc/xkillallprocs
 
 if [ $# -gt 1 ]; then
   echo_local -n "Checking commandline parmeters \"$*\""
@@ -82,7 +82,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.77 $ $Date: 2009-04-14 14:58:49 $'
+echo_local 'Internal Version $Revision: 1.78 $ $Date: 2009-04-20 07:12:44 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -239,6 +239,7 @@ done
 bridgeipconfig=""
 vlanipconfig=""
 networkipconfig=""
+restartipconfig=""
 _ipconfig=""
 __ipconfig=""
 for ipconfig in $(repository_get_value ipConfig); do
@@ -247,15 +248,22 @@ for ipconfig in $(repository_get_value ipConfig); do
   echo_local -n "Creating network configuration for $dev"
   __ipconfig=$(nicConfig $ipconfig "$hwids")
   _type=$(getPosFromIPString 8, $ipconfig)
+  _bridge=$(getPosFromIPString 9, $ipconfig)
   if [ "$_type" = "bridge" ]; then
     bridgeipconfig="$bridgeipconfig $__ipconfig"
   elif [[ "$dev" =~ "[a-z]+[0-9]+\.[0-9]+" ]]; then
     vlanipconfig="$vlanipconfig $__ipconfig"
+  elif [[ "$dev" =~ "^bond" ]]; then
+    bondipconfig="$bondipconfig $__ipconfig" 
+    networkipconfig="$networkipconfig $__ipconfig"
   else
     networkipconfig="$networkipconfig $__ipconfig"
   fi
   if [ $? -ne 0 ]; then
 	breakp $(err_nic_config)
+  fi
+  if [ -n "$_bridge" ]; then
+    restartipconfig="$restartipconfig $__ipconfig"
   fi
   _ipconfig="$_ipconfig "$__ipconfig
   return_code $?
@@ -266,7 +274,7 @@ unset __ipconfig
 repository_store_value ipConfig "$_ipconfig"
 step "Network configuration finished" "netconfig"
 
-for ipconfig in $networkipconfig $vlanipconfig $bridgeipconfig; do
+for ipconfig in $networkipconfig $vlanipconfig $bridgeipconfig $restartipconfig; do
   dev=$(getPosFromIPString 6, $ipconfig)
   driver=$(getPosFromIPString 11, $ipconfig)
   nicAutoUp $ipconfig
@@ -463,6 +471,7 @@ step "Logfiles copied" "logfiles"
 if [ $is_syslog -eq 0 ]; then
   #TODO: remove lines as syslog can will stay in /comoonics
   echo_local -n "Stopping syslogd..."
+  exec_local killall "klogd"
   exec_local stop_service "syslogd" /
   return_code
 fi
@@ -522,7 +531,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.77  2009-04-14 14:58:49  marc
+# Revision 1.78  2009-04-20 07:12:44  marc
+# - fixed a bug where a brigde would not eventually come up with binded to a bond interface (strange!)
+#
+# Revision 1.77  2009/04/14 14:58:49  marc
 # - small bugfix with stepmode and i being pressed and step instead of set
 # - added support for xfiles
 #
