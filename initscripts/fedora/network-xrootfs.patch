@@ -5,7 +5,7 @@
  fi
  
 +# don't umount everything specified in xrootfs
-+xrootfs=$(awk 'BEGIN{printf"/("}{ gsub(/\//, "\\/"); printf $0"|";}END{printf"^$)/"}' /etc/xrootfs 2>/dev/null)
++xrootfs=$(awk 'BEGIN{printf"("}{ gsub(/\//, "\\/"); printf $0"|";}END{printf"^$)"}' /etc/xrootfs 2>/dev/null)
  
  # Check that networking is up.
  [ "${NETWORKING}" = "no" ] && exit 0
