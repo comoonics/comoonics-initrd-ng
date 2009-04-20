@@ -1,3 +1,5 @@
+#!/bin/bash
+
 COM_CHROOT_PATH=$(/opt/atix/comoonics-bootimage/manage_chroot.sh -p | sed s#/#\\\\\/#g)
 COM_CHROOT_PATH_REAL=$(/opt/atix/comoonics-bootimage/manage_chroot.sh -p)
 
