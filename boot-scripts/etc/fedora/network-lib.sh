@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.2 2009-04-14 14:48:01 marc Exp $
+# $Id: network-lib.sh,v 1.3 2009-04-22 11:35:56 marc Exp $
 #
 # @(#)$File$
 #
@@ -23,7 +23,7 @@
 
 
 function fedora10_ip2Config() {
-	fedora9_ip2Config $*
+	fedora9_ip2Config "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9"
 }
 
 #****f* boot-lib.sh/fedora9_ip2Config
@@ -101,7 +101,10 @@ function fedora9_ip2Config() {
 
 #################
 # $Log: network-lib.sh,v $
-# Revision 1.2  2009-04-14 14:48:01  marc
+# Revision 1.3  2009-04-22 11:35:56  marc
+# - fixed bug with NIC error generation for fc10.
+#
+# Revision 1.2  2009/04/14 14:48:01  marc
 # added fedora10 functions
 #
 # Revision 1.1  2009/01/28 12:45:29  marc
