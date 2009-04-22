@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.3 2009-02-08 13:17:29 marc Exp $
+# $Id: gfs-lib.sh,v 1.4 2009-04-22 11:34:37 marc Exp $
 #
 # @(#)$File$
 #
@@ -22,8 +22,8 @@
 #    Enterprise Linux 5.
 #*******
 
-if [ -z "$__RHEL5_GFS_LIB__" ]; then
-	__RHEL5_GFS_LIB__=1
+if [ -z "$__FC_GFS_LIB__" ]; then
+	__FC_GFS_LIB__=1
     # FENCED_START_TIMEOUT -- amount of time to wait for starting fenced
     #     before giving up.  If FENCED_START_TIMEOUT is positive, then we will
     #     wait FENCED_START_TIMEOUT seconds before giving up and failing when
@@ -321,6 +321,9 @@ function gfs_start_cman {
 
 ###############
 # $Log: gfs-lib.sh,v $
-# Revision 1.3  2009-02-08 13:17:29  marc
+# Revision 1.4  2009-04-22 11:34:37  marc
+# just a small one.
+#
+# Revision 1.3  2009/02/08 13:17:29  marc
 # implemented the gfs join process as specified in RedHat initscripts
 #
