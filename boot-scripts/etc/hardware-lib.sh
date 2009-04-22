@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.33 2009-04-20 12:23:55 marc Exp $
+# $Id: hardware-lib.sh,v 1.34 2009-04-22 11:37:33 marc Exp $
 #
 # @(#)$File$
 #
@@ -441,15 +441,18 @@ function hardware_detect() {
   
   /sbin/depmod -a &>/dev/null
 
+  # modules not being removed
+  local xmodules=$(cat /etc/xmodules 2>/dev/null)
+
   echo_local -n "Detecting Hardware "
   echo_local_debug -n "..(saving modules).."
-  local modules=$(listmodules | sort)
+  local modules=$( (listmodules; echo -e "$xmodules") | sort)
   # detecting xen
   xen_domx_detect
   if [ $? -eq 0 ]; then
 	echo_local -n "..(xen DomX).."
 	xen_domx_hardware_detect
-	modules="$modules xennet"
+#	drivers="$drivers xennet"
   elif [ -n "$drivers" ]; then
     for driver in $drivers; do
     	exec_local modprobe -q $driver 2>/dev/null
@@ -463,15 +466,20 @@ function hardware_detect() {
   return_code $return_c
   
   local _modules=""
-  echo_local "Removing loaded modules"
+  local _xclude=0
+  echo_local -n "Removing loaded modules"
   for i in $(seq 0 $remove_times); do
     for _module in $(listmodules); do
+      _xclude=0
   	  if [ -n "$modules" ]; then
   	    for _smodule in $modules; do
-  		  if [ $_module != $_smodule ]; then
-  	        exec_local modprobe -r -q $_module
+  		  if [ "$_module" == "$_smodule" ]; then
+  		  	_xclude=1
   		  fi
   	    done
+  	    if [ $_xclude -eq 0 ]; then
+  	        exec_local modprobe -r -q $_module
+  	    fi
   	  else
         exec_local modprobe -q -r $_module
       fi
@@ -649,7 +657,11 @@ function sysctl_load() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.33  2009-04-20 12:23:55  marc
+# Revision 1.34  2009-04-22 11:37:33  marc
+# - fixed small bug in modules loading
+# - introduced a file /etc/xmodules that will not be removed if loaded
+#
+# Revision 1.33  2009/04/20 12:23:55  marc
 # added dm_multipath modules needed with rhel5
 #
 # Revision 1.32  2009/04/16 12:04:06  reiner
