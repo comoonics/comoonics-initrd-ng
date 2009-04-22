@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.2 2009-03-06 13:21:04 marc Exp $
+# $Id: hardware-lib.sh,v 1.3 2009-04-22 11:36:45 marc Exp $
 #
 # @(#)$File$
 #
@@ -94,6 +94,7 @@ function sles10_hardware_detect() {
     exec_local suse_hwconfig "scsi-controller" "storage-ctrl" "scsi-hostadapter"
     echo_local "HWSCAN: Detecting NIC: "
     exec_local suse_hwconfig "nic" "netcard" "eth"
+    sles10_udev_start
 }
 #************ sles10_hardware_detect
 
@@ -108,7 +109,7 @@ function sles10_hardware_detect() {
 #
 function sles10_udev_start() {
 	if ! killall -0 udevd; then
-		udevd -d &&
+		udevd -d
 	fi
 	udevtrigger
 	udevsettle    
@@ -117,7 +118,10 @@ function sles10_udev_start() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.2  2009-03-06 13:21:04  marc
+# Revision 1.3  2009-04-22 11:36:45  marc
+# - upstream for sles10
+#
+# Revision 1.2  2009/03/06 13:21:04  marc
 # start udev implicitly
 #
 # Revision 1.1  2008/08/14 13:30:52  marc

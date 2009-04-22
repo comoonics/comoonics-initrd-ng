@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.3 2008-10-14 10:57:07 marc Exp $
+# $Id: network-lib.sh,v 1.4 2009-04-22 11:36:45 marc Exp $
 #
 # @(#)$File$
 #
@@ -58,7 +58,7 @@ function sles10_ip2Config() {
   local onboot=$9
   
   if [ "$onboot" = "yes" ]; then
-  	onboot="auto"
+  	onboot="nfsroot"
   fi
 
   # reformating MAC from - to :
@@ -72,7 +72,8 @@ function sles10_ip2Config() {
     mv -f ${__prefix}/etc/sysconfig/network/ifcfg-$ipDevice ${__prefix}/etc/sysconfig/network/ifcfg-${ipDevice}.com_back
   fi
 
-  (echo 'DEVICE="'$ipDevice'"' &&
+  (echo 'NM_CONTROLLED=no' &&
+   echo 'DEVICE="'$ipDevice'"' &&
    echo 'STARTMODE="'$onboot'"' &&
    echo 'TYPE="'$type'"') > ${__prefix}/etc/sysconfig/network/ifcfg-$ipDevice
 
@@ -95,7 +96,7 @@ function sles10_ip2Config() {
       (echo 'IPADDR="'$ipAddr'"' &&
       if [ -n "$ipNetmask" ]; then echo 'NETMASK="'$ipNetmask'"'; fi) >> ${__prefix}/etc/sysconfig/network/ifcfg-$ipDevice
       if [ -n "$ipGate" ]; then
-	    echo 'GATEWAY="'$ipGate'"' >> ${__prefix}/etc/sysconfig/network/ifcfg-$ipDevice
+	    echo "default $ipGate 0.0.0.0 $ipDevice" > ${__prefix}/etc/sysconfig/network/ifroute-$ipDevice
       fi
     fi
   else
@@ -110,7 +111,10 @@ function sles10_ip2Config() {
 
 #################
 # $Log: network-lib.sh,v $
-# Revision 1.3  2008-10-14 10:57:07  marc
+# Revision 1.4  2009-04-22 11:36:45  marc
+# - upstream for sles10
+#
+# Revision 1.3  2008/10/14 10:57:07  marc
 # Enhancement #273 and dependencies implemented (flexible boot of local fs systems)
 #
 # Revision 1.2  2008/09/23 18:24:38  marc
