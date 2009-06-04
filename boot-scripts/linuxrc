@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc,v 1.21 2009-02-18 18:04:25 marc Exp $
+# $Id: linuxrc,v 1.22 2009-06-04 07:41:58 reiner Exp $
 #
 # @(#)$File$
 #
@@ -34,7 +34,7 @@
 #****h* comoonics-bootimage/linuxrc
 #  NAME
 #    linuxrc
-#    $Id: linuxrc,v 1.21 2009-02-18 18:04:25 marc Exp $
+#    $Id: linuxrc,v 1.22 2009-06-04 07:41:58 reiner Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -78,6 +78,12 @@ repository_store_value syslog_logfile "$syslog_logfile"
 shell=$(repository_get_value shell)
 [ -z "$shell" ] && shell="/bin/sh" 
 if cat /proc/cmdline | grep com-expert; then
+    # Load USB Modules so that USB keyboards work in Expertshell
+    echo_local -n "Loading USB Modules.."
+    modules=$(usb_get_drivers)
+    for module in $modules; do
+          grep modprobe $module
+    done
     echo -e "Expertshell started. Change anything you like here." > $(repository_get_value shellissuetmp)
 	echo "Type exit to continue work.." >> $(repository_get_value shellissuetmp)
 	$shell
@@ -152,7 +158,10 @@ fi
 
 ################
 # $Log: linuxrc,v $
-# Revision 1.21  2009-02-18 18:04:25  marc
+# Revision 1.22  2009-06-04 07:41:58  reiner
+# Added additional LoadUSB code so that USB Keyboards work in Expertshell and before Interactive Mode begins.
+#
+# Revision 1.21  2009/02/18 18:04:25  marc
 # setup default syslog file
 #
 # Revision 1.20  2009/02/02 20:13:40  marc
