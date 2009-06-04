@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.34 2009-04-22 11:37:33 marc Exp $
+# $Id: hardware-lib.sh,v 1.35 2009-06-04 15:18:54 reiner Exp $
 #
 # @(#)$File$
 #
@@ -247,7 +247,7 @@ function usb_get_drivers {
 function usbLoad() {
 	local modules=$(usb_get_drivers)
 	for module in $modules; do
-		grep $module /proc/modules >/dev/null 2>/dev/null && modprobe $module
+		grep $module /proc/modules >/dev/null 2>/dev/null || modprobe $module
 	done
 	is_mounted /proc/bus/usb
 	if [ $? -eq 1 ]; then
@@ -657,7 +657,10 @@ function sysctl_load() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.34  2009-04-22 11:37:33  marc
+# Revision 1.35  2009-06-04 15:18:54  reiner
+# Modified usbLoad function. Now it works again and it is used to add USB keyboard support during boot process.
+#
+# Revision 1.34  2009/04/22 11:37:33  marc
 # - fixed small bug in modules loading
 # - introduced a file /etc/xmodules that will not be removed if loaded
 #

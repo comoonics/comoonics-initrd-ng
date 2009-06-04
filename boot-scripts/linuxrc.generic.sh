@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.79 2009-06-04 07:41:58 reiner Exp $
+# $Id: linuxrc.generic.sh,v 1.80 2009-06-04 15:18:54 reiner Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.79 2009-06-04 07:41:58 reiner Exp $
+#    $Id: linuxrc.generic.sh,v 1.80 2009-06-04 15:18:54 reiner Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -82,7 +82,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.79 $ $Date: 2009-06-04 07:41:58 $'
+echo_local 'Internal Version $Revision: 1.80 $ $Date: 2009-06-04 15:18:54 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -109,10 +109,7 @@ return_code 0
 # Load USB modules as early as possible so that USB keyboards may be used during the boot process.
 if [ -z "$(repository_get_value nousb)" ]; then
   echo_local -n "Loading USB Modules.."
-  modules=$(usb_get_drivers)
-  for module in $modules; do
-  	grep modprobe $module
-  done
+  exec_local usbLoad
 fi
 
 echo_local_debug "*****************************"
@@ -540,7 +537,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.79  2009-06-04 07:41:58  reiner
+# Revision 1.80  2009-06-04 15:18:54  reiner
+# Modified usbLoad function. Now it works again and it is used to add USB keyboard support during boot process.
+#
+# Revision 1.79  2009/06/04 07:41:58  reiner
 # Added additional LoadUSB code so that USB Keyboards work in Expertshell and before Interactive Mode begins.
 #
 # Revision 1.78  2009/04/20 07:12:44  marc
