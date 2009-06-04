@@ -1,5 +1,5 @@
 #
-# $Id: std-lib.sh,v 1.8 2009-04-14 14:57:35 marc Exp $
+# $Id: std-lib.sh,v 1.9 2009-06-04 06:32:05 reiner Exp $
 #
 # @(#)$File$
 #
@@ -606,20 +606,20 @@ function step() {
    	 echo -n "$__message: "
      echo -n "Press <RETURN> to continue (timeout in $step_timeout secs) [quit|break|continue|list]"
      read -t$step_timeout __the_step
-     case "$__the_step" in
-       "quit")
+     case "$(echo $__the_step | tr A-Z a-z)" in
+       "q" | "qu" | "qui" |"quit")
          exit_linuxrc 2
          ;;
-       "continue")
+       "c" | "co" | "con" | "cont" | "conti" | "contin" | "continu" | "continue")
          __stepmode=""
          ;;
-       "break")
+       "b" | "br" | "bre"  | "brea" | "break")
          echo_local "Break detected forking a shell"
          breakp
          repository_load
          return 0
          ;;
-       "list")
+       "l" | "li" | "lis" | "list")
          echo_local "List of breakpoints:"
          listBreakpoints
          echo
@@ -943,7 +943,10 @@ function is_newer() {
 
 #################
 # $Log: std-lib.sh,v $
-# Revision 1.8  2009-04-14 14:57:35  marc
+# Revision 1.9  2009-06-04 06:32:05  reiner
+# Modified step function so that valid step commands are recognized in uppercase and when abbreviated.
+#
+# Revision 1.8  2009/04/14 14:57:35  marc
 # added functions to unpack the initrd and find newer files
 #
 # Revision 1.7  2009/02/27 08:38:59  marc
