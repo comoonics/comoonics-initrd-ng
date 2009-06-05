@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.74 2009-04-20 07:06:29 marc Exp $
+# $Id: boot-lib.sh,v 1.75 2009-06-05 07:23:54 marc Exp $
 #
 # @(#)$File$
 #
@@ -206,7 +206,7 @@ function getDistributionList {
 	if [ -e /etc/redhat-release ]; then
 		awk '
 		   BEGIN { shortname="unknown"; version=""; }
-	       tolower($0) ~ /red hat enterprise linux/ || tolower($0) ~ /centos/ || tolower($0) ~ /scientific/ { 
+	       tolower($0) ~ /red hat enterprise linux/ || tolower($0) ~ /centos/ || tolower($0) ~ /scientific/ || tolower($0) ~ /enterprise linux enterprise linux/ { 
 	       	  shortname="rhel";
 	       	  match($0, /release ([[:digit:]]+)/, _version);
 	       	  version=_version[1] 
@@ -958,7 +958,10 @@ function create_xkillall_procs () {
 #************** create_xkillall_procs
 
 # $Log: boot-lib.sh,v $
-# Revision 1.74  2009-04-20 07:06:29  marc
+# Revision 1.75  2009-06-05 07:23:54  marc
+# - fix for Bug #346 where Oracle Enterprise Linux could not be detected.
+#
+# Revision 1.74  2009/04/20 07:06:29  marc
 # - declared some variables as lokals (as they should have been)
 # - fixed a no_chroot behaviour at start_service
 #
