@@ -1,5 +1,5 @@
---- network.orig.orig	2009-04-15 10:58:14.000000000 +0200
-+++ network	2009-04-15 10:59:11.000000000 +0200
+--- network.orig	2009-06-04 20:16:22.000000000 +0200
++++ network	2009-06-04 20:15:50.000000000 +0200
 @@ -23,6 +23,8 @@
  	. /etc/sysconfig/pcmcia
  fi
@@ -13,7 +13,7 @@
    stop)
    	# Don't shut the network down if root is on NFS or a network
  	# block device.
--        rootfs=$(awk '{ if ($1 !~ /^[ \t]*#/ && $2 == "/") { print $3; }}' /etc/mtab)
+-        rootfs=$(awk '{ if ($1 !~ /^[ \t]*#/ && $2 == "/" && $3 != "rootfs") { print $3; }}' /proc/mounts)
 +        rootfs=$(awk '{ if ($1 !~ /^rootfs/ && $1 !~ /^[ \t]*#/ && $2 == "/") { print $3; }}' /etc/mtab)
          rootopts=$(awk '{ if ($1 !~ /^[ \t]*#/ && $2 == "/") { print $4; }}' /etc/mtab)
  	
