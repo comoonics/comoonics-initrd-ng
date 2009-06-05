@@ -4,6 +4,7 @@ expat
 comoonics-cs-py
 comoonics-cluster-py
 SysVinit-comoonics
+sysvinit-comoonics
 #comoonics-cs-xml
 #######
 # $Log$
