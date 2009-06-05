@@ -46,10 +46,11 @@ Name: comoonics-bootimage-initscripts
 Summary: Initscripts used by the OSR cluster environment for Novell SLES10.
 Version: 1.4
 BuildArch: noarch
-Requires: comoonics-bootimage >= 1.3-1
+Requires: comoonics-bootimage >= 1.4
 Requires: comoonics-bootimage-listfiles-sles
+Requires: sysvinit-comoonics
 #Conflicts:
-Release: 1.sles10
+Release: 2.sles10
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -105,6 +106,10 @@ echo "Disabling services ($services)"
 for service in $services; do
    /sbin/chkconfig --del $service &> /dev/null
 done
+
+cat << EOF
+
+EOF
 /bin/true
 
 %preun
