@@ -6,7 +6,7 @@
 #  DESCRIPTION
 #*******
 #
-# $Id: create-gfs-initrd-generic.sh,v 1.24 2009-04-20 07:42:54 marc Exp $
+# $Id: create-gfs-initrd-generic.sh,v 1.25 2009-06-05 07:29:06 marc Exp $
 #
 # @(#)$File$
 #
@@ -113,10 +113,10 @@ USAGE_EOF
 #
 function getoptions() {
     local i=0
-    while getopts LUoRFVvhlm:fd:s:r:b:A:D: option ; do
+    while getopts LUoRFVvhlm:fd:s:r:b:A:D:M: option ; do
 	case "$option" in
 	    v) # version
-		echo "$0 Version "'$Revision: 1.24 $'
+		echo "$0 Version "'$Revision: 1.25 $'
 		exit 0
 		;;
 	    h) # help
@@ -479,7 +479,10 @@ ls -lk $initrdname
 
 ##########################################
 # $Log: create-gfs-initrd-generic.sh,v $
-# Revision 1.24  2009-04-20 07:42:54  marc
+# Revision 1.25  2009-06-05 07:29:06  marc
+# - fixed bug #347 where the -M option would not work
+#
+# Revision 1.24  2009/04/20 07:42:54  marc
 # - fixed error detection
 #
 # Revision 1.23  2009/04/14 15:05:24  marc
