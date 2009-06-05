@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.99 2009-04-22 11:39:10 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.100 2009-06-05 07:33:44 marc Exp $
 #
 ##
 ##
@@ -58,7 +58,7 @@ Requires: comoonics-cluster-py >= 0.1-2
 Requires: comoonics-bootimage-initscripts >= 1.4 
 Requires: comoonics-bootimage-listfiles-all
 #Conflicts:
-Release: 21
+Release: 22
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -757,6 +757,10 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Fri Jun 05 2009 Marc Grimme <grimme@atix.de> 1.4-22
+- fixed bug #345 network init script patch xrootfs not applied correctly in RHEL 5.3
+- fixed bug #346 Oracle Enterprise Linux could not be detected as Red Hat Clone
+- fixed bug #347 The mkinitrd tool does not accept the -M option for specifying additional modules
 * Wed Apr 21 2009 Marc Grimme <grimme@atix.de> 1.4-21
 - fixed a bug where nic generation didn't work with FC10
 - fixed a bug where nic generation and hw-detection did not work with SLES10
@@ -1110,7 +1114,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.99  2009-04-22 11:39:10  marc
+# Revision 1.100  2009-06-05 07:33:44  marc
+# - new version for comoonics-bootimage 1.4-22
+#
+# Revision 1.99  2009/04/22 11:39:10  marc
 # new version 1.4-21
 #
 # Revision 1.98  2009/04/20 07:42:31  marc
