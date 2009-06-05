@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: com-realhalt.sh,v 1.8 2009-01-28 12:57:22 marc Exp $
+# $Id: com-realhalt.sh,v 1.9 2009-06-05 07:24:24 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/com-halt.sh
 #  NAME
 #    com-halt.sh
-#    $Id: com-realhalt.sh,v 1.8 2009-01-28 12:57:22 marc Exp $
+#    $Id: com-realhalt.sh,v 1.9 2009-06-05 07:24:24 marc Exp $
 #  DESCRIPTION
 #    script called from <chrootpath>/com-halt.sh
 #  USAGE
@@ -158,7 +158,7 @@ return_code
 step
 
 echo_local -n "Umounting oldroot"
-exec_local /bin/umount $COM_OLDROOT "lock_dlm" $lvm_sup
+exec_local /bin/umount $COM_OLDROOT
 
 step
 
