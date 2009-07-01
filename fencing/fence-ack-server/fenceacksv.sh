@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: fenceacksv.sh,v 1.3 2008-09-10 12:49:14 marc Exp $
+# $Id: fenceacksv.sh,v 1.4 2009-07-01 09:33:39 marc Exp $
 #
 # chkconfig: 345 24 76
 # description: Starts and stops fenceacksv
@@ -31,7 +31,7 @@ start()
   	nodename=$(cman_tool status | awk '/Node name: /{ print $3; exit 0;}')
     echo -n "Starting fenceacksv: "
     mkdir -p ${CHROOT_PATH}/var/spool 2>/dev/null
-    chroot ${CHROOT_PATH} /bin/bash -c "${FENCEACKDIR}/${FENCEACKSV} ${FENCEACKSV_PARAMS} --nodename $nodename /etc/cluster/cluster.conf 2>&1 | /usr/bin/logger -t $FENCEACKSV &"
+    chroot ${CHROOT_PATH} /bin/bash -c "${FENCEACKDIR}/${FENCEACKSV} ${FENCEACKSV_PARAMS} --nodename $nodename /etc/cluster/cluster.conf 2>&1 | logger -t $FENCEACKSV &"
     rtrn=$?
     if [ $rtrn -eq 0 ]; then success; else failure; fi
     echo
@@ -85,7 +85,10 @@ esac
 exit $rtrn
 ######################
 # $Log: fenceacksv.sh,v $
-# Revision 1.3  2008-09-10 12:49:14  marc
+# Revision 1.4  2009-07-01 09:33:39  marc
+# fixed bug with logger.
+#
+# Revision 1.3  2008/09/10 12:49:14  marc
 # fixed bug #264 where fenceacksv could not be stopped
 #
 # Revision 1.2  2007/08/06 15:57:05  mark
