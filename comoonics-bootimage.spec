@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.100 2009-06-05 07:33:44 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.101 2009-07-01 09:35:10 marc Exp $
 #
 ##
 ##
@@ -339,7 +339,7 @@ OSR files needed for the compatibility to 1.2 releases
 
 %package fenceacksv
 Version: 0.3
-Release: 2
+Release: 3
 Requires: comoonics-cs-py >= 0.1-43
 Requires: comoonics-bootimage >= 1.3-1
 Summary: The Fenceackserver is a service for last resort actions
@@ -1080,6 +1080,8 @@ rm -rf %{buildroot}
 - introduced the changelog
 
 %changelog fenceacksv
+* Tue Jul 01 2009 Marc Grimme <grimme@atix.de> - 0.3-3
+- Fixed bug where logger was pathdependent
 * Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.3-2
 - First version on the way to rpmlint BUG#290
 * Mon Sep 10 2007 Marc Grimme <grimme@atix.de> - 0.3-1
@@ -1114,7 +1116,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.100  2009-06-05 07:33:44  marc
+# Revision 1.101  2009-07-01 09:35:10  marc
+# - fixed fenceacksv bug. new rpmversion 0.3-3
+#
+# Revision 1.100  2009/06/05 07:33:44  marc
 # - new version for comoonics-bootimage 1.4-22
 #
 # Revision 1.99  2009/04/22 11:39:10  marc
