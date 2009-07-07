@@ -240,7 +240,7 @@ case "$1" in
 	  if [ $? -eq 0 ]; then
 	    action "Cleaning up chroot environment" $UMOUNT_CHROOT
 	  fi
-  	  $PATCH_FILES
+  	  #$PATCH_FILES
   	  $CREATE_XFILES
         ;;
   status)
