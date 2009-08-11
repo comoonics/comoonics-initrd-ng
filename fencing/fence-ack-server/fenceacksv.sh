@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: fenceacksv.sh,v 1.4 2009-07-01 09:33:39 marc Exp $
+# $Id: fenceacksv.sh,v 1.3.4.1 2009-08-11 09:43:58 marc Exp $
 #
 # chkconfig: 345 24 76
 # description: Starts and stops fenceacksv
@@ -85,8 +85,8 @@ esac
 exit $rtrn
 ######################
 # $Log: fenceacksv.sh,v $
-# Revision 1.4  2009-07-01 09:33:39  marc
-# fixed bug with logger.
+# Revision 1.3.4.1  2009-08-11 09:43:58  marc
+# fixed logger bug
 #
 # Revision 1.3  2008/09/10 12:49:14  marc
 # fixed bug #264 where fenceacksv could not be stopped
