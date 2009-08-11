@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.35 2009-06-04 15:18:54 reiner Exp $
+# $Id: hardware-lib.sh,v 1.34.4.1 2009-08-11 09:42:50 marc Exp $
 #
 # @(#)$File$
 #
@@ -603,8 +603,8 @@ function storage_get_drivers {
 		xen_get_drivers
 	else
 		scsi_get_drivers
-		dm_get_drivers
 	fi
+	dm_get_drivers
 
 	# check for drbd
 	typeset -f isDRBDRootsource >/dev/null 2>&1 && isDRBDRootsource $(repository_get_value rootsource)
@@ -657,8 +657,8 @@ function sysctl_load() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.35  2009-06-04 15:18:54  reiner
-# Modified usbLoad function. Now it works again and it is used to add USB keyboard support during boot process.
+# Revision 1.34.4.1  2009-08-11 09:42:50  marc
+# Fixed bug with usb modules
 #
 # Revision 1.34  2009/04/22 11:37:33  marc
 # - fixed small bug in modules loading
