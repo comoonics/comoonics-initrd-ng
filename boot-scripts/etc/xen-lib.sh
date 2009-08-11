@@ -1,5 +1,5 @@
 #
-# $Id: xen-lib.sh,v 1.9 2009-02-25 10:36:59 marc Exp $
+# $Id: xen-lib.sh,v 1.9.4.1 2009-08-11 09:43:04 marc Exp $
 #
 # @(#)$File$
 #
@@ -140,3 +140,21 @@ function xen_ip2Config() {
 }
 #************ xen_ip2Config
 
+#****f* boot-lib.sh/xen_get_drivers
+#  NAME
+#    xen_get_drivers
+#  SYNOPSIS
+#    function xen_get_drivers()
+#  DESCRIPTION
+#  SOURCE
+#
+function xen_get_drivers() {
+	echo "xennet xenblk"
+}
+#************ xen_get_drivers
+
+##############
+# $Log: xen-lib.sh,v $
+# Revision 1.9.4.1  2009-08-11 09:43:04  marc
+# fixed xen modules being loaded
+#
