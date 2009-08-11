@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.51 2009-04-14 15:06:18 marc Exp $
+# $Id: Makefile,v 1.51.4.1 2009-08-11 09:51:36 marc Exp $
 #
 # @(#)$file$
 #
@@ -151,6 +151,7 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/rhel5/gfs-lib.sh \
   boot-scripts/etc/rhel5/hardware-lib.sh \
   boot-scripts/etc/rhel5/network-lib.sh \
+  boot-scripts/etc/rhel5/nfs-lib.sh \
   boot-scripts/etc/sles8/hardware-lib.sh \
   boot-scripts/etc/sles8/network-lib.sh \
   boot-scripts/etc/sles10/boot-lib.sh \
@@ -548,7 +549,10 @@ channel: rpm channelcopy channelbuild
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.51  2009-04-14 15:06:18  marc
+# Revision 1.51.4.1  2009-08-11 09:51:36  marc
+# added rhel5/nfs-lib.sh
+#
+# Revision 1.51  2009/04/14 15:06:18  marc
 # new files
 #
 # Revision 1.50  2009/02/26 07:12:57  marc
