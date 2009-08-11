@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.100.4.1 2009-08-11 09:49:56 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.100.4.2 2009-08-11 11:35:41 marc Exp $
 #
 ##
 ##
@@ -58,7 +58,7 @@ Requires: comoonics-cluster-py >= 0.1-2
 Requires: comoonics-bootimage-initscripts >= 1.4 
 Requires: comoonics-bootimage-listfiles-all
 #Conflicts:
-Release: 22-1
+Release: 22_1
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -84,7 +84,7 @@ Extra listfiles for special network configurations
 
 %package extras-nfs
 Version: 0.1
-Release: 12-1
+Release: 12_1
 Requires: comoonics-bootimage >= 1.4
 Summary: Listfiles for nfs sharedroot configurations
 Group:   System Environment/Base
@@ -758,7 +758,7 @@ rm -rf %{buildroot}
 
 
 %changelog
-* Tue Aug 11 2009 Marc Grimme <grimme@atix.de> 1.4-22-1
+* Tue Aug 11 2009 Marc Grimme <grimme@atix.de> 1.4-22_1
 - Backport for bug #356 Device changes not applied in chroot environment when chroot on local disk
 - Backport for bug #358 Initramfs consumes more and more during runtime. Which can lead to no free memory   
 * Fri Jun 05 2009 Marc Grimme <grimme@atix.de> 1.4-22
@@ -986,7 +986,7 @@ rm -rf %{buildroot}
 - first release
 
 %changelog extras-nfs
-* Tue Aug 11 2009 Marc Grimme <grimme@atix.de> - 0.1-12-1
+* Tue Aug 11 2009 Marc Grimme <grimme@atix.de> - 0.1-12_1
 - Backport for bug #357 NFS4 OSR Cluster fails to boot on RHEL5 - wrong mount options and no portmap
 * Tue Apr 14 2009 Marc Grimme <grimme@atix.de> - 0.1-10
 - nfs4 stabilized
@@ -1120,7 +1120,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.100.4.1  2009-08-11 09:49:56  marc
+# Revision 1.100.4.2  2009-08-11 11:35:41  marc
+# new versions
+#
+# Revision 1.100.4.1  2009/08/11 09:49:56  marc
 # Backported upstream bugs
 #
 # Revision 1.100  2009/06/05 07:33:44  marc
