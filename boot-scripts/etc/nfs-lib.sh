@@ -1,5 +1,5 @@
 #
-# $Id: nfs-lib.sh,v 1.13 2009-04-20 07:10:46 marc Exp $
+# $Id: nfs-lib.sh,v 1.13.4.1 2009-08-11 09:39:51 marc Exp $
 #
 # @(#)$File$
 #
@@ -32,7 +32,18 @@
 
 # functions for nfsversion 4
 function nfs4_getdefaults {
-	nfs_getdefaults $*
+	local param=$1
+	case "$param" in
+		lock_method|lockmethod)
+		    echo ""
+		    ;;
+		mount_opts|mountopts)
+		    echo ""
+		    ;;
+	    *)
+	        return 0
+	        ;;
+	esac
 }
 function nfs4_init {
 	nfs_init $*
@@ -129,6 +140,36 @@ function nfs4_stop_rpcbind {
   nfs_stop_rpcbind $*
 }
 #************ nfs4_stop_rpcbind
+
+#****f* nfs-lib.sh/nfs4_start_portmap
+#  NAME
+#    nfs4_start_portmap
+#  SYNOPSIS
+#    function nfs4_start_portmap
+#  DESCRIPTION
+#    This function starts the rpcbind daemon
+#  IDEAS
+#  SOURCE
+#
+function nfs4_start_portmap {
+  nfs_start_portmap $*
+}
+#************ nfs4_start_portmap
+
+#****f* nfs-lib.sh/nfs4_stop_portmap
+#  NAME
+#    nfs4_stop_portmap
+#  SYNOPSIS
+#    function nfs4_stop_portmap
+#  DESCRIPTION
+#    This function stops the rpcbind daemon
+#  IDEAS
+#  SOURCE
+#
+function nfs4_stop_portmap {
+  nfs_stop_portmap $*
+}
+#************ nfs4_stop_portmap
 
 #****f* nfs-lib.sh/nfs4_start_rpc_idmapd
 #  NAME
@@ -593,7 +634,10 @@ function nfs_get_userspace_procs {
 #******** nfs_get_userspace_procs
 
 # $Log: nfs-lib.sh,v $
-# Revision 1.13  2009-04-20 07:10:46  marc
+# Revision 1.13.4.1  2009-08-11 09:39:51  marc
+# fixed bug #357 where NFSv4 was not working with RHEL5
+#
+# Revision 1.13  2009/04/20 07:10:46  marc
 # - more fixes to get it working as expected (rhel5/fc)
 #
 # Revision 1.12  2009/04/14 14:57:01  marc
