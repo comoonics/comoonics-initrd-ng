@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.35 2009-06-04 15:18:54 reiner Exp $
+# $Id: hardware-lib.sh,v 1.36 2009-08-11 09:54:58 marc Exp $
 #
 # @(#)$File$
 #
@@ -309,8 +309,9 @@ function dm_get_drivers {
 #  SOURCE
 #
 function md_start {
-  if [ -e "/etc/mdadm.conf" ]; then
+  if [ -x "/sbin/mdadm" ]; then
     echo_local -n "Starting MD (software RAID) devices"
+    exec_local mdadm --examine --scan > /etc/mdadm.conf
     exec_local mdadm --assemble --scan
     return_code $?
   fi
@@ -603,8 +604,8 @@ function storage_get_drivers {
 		xen_get_drivers
 	else
 		scsi_get_drivers
-		dm_get_drivers
 	fi
+	dm_get_drivers
 
 	# check for drbd
 	typeset -f isDRBDRootsource >/dev/null 2>&1 && isDRBDRootsource $(repository_get_value rootsource)
@@ -657,7 +658,11 @@ function sysctl_load() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.35  2009-06-04 15:18:54  reiner
+# Revision 1.36  2009-08-11 09:54:58  marc
+# - latest mdadm fixes (Gordan Bobic)
+# - Moved dm_get_drivers to be called in xen and others
+#
+# Revision 1.35  2009/06/04 15:18:54  reiner
 # Modified usbLoad function. Now it works again and it is used to add USB keyboard support during boot process.
 #
 # Revision 1.34  2009/04/22 11:37:33  marc
