@@ -1,5 +1,5 @@
 #
-# $Id: glusterfs-lib.sh,v 1.3 2009-04-14 14:54:16 marc Exp $
+# $Id: glusterfs-lib.sh,v 1.4 2009-08-11 09:54:08 marc Exp $
 #
 # @(#)$File$
 #
@@ -182,8 +182,28 @@ function glusterfs_init {
 }
 #********* glusterfs_init
 
+#****f* glusterfs-lib.sh/glusterfs_get_userspace_procs
+#  NAME
+#    glusterfs_get_userspace_procs
+#  SYNOPSIS
+#    function glusterfs_get_userspace_procs(cluster_conf, nodename)
+#  DESCRIPTION
+#    gets userspace programs that are to be running dependent on rootfs
+#  SOURCE
+function glusterfs_get_userspace_procs {
+   local clutype=$1
+   local rootfs=$2
+
+   echo -e "glusterfs \n\
+glusterfsd"
+}
+#******** glusterfs_get_userspace_procs
+
 # $Log: glusterfs-lib.sh,v $
-# Revision 1.3  2009-04-14 14:54:16  marc
+# Revision 1.4  2009-08-11 09:54:08  marc
+# - Latest glusterfs-lib.sh upstream patches (gordan bobic)
+#
+# Revision 1.3  2009/04/14 14:54:16  marc
 # - added get_drivers functions
 #
 # Revision 1.2  2009/01/28 10:01:42  marc
