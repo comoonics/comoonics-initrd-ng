@@ -1,5 +1,5 @@
 #
-# $Id: iscsi-lib.sh,v 1.13 2009-04-14 14:54:16 marc Exp $
+# $Id: iscsi-lib.sh,v 1.14 2009-08-11 09:57:48 marc Exp $
 #
 # @(#)$File$
 #
@@ -34,6 +34,25 @@
 iscsiparser1="iscsi://([^:/]+)"
 iscsiparser2="iscsi://([^:]+):([[:digit:]]+)/"
 iscsiparser3="^iscsi"
+iscsiparser4="iscsi://([^:]+):([[:digit:]]+)/(.+)"
+
+
+#****f* iscsi-lib.sh/getISCSIInitiatorFromParam
+#  NAME
+#    getISCSIInitiatorFromParam
+#  SYNOPSIS
+#    function getISCSIInitiatorServerFromParam {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function getISCSIInitiatorFromParam {
+    echo $1 | awk '
+{
+   match($1, "'$iscsiparser4'", iscsiparms);
+   print iscsiparms[3];
+}'
+}
 
 #****f* iscsi-lib.sh/getISCSIServerFromParam
 #  NAME
@@ -133,7 +152,13 @@ function startISCSI {
 	local nodename=$2
 	local iscsiserver=$(getISCSIServerFromParam $rootsource)
 	local iscsimodules="iscsi_tcp"
+	local iscsiinitiatorname=$(getISCSIInitiatorFromParam $rootsource)
 	echo_local -n "Starting iscsid"
+	
+	if [ -n "$iscsiinitiatorname" ]; then
+		echo "InitiatorName=$iscsiinitiatorname" >/etc/iscsi/initiatorname.iscsi
+		echo_local -n "Initiatorname is $iscsiinitiatorname"
+	fi
     modprobe -q iscsi_tcp
     modprobe -q ib_iser
     exec_local iscsid
@@ -178,7 +203,14 @@ function isISCSIRootsource {
 #************ isISCSIRootsource
 
 # $Log: iscsi-lib.sh,v $
-# Revision 1.13  2009-04-14 14:54:16  marc
+# Revision 1.14  2009-08-11 09:57:48  marc
+# Here is a patch that uses an extended rootsource syntax for setting an
+# node-specific Initiatorname.
+# The syntax used is: <rootsource
+# name="iscsi://<target-ip>:<port>/<Initiatorname>"/>
+# (Michael Peus)
+#
+# Revision 1.13  2009/04/14 14:54:16  marc
 # - added get_drivers functions
 #
 # Revision 1.12  2008/06/10 09:58:43  marc
