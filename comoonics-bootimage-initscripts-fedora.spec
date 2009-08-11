@@ -51,7 +51,7 @@ Requires: comoonics-bootimage >= 1.4-16
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-fedora
 #Conflicts: 
-Release: 10.fedora
+Release: 11.fedora
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -89,96 +89,96 @@ install -m600 initscripts/fedora/netfs.orig $RPM_BUILD_ROOT/%{APPDIR}/patches/ne
 install -d $RPM_BUILD_ROOT/%{SBINDIR}
 install -m755 initscripts/fedora/halt.local $RPM_BUILD_ROOT/%{SBINDIR}/halt.local
 
-%preun
-if [ "$1" -eq 0 ]; then
-  echo "Preuninstalling comoonics-bootimage-initscripts"
-  /sbin/chkconfig --del bootsr
-  # we patch all versions here
-  for initscript in halt network netfs; do
-	if grep "comoonics patch " /etc/init.d/$initscript > /dev/null; then
-		# the old way
-		if [ -e /opt/atix/comoonics-bootimage/patches/${initscript}.patch ]; then
-		   patchfile="/opt/atix/comoonics-bootimage/patches/${initscript}.patch"
-		   echo -n "Unpatching initscript($patchfile)"
-		   cd /etc/init.d/ && patch -R -f -r /tmp/$(basename ${patchfile}).patch.rej > /dev/null < $patchfile
-		   if [ $? -ne 0 ]; then
-		      echo >&2
-		      echo >&2
-		      echo "FAILURE!!!!" >&2
-		      echo "Patching $initscript with patch $patchfile" >&2
-		      echo "You might want to consider restoring the original initscript and the patch again by:" >&2
-		      echo "cp /opt/atix/comoonics-bootimage/patches/${initscript}.orig /etc/init.d/${initscript}"
-		      echo "/opt/atix/comoonics-bootimage/manage_chroot.sh -a patch_files ${initscript}"
-		      echo >&2
-		   fi
-		   echo
-		else
-		   echo -n "Unpatching $initscript ("
-		   for patchfile in $(ls -1 /opt/atix/comoonics-bootimage/patches/${initscript}-*.patch | sort -r); do
-			  echo -n $(basename $patchfile)", "
-			  cd /etc/init.d/ && patch -R -f -r /tmp/$(basename ${patchfile}).patch.rej > /dev/null < $patchfile
-		      if [ $? -ne 0 ]; then
-		      echo >&2
-		      echo >&2
-		      echo "FAILURE!!!!" >&2
-		      echo "Patching $initscript with patch $patchfile" >&2
-		      echo "You might want to consider restoring the original initscript and the patch again by:" >&2
-		      echo "cp /opt/atix/comoonics-bootimage/patches/${initscript}.orig /etc/init.d/${initscript}"
-		      echo "/opt/atix/comoonics-bootimage/manage_chroot.sh -a patch_files ${initscript}"
-		      echo >&2
-		      fi
-		   done
-		   echo ")"
-		fi
-	fi
-  done
-fi
+#%preun
+#if [ "$1" -eq 0 ]; then
+#  echo "Preuninstalling comoonics-bootimage-initscripts"
+#  /sbin/chkconfig --del bootsr
+#  # we patch all versions here
+#  for initscript in halt network netfs; do
+#	if grep "comoonics patch " /etc/init.d/$initscript > /dev/null; then
+#		# the old way
+#		if [ -e /opt/atix/comoonics-bootimage/patches/${initscript}.patch ]; then
+#		   patchfile="/opt/atix/comoonics-bootimage/patches/${initscript}.patch"
+#		   echo -n "Unpatching initscript($patchfile)"
+#		   cd /etc/init.d/ && patch -R -f -r /tmp/$(basename ${patchfile}).patch.rej > /dev/null < $patchfile
+#		   if [ $? -ne 0 ]; then
+#		      echo >&2
+#		      echo >&2
+#		      echo "FAILURE!!!!" >&2
+#		      echo "Patching $initscript with patch $patchfile" >&2
+#		      echo "You might want to consider restoring the original initscript and the patch again by:" >&2
+#		      echo "cp /opt/atix/comoonics-bootimage/patches/${initscript}.orig /etc/init.d/${initscript}"
+#		      echo "/opt/atix/comoonics-bootimage/manage_chroot.sh -a patch_files ${initscript}"
+#		      echo >&2
+#		   fi
+#		   echo
+#		else
+#		   echo -n "Unpatching $initscript ("
+#		   for patchfile in $(ls -1 /opt/atix/comoonics-bootimage/patches/${initscript}-*.patch | sort -r); do
+#			  echo -n $(basename $patchfile)", "
+#			  cd /etc/init.d/ && patch -R -f -r /tmp/$(basename ${patchfile}).patch.rej > /dev/null < $patchfile
+#		      if [ $? -ne 0 ]; then
+#		      echo >&2
+#		      echo >&2
+#		      echo "FAILURE!!!!" >&2
+#		      echo "Patching $initscript with patch $patchfile" >&2
+#		      echo "You might want to consider restoring the original initscript and the patch again by:" >&2
+#		      echo "cp /opt/atix/comoonics-bootimage/patches/${initscript}.orig /etc/init.d/${initscript}"
+#		      echo "/opt/atix/comoonics-bootimage/manage_chroot.sh -a patch_files ${initscript}"
+#		      echo >&2
+#		      fi
+#		   done
+#		   echo ")"
+#		fi
+#	fi
+#  done
+#fi
 
 
-%pre
+#%pre
 
 #if this is an upgrade we need to unpatch all files
-if [ "$1" -eq 2 ]; then
-  # we patch all versions here
-  for initscript in halt network netfs; do
-	if grep "comoonics patch " /etc/init.d/$initscript > /dev/null; then
-		# the old way
-		if [ -e /opt/atix/comoonics-bootimage/patches/${initscript}.patch ]; then
-		   patchfile="/opt/atix/comoonics-bootimage/patches/${initscript}.patch"
-		   echo -n "Unpatching initscript($patchfile)"
-		   cd /etc/init.d/ && patch -R -f -r /tmp/$(basename ${patchfile}).patch.rej > /dev/null < $patchfile
-		   if [ $? -ne 0 ]; then
-		      echo >&2
-		      echo >&2
-		      echo "FAILURE!!!!" >&2
-		      echo "Patching $initscript with patch $patchfile" >&2
-		      echo "You might want to consider restoring the original initscript and the patch again by:" >&2
-		      echo "cp /opt/atix/comoonics-bootimage/patches/${initscript}.orig /etc/init.d/${initscript}"
-		      echo "/opt/atix/comoonics-bootimage/manage_chroot.sh -a patch_files ${initscript}"
-		      echo >&2
-		   fi
-		   echo
-		else
-		   echo -n "Unpatching $initscript ("
-		   for patchfile in $(ls -1 /opt/atix/comoonics-bootimage/patches/${initscript}-*.patch | sort -r); do
-			  echo -n $(basename $patchfile)", "
-			  cd /etc/init.d/ && patch -R -f -r /tmp/$(basename ${patchfile}).patch.rej > /dev/null < $patchfile
-		      if [ $? -ne 0 ]; then
-		      echo >&2
-		      echo >&2
-		      echo "FAILURE!!!!" >&2
-		      echo "Patching $initscript with patch $patchfile" >&2
-		      echo "You might want to consider restoring the original initscript and the patch again by:" >&2
-		      echo "cp /opt/atix/comoonics-bootimage/patches/${initscript}.orig /etc/init.d/${initscript}"
-		      echo "/opt/atix/comoonics-bootimage/manage_chroot.sh -a patch_files ${initscript}"
-		      echo >&2
-		      fi
-		   done
-		   echo ")"
-		fi
-	fi
-  done
-fi 
+#if [ "$1" -eq 2 ]; then
+#  # we patch all versions here
+#  for initscript in halt network netfs; do
+#	if grep "comoonics patch " /etc/init.d/$initscript > /dev/null; then
+#		# the old way
+#		if [ -e /opt/atix/comoonics-bootimage/patches/${initscript}.patch ]; then
+#		   patchfile="/opt/atix/comoonics-bootimage/patches/${initscript}.patch"
+#		   echo -n "Unpatching initscript($patchfile)"
+#		   cd /etc/init.d/ && patch -R -f -r /tmp/$(basename ${patchfile}).patch.rej > /dev/null < $patchfile
+#		   if [ $? -ne 0 ]; then
+#		      echo >&2
+#		      echo >&2
+#		      echo "FAILURE!!!!" >&2
+#		      echo "Patching $initscript with patch $patchfile" >&2
+#		      echo "You might want to consider restoring the original initscript and the patch again by:" >&2
+#		      echo "cp /opt/atix/comoonics-bootimage/patches/${initscript}.orig /etc/init.d/${initscript}"
+#		      echo "/opt/atix/comoonics-bootimage/manage_chroot.sh -a patch_files ${initscript}"
+#		      echo >&2
+#		   fi
+#		   echo
+#		else
+#		   echo -n "Unpatching $initscript ("
+#		   for patchfile in $(ls -1 /opt/atix/comoonics-bootimage/patches/${initscript}-*.patch | sort -r); do
+#			  echo -n $(basename $patchfile)", "
+#			  cd /etc/init.d/ && patch -R -f -r /tmp/$(basename ${patchfile}).patch.rej > /dev/null < $patchfile
+#		      if [ $? -ne 0 ]; then
+#		      echo >&2
+#		      echo >&2
+#		      echo "FAILURE!!!!" >&2
+#		      echo "Patching $initscript with patch $patchfile" >&2
+#		      echo "You might want to consider restoring the original initscript and the patch again by:" >&2
+#		      echo "cp /opt/atix/comoonics-bootimage/patches/${initscript}.orig /etc/init.d/${initscript}"
+#		      echo "/opt/atix/comoonics-bootimage/manage_chroot.sh -a patch_files ${initscript}"
+#		      echo >&2
+#		      fi
+#		   done
+#		   echo ")"
+#		fi
+#	fi
+#  done
+#fi 
 
 %post
 
@@ -220,7 +220,9 @@ done
 rm -rf %{buildroot}
 
 %changelog
-* Mon Apr 20 2009 Marc Grimme <grimme@atix.de> 1.4-10el5
+* Tue Jul 07 2009 Marc Grimme <grimme@atix.de> 1.4-11fedora
+- Removed the patches to be applied automatically
+* Mon Apr 20 2009 Marc Grimme <grimme@atix.de> 1.4-10fedora
 - RC1
 * Tue Apr 16 2009 Marc Grimme <grimme@atix.de> 1.4-9.fedora
 - Syncronized bootsr and fixed calling of _init

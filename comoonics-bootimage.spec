@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.101 2009-07-01 09:35:10 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.102 2009-08-11 12:17:10 marc Exp $
 #
 ##
 ##
@@ -58,7 +58,7 @@ Requires: comoonics-cluster-py >= 0.1-2
 Requires: comoonics-bootimage-initscripts >= 1.4 
 Requires: comoonics-bootimage-listfiles-all
 #Conflicts:
-Release: 22
+Release: 24
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -84,7 +84,7 @@ Extra listfiles for special network configurations
 
 %package extras-nfs
 Version: 0.1
-Release: 12
+Release: 13
 Requires: comoonics-bootimage >= 1.4
 Summary: Listfiles for nfs sharedroot configurations
 Group:   System Environment/Base
@@ -180,7 +180,7 @@ listfiles for xen support in the OSR cluster
 
 %package extras-iscsi
 Version: 0.1
-Release: 3
+Release: 4
 Requires: comoonics-bootimage >= 1.3-33
 Summary: Listfiles for iscsi support in the open-sharedroot cluster
 Group:   System Environment/Base
@@ -202,7 +202,7 @@ DRBD support in the OSR cluster
 
 %package extras-glusterfs
 Version: 0.1
-Release: 1
+Release: 2
 Requires: comoonics-bootimage >= 1.3-44
 Summary: Extras for glusterfs support in the open-sharedroot cluster
 Group:   System Environment/Base
@@ -248,7 +248,7 @@ OSR extra files that are only relevant for RHEL Versions
 
 %package listfiles-fedora
 Version: 0.1
-Release: 5
+Release: 6
 Requires: comoonics-bootimage >= 1.3-41
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-all
@@ -261,7 +261,7 @@ OSR extra files that are only relevant for Fedora Versions
 
 %package listfiles-fedora-nfs
 Version: 0.1
-Release: 3
+Release: 4
 Requires: comoonics-bootimage-listfiles-fedora
 Group: System Environment/Base
 Summary: Extrafiles for Fedora Core NFS support 
@@ -555,7 +555,6 @@ fi
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/fedora/gfs-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/fedora/hardware-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/fedora/network-lib.sh
-%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/fedora/nfs-lib.sh
 
 %dir %{CONFIGDIR}/bootimage-chroot
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage-chroot/files.list
@@ -575,6 +574,8 @@ fi
 
 %files extras-nfs
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/nfs-lib.sh
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel5/nfs-lib.sh
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/fedora/nfs-lib.sh
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/nfs.list
 
 %files extras-ocfs2
@@ -708,6 +709,7 @@ fi
 
 %files listfiles-fedora-nfs
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fedora/nfs.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fedora/network.list
 
 %files listfiles-fenceacksv-plugins
 %config %attr(0644, root, root) %dir %{CONFIGDIR}/bootimage-chroot/rpms.initrd.d/fenceacksv-plugins.list
@@ -757,6 +759,13 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Tue Aug 11 2009 Marc Grimme <grimme@atix.de> 1.4-24
+- Fix for bug #356 Device changes not applied in chroot environment when chroot on local disk
+- Fix for bug #358 Initramfs consumes more and more during runtime. Which can lead to no free memory   
+- Upstream patches for glusterfs-lib.sh /mdadm (Gordan Bobic)
+- Other patches
+* Mon Jul 06 2009 Marc Grimme <grimme@atix.de> 1.4-23
+- added Fedora 11 support
 * Fri Jun 05 2009 Marc Grimme <grimme@atix.de> 1.4-22
 - fixed bug #345 network init script patch xrootfs not applied correctly in RHEL 5.3
 - fixed bug #346 Oracle Enterprise Linux could not be detected as Red Hat Clone
@@ -958,6 +967,9 @@ rm -rf %{buildroot}
 - first release
 
 %changelog extras-iscsi
+* Tue Aug 11 2009 Marc Grimme <grimme@atix.de> - 0.1-6
+- Upstream patches for iscsi owerwriting initiator <rootsource name="iscsi://<target-ip>:<port>/<Initiatorname>"/>
+  (Michael Peus)
 * Tue Apr 14 2009 Marc Grimme <grimme@atix.de> - 0.1-5
 - get_drivers function implemented
 * Mon Mar 30 2009 Marc Grimme <grimme@atix.de> - 0.1-4
@@ -982,6 +994,8 @@ rm -rf %{buildroot}
 - first release
 
 %changelog extras-nfs
+* Tue Aug 11 2009 Marc Grimme <grimme@atix.de> - 0.1-12
+- nfs4 for RHEL5
 * Tue Apr 14 2009 Marc Grimme <grimme@atix.de> - 0.1-10
 - nfs4 stabilized
 * Fri Mar 27 2009 Marc Grimme <grimme@atix.de> 0.1-9
@@ -1020,6 +1034,8 @@ rm -rf %{buildroot}
 - introduced the changelog
 
 %changelog extras-glusterfs
+* Tue Aug 11 2009 Marc Grimme <grimme@atix.de> - 0.1-4
+- Upstream patches from Gordan Bobic
 * Mon Mar 30 2009 Marc Grimme <grimme@atix.de> - 0.1-3
 - Extended Bug #340 update mode for mkinitrd and adding/removing kernels with glusterfs
 * Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-1
@@ -1070,12 +1086,16 @@ rm -rf %{buildroot}
   - initial revision 
 
 %changelog listfiles-fedora
+* Mon Jul 06 2009 Marc Grimme <grimme@atix.de> - 0.1-6
+- Fedora 11 Support
 * Tue Feb 24 2009 Marc Grimme <grimme@atix.de> - 0.1-5
 - removed krb files in configs.list
 * Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-4
 - introduced the changelog
 
 %changelog listfiles-fedora-nfs
+* Tue Aug 11 2009 Marc Grimme <grimme@atix.de> - 0.1-4
+- Added a network list file for fedora (libidn)
 * Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-3
 - introduced the changelog
 
@@ -1116,7 +1136,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.101  2009-07-01 09:35:10  marc
+# Revision 1.102  2009-08-11 12:17:10  marc
+# new versions
+#
+# Revision 1.101  2009/07/01 09:35:10  marc
 # - fixed fenceacksv bug. new rpmversion 0.3-3
 #
 # Revision 1.100  2009/06/05 07:33:44  marc

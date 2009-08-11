@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.22 2009-04-20 07:21:22 marc Exp $
+# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.23 2009-08-11 12:17:10 marc Exp $
 #
 ##
 ##
@@ -52,7 +52,7 @@ Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-rhel
 Requires: comoonics-bootimage-listfiles-rhel5
 #Conflicts: 
-Release: 10.rhel5
+Release: 11.rhel5
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -255,7 +255,10 @@ rm -rf %{buildroot}
 - first revision
 # ------
 # $Log: comoonics-bootimage-initscripts-el5.spec,v $
-# Revision 1.22  2009-04-20 07:21:22  marc
+# Revision 1.23  2009-08-11 12:17:10  marc
+# new versions
+#
+# Revision 1.22  2009/04/20 07:21:22  marc
 # RC1 version 10
 #
 # Revision 1.21  2009/04/14 15:03:33  marc
