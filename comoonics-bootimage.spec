@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.101 2009-07-01 09:35:10 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.100.4.1 2009-08-11 09:49:56 marc Exp $
 #
 ##
 ##
@@ -58,7 +58,7 @@ Requires: comoonics-cluster-py >= 0.1-2
 Requires: comoonics-bootimage-initscripts >= 1.4 
 Requires: comoonics-bootimage-listfiles-all
 #Conflicts:
-Release: 22
+Release: 22-1
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -84,7 +84,7 @@ Extra listfiles for special network configurations
 
 %package extras-nfs
 Version: 0.1
-Release: 12
+Release: 12-1
 Requires: comoonics-bootimage >= 1.4
 Summary: Listfiles for nfs sharedroot configurations
 Group:   System Environment/Base
@@ -339,7 +339,7 @@ OSR files needed for the compatibility to 1.2 releases
 
 %package fenceacksv
 Version: 0.3
-Release: 3
+Release: 2
 Requires: comoonics-cs-py >= 0.1-43
 Requires: comoonics-bootimage >= 1.3-1
 Summary: The Fenceackserver is a service for last resort actions
@@ -575,6 +575,7 @@ fi
 
 %files extras-nfs
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/nfs-lib.sh
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel5/nfs-lib.sh
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/nfs.list
 
 %files extras-ocfs2
@@ -757,6 +758,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Tue Aug 11 2009 Marc Grimme <grimme@atix.de> 1.4-22-1
+- Backport for bug #356 Device changes not applied in chroot environment when chroot on local disk
+- Backport for bug #358 Initramfs consumes more and more during runtime. Which can lead to no free memory   
 * Fri Jun 05 2009 Marc Grimme <grimme@atix.de> 1.4-22
 - fixed bug #345 network init script patch xrootfs not applied correctly in RHEL 5.3
 - fixed bug #346 Oracle Enterprise Linux could not be detected as Red Hat Clone
@@ -982,6 +986,8 @@ rm -rf %{buildroot}
 - first release
 
 %changelog extras-nfs
+* Tue Aug 11 2009 Marc Grimme <grimme@atix.de> - 0.1-12-1
+- Backport for bug #357 NFS4 OSR Cluster fails to boot on RHEL5 - wrong mount options and no portmap
 * Tue Apr 14 2009 Marc Grimme <grimme@atix.de> - 0.1-10
 - nfs4 stabilized
 * Fri Mar 27 2009 Marc Grimme <grimme@atix.de> 0.1-9
@@ -1080,8 +1086,6 @@ rm -rf %{buildroot}
 - introduced the changelog
 
 %changelog fenceacksv
-* Tue Jul 01 2009 Marc Grimme <grimme@atix.de> - 0.3-3
-- Fixed bug where logger was pathdependent
 * Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.3-2
 - First version on the way to rpmlint BUG#290
 * Mon Sep 10 2007 Marc Grimme <grimme@atix.de> - 0.3-1
@@ -1116,8 +1120,8 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.101  2009-07-01 09:35:10  marc
-# - fixed fenceacksv bug. new rpmversion 0.3-3
+# Revision 1.100.4.1  2009-08-11 09:49:56  marc
+# Backported upstream bugs
 #
 # Revision 1.100  2009/06/05 07:33:44  marc
 # - new version for comoonics-bootimage 1.4-22
