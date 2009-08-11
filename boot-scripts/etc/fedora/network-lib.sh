@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.3 2009-04-22 11:35:56 marc Exp $
+# $Id: network-lib.sh,v 1.4 2009-08-11 09:53:06 marc Exp $
 #
 # @(#)$File$
 #
@@ -21,6 +21,10 @@
 #    Libraryfunctions for network support functions for RHEL5.
 #*******
 
+
+function fedora11_ip2Config() {
+	fedora9_ip2Config "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9"
+}
 
 function fedora10_ip2Config() {
 	fedora9_ip2Config "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9"
@@ -101,7 +105,10 @@ function fedora9_ip2Config() {
 
 #################
 # $Log: network-lib.sh,v $
-# Revision 1.3  2009-04-22 11:35:56  marc
+# Revision 1.4  2009-08-11 09:53:06  marc
+# - Added f11 support
+#
+# Revision 1.3  2009/04/22 11:35:56  marc
 # - fixed bug with NIC error generation for fc10.
 #
 # Revision 1.2  2009/04/14 14:48:01  marc

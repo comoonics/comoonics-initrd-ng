@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.5 2009-04-14 14:47:45 marc Exp $
+# $Id: hardware-lib.sh,v 1.6 2009-08-11 09:52:47 marc Exp $
 #
 # @(#)$File$
 #
@@ -24,6 +24,16 @@
 #    Libraryfunctions for hardware support functions for Red Hat
 #    Enterprise Linux 5.
 #*******
+
+function fedora11_hardware_detect() {
+	fedora9_hardware_detect $*
+}
+function fedora11_udev_start() {
+	fedora9_udev_start $*
+}
+function fedora11_udev_stop() {
+	fedora9_udev_stop $*
+}
 
 function fedora10_hardware_detect() {
 	fedora9_hardware_detect $*
@@ -94,7 +104,10 @@ function fedora9_udev_stop() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.5  2009-04-14 14:47:45  marc
+# Revision 1.6  2009-08-11 09:52:47  marc
+# - Added f11 support
+#
+# Revision 1.5  2009/04/14 14:47:45  marc
 # added fedora10 functions
 #
 # Revision 1.4  2009/03/06 13:20:39  marc
