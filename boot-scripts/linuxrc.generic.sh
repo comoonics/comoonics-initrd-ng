@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.80 2009-06-04 15:18:54 reiner Exp $
+# $Id: linuxrc.generic.sh,v 1.81 2009-08-11 09:59:29 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.80 2009-06-04 15:18:54 reiner Exp $
+#    $Id: linuxrc.generic.sh,v 1.81 2009-08-11 09:59:29 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -82,7 +82,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.80 $ $Date: 2009-06-04 15:18:54 $'
+echo_local 'Internal Version $Revision: 1.81 $ $Date: 2009-08-11 09:59:29 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -165,7 +165,7 @@ found_nics && udev_start # now we should be able to trigger this.
 found_nics && breakp $(errormsg err_hw_nicdriver)
 step "NIC modules loaded." "autonetconfig"
 
-cc_auto_syslogconfig $(repository_get_value cluster_conf) $(repository_get_value nodename) / "yes" $(repository_get_value syslog_logfile)
+cc_auto_syslogconfig $(repository_get_value cluster_conf) $(repository_get_value nodename) / "no" $(repository_get_value syslog_logfile)
 is_syslog=$?
 if [ $is_syslog -eq 0 ]; then
   cc_syslog_start
@@ -537,7 +537,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.80  2009-06-04 15:18:54  reiner
+# Revision 1.81  2009-08-11 09:59:29  marc
+# Fixed bug #358 Initramfs consumes more and more during runtime. Which can lead to no free memory
+#
+# Revision 1.80  2009/06/04 15:18:54  reiner
 # Modified usbLoad function. Now it works again and it is used to add USB keyboard support during boot process.
 #
 # Revision 1.79  2009/06/04 07:41:58  reiner
