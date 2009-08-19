@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.78.4.1 2009-08-11 09:43:40 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.78.4.2 2009-08-19 16:06:42 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.78.4.1 2009-08-11 09:43:40 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.78.4.2 2009-08-19 16:06:42 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -82,7 +82,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.78.4.1 $ $Date: 2009-08-11 09:43:40 $'
+echo_local 'Internal Version $Revision: 1.78.4.2 $ $Date: 2009-08-19 16:06:42 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -361,7 +361,7 @@ fi
 
 # but only if /dev is not the same inode as $chroot_path /dev
 if [ $is_syslog -eq 0 ] && ! is_same_inode /dev $(repository_get_value chroot_path)/dev; then
-  cc_auto_syslogconfig $(repository_get_value cluster_conf) $(repository_get_value nodename) $(repository_get_value chroot_path) yes $(repository_get_value syslog_logfile)
+  cc_auto_syslogconfig $(repository_get_value cluster_conf) $(repository_get_value nodename) $(repository_get_value chroot_path) "no" $(repository_get_value syslog_logfile)
   cc_syslog_start $(repository_get_value chroot_path)
   step "Syslog services started in chroot $(repository_get_value chroot_path)" "syslogchroot"
 fi
@@ -537,7 +537,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.78.4.1  2009-08-11 09:43:40  marc
+# Revision 1.78.4.2  2009-08-19 16:06:42  marc
+# another fix for bug358
+#
+# Revision 1.78.4.1  2009/08/11 09:43:40  marc
 # backport of upstream bug #358 where memory was growing during runtime.
 # fixed usb load of modules
 #

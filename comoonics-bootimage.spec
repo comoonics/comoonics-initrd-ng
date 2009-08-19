@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.100.4.2 2009-08-11 11:35:41 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.100.4.3 2009-08-19 16:06:42 marc Exp $
 #
 ##
 ##
@@ -58,7 +58,7 @@ Requires: comoonics-cluster-py >= 0.1-2
 Requires: comoonics-bootimage-initscripts >= 1.4 
 Requires: comoonics-bootimage-listfiles-all
 #Conflicts:
-Release: 22_1
+Release: 22_2
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -758,6 +758,8 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Wed Aug 19 2009 Marc Grimme <grimme@atix.de> 1.4-22_2
+- Fixed second occurance of cc_auto_syslog to not write to localdisk.
 * Tue Aug 11 2009 Marc Grimme <grimme@atix.de> 1.4-22_1
 - Backport for bug #356 Device changes not applied in chroot environment when chroot on local disk
 - Backport for bug #358 Initramfs consumes more and more during runtime. Which can lead to no free memory   
@@ -1120,7 +1122,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.100.4.2  2009-08-11 11:35:41  marc
+# Revision 1.100.4.3  2009-08-19 16:06:42  marc
+# another fix for bug358
+#
+# Revision 1.100.4.2  2009/08/11 11:35:41  marc
 # new versions
 #
 # Revision 1.100.4.1  2009/08/11 09:49:56  marc
