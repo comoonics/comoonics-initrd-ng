@@ -31,7 +31,7 @@ preparetest() {
    exec 4>&2
    
    # first source all libs
-   for lib in $(find $libdir -path "*/lib/*-lib.sh" -not -name "${clutype}-lib.sh" -not -name "${rootfs}-lib.sh"); do
+   for lib in $(find $libdir -path "*/etc/*-lib.sh" -not -name "${clutype}-lib.sh" -not -name "${rootfs}-lib.sh"); do
       . $lib
    done
    if [ -n "$clutype" ]; then
