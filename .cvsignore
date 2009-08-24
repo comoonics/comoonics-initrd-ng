@@ -1,3 +1,5 @@
 .pydevproject
 html
 html/*
+*.pyc
+*.pyo
