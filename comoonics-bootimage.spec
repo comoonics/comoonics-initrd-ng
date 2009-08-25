@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.103 2009-08-19 16:10:44 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.104 2009-08-25 12:38:33 marc Exp $
 #
 ##
 ##
@@ -53,12 +53,11 @@ Name: comoonics-bootimage
 Summary: Scripts for creating an initrd in a OSR Cluster environment
 Version: 1.4
 BuildArch: noarch
-Requires: comoonics-cs-py >= 0.1-43 
-Requires: comoonics-cluster-py >= 0.1-2 
+Requires: comoonics-cluster-py >= 0.1-21
 Requires: comoonics-bootimage-initscripts >= 1.4 
 Requires: comoonics-bootimage-listfiles-all
 #Conflicts:
-Release: 25
+Release: 26
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -759,6 +758,8 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Wed Aug 19 2009 Marc Grimme <grimme@atix.de> 1.4-26
+- Removed dep comoonics-cs-py that shouldn't be needed. comoonics-cluster-py requires comoonics-cs-py.
 * Wed Aug 19 2009 Marc Grimme <grimme@atix.de> 1.4-25
 - Fix second occurance of cc_auto_syslog (Bug 358)
 * Tue Aug 11 2009 Marc Grimme <grimme@atix.de> 1.4-24
@@ -1138,7 +1139,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.103  2009-08-19 16:10:44  marc
+# Revision 1.104  2009-08-25 12:38:33  marc
+# new version
+#
+# Revision 1.103  2009/08/19 16:10:44  marc
 # another fix for bug358
 #
 # Revision 1.102  2009/08/11 12:17:10  marc
