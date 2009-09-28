@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.36 2009-08-11 09:54:58 marc Exp $
+# $Id: hardware-lib.sh,v 1.37 2009-09-28 13:01:50 marc Exp $
 #
 # @(#)$File$
 #
@@ -88,7 +88,12 @@ function dev_start() {
     test -e /dev/null || exec_local mknod /dev/null c 1 3 &&
     test -e /dev/zero || exec_local mknod /dev/zero c 1 5 &&
     test -d /dev/pts || exec_local mkdir /dev/pts &&
-    test -d /dev/shm || exec_local mkdir /dev/shm
+    test -d /dev/shm || exec_local mkdir -m1777 /dev/shm
+	test -e /dev/fd || ln -s /proc/self/fd /dev/fd
+    test -e /dev/stdin || ln -s /dev/fd/0 /dev/stdin
+    test -e /dev/stdout || ln -s /dev/fd/1 /dev/stdout
+    test -e /dev/stderr || ln -s fd/2 /dev/stderr
+    
     return_code
 }
 #************dev_start
@@ -658,7 +663,10 @@ function sysctl_load() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.36  2009-08-11 09:54:58  marc
+# Revision 1.37  2009-09-28 13:01:50  marc
+# moved devices from boot-lib.sh/initEnv to dev_start
+#
+# Revision 1.36  2009/08/11 09:54:58  marc
 # - latest mdadm fixes (Gordan Bobic)
 # - Moved dm_get_drivers to be called in xen and others
 #
