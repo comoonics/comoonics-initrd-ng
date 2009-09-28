@@ -47,10 +47,10 @@ Summary: Initscripts used by the OSR cluster environment for Novell SLES10.
 Version: 1.4
 BuildArch: noarch
 Requires: comoonics-bootimage >= 1.4
-Requires: comoonics-bootimage-listfiles-sles10
+Requires: comoonics-bootimage-listfiles-sles11
 Requires: sysvinit-comoonics
 #Conflicts:
-Release: 4.sles10
+Release: 2.sles11
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -61,7 +61,7 @@ Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description
-Initscripts used by the OSR cluster environment. These are for Novell SLES10.
+Initscripts used by the OSR cluster environment. These are for Novell SLES11.
 
 
 %prep
@@ -71,7 +71,7 @@ Initscripts used by the OSR cluster environment. These are for Novell SLES10.
 
 %install
 install -d -m 755 $RPM_BUILD_ROOT/%{INITDIR}
-install -m755 initscripts/sles10/bootsr $RPM_BUILD_ROOT/%{INITDIR}/bootsr
+install -m755 initscripts/sles11/bootsr $RPM_BUILD_ROOT/%{INITDIR}/bootsr
 
 %clean
 rm -rf %{buildroot}
@@ -130,15 +130,11 @@ chkconfig --del bootsr
 %attr(755, root, root) %{INITDIR}/bootsr
 
 %changelog
-* Mon Sep 28 2009 Marc Grimme <grimme@atix.de> 1.4-4.sles10
+* Mon Sep 28 2009 Marc Grimme <grimme@atix.de> 1.4-1.sles11
 - Finalized new version
 - added /etc/init.d/halt.local link instead of using boot.localfs
-* Tue Sep 15 2009 Marc Grimme <grimme@atix.de> 1.4-3.sles10
-- Made dependent on listfiles-sles10
-- Changed initscript bootsr to be sles compatible
-* Wed Nov 19 2008 Marc Grimme <grimme@atix.de> 1.3-2-sles10
-- Merged with upstream
-* Fri Sep 18 2008 Marc Grimme <grimme@atix.de> 1.3-1
+* Wed Nov 19 2008 Marc Grimme <grimme@atix.de> 1.4-1-sles11
 - first revision
+
 # ------
 # $Log: comoonics-bootimage-initscripts-el4.spec,v $

@@ -28,12 +28,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.104 2009-08-25 12:38:33 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.105 2009-09-28 14:40:37 marc Exp $
 #
 ##
 ##
 
 %define _user root
+%define _sysconfdir /etc
 %define CONFIGDIR /%{_sysconfdir}/comoonics
 %define APPDIR    /opt/atix/%{name}
 %define LIBDIR    /opt/atix/%{name}
@@ -56,8 +57,9 @@ BuildArch: noarch
 Requires: comoonics-cluster-py >= 0.1-21
 Requires: comoonics-bootimage-initscripts >= 1.4 
 Requires: comoonics-bootimage-listfiles-all
+Requires: comoonics-tools-py
 #Conflicts:
-Release: 26
+Release: 33
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -69,6 +71,17 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description
 Scripts for creating an initrd in a OSR cluster environment
+
+%package extras-osr
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage >= 1.3-1
+Summary: Extra for cluster configuration via osr
+Group:   System Environment/Base
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description extras-osr
+Extra for cluster configuration via osr.
 
 %package extras-network
 Version: 0.1
@@ -94,7 +107,7 @@ Extra listfiles for nfs sharedroot configurations
 
 %package extras-ocfs2
 Version: 0.1
-Release: 3
+Release: 6
 Requires: comoonics-bootimage >= 1.4
 Summary: Listfiles for ocfs2 sharedroot configurations
 Group:   System Environment/Base
@@ -154,6 +167,18 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description extras-dm-multipath-fedora
 Extra listfiles for device mapper multipath OSR configurations for fedora
+
+%package extras-dm-multipath-sles
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage >= 1.4
+Requires: multipath-tools
+Summary: Listfiles for device mapper multipath OSR configurations for SLES
+Group:   System Environment/Base
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description extras-dm-multipath-sles
+Extra listfiles for device mapper multipath OSR configurations for SLES
 
 %package extras-rdac-multipath
 Version: 0.1
@@ -221,9 +246,19 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 %description extras-sysctl
 Sysctl support in the OSR cluster
 
+%package extras-syslog
+Version: 0.1
+Release: 4
+Requires: comoonics-bootimage >= 1.4-27
+Summary: Syslog implementation for osr
+Group:   System Environment/Base
+
+%description extras-syslog
+Syslog implementation for osr. Supports syslog classic, syslog-ng, rsyslog (See listfiles-syslog)
+
 %package listfiles-all
 Version: 0.1
-Release: 5
+Release: 8
 Requires: comoonics-bootimage >= 1.3-36
 Group:   System Environment/Base
 Summary: OSR listfilesfiles for all distributions 
@@ -234,7 +269,7 @@ OSR Listfiles that are only relevant for all linux distributions
 
 %package listfiles-rhel
 Version: 0.1
-Release: 3
+Release: 6
 Requires: comoonics-bootimage >= 1.3-36
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-all
@@ -247,7 +282,7 @@ OSR extra files that are only relevant for RHEL Versions
 
 %package listfiles-fedora
 Version: 0.1
-Release: 6
+Release: 9
 Requires: comoonics-bootimage >= 1.3-41
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-all
@@ -260,7 +295,7 @@ OSR extra files that are only relevant for Fedora Versions
 
 %package listfiles-fedora-nfs
 Version: 0.1
-Release: 4
+Release: 5
 Requires: comoonics-bootimage-listfiles-fedora
 Group: System Environment/Base
 Summary: Extrafiles for Fedora Core NFS support 
@@ -285,7 +320,7 @@ OSR extra files that are only relevant for RHEL4
 
 %package listfiles-rhel5
 Version: 0.1
-Release: 3
+Release: 4
 Requires: comoonics-bootimage >= 1.3-36
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-rhel
@@ -299,7 +334,7 @@ OSR extra files that are only relevant for RHEL4
 
 %package listfiles-sles
 Version: 0.1
-Release: 3
+Release: 5
 Requires: comoonics-bootimage >= 1.3-37
 Requires: /etc/SuSE-release
 Requires: comoonics-bootimage-listfiles-all
@@ -310,6 +345,34 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description listfiles-sles
 OSR extra files that are only relevant for Novell SLES 10
+
+%package listfiles-sles10
+Version: 0.1
+Release: 2
+Requires: comoonics-bootimage >= 1.4-28
+Requires: /etc/SuSE-release
+Requires: comoonics-bootimage-listfiles-sles
+Group: System Environment/Base
+Summary: Extrafiles for Novell SuSE Enterprise Server 10
+Conflicts: comoonics-bootimage-listfiles-rhel 
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description listfiles-sles10
+OSR extra files that are only relevant for Novell SLES 10
+
+%package listfiles-sles11
+Version: 0.1
+Release: 2
+Requires: comoonics-bootimage >= 1.4-27
+Requires: /etc/SuSE-release
+Requires: comoonics-bootimage-listfiles-all
+Group: System Environment/Base
+Summary: Extrafiles for Novell SuSE Enterprise Server
+Conflicts: comoonics-bootimage-listfiles-rhel 
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description listfiles-sles11
+OSR extra files that are only relevant for Novell SLES 11
 
 %package listfiles-fenceacksv-plugins
 Version: 0.1
@@ -324,6 +387,39 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description listfiles-fenceacksv-plugins
 OSR extrafiles for plugins in fenceacksv.
+
+%package listfiles-syslogd
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage-extras-syslog
+Summary: Syslog listfiles for syslog classic
+Group:   System Environment/Base
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description listfiles-syslogd
+Syslog listfiles for syslog classic
+
+%package listfiles-rsyslogd
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage-extras-syslog
+Summary: Syslog listfiles for the rsyslog daemon
+Group:   System Environment/Base
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description listfiles-rsyslogd
+Syslog listfiles for rsyslog daemon
+
+%package listfiles-syslog-ng
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage-extras-syslog
+Summary: Syslog listfiles for the syslog-ng daemon
+Group:   System Environment/Base
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description listfiles-syslog-ng
+Syslog listfiles for syslog-ng daemon
 
 %package compat
 Version: 0.1
@@ -415,6 +511,8 @@ install -m640 %{FENCEACKSV_SOURCE}/CA.cert $RPM_BUILD_ROOT/%{FENCEACKSV_DIR}/
 install -d -m 755 $RPM_BUILD_ROOT/%{INITDIR}
 install -m755 %{FENCEACKSV_SOURCE}/fenceacksv.sh $RPM_BUILD_ROOT/%{INITDIR}/fenceacksv
 install -d -m 755 $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage-chroot
+install -d -m 755 $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage-chroot/files.initrd.d
+install -d -m 755 $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage-chroot/rpms.initrd.d
 install -m644 %{FENCEACKSV_SOURCE}/files-fenceacksv.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage-chroot/files.initrd.d/fenceacksv.list
 install -m644 %{FENCEACKSV_SOURCE}/rpms-fenceacksv.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage-chroot/rpms.initrd.d/fenceacksv.list
 # install -m640 %{FENCEACKSV_SOURCE}/fenceacksv-config.sh $RPM_BUILD_ROOT/%{SYSCONFIGDIR}/fenceacksv
@@ -550,6 +648,9 @@ fi
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/sles10/boot-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/sles10/hardware-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/sles10/network-lib.sh
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/sles11/boot-lib.sh
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/sles11/hardware-lib.sh
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/sles11/network-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/fedora/boot-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/fedora/gfs-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/fedora/hardware-lib.sh
@@ -568,6 +669,11 @@ fi
 %files compat
 %config(noreplace) %attr(0644, root, root) %{SYSCONFIGDIR}/comoonics-chroot
 
+%files extras-osr
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/osr-lib.sh
+%config(noreplace) %attr(0644, root, root) %{CONFIGDIR}/querymap.cfg
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/01-create-mapfiles.sh
+
 %files extras-network
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/vlan.list
 
@@ -579,6 +685,7 @@ fi
 
 %files extras-ocfs2
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/ocfs2-lib.sh
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/ocfs2.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/ocfs2.list
 
 %files extras-md
@@ -589,6 +696,9 @@ fi
 
 %files extras-dm-multipath-rhel
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/dm_multipath.list
+
+%files extras-dm-multipath-sles
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/dm_multipath.list
 
 %files extras-dm-multipath-fedora
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fedora/dm_multipath.list
@@ -626,6 +736,12 @@ fi
 #%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/gfs1.list
 #%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/gfs2.list
 
+%files extras-syslog
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/syslog-lib.sh
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/templates/syslog.conf
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/templates/rsyslog.conf
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/templates/syslog-ng.conf
+
 %files listfiles-all
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/basefiles.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.list
@@ -661,6 +777,8 @@ fi
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/gfs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/grub.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/network.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/base.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/comoonics.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/empty.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/hardware.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/python.list
@@ -689,20 +807,30 @@ fi
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/sles/base.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/sles/empty.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/sles/network.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/python.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/base.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/comoonics.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/hardware.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/empty.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/dm_multipath.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/network.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/python.list
+
+%files listfiles-sles10
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles10/base.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles10/python.list
+
+%files listfiles-sles11
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles11/python.list
 
 %files listfiles-fedora
 %dir %{CONFIGDIR}/bootimage/files.initrd.d/fedora
 %dir %{CONFIGDIR}/bootimage/rpms.initrd.d/fedora
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/fedora/base.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/fedora/configs.list
+#%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/fedora/comoonics.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/fedora/network.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fedora/base.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fedora/comoonics.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fedora/hardware.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fedora/python.list
 
@@ -712,6 +840,15 @@ fi
 
 %files listfiles-fenceacksv-plugins
 %config %attr(0644, root, root) %dir %{CONFIGDIR}/bootimage-chroot/rpms.initrd.d/fenceacksv-plugins.list
+
+%files listfiles-syslogd
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/syslogd.list
+
+%files listfiles-rsyslogd
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rsyslogd.list
+
+%files listfiles-syslog-ng
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/syslog-ng.list
 
 %files fenceacksv
 %attr(0755, root, root) %{FENCEACKSV_DIR}/fence_ack_server.py*
@@ -758,6 +895,26 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Mon Sep 28 2009 Marc Grimme <grimme@atix.de> 1.4-33
+- New finalized version
+- Some typos
+- Exitrd functions and functionality
+* Thu Sep 24 2009 Marc Grimme <grimme@atix.de> 1.4-32
+- Added more functions to seperate gfs from clusterfs-lib.
+- Prepared deps to integrate osr as second cluster lib.
+- Bugfix for calling syslog without - but _ (syslog-ng => syslog_ng)
+* Tue Sep 16 2009 Marc Grimme <grimme@atix.de> 1.4-31
+- Removed all references to com-queryclusterconf anywhere but gfs-lib.sh
+* Tue Sep 15 2009 Marc Grimme <grimme@atix.de> 1.4-30
+- Bugfixes in syslog library and clusterfs-lib
+* Thu Sep 10 2009 Marc Grimme <grimme@atix.de> 1.4-29
+- Fixed is_mounted and implemented get_dep_filesystems
+- Changed com-realhalt.sh to umount every fs depending on COM_OLDROOT.
+* Thu Sep 10 2009 Marc Grimme <grimme@atix.de> 1.4-28
+- Small typos and bugfixes
+* Wed Sep 09 2009 Marc Grimme <grimme@atix.de> 1.4-27
+- Backports from dracut (repository-lib.sh)
+- Prepared generic syslog implementation syslog/rsyslog/syslog-ng 
 * Wed Aug 19 2009 Marc Grimme <grimme@atix.de> 1.4-26
 - Removed dep comoonics-cs-py that shouldn't be needed. comoonics-cluster-py requires comoonics-cs-py.
 * Wed Aug 19 2009 Marc Grimme <grimme@atix.de> 1.4-25
@@ -952,6 +1109,10 @@ rm -rf %{buildroot}
 * Mon Jan  3 2005 Marc Grimme <grimme@atix.de> - 0.1-16
 - first offical rpm version
 
+%changelog extras-osr
+* Thu Sep 24 2009 Marc Grimme <grimme@atix.de> - 0.1-1
+- first release
+
 %changelog extras-rdac-multipath
 * Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-2
 - First version on the way to rpmlint BUG#290
@@ -1017,6 +1178,13 @@ rm -rf %{buildroot}
 - added nfs-lib.sh file
 
 %changelog extras-ocfs2
+* Thu Sep 10 2009 Marc Grimme <grimme@atix.de> 0.1-6
+- Reuncomented the generation of /etc/ocfs2/cluster.conf in chroot.
+* Thu Sep 10 2009 Marc Grimme <grimme@atix.de> 0.1-5
+- Small typos
+* Wed Sep 09 2009 Marc Grimme <grimme@atix.de> 0.1-4
+- Fixed return code bug when joining cluster.
+- Added listfile to be sure to get o2cb_ctl in
 * Fri Mar 27 2009 Marc Grimme <grimme@atix.de> 0.1-3
 - Added ocfs2_get_drivers
 
@@ -1031,6 +1199,10 @@ rm -rf %{buildroot}
 %changelog extras-dm-multipath-rhel
 * Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-2
 - introduced the changelog
+
+%changelog extras-dm-multipath-sles
+* Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-1
+- initial revision
 
 %changelog extras-dm-multipath-fedora
 * Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-2
@@ -1048,7 +1220,23 @@ rm -rf %{buildroot}
 * Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-1
 - initial revision
 
+%changelog extras-syslog
+* Thu Sep 24 2009 Marc Grimme <grimme@atix.de> - 0.1-4
+- Small bugfixes (syslog-ng => syslog_ng when calling functions)
+- Some better errormessages
+* Tue Sep 15 2009 Marc Grimme <grimme@atix.de> - 0.1-2
+- Added templates
+- Fixed severral syslog relevant bugs
+* Wed Sep 09 2009 Marc Grimme <grimme@atix.de> - 0.1-1
+- initial revision
+
 %changelog listfiles-all
+* Mon Sep 28 2009 Marc Grimme <grimme@atix.de> - 0.1-9
+- Finalized version with all changes
+* Thu Sep 24 2009 Marc Grimme <grimme@atix.de> - 0.1-8
+- Removed the /etc/rc.d/init.d dep.
+* Thu Sep 10 2009 Marc Grimme <grimme@atix.de> - 0.1-7
+- Moved dep to other files in order to have less warnings
 * Wed Mar 25 2009 Marc Grimme <grimme@atix.de> - 0.1-5
 - Implemented global filters
 * Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-4
@@ -1059,6 +1247,10 @@ rm -rf %{buildroot}
   - initial revision 
 
 %changelog listfiles-rhel
+* Mon Sep 28 2009 Marc Grimme <grimme@atix.de> - 0.1-4
+- Finalized version with all changes
+* Thu Sep 10 2009 Marc Grimme <grimme@atix.de> - 0.1-3
+- Moved dep to other files in order to have less warnings
 * Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-2
 - First version on the way to rpmlint BUG#290
 * Thu Aug 14 2008 Marc Grimme <grimme@atix.de - 0.1-1
@@ -1071,6 +1263,8 @@ rm -rf %{buildroot}
   - initial revision 
 
 %changelog listfiles-rhel5
+* Mon Sep 28 2009 Marc Grimme <grimme@atix.de> - 0.1-5
+- Finalized version with all changes
 * Tue Feb 24 2009 Marc Grimme <grimme@atix.de> - 0.1-4
 - removed krb files in configs.list
 * Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-3
@@ -1081,6 +1275,12 @@ rm -rf %{buildroot}
   - initial revision 
 
 %changelog listfiles-sles
+* Mon Sep 28 2009 Marc Grimme <grimme@atix.de> - 0.1-6
+- Finalized version with all changes
+* Thu Sep 10 2009 Marc Grimme <grimme@atix.de> - 0.1-5
+- Additional deps
+* Thu Sep 10 2009 Marc Grimme <grimme@atix.de> - 0.1-4
+- Moved dep to other files in order to have less warnings
 * Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-3
 - First version on the way to rpmlint BUG#290
 * Wed Sep 24 2008 Marc Grimme <grimme@atix.de> - 0.1-2
@@ -1088,7 +1288,25 @@ rm -rf %{buildroot}
 * Thu Aug 14 2008 Marc Grimme <grimme@atix.de - 0.1-1
   - initial revision 
 
+%changelog listfiles-sles10
+* Mon Sep 28 2009 Marc Grimme <grimme@atix.de> - 0.1-2
+- Finalized version with all changes
+* Wed Sep 16 2009 Marc Grimme <grimme@atix.de> - 0.1-1
+- initial revision
+
+%changelog listfiles-sles11
+* Mon Sep 28 2009 Marc Grimme <grimme@atix.de> - 0.1-2
+- Finalized version with all changes
+* Wed Sep 09 2009 Marc Grimme <grimme@atix.de> - 0.1-1
+- initial revision
+
 %changelog listfiles-fedora
+* Mon Sep 28 2009 Marc Grimme <grimme@atix.de> - 0.1-9
+- Finalized version with all changes
+* Thu Sep 10 2009 Marc Grimme <grimme@atix.de> - 0.1-8
+- Moved dep to other files in order to have less warnings
+* Wed Sep 09 2009 Marc Grimme <grimme@atix.de> - 0.1-7
+- added comoonics listfile
 * Mon Jul 06 2009 Marc Grimme <grimme@atix.de> - 0.1-6
 - Fedora 11 Support
 * Tue Feb 24 2009 Marc Grimme <grimme@atix.de> - 0.1-5
@@ -1097,10 +1315,24 @@ rm -rf %{buildroot}
 - introduced the changelog
 
 %changelog listfiles-fedora-nfs
+* Mon Sep 28 2009 Marc Grimme <grimme@atix.de> - 0.1-5
+- Finalized version with all changes
 * Tue Aug 11 2009 Marc Grimme <grimme@atix.de> - 0.1-4
 - Added a network list file for fedora (libidn)
 * Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-3
 - introduced the changelog
+
+%changelog listfiles-syslogd
+* Wed Sep 09 2009 Marc Grimme <grimme@atix.de> - 0.1-1
+- initial revision
+
+%changelog listfiles-rsyslogd
+* Wed Sep 09 2009 Marc Grimme <grimme@atix.de> - 0.1-1
+- initial revision
+
+%changelog listfiles-syslog-ng
+* Wed Sep 09 2009 Marc Grimme <grimme@atix.de> - 0.1-1
+- initial revision
 
 %changelog fenceacksv
 * Tue Jul 01 2009 Marc Grimme <grimme@atix.de> - 0.3-3
@@ -1139,7 +1371,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.104  2009-08-25 12:38:33  marc
+# Revision 1.105  2009-09-28 14:40:37  marc
+# new versions
+#
+# Revision 1.104  2009/08/25 12:38:33  marc
 # new version
 #
 # Revision 1.103  2009/08/19 16:10:44  marc
