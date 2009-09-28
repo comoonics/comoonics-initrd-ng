@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.105 2009-09-28 14:40:37 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.106 2009-09-28 14:51:19 marc Exp $
 #
 ##
 ##
@@ -830,7 +830,6 @@ fi
 #%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/fedora/comoonics.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/fedora/network.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fedora/base.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fedora/comoonics.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fedora/hardware.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fedora/python.list
 
@@ -1371,7 +1370,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.105  2009-09-28 14:40:37  marc
+# Revision 1.106  2009-09-28 14:51:19  marc
+# new versions
+#
+# Revision 1.105  2009/09/28 14:40:37  marc
 # new versions
 #
 # Revision 1.104  2009/08/25 12:38:33  marc
