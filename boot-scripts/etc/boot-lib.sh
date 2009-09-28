@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.75 2009-06-05 07:23:54 marc Exp $
+# $Id: boot-lib.sh,v 1.76 2009-09-28 12:50:46 marc Exp $
 #
 # @(#)$File$
 #
@@ -287,8 +287,11 @@ function getParameter() {
 		echo $ret
 		return 0
 	fi
-    repository_store_value $name "$default"
-	echo $default
+    if [ -n "$default" ]; then
+      repository_store_value $name "$default"
+	  echo $default
+	  return 0
+    fi
 	return 1		
 		
 }
@@ -455,7 +458,7 @@ function start_service_chroot() {
 	service_name=$1
 	shift
 	echo_local -n "Starting service [$chroot_dir] $service_name"
-	exec_local /usr/sbin/chroot $chroot_dir $service_name $*
+	exec_local chroot $chroot_dir $service_name $*
 	return_code
 }
 #********start_service_chroot
@@ -838,14 +841,13 @@ function clean_initrd() {
 	local procs="udevd"
 	echo_local_debug "Sending unnecessary processes the TERM signal"
 	for p in $procs; do
-		killall $p &> /dev/null
+		killall -0 $p && killall $p &> /dev/null
 	done
 	sleep 3
 	echo_local_debug "Sending unnecessary processes the KILL signal"
 	for p in $procs; do
-		killall -9 $p &> /dev/null
+		killall -0 $p && killall -9 $p &> /dev/null
 	done
-
 }
 
 #************ clean_initrd
@@ -957,8 +959,51 @@ function create_xkillall_procs () {
 }
 #************** create_xkillall_procs
 
+#****f* boot-lib.sh/detectHalt
+#  NAME
+#    detectHalt build a chroot environment
+#  SYNOPSIS
+#    function detectHalt($xkillall_procsfile, $rootfss) {
+#  MODIFICATION HISTORY
+#  USAGE
+#  detectHalt
+#  IDEAS
+#
+#  SOURCE
+#
+detectHalt() {
+    local runlevel2=$1
+	local distribution=$(repository_get_value distribution)
+	local shortdistribution=$(repository_get_value shortdistribution)
+    local cmd="halt"
+    cmd=$(${distribution}_detectHalt $runlevel2)
+    if [ $? -ne 0 ] || [ -z "$cmd" ]; then
+      cmd=$(${shortdistribution}_detectHalt $runlevel2)
+      if [ $? -ne 0 ] || [ -z "$cmd" ]; then
+        if [ $runlevel2 -eq 0 ]; then
+  	      cmd="halt -d -f"
+  	      echo_local -n "..halt.." >&2
+        elif [ $runlevel2 -eq 6 ]; then
+          cmd="reboot -d -f"
+  	      echo_local -n "..reboot.." >&2
+        else
+          cmd="halt"
+  	      echo_local -n "..reboot.." >&2
+        fi
+      fi
+    fi
+    echo "$cmd"
+    [ -n "$cmd" ]
+}
+#************** detectHalt
+
 # $Log: boot-lib.sh,v $
-# Revision 1.75  2009-06-05 07:23:54  marc
+# Revision 1.76  2009-09-28 12:50:46  marc
+# - added detectHalt
+# - added default to getParameter
+# - fixed cosmetical bugs
+#
+# Revision 1.75  2009/06/05 07:23:54  marc
 # - fix for Bug #346 where Oracle Enterprise Linux could not be detected.
 #
 # Revision 1.74  2009/04/20 07:06:29  marc
