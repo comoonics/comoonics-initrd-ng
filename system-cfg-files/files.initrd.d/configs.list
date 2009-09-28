@@ -10,7 +10,7 @@
 /etc/ld.so.conf
 /etc/localtime
 /etc/rc.d
-/etc/rc.d/init.d
+#/etc/rc.d/init.d
 /etc/init.d
 /etc/resolv.conf
 /etc/hosts
