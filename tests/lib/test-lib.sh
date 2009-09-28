@@ -64,8 +64,10 @@ preparetest() {
    fi
 }
 detecterror() {
-	if [ $? -ne 0 ]; then
-		testing_errors=$(( ${testing_errors} + $? ))
+	local errorcode=$1
+	shift
+	if [ $errorcode -ne 0 ]; then
+		testing_errors=$(( ${testing_errors} + $errorcode ))
 		testing_errormsgs=${testing_errormsgs}"
 $*
 "
@@ -73,7 +75,9 @@ $*
 	return $testing_errors
 }
 invdetecterror() {
-	if [ $? -eq 0 ]; then
+	local errorcode=$1
+	shift
+	if [ $errorcode -eq 0 ]; then
 		testing_errors=$(( ${testing_errors} + 1 ))
 		testing_errormsgs=${testing_errormsgs}"
 $*
