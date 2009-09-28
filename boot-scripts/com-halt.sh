@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: com-halt.sh,v 1.3 2008-10-14 10:57:07 marc Exp $
+# $Id: com-halt.sh,v 1.4 2009-09-28 13:09:02 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,24 +26,51 @@
 #****h* comoonics-bootimage/com-halt.sh
 #  NAME
 #    com-halt.sh
-#    $Id: com-halt.sh,v 1.3 2008-10-14 10:57:07 marc Exp $
+#    $Id: com-halt.sh,v 1.4 2009-09-28 13:09:02 marc Exp $
 #  DESCRIPTION
 #    script called from /etc/init.d/halt
 #  USAGE
 #    com-halt.sh chrootpath haltcmd
 #*******
 
-CHROOT_PATH=$(dirname $0)
+# include libraries
+predir=/opt/atix/comoonics-bootimage/boot-scripts
+source ${predir}/etc/std-lib.sh
+sourceLibs ${predir}
 
-cd $CHROOT_PATH
-#mkdir -p $CHROOT_PATH/mnt/newroot
-if [ -d ./mnt/newroot ]; then
+CHROOT_PATH=$(/opt/atix/comoonics-bootimage/manage_chroot.sh -p)
+
+if [ -n "$CHROOT_PATH" ] && [ -d $CHROOT_PATH/mnt/newroot ]; then
+  actlevel=$(runlevel | awk '{ print $2;}')
+  
+  cd $CHROOT_PATH
   /sbin/pivot_root . ./mnt/newroot
-  chroot . ./com-realhalt.sh -r /mnt/newroot $*
-fi
 
+  echo_local -n "Scanning for Bootparameters..."
+  getParameter newroot "/mnt/newroot" &>/dev/null &&
+  getParameter cluster_conf $cluster_conf &>/dev/null &&
+  getParameter debug $debug &>/dev/null &&
+  getParameter step $stepmode &>/dev/null &&
+  getParameter dstep $dstepmode &>/dev/null &&
+  getParameter nousb &>/dev/null &&
+  return_code 0
+
+  if [ $# -eq 0 ]; then
+    #FIXME: the following should be distribution dependent.
+    echo_local -n "Detecting power cycle type "
+    cmd=$(detectHalt $actlevel)
+    return_code $?
+  else
+    cmd=$@
+  fi
+  #mkdir -p $CHROOT_PATH/mnt/newroot
+  exec chroot . ./com-realhalt.sh -r /mnt/newroot $cmd
+fi
 ####################
 # $Log: com-halt.sh,v $
-# Revision 1.3  2008-10-14 10:57:07  marc
+# Revision 1.4  2009-09-28 13:09:02  marc
+# - Implemented new way to also use com-halt as halt.local either in /sbin or /etc/init.d dependent on distribution
+#
+# Revision 1.3  2008/10/14 10:57:07  marc
 # Enhancement #273 and dependencies implemented (flexible boot of local fs systems)
 #
