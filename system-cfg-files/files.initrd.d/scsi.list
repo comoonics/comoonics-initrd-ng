@@ -1,5 +1,5 @@
 # Filelist for storage communication
 # scsi_id is part of udev rpm
-scsi_id
+#scsi_id
 # lvm.conf is part of lvm2
 /etc/lvm/lvm.conf
