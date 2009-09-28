@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.66 2009-04-20 20:18:56 marc Exp $
+# $Id: gfs-lib.sh,v 1.67 2009-09-28 12:59:28 marc Exp $
 #
 # @(#)$File$
 #
@@ -159,7 +159,7 @@ function gfs_validate {
 
   [ -z "$xml_cmd" ] && xml_cmd="${ccs_xml_query} -f $cluster_conf"
 
-  errors=$($xml_cmd -q nodeids 2>&1 >&3)
+  errors=$($xml_cmd -q nodeids 2>&1 >/dev/null)
   if [ -n "$errors" ]; then
   	return 1
   else
@@ -168,6 +168,65 @@ function gfs_validate {
 }
 #*********** cc_validate
 
+#****f* boot-scripts/etc/clusterfs-lib.sh/gfs_get
+#  NAME
+#    gfs_get
+#  SYNOPSIS
+#    function gfs_get(cluster_conf)
+#  DESCRIPTTION
+#    returns the name of the cluster.
+#  SOURCE
+#
+gfs_get() {
+   local cluster_conf=$(repository_get_value cluster_conf)
+   if [ -f "$1" ]; then
+   	 cluster_conf=$1
+   	 shift
+   fi
+
+   local xml_cmd="${ccs_xml_query} -f $cluster_conf"
+   $xml_cmd -q $@
+}
+# *********** gfs_get
+
+#****f* boot-scripts/etc/clusterfs-lib.sh/gfs_get_clustername
+#  NAME
+#    gfs_get_clustername
+#  SYNOPSIS
+#    function gfs_get_clustername(cluster_conf)
+#  DESCRIPTTION
+#    returns the name of the cluster.
+#  SOURCE
+#
+gfs_get_clustername() {
+   gfs_get $1 query_value /cluster/@name	
+}
+# *********** gfs_get_clustername
+
+#****f* boot-scripts/etc/clusterfs-lib.sh/gfs_convert
+#  NAME
+#    gfs_convert
+#  SYNOPSIS
+#    function gfs_convert(cluster_conf)
+#  DESCRIPTTION
+#    returns the name of the cluster.
+#  SOURCE
+#
+gfs_convert() {
+   local cluster_conf=$(repository_get_value cluster_conf)
+   local clustertype
+   if [ -f "$1" ]; then
+   	 cluster_conf="$1"
+   	 shift
+   fi
+   
+   [ -n "$1" ] && clustertype="$1"
+   [ -z "$clustertype" ] && clustertype=$(repository_get_value rootfs)
+
+   local xml_cmd="${ccs_xml_query} -f $cluster_conf"
+   $xml_cmd convert $clustertype
+}
+# *********** gfs_convert
 
 #****f* boot-scripts/etc/clusterfs-lib.sh/gfs_get_rootfs
 #  NAME
@@ -488,6 +547,44 @@ function gfs_get_nodename_by_id {
 }
 #************ gfs_get_nodename
 
+#****f* gfs-lib.sh/gfs_get_nodeids
+#  NAME
+#    gfs_get_nodeids
+#  SYNOPSIS
+#    function gfs_get_nodeids(cluster_conf, mac)
+#  DESCRIPTION
+#    gets for this very host the nodeid (identified by the macaddress)
+#  IDEAS
+#  SOURCE
+#
+function gfs_get_nodeids {
+    local ccs_file=$1
+    local mac=$2
+
+    local xml_cmd="${ccs_xml_query}"
+    $xml_cmd -f $ccs_file -q nodeids
+}
+#************ gfs_get_nodeids
+
+#****f* gfs-lib.sh/gfs_get_macs
+#  NAME
+#    gfs_get_macs
+#  SYNOPSIS
+#    function gfs_get_macs(cluster_conf, mac)
+#  DESCRIPTION
+#    gets for this very host the nodeid (identified by the macaddress)
+#  IDEAS
+#  SOURCE
+#
+function gfs_get_macs {
+    local ccs_file=$1
+    local mac=$2
+
+    local xml_cmd="${ccs_xml_query}"
+    $xml_cmd -f $ccs_file -q macs
+}
+#************ gfs_get_macs
+
 #****f* gfs-lib.sh/gfs_get_nodeid
 #  NAME
 #    gfs_get_nodeid
@@ -632,6 +729,24 @@ function gfs_get_syslogserver {
   $xml_cmd -f $xml_file -q syslog $nodename
 }
 #************ gfs_get_syslogserver
+
+#****f* gfs-lib.sh/gfs_get_syslogfilter
+#  NAME
+#    gfs_get_syslogfilter
+#  SYNOPSIS
+#    function gfs_get_syslogfilter(cluster_conf)
+#  DESCRIPTION
+#    This function starts the syslog-server to log the gfs-bootprocess
+#  IDEAS
+#  SOURCE
+#
+function gfs_get_syslogfilter {
+  local xml_file=$1
+  local xml_cmd="${ccs_xml_query}"
+  local nodename=$2
+  $xml_cmd -f $xml_file -q syslogfilter $nodename
+}
+#************ gfs_get_syslogfilter
 
 #****f* gfs-lib.sh/gfs_get_bridges
 #  NAME
@@ -1336,7 +1451,14 @@ function gfs_fsck {
 #********* gfs_fsck
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.66  2009-04-20 20:18:56  marc
+# Revision 1.67  2009-09-28 12:59:28  marc
+# - added functions
+#   gfs_get
+#   gfs_get_syslog*
+# - changed and implemented syslog functionality to support different types of syslog (rsyslogd, syslog-ng, syslogd)
+# - some typos
+#
+# Revision 1.66  2009/04/20 20:18:56  marc
 # - removed nodiratime option
 #
 # Revision 1.65  2009/04/20 07:41:56  marc
