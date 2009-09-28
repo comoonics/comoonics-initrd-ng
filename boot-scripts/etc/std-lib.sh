@@ -1,5 +1,5 @@
 #
-# $Id: std-lib.sh,v 1.9 2009-06-04 06:32:05 reiner Exp $
+# $Id: std-lib.sh,v 1.10 2009-09-28 13:07:55 marc Exp $
 #
 # @(#)$File$
 #
@@ -54,8 +54,10 @@ function sourceLibs {
     . ${predir}/etc/stdfs-lib.sh
     . ${predir}/etc/defaults.sh
     . ${predir}/etc/xen-lib.sh
+    
     [ -e ${predir}/etc/iscsi-lib.sh ] && source ${predir}/etc/iscsi-lib.sh
     [ -e ${predir}/etc/drbd-lib.sh ] && source ${predir}/etc/drbd-lib.sh
+    [ -e ${predir}/etc/syslog-lib.sh ] && source ${predir}/etc/syslog-lib.sh
 
     local clutype=$(getCluType)
     . ${predir}/etc/${clutype}-lib.sh
@@ -268,15 +270,15 @@ function return_code_passed() {
 function success {
   [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
   echo -n "[  "
-  echo -n "[  " >&3
+#  echo -n "[  " >&3
 #  echo -n "[  " >&5
   [ "$BOOTUP" = "color" ] && $SETCOLOR_SUCCESS
   echo -n "OK"
-  echo -n "OK" >&3
+#  echo -n "OK" >&3
 #  echo -n "OK" >&5
   [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
   echo "  ]"
-  echo "  ]" >&3
+#  echo "  ]" >&3
 #  echo "  ]" >&5
   echo -ne "\r"
 #  echo -ne "\r" >&3
@@ -295,16 +297,16 @@ function success {
 function failure {
   [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
   echo -n "["
-  echo -n "[" >&3
+#  echo -n "[" >&3
 #  echo -n "[" >&5
   [ "$BOOTUP" = "color" ] && $SETCOLOR_FAILURE
   echo -n "FAILED"
-  echo -n "FAILED" >&3
+#  echo -n "FAILED" >&3
 #  echo -n "FAILED" >&5
   [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
   echo "]"
   echo -ne "\r"
-  echo "]" >&3
+#  echo "]" >&3
 #  echo "]" >&5
 #  echo -ne "\r" >&3
   return 1
@@ -322,16 +324,16 @@ function failure {
 function warning {
   [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
   echo -n "["
-  echo -n "[" >&3
+#  echo -n "[" >&3
 #  echo -n "[" >&5
   [ "$BOOTUP" = "color" ] && $SETCOLOR_WARNING
   echo -n "WARNING"
-  echo -n "WARNING" >&3
+#  echo -n "WARNING" >&3
 #  echo -n "WARNING" >&5
   [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
   echo "]"
   echo -ne "\r"
-  echo "]" >&3
+#  echo "]" >&3
 #  echo "]" >&5
 #  echo -ne "\r" >&3
   return 1
@@ -349,16 +351,16 @@ function warning {
 function passed {
   [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
   echo -n "["
-  echo -n "[" >&3
+#  echo -n "[" >&3
 #  echo -n "[" >&5
   [ "$BOOTUP" = "color" ] && $SETCOLOR_WARNING
   echo -n "PASSED"
-  echo -n "PASSED" >&3
+#  echo -n "PASSED" >&3
 #  echo -n "PASSED" >&5
   [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
   echo "]"
   echo -ne "\r"
-  echo "]" >&3
+#  echo "]" >&3
 #  echo "]" >&5
 #  echo -ne "\r" >&3
   return 1
@@ -390,7 +392,8 @@ function echo_out() {
 #
 function echo_local() {
    echo ${*:0:$#-1} "${*:$#}"
-   echo ${*:0:$#-1} "${*:$#}" >&3
+   [ -w /dev/kmsg ] && [ -z "$NOKMSG" ] && echo "<1>osr-bootimage(notice): ${*:$#}" > /dev/kmsg
+#   echo ${*:0:$#-1} "${*:$#}" >&3
 #   echo ${*:0:$#-1} "${*:$#}" >&5
 #   echo ${*:0:$#-1} "${*:$#}" >> $bootlog
 #   [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
@@ -410,7 +413,8 @@ function echo_local_debug() {
   local debug=$(repository_get_value debug)
    if [ ! -z "$debug" ]; then
      echo ${*:0:$#-1} "${*:$#}"
-     echo ${*:0:$#-1} "${*:$#}" >&3
+     [ -w /dev/kmsg ] && [ -z "$NOKMSG" ] && echo "<1>osr-bootimage(debug): ${*:$#}" > /dev/kmsg
+     #echo ${*:0:$#-1} "${*:$#}" >&3
 #     echo ${*:0:$#-1} "${*:$#}" >&5
 #     echo ${*:0:$#-1} "${*:$#}" >> $bootlog
 #     [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
@@ -428,10 +432,27 @@ function echo_local_debug() {
 #  SOURCE
 #
 function error_out() {
-    echo ${*:0:$#-1} "${*:$#}" >&4
+#    echo ${*:0:$#-1} "${*:$#}" >&4
     echo ${*:0:$#-1} "${*:$#}" >&2
+     [ -w /dev/kmsg ] && [ -z "$NOKMSG" ] && echo "<1>osr-bootimage(error): ${*:$#}" > /dev/kmsg
 }
 #************ error_out
+
+#****f* boot-lib.sh/warn
+#  NAME
+#    warn
+#  SYNOPSIS
+#    function warn() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function warn() {
+#    echo ${*:0:$#-1} "${*:$#}" >&4
+    echo ${*:0:$#-1} "${*:$#}" >&2
+     [ -w /dev/kmsg ] && [ -z "$NOKMSG" ] && echo "<1>osr-bootimage(warn): ${*:$#}" > /dev/kmsg
+}
+#************ warn
 
 #****f* boot-lib.sh/error_local
 #  NAME
@@ -444,7 +465,8 @@ function error_out() {
 #
 function error_local() {
    echo ${*:0:$#-1} "${*:$#}" >&2
-   echo ${*:0:$#-1} "${*:$#}" >&4
+   [ -w /dev/kmsg ] && [ -z "$NOKMSG" ] && echo "<1>osr-bootimage(info): ${*:$#}" > /dev/kmsg
+#   echo ${*:0:$#-1} "${*:$#}" >&4
 #   echo ${*:0:$#-1} "${*:$#}" >&5
 #   echo ${*:0:$#-1} "${*:$#}" >> $bootlog
 #   [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
@@ -464,7 +486,8 @@ function error_local_debug() {
   local debug=$(repository_get_value debug)
    if [ ! -z "$debug" ]; then
      echo ${*:0:$#-1} "${*:$#}" >&2
-     echo ${*:0:$#-1} "${*:$#}" >&4
+     [ -w /dev/kmsg ] && [ -z "$NOKMSG" ] && echo "<1>osr-bootimage(error): ${*:$#}" > /dev/kmsg
+#     echo ${*:0:$#-1} "${*:$#}" >&4
 #     echo ${*:0:$#-1} "${*:$#}" >&5
 #     echo ${*:0:$#-1} "${*:$#}" >> $bootlog
 #     [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
@@ -487,7 +510,7 @@ function error_local_debug() {
 #
 function exec_local() {
   local debug=$(repository_get_value debug)
-  local do_exec=1
+  local do_exec=$(repository_get_value doexec 1)
   if [ -n "$(repository_get_value dstep)" ]; then
   	echo -n "$* (Y|n|c)? " >&2
   	read dstep_ans
@@ -495,17 +518,23 @@ function exec_local() {
   	[ "$dstep_ans" == "c" ] && dstepmode=""
   fi
   if [ $do_exec -eq 1 ]; then
-  	output=$($*)
+  	$*
+    return_c=$?
+  	if [ $return_c -ne 0 ]; then
+  		echo_local_debug "Error in cmd: $*"
+  	fi
   else
-  	output="skipped"
+  	echo_local_debug "Cmd: $*"
+  	echo "skipped"
+  	return_c=$(true)
   fi
-  return_c=$?
-  if [ ! -z "$debug" ]; then
-    echo "cmd: $*" >&2
-    echo "OUTPUT: $output" >&2
-  fi
+#  if [ ! -z "$debug" ]; then
+#    echo "cmd: $*" >&2
+#    echo "OUTPUT: $output" >&2
+#  fi
 #  echo "cmd: $*" >> $bootlog
-  echo -n "$output"
+#  echo -n "$output"
+#  echo -n "$output" > /dev/kmsg
   return $return_c
 }
 #************ exec_local
@@ -941,9 +970,44 @@ function is_newer() {
 }
 #********* is_newer
 
+#****f* std-lib.sh/exec_ordered_skripts_in
+#  NAME
+#    exec_ordered_skripts_in
+#  SYNOPSIS
+#    function exec_ordered_skripts_in(skriptpath, destpath) {
+#  DESCRIPTION
+#    Executes all executable files found in skriptpath with two digits as startname to setup the order.
+#    Those skripts are given destpath as argument.
+#
+exec_ordered_skripts_in() {
+   local skriptpath=$1
+   local destpath=$2
+   local skript
+   local return_C
+   
+   if [ ! -d "$skriptpath" ]; then
+   	 return 1
+   fi
+   
+   for skript in "/$skriptpath"/*; do 
+   	 if [ -x "$skript" ]; then
+   	 	echo_local -n "Executing skript \"$skript\"."
+   	 	$skript $destpath
+   	 	return_code
+   	 	[ "$return_c" -eq 0 ] || return_C=$return_c
+   	 fi
+   done
+   return return_C
+}
+#************ exec_ordered_skripts_in
+
 #################
 # $Log: std-lib.sh,v $
-# Revision 1.9  2009-06-04 06:32:05  reiner
+# Revision 1.10  2009-09-28 13:07:55  marc
+# - reimplemented debug and log functions to also write to /dev/kmsg
+# - removed deps to output fd 3,4
+#
+# Revision 1.9  2009/06/04 06:32:05  reiner
 # Modified step function so that valid step commands are recognized in uppercase and when abbreviated.
 #
 # Revision 1.8  2009/04/14 14:57:35  marc
