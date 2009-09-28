@@ -1,5 +1,5 @@
 #
-# $Id: glusterfs-lib.sh,v 1.4 2009-08-11 09:54:08 marc Exp $
+# $Id: glusterfs-lib.sh,v 1.5 2009-09-28 13:00:55 marc Exp $
 #
 # @(#)$File$
 #
@@ -59,30 +59,6 @@ function glusterfs_getdefaults {
 	esac
 }
 #********** glusterfs_getdefaults
-
-#****f* glusterfs-lib.sh/glusterfs_get_mountopts
-#  NAME
-#    glusterfs_get_mountopts
-#  SYNOPSIS
-#    glusterfs_get_mountopts(cluster_conf, nodename)
-#  DESCRIPTION
-#    Gets the mountopts for this node
-#  IDEAS
-#  SOURCE
-#
-function glusterfs_get_mountopts {
-   local xml_file=$1
-   local hostname=$2
-   [ -z "$hostname" ] && hostname=$(glusterfs_get_nodename $xml_file)
-   local xml_cmd="${ccs_xml_query} -f $xml_file"
-   _mount_opts=$($xml_cmd -q mountopts $hostname)
-   if [ -z "$_mount_opts" ]; then
-     echo $default_mountopts
-   else
-     echo $_mount_opts
-   fi
-}
-#************ glusterfs_get_mountopts
 
 #****f* glusterfs-lib.sh/glusterfs_get_drivers
 #  NAME
@@ -200,7 +176,10 @@ glusterfsd"
 #******** glusterfs_get_userspace_procs
 
 # $Log: glusterfs-lib.sh,v $
-# Revision 1.4  2009-08-11 09:54:08  marc
+# Revision 1.5  2009-09-28 13:00:55  marc
+# - removed glusterfs_get_mountopts as this is called in the cluster library not in the fs library
+#
+# Revision 1.4  2009/08/11 09:54:08  marc
 # - Latest glusterfs-lib.sh upstream patches (gordan bobic)
 #
 # Revision 1.3  2009/04/14 14:54:16  marc
