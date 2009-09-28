@@ -1,5 +1,5 @@
 #
-# $Id: stdfs-lib.sh,v 1.4 2008-11-18 08:48:28 marc Exp $
+# $Id: stdfs-lib.sh,v 1.5 2009-09-28 13:06:16 marc Exp $
 #
 # @(#)$File$
 #
@@ -240,17 +240,73 @@ function copy_filelist() {
 #  SOURCE
 #
 function is_mounted {
-	if [ -f /proc/mounts ]; then
-	  output=$(awk -vmountpoint="$1" 'BEGIN {found=1;}$2==mountpoint {found=0;} END { print found; }' /proc/mounts)
-	  return $output
-	else
-	  return 1
-    fi
+    local dev=
+    local path=
+    local rest=
+
+	[ -z "$MOUNTS" ] && MOUNTS=$(cat /proc/mounts)
+	
+    echo "$MOUNTS" | while read dev path rest; do
+	   if [ "$path" = "$1" ]; then
+          return 1
+	   fi
+    done || return 0 
+    return 1
 }
 #*********** is_mounted
+
+#****f* std-lib.sh/get_dep_filesystems
+#  NAME
+#    get_dep_filesystems
+#  SYNOPSIS
+#    function get_dep_filesystems( path, [excludelist]) {
+#  DESCRIPTION
+#    returns a list of paths dependently mounted on the given path. 
+#    If excludelist is given all paths from this list are excluded.
+#    The returnlist is returned in the order that always the longest path is first.
+#    If the given path is not mounted 1 is returned to indicate the error.
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function get_dep_filesystems {
+	local basepath=$1
+	shift
+	local excludepaths=$*
+	local excludepath
+	local dev=
+	local path=
+	local fs=
+	local rest=
+	local exclude=
+	local returnpaths=
+	
+	[ -z "$MOUNTS" ] && MOUNTS=$(cat /proc/mounts)
+	
+	is_mounted $basepath || return 1
+	
+	echo "$MOUNTS" | while read dev path fs rest; do
+		exclude=0
+		if [ -n "$excludepaths" ]; then
+		  for excludepath in $excludepaths; do
+		  	if [ "${path:0:${#excludepath}}" = "$excludepath" ]; then
+		  		exclude=1
+		  	fi
+		  done
+		fi
+		if [ $exclude -eq 0 ] && [ ${#path} -gt ${#basepath} ] && [ "${path:0:${#basepath}}" = "$basepath" ]; then
+			echo $path
+		fi
+    done | sort -u -r
+}
+#************** get_dep_filesystems
 ######################
 # $Log: stdfs-lib.sh,v $
-# Revision 1.4  2008-11-18 08:48:28  marc
+# Revision 1.5  2009-09-28 13:06:16  marc
+# - implemented get_dep_filesystems
+# - defined is_mounted vars as local
+#
+# Revision 1.4  2008/11/18 08:48:28  marc
 # - implemented RFE-BUG 289
 #   - possiblilty to execute initrd from shell or insite initrd to analyse behaviour
 #
