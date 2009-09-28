@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.3 2009-08-11 09:52:17 marc Exp $
+# $Id: boot-lib.sh,v 1.4 2009-09-28 12:44:48 marc Exp $
 #
 # @(#)$File$
 #
@@ -48,4 +48,45 @@ function create_chroot () {
   exec_local mount -t sysfs sysfs $chroot_path/sys
 }
 #************ create_chroot
+
+#****f* boot-lib.sh/sles10_detectHalt
+#  NAME
+#    sles10_detectHalt build a chroot environment
+#  SYNOPSIS
+#    function sles10_detectHalt($xkillall_procsfile, $rootfss) {
+#  MODIFICATION HISTORY
+#  USAGE
+#  sles10_detectHalt
+#  IDEAS
+#
+#  SOURCE
+#
+sles10_detectHalt() {
+    local runlevel2=$1
+    local command="halt -p"
+    [ -z "$runlevel2" ] && runlevel2=0
+    if [ $runlevel2 -eq 0 ]; then # case halt
+      case `/bin/uname -m` in
+        i?86)
+          command="halt"
+          if test -e /proc/apm -o -e /proc/acpi -o -e /proc/sys/acpi ; then
+            command="halt -p"
+          else
+            read cmdline < /proc/cmdline
+            case "$cmdline" in
+              *apm=smp-power-off*|*apm=power-off*)  command="halt -p" ;;
+            esac
+          fi
+          ;;
+         *)  
+          command="halt -p"
+          ;;
+      esac
+    elif [ $runlevel2 -eq 6 ]; then
+      command="reboot"
+    fi
+    echo $command
+}
+#************** sles10_detectHalt
+
 
