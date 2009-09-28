@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: com-realhalt.sh,v 1.9 2009-06-05 07:24:24 marc Exp $
+# $Id: com-realhalt.sh,v 1.10 2009-09-28 13:09:59 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/com-halt.sh
 #  NAME
 #    com-halt.sh
-#    $Id: com-realhalt.sh,v 1.9 2009-06-05 07:24:24 marc Exp $
+#    $Id: com-realhalt.sh,v 1.10 2009-09-28 13:09:59 marc Exp $
 #  DESCRIPTION
 #    script called from <chrootpath>/com-halt.sh
 #  USAGE
@@ -48,11 +48,11 @@ function usage() {
 logfile=/var/log/com-realhalt.log
 
 #to be backward compatible
-exec 3>> $logfile
-exec 4>> $logfile
-exec 5>> $logfile
-exec 6>> $logfile
-exec 7>> $logfile
+#exec 3>> $logfile
+#exec 4>> $logfile
+#exec 5>> $logfile
+#exec 6>> $logfile
+#exec 7>> $logfile
 
 
 # include libraries
@@ -64,18 +64,21 @@ lvm_sup=$?
 
 initEnv
 
+version='$Revision $'
+
 while getopts VdhsSr: option ; do
 	case "$option" in
 	    V) # version
-		echo "$0 Version '$Revision $'"
+		echo "$0 Version $version"
 		exit 0
 		;;
 		v) #verbose
-		verbose=1
-		;;
+		   verbose=1
+		   repository_store_value verbose 1
+		   ;;
 		d) #debug
-		debug=1
-		;;
+		   repository_store_value debug 1
+		   ;;
 		r) 
 		COM_OLDROOT=$OPTARG
 		;;
@@ -84,11 +87,11 @@ while getopts VdhsSr: option ; do
 		exit 0
 		;;
 		s) 
-		stepmode=1
-		;;
+		   repository_store_value step 1
+		   ;;
 		S) 
-		dstepmode=1
-		;;
+		   repository_store_value dstep 1
+		   ;;
 	    *)
 		echo "Error wrong option."
 		usage
@@ -97,11 +100,23 @@ while getopts VdhsSr: option ; do
 	esac
 done
 shift $(($OPTIND - 1))
+cmd=$@
 
 if [ -z "$COM_OLDROOT" ]; then
 	usage
 	exit 1
 fi
+
+PYTHONPATH=$(python -c 'import os; import sys; print (os.path.join("/usr", "lib", "python%u.%u" %(int(sys.version[0]), int(sys.version[2])), "site-packages"))')
+export PYTHONPATH
+
+echo_local "Starting ATIX exitrd"
+echo_local "Comoonics-Release"
+release=$(cat ${predir}/etc/comoonics-release)
+echo_local "$release"
+echo_local 'Internal Version $Revision: 1.10 $ $Date: 2009-09-28 13:09:59 $'
+echo_local_debug "Calling cmd $cmd"
+#echo_local "Builddate: "$(date)
 
 
 # Verify that chroot environment is in a good state
@@ -114,7 +129,7 @@ echo_local -n "Preparing chroot"
 success
 echo
 
-step
+step "halt: Chroot prepared" "halt_chrootprepared"
 
 sourceRootfsLibs ${predir}
 clutype=$(repository_get_value clutype)
@@ -138,35 +153,42 @@ exec_local fuser -km -9 $COM_OLDROOT &> /dev/null
 success
 echo
 
-step
+step "halt: Successfully stopped processes running in oldroot" "halt_stopoldroot"
 
-echo_local -n "Umounting filesystems in oldroot"
+echo_local "Umounting filesystems in oldroot"
 exec_local mkdir /dev2
 exec_local "mount --move $COM_OLDROOT/dev /dev2"
-for fs in sys proc cdsl.local; do
-	exec_local "umount $COM_OLDROOT/$fs" 
+for fs in $(get_dep_filesystems $COM_OLDROOT); do
+	echo_local -n "Umounting $fs"
+	exec_local "umount $fs"
+	return_code 
 done
-return_code
 
-step
+step "halt: Successfully umounted filesystem in oldroot" "halt_umountoldroot"
 
 echo_local -n "Restarting init process in chroot"
 # restart init
 restart_init
 return_code
 
-step
+step "halt: Restarted init process in chroot" "halt_restartinit"
 
-echo_local -n "Umounting oldroot"
+echo_local -n "Umounting oldroot $COM_OLDROOT"
 exec_local /bin/umount $COM_OLDROOT
 
-step
+step "halt: Umounting oldroot" "halt_umountoldroot"
 
 clusterfs_services_stop
 sleep 2
 
-step
+step "halt: Stopped clusterfs services" "halt_stopclusterfs"
 
-$*
+echo_local "Finally calling $cmd"
+$cmd
 
-
+#####################
+# $Log: com-realhalt.sh,v $
+# Revision 1.10  2009-09-28 13:09:59  marc
+# - Implemented new way to also use com-realhalt as halt.local either in /sbin or /etc/init.d dependent on distribution
+# - debugging and stepmode autodetection
+#
