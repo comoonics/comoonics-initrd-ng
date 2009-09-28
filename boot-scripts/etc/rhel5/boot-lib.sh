@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.5 2009-08-11 09:52:17 marc Exp $
+# $Id: boot-lib.sh,v 1.6 2009-09-28 12:44:14 marc Exp $
 #
 # @(#)$File$
 #
@@ -50,9 +50,41 @@ function create_chroot () {
 }
 #************ create_chroot
 
+#****f* boot-lib.sh/rhel5_detectHalt
+#  NAME
+#    rhel5_detectHalt build a chroot environment
+#  SYNOPSIS
+#    function rhel5_detectHalt($xkillall_procsfile, $rootfss) {
+#  MODIFICATION HISTORY
+#  USAGE
+#  rhel5_detectHalt
+#  IDEAS
+#
+#  SOURCE
+#
+rhel5_detectHalt() {
+    local runlevel2=$1
+    local command="halt -p"
+    [ -z "$runlevel2" ] && runlevel2=0
+    
+    if [ $runlevel2 -eq 0 ]; then # case halt
+    	command="halt"
+    elif [ $runlevel2 -eq 6 ]; then
+        command="reboot"
+    fi
+    HALTARGS="-d"
+    [ -f /poweroff -o ! -f /halt ] && HALTARGS="$HALTARGS -p"
+
+    echo $command $HALTARGS
+}
+#************** rhel5_detectHalt
+
 #################
 # $Log: boot-lib.sh,v $
-# Revision 1.5  2009-08-11 09:52:17  marc
+# Revision 1.6  2009-09-28 12:44:14  marc
+# Added exitrd function rhel5_detectHalt
+#
+# Revision 1.5  2009/08/11 09:52:17  marc
 # Fixed bug #356 Device changes not applied in chroot environment when chroot on local disk
 #
 # Revision 1.4  2009/04/14 14:49:22  marc
