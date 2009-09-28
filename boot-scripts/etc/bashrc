@@ -23,6 +23,7 @@
 export PS1="comoonics \! > " TERM=xterm
 
 source ${predir}/etc/std-lib.sh
+source ${predir}/etc/stdfs-lib.sh
 source  ${predir}/etc/hardware-lib.sh
 
 # Load USB Modules so that USB keyboards work in Expertshell
