@@ -1,5 +1,5 @@
 #
-# $Id: repository-lib.sh,v 1.3 2009-01-28 12:55:50 marc Exp $
+# $Id: repository-lib.sh,v 1.4 2009-09-28 13:05:29 marc Exp $
 #
 # @(#)$File$
 #
@@ -30,10 +30,13 @@
 #    Library for std operations
 #*******
 
-[ -z "$REPOSITORY_PREFIX" ] && REPOSITORY_PREFIX=__repository__
+# Prefix for every variable found in the repository
+[ -z "$REPOSITORY_PREFIX" ] && REPOSITORY_PREFIX=""
+# Where to store the repository
 [ -z "$REPOSITORY_PATH" ] && REPOSITORY_PATH="/tmp"
-[ -z "$REPOSITORY_DEFAULT" ] && REPOSITORY_DEFAULT="comoonics_bootimage"
-[ -z "$REPOSITORY_FS" ] && REPOSITORY_FS="__"
+# Repository name that is prefixed for any file used by the repository followed by a "."
+[ -z "$REPOSITORY_DEFAULT" ] && REPOSITORY_DEFAULT="comoonics"
+[ -z "$REPOSITORY_FS" ] && REPOSITORY_FS="_"
 
 #****f* repository-lib.sh/repository_load
 #  NAME
@@ -41,16 +44,16 @@
 #  SYNOPSIS
 #    function repository_load(name)
 #  DESCRIPTION
-#    loads the repository
+#    loads the repository into environment.
 #  IDEAS
 #  SOURCE
 #
-function repository_load() {
+repository_load() {
 	local repository="$1"
 	[ -z "$repository" ] && repository=${REPOSITORY_DEFAULT}
-	if [ -e ${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository} ]; then
-		. ${REPOSITORY_PATH}/$REPOSITORY_PREFIX${repository}
-	fi
+	for file in ${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}.*; do
+	  repository_get_value ${file#${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}.} $repository
+    done
 }
 #******* repository_load
 
@@ -65,7 +68,7 @@ function repository_load() {
 #  IDEAS
 #  SOURCE
 #
-function repository_normalize_value() {
+repository_normalize_value() {
 	echo $1 | tr '-' '_'
 }
 #******* repository_store_value
@@ -76,20 +79,23 @@ function repository_normalize_value() {
 #  SYNOPSIS
 #    function repository_store_value(key, value, repository_name)
 #  DESCRIPTION
-#    stores the key/value pair into the repository with the name repository_name. 
-#    If repository name is not give REPOSITORY_DEFAULT is used.
+#    stores the key/value pair into the repository apropriate file with the name repository_name.key. 
+#    If repository name is not given REPOSITORY_DEFAULT is used.
+#    It also sets the environment variable ${REPOSITORY_PREFIX}${repository}${REPOSITORY_FS}${key}=$value
 #  IDEAS
 #  SOURCE
 #
-function repository_store_value() {
+repository_store_value() {
+	local key=$(repository_normalize_value $1)
 	local value="__set__"
 	if [ $# -gt 1 ]; then
 		value="$2"
 	fi
 	local repository="$3"
 	[ -z "$repository" ] && repository=${REPOSITORY_DEFAULT}
-	eval "${REPOSITORY_PREFIX}${repository}${REPOSITORY_FS}$(repository_normalize_value ${1})=\"$value\""
-	echo "${REPOSITORY_PREFIX}${repository}${REPOSITORY_FS}$(repository_normalize_value ${1})=\"$value\"" >> ${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}
+	eval "${REPOSITORY_PREFIX}${repository}${REPOSITORY_FS}${key}=\"$value\""
+	echo -n "$value" > ${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}.$key
+	[ -f ${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}.$key ]
 }
 #******* repository_store_value
 
@@ -104,12 +110,13 @@ function repository_store_value() {
 #  IDEAS
 #  SOURCE
 #
-function repository_append_value() {
+repository_append_value() {
+	local key=$(repository_normalize_value $1)
 	local repository="$3"
 	[ -z "$repository" ] && repository=${REPOSITORY_DEFAULT}
-	local value=$(repository_get_value $1)
-	eval "${REPOSITORY_PREFIX}${repository}${REPOSITORY_FS}$(repository_normalize_value ${1})=${value}\"$2\""
-	echo "${REPOSITORY_PREFIX}${repository}${REPOSITORY_FS}$(repository_normalize_value ${1})=${value}\"$2\"" >> ${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}
+	local value=$(repository_get_value $key $repository)
+	eval "${REPOSITORY_PREFIX}${repository}${REPOSITORY_FS}${key}=${value}\"$2\""
+	echo -n "$2" >> ${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}.$key
 }
 #******* repository_append_value
 
@@ -123,17 +130,18 @@ function repository_append_value() {
 #  IDEAS
 #  SOURCE
 #
-function repository_list_keys() {
+repository_list_keys() {
 	local repository="$1"
 	[ -z "$repository" ] && repository=${REPOSITORY_DEFAULT}
 	local values=""
-	local index=0
-	repository_load $repository
-	for key in $(typeset | grep "^${REPOSITORY_PREFIX}${repository}${REPOSITORY_FS}[^[:space:]]*=" | cut -d"=" -f1); do
-		values[$index]=${key/${REPOSITORY_PREFIX}${repository}${REPOSITORY_FS}}
-		index=$(($index + 1)) 
+	local key
+#	repository_load $repository
+	for key in ${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}.*; do
+		key="${key#${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}.}"
+		if [ "$key" != "*" ]; then
+		  echo ${key}
+        fi
    	done		
-   	echo ${values[@]}
 }
 #******* repository_list_keys
 
@@ -147,17 +155,17 @@ function repository_list_keys() {
 #  IDEAS
 #  SOURCE
 #
-function repository_list_values() {
+repository_list_values() {
 	local repository="$1"
 	[ -z "$repository" ] && repository=${REPOSITORY_DEFAULT}
-	local values=""
 	local index=0
-	repository_load $repository
-	for value in $(typeset | grep "^${REPOSITORY_PREFIX}${repository}${REPOSITORY_FS}[^[:space]]*=" | cut -d"=" -f2); do
-		values[$index]=$value
-		index=$(($index + 1)) 
+	local key
+	for key in ${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}.*; do
+		key="${key#${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}.}"
+		if [ "$key" != "*" ]; then
+		  echo "$(repository_get_value $key $repository)"
+		fi
    	done		
-   	echo ${values[@]}
 }
 #******* repository_list_values
 
@@ -171,7 +179,7 @@ function repository_list_values() {
 #  IDEAS
 #  SOURCE
 #
-function repository_list_items() {
+repository_list_items() {
 	local repository="$3"
 	local OFS=" "
 	local LS="\n"
@@ -179,7 +187,7 @@ function repository_list_items() {
 	[ -n "$2" ] && LS="$2"
 	[ -z "$repository" ] && repository=${REPOSITORY_DEFAULT}
 	local values=""
-	repository_load $repository
+	local key
 	for key in $(repository_list_keys $repository); do
 		if repository_has_key $key $repository; then
 	      values=${values}${LS}${key}${OFS}$(repository_get_value $key $repository)
@@ -193,22 +201,29 @@ function repository_list_items() {
 #  NAME
 #    repository_get_value
 #  SYNOPSIS
-#    function repository_get_value(key, repository_name)
+#    function repository_get_value(key, default, repository_name)
 #  DESCRIPTION
 #    return the value from the repository with the name repository_name
 #  IDEAS
 #  SOURCE
 #
-function repository_get_value() {
-	local repository="$2"
+repository_get_value() {
+	local key=$(repository_normalize_value $1)
+	local default=$2
+	local repository="$3"
 	[ -z "$repository" ] && repository=${REPOSITORY_DEFAULT}
-	repository_load $repository
-	eval "val=\$${REPOSITORY_PREFIX}${repository}${REPOSITORY_FS}$(repository_normalize_value ${1})"
-	if [ -n "$val" ]; then
-		echo $val
+	local value=
+	if [ -f ${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}.$key ]; then
+		value=$(cat ${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}.$key)
+		eval "${REPOSITORY_PREFIX}${repository}${REPOSITORY_FS}${key}=\"$value\""
+		echo $value
 		return 0
-	fi
-	return 1
+    elif [ -n "$default" ]; then
+        echo $default
+        return 0
+	else
+	    return 1
+    fi
 }
 #******* repository_get_value
 
@@ -222,11 +237,11 @@ function repository_get_value() {
 #  IDEAS
 #  SOURCE
 #
-function repository_has_key() { 
+repository_has_key() { 
+	local key=$(repository_normalize_value $1)
 	local repository="$2"
 	[ -z "$repository" ] && repository=${REPOSITORY_DEFAULT}
-	repository_load $repository
-	val=$(repository_get_value $1 $repository)
+	[ -f ${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}.$key ]
 	return $?
 }
 #******* repository_has_key
@@ -241,13 +256,14 @@ function repository_has_key() {
 #  IDEAS
 #  SOURCE
 #
-function repository_del_value() { 
+repository_del_value() { 
+	local key=$(repository_normalize_value $1)
 	local repository="$2"
 	[ -z "$repository" ] && repository=${REPOSITORY_DEFAULT}
-	val=$(repository_get_value $1 $repository)
+	val=$(repository_get_value $key $repository)
 	if [ $? -eq 0 ]; then
-		eval "unset ${REPOSITORY_PREFIX}${repository}${REPOSITORY_FS}$(repository_normalize_value ${1})"
-		echo "unset ${REPOSITORY_PREFIX}${repository}${REPOSITORY_FS}$(repository_normalize_value ${1})" >> ${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}
+		eval "unset ${repository}${REPOSITORY_FS}${key}"
+		rm -f ${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}.$key
 	fi
 }
 #******* repository_del_value
@@ -262,21 +278,26 @@ function repository_del_value() {
 #  IDEAS
 #  SOURCE
 #
-function repository_clear {
+repository_clear() {
 	local repository="$1"
+	local key
 	[ -z "$repository" ] && repository=${REPOSITORY_DEFAULT}
-  	for key in $(typeset | grep "^${REPOSITORY_PREFIX}${repository}[^[:space:]]*=" | cut -d"=" -f1); do
-		eval "unset ${key}"
+  	for key in $(repository_list_keys $repository); do
+  		repository_del_value $key $repository
    	done
-    if [ -e ${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository} ]; then
-    	rm -f ${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}
-    fi
 }
 #******** repository_clear
 
 #############
 # $Log: repository-lib.sh,v $
-# Revision 1.3  2009-01-28 12:55:50  marc
+# Revision 1.4  2009-09-28 13:05:29  marc
+# - backported repository-lib from osr-dracut
+# - moved to new implementation multiple files instead of one repository file
+#
+# Revision 1.1  2009/08/13 09:25:46  marc
+# initial revision
+#
+# Revision 1.3  2009/01/28 12:55:50  marc
 # - some bugfixes
 # - cleaned the code
 # - added functions to make better use of it (clean, del, append)
