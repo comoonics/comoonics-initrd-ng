@@ -1,0 +1,3 @@
+# name                 filter
+syslog-ng              ^/sbin/.*
+klogd                  ^/sbin/.*

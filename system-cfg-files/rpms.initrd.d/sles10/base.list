@@ -1,0 +1,3 @@
+readline     \.so
+ncurses      \.so
+libcom_err
