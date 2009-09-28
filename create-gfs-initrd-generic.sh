@@ -6,7 +6,7 @@
 #  DESCRIPTION
 #*******
 #
-# $Id: create-gfs-initrd-generic.sh,v 1.25 2009-06-05 07:29:06 marc Exp $
+# $Id: create-gfs-initrd-generic.sh,v 1.26 2009-09-28 14:22:13 marc Exp $
 #
 # @(#)$File$
 #
@@ -32,6 +32,8 @@ exec 3>/dev/null
 exec 4>/dev/null 5>/dev/null
 
 predir=$(dirname $0)/boot-scripts
+
+NOKMSG=1
 
 source $predir/etc/std-lib.sh
 sourceLibs $predir
@@ -116,7 +118,7 @@ function getoptions() {
     while getopts LUoRFVvhlm:fd:s:r:b:A:D:M: option ; do
 	case "$option" in
 	    v) # version
-		echo "$0 Version "'$Revision: 1.25 $'
+		echo "$0 Version "'$Revision: 1.26 $'
 		exit 0
 		;;
 	    h) # help
@@ -290,6 +292,12 @@ if [ $? -ne 0 ]; then
    exit 10
 fi
 
+if [ -d "$pre_mkinitrd_path" ]; then
+  echo_local -n "Executing files before mkinitrd."
+  exec_local exec_ordered_skripts_in $pre_mkinitrd_path $mountpoint
+  return_code
+fi
+
 if [ -z "$initramfs" ] || [ $initramfs -eq 0 ]; then
   echo -n "Makeing initrd ..."
   make_initrd $initrdname $size || (failure && rm $lockfile && exit $?)
@@ -437,6 +445,12 @@ success
 #  copy_file ${MODULES_DIR}/${module} ${mountpoint}$dirname
 #done
 
+if [ -d "$post_mkinitrd_path" ]; then
+  echo_local -n "Executing files after mkinitrd."
+  exec_local exec_ordered_skripts_in $post_mkinitrd_path $mountpoint
+  return_code
+fi
+
 #echo "The following files reside on the image:"
 #find .
 if [ -z "$update" ]; then
@@ -479,7 +493,10 @@ ls -lk $initrdname
 
 ##########################################
 # $Log: create-gfs-initrd-generic.sh,v $
-# Revision 1.25  2009-06-05 07:29:06  marc
+# Revision 1.26  2009-09-28 14:22:13  marc
+# - added way to execute commands in $pre/post_mkinitrd_path
+#
+# Revision 1.25  2009/06/05 07:29:06  marc
 # - fixed bug #347 where the -M option would not work
 #
 # Revision 1.24  2009/04/20 07:42:54  marc
