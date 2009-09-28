@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.3 2009-08-11 09:52:17 marc Exp $
+# $Id: boot-lib.sh,v 1.4 2009-09-28 12:43:43 marc Exp $
 #
 # @(#)$File$
 #
@@ -49,4 +49,33 @@ function create_chroot () {
   exec_local mount -t sysfs sysfs $chroot_path/sys
 }
 #************ create_chroot
+
+#****f* boot-lib.sh/fedora_detectHalt
+#  NAME
+#    fedora_detectHalt build a chroot environment
+#  SYNOPSIS
+#    function fedora_detectHalt($xkillall_procsfile, $rootfss) {
+#  MODIFICATION HISTORY
+#  USAGE
+#  fedora_detectHalt
+#  IDEAS
+#
+#  SOURCE
+#
+fedora_detectHalt() {
+    local runlevel2=$1
+    local command="halt -p"
+    [ -z "$runlevel2" ] && runlevel2=0
+    
+    if [ $runlevel2 -eq 0 ]; then # case halt
+    	command="halt"
+    elif [ $runlevel2 -eq 6 ]; then
+        command="reboot"
+    fi
+    HALTARGS="-d"
+    [ "$INIT_HALT" != "HALT" ] && HALTARGS="$HALTARGS -p"
+
+    echo $command $HALTARGS
+}
+#************** fedora_detectHalt
 
