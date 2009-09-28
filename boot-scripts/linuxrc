@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc,v 1.23 2009-06-04 15:18:54 reiner Exp $
+# $Id: linuxrc,v 1.24 2009-09-28 13:11:08 marc Exp $
 #
 # @(#)$File$
 #
@@ -34,7 +34,7 @@
 #****h* comoonics-bootimage/linuxrc
 #  NAME
 #    linuxrc
-#    $Id: linuxrc,v 1.23 2009-06-04 15:18:54 reiner Exp $
+#    $Id: linuxrc,v 1.24 2009-09-28 13:11:08 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -58,9 +58,11 @@ source /etc/std-lib.sh
 source /etc/boot-lib.sh
 source /etc/chroot-lib.sh
 source /etc/repository-lib.sh
+source /etc/hardware-lib.sh
+source /etc/stdfs-lib.sh
 
-exec 3>/dev/console
-exec 4>/dev/console
+#exec 3>/dev/console
+#exec 4>/dev/console
 
 repository_clear
 
@@ -75,6 +77,7 @@ repository_store_value logo "$atixlogofile"
 repository_store_value bootlog "$bootlog"
 repository_store_value syslog_logfile "$syslog_logfile"
 
+dev_start
 shell=$(repository_get_value shell)
 [ -z "$shell" ] && shell="/bin/sh" 
 if cat /proc/cmdline | grep com-expert; then
@@ -103,22 +106,24 @@ if [ -e "$build_file" ]; then
   cat ${build_file}
 fi
 
-TERM=xterm
+TERM=linux
 export TERM
 mkdir -p $(dirname $bootlog)
-if [ -n "$logger" ]; then
-  exec 3>>$bootlog 4>>$bootlog 5>/dev/null
+#if [ -n "$logger" ]; then
+#  exec 3>>$bootlog 4>>$bootlog 5>/dev/null
 #  exec 3>/dev/console 4>/dev/console
 #  exec 5> $bootlog
-  exec 2> >(tee -a $bootlog | tee /dev/console | $logger)
-  ./linuxrc.generic.sh | tee -a $bootlog | tee /dev/console | $logger
-else
-  exec 3>/dev/null 4>>$bootlog
-  exec 3>>$bootlog
-  exec 2> >(tee -a $bootlog | tee /dev/console)
-  ./linuxrc.generic.sh >> $bootlog
-fi
-
+#  exec 2> >(tee -a $bootlog | tee /dev/console | $logger)
+#  ./linuxrc.generic.sh | tee -a $bootlog | tee /dev/console | $logger
+#else
+  #exec 3>/dev/null 4>>$bootlog
+  #exec 3>>$bootlog
+exec 10>&2
+exec 2> >(tee -a $bootlog | tee /dev/kmsg)
+./linuxrc.generic.sh | tee -a $bootlog
+#fi
+exec 2>&10
+exec 10>&-
 echo "Returned from linuxrc.generic.sh."
 
 error_code=0
@@ -132,7 +137,7 @@ error_code=0
 shell=$(repository_get_value shell)
 [ -z "$shell" ] && shell="/bin/sh" 
 if [ -n "$error_code" ] && [ $error_code -eq 0 ]; then
-  exec 1>&- 2>&- 3>&- 4>&- 5>&-
+  exec 1>&- 2>&- # 3>&- 4>&- 5>&-
   exec 1>/dev/console 2>/dev/console
   switchRoot $newroot
 elif [ -n "$error_code" ] && [ $error_code -eq 2 ]; then
@@ -144,7 +149,7 @@ elif [ -n "$error_code" ] && [ $error_code -eq 4 ]; then
 else
   echo "Error starting init-process falling back to bash." > $(repository_get_value shell_issuetmp)
 #  /rescue.sh
-  exec 1>&- 2>&- 3>&- 4>&- 5>&-
+  exec 1>&- 2>&- # 3>&- 4>&- 5>&-
   exec 1>/dev/console 2>/dev/console
   exec $shell
 fi
@@ -152,7 +157,12 @@ fi
 
 ################
 # $Log: linuxrc,v $
-# Revision 1.23  2009-06-04 15:18:54  reiner
+# Revision 1.24  2009-09-28 13:11:08  marc
+# - Changed to use new way to output messages
+# - Importing /etc/hardware-lib.sh, /etc/stdfs-lib.sh
+# - Removed deps to output channel 3,4
+#
+# Revision 1.23  2009/06/04 15:18:54  reiner
 # Modified usbLoad function. Now it works again and it is used to add USB keyboard support during boot process.
 #
 # Revision 1.22  2009/06/04 07:41:58  reiner
