@@ -1,9 +1,6 @@
 sysconfig
-readline     \.so
-ncurses      \.so
 libacl
 libattr
-libstdc++
 sysfsutils      \.so
 hwinfo
 dbus-1
@@ -11,4 +8,3 @@ hal
 sysvinit
 module-init-tools
 audit-libs
-libcom_err
