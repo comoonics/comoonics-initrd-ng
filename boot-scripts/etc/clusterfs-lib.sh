@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.36 2009-04-20 07:07:26 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.37 2009-09-28 12:53:13 marc Exp $
 #
 # @(#)$File$
 #
@@ -294,6 +294,34 @@ function cc_validate {
 }
 #*********** cc_validate
 
+#****f* clusterfs-lib.sh/cc_get_clustername
+#  NAME
+#    cc_get_clustername
+#  SYNOPSIS
+#    function cc_get_clustername([cluster_conf])
+#  DESCRIPTION
+#    Returns clustername. 
+#  SOURCE
+cc_get_clustername() {
+  local clutype=$(repository_get_value clutype)
+  ${clutype}_get_clustername $@	
+}
+#************* cc_get_clustername
+
+#****f* clusterfs-lib.sh/cc_convert
+#  NAME
+#    cc_convert
+#  SYNOPSIS
+#    function cc_convert([cluster_conf])
+#  DESCRIPTION
+#    Returns clustername. 
+#  SOURCE
+cc_convert() {
+  local clutype=$(repository_get_value clutype)
+  ${clutype}_convert $@	
+}
+#************* cc_convert
+
 #****f* clusterfs-lib.sh/cc_get_nic_names
 #  NAME
 #    cc_get_nic_names
@@ -395,6 +423,21 @@ function cc_getdefaults {
 }
 #********** cc_getdefaults
 
+#****f* clusterfs-lib.sh/cc_get
+#  NAME
+#    cc_get
+#  SYNOPSIS
+#    function cc_get($*)
+#  DESCRIPTION
+#    gets a value generically
+#  SOURCE
+function cc_get_by_nodename {
+  local clutype=$(repository_get_value clutype)
+
+  ${clutype}_get $@
+}
+#******* cc_get
+
 #****f* clusterfs-lib.sh/cc_get_nodeid
 #  NAME
 #    cc_get_nodeid
@@ -426,6 +469,38 @@ function cc_get_clu_nodename {
 }
 #******* cc_get_clu_nodename
 
+
+#****f* clusterfs-lib.sh/cc_get_nodeids
+#  NAME
+#    cc_get_nodeids
+#  SYNOPSIS
+#    function cc_get_nodeids(cluster_conf, netdev)
+#  DESCRIPTION
+#    gets the nodeid of this node referenced by the networkdevice
+#  SOURCE
+function cc_get_nodeids {
+  local cluster_conf=$1
+  local clutype=$(repository_get_value clutype)
+
+  ${clutype}_get_nodeids $cluster_conf
+}
+#******* cc_get_nodeids
+
+#****f* clusterfs-lib.sh/cc_get_macs
+#  NAME
+#    cc_get_macs
+#  SYNOPSIS
+#    function cc_get_macs(cluster_conf, netdev)
+#  DESCRIPTION
+#    gets the nodeid of this node referenced by the networkdevice
+#  SOURCE
+function cc_get_macs {
+  local cluster_conf=$1
+  local clutype=$(repository_get_value clutype)
+
+  ${clutype}_get_macs $cluster_conf
+}
+#******* cc_get_macs
 
 #****f* clusterfs-lib.sh/cc_get_nodeid
 #  NAME
@@ -685,6 +760,33 @@ function cc_get_chroot_dir {
 }
 #******** cc_get_chroot_dir
 
+#****f* clusterfs-lib.sh/cc_get_syslogserver
+#  NAME
+#    cc_get_syslogserver
+#  SYNOPSIS
+#    function cc_get_syslogserver(cluster_conf, nodename)
+#  DESCRIPTION
+#    Returns the syslog server set in the cluster
+#  SOURCE
+cc_get_syslogserver() {
+  local clutype=$(repository_get_value clutype)
+  ${clutype}_get_syslogserver $@
+}
+#*************** cc_get_syslogserver
+
+#****f* clusterfs-lib.sh/cc_get_syslogfilter
+#  NAME
+#    cc_get_syslogfilter
+#  SYNOPSIS
+#    function cc_get_syslogfilter(cluster_conf, nodename)
+#  DESCRIPTION
+#    Returns the syslog server set in the cluster
+#  SOURCE
+cc_get_syslogfilter() {
+  local clutype=$(repository_get_value clutype)
+${clutype}_get_syslogfilter $@
+}
+#*************** cc_get_syslogfilter
 
 #****f* clusterfs-lib.sh/cc_init
 #  NAME
@@ -794,11 +896,19 @@ function cc_auto_syslogconfig {
   local local_log=$4
   local syslog_logfile=$5
   local clutype=$(repository_get_value clutype)
-  local debug=$(repository_get_value debug)
-  
-  local syslog_server_list=""
-  local syslog_conf="/etc/syslog.conf"
-  local services="/etc/services"
+  local syslog_type=$(repository_get_value syslog_type)
+  local syslog_template
+  local syslog_server=""
+  local syslog_filter
+
+  if [ -z "$syslog_type" ]; then
+  	syslog_type=$(detect_syslog 2>/dev/null)
+  	if [ -z "$syslog_type" ]; then
+  		warn "Could not detect syslog type either no syslog installed in initrd or no syslog bootimage package installed."
+  		return 1
+  	fi
+  fi
+  repository_store_value syslogtype "$syslog_type"
   
   if [ -z "$syslog_logfile" ]; then
     syslog_logfile=$(repository_get_value syslog_logfile)
@@ -806,35 +916,29 @@ function cc_auto_syslogconfig {
       syslog_logfile="/var/log/comoonics-boot.syslog"
     fi
   fi
-  if [ -n "$cluster_conf" ] && [ -n $nodename ]; then
-    syslog_server_list=$(${clutype}_get_syslogserver $cluster_conf $nodename)
+  if [ -n "$cluster_conf" ] && [ -n "$nodename" ]; then
+    syslog_server=$(getParameter syslogserver 2>/dev/null)
+    syslog_filter=$(getParameter syslogfilter 2>/dev/null)
   fi
+  [ -z "$syslog_filter" ] && syslog_filter="kern.*"
+  repository_store_value syslogfilter "$syslog_filter"
 
-  # Checking for normal syslog all others should be checked before so that this is the last resort syslog
-  which syslogd >/dev/null
-  if [ $? -eq 0 ]; then
-    echo_local -n "Creating syslog config for syslog servers: $syslog_server_list"
-    if [ -n "$debug" ]; then
-      cat <<EOSYSLOG > ${chroot_path}${syslog_conf}
-kern,daemon.*   /dev/console
-EOSYSLOG
-    else
-      echo -n > ${chroot_path}${syslog_conf}
-    fi
-  
-    for syslog_server in $syslog_server_list; do
-      echo '*.* @'"$syslog_server" >> ${chroot_path}${syslog_conf}
-    done
-    if [ "$local_log" != "no" ]; then
-      echo "*.*    -$syslog_logfile" >> ${chroot_path}${syslog_conf}
-    fi
+  if [ -n "$syslog_type" ]; then
+    syslog_template=$(getParameter syslogtemplate $(${clutype}_get_syslogtemplate $cluster_conf $nodename 2>/dev/null) 2>/dev/null)
+	if [ -z "$syslog_template" ]; then
+		syslog_template="/etc/templates/${syslog_type}.conf"
+	fi
+	repository_store_value syslogtemplate $syslog_template
+    
+    echo_local -n "Creating syslog config for syslog destinations: $syslog_filter:$syslog_server"
+    mkdir -p $(dirname $(repository_get_value syslogconf $(default_syslogconf $syslog_type)))
+    exec_local $(echo ${syslog_type} | tr '-' '_')_config $syslog_template "$syslog_filter:$syslog_server" > $(repository_get_value syslogconf $(default_syslogconf $syslog_type))
+    return_code
 
+    local services=$(repository_get_value servicesfile "/etc/services")
     echo "syslog          514/udp" >> ${chroot_path}${services}
-    return_code 0
-    return 0
-  else
-    return 1
   fi
+  [ -n "$syslog_type" ]
 }
 #******** cc_auto_syslogconfig
 
@@ -847,33 +951,15 @@ EOSYSLOG
 #    Starts the apropriate syslogd as required
 #  SOURCE
 function cc_syslog_start {
-	local chrootpath=$1
-	local start_service_f="start_service_chroot $chrootpath"
+	local syslog_type=$(repository_get_value syslogtype)
 	
-    if [ -z "$chrootpath" ]; then
-    	start_service_f=""
-    fi
-
-    if [ -f /etc/sysconfig/syslog ] ; then
-        . /etc/sysconfig/syslog
-    else
-       SYSLOGD_OPTIONS="-m 0"
-       KLOGD_OPTIONS="-2"
-    fi
-
-    if [ -z "$SYSLOG_UMASK" ] ; then
-       SYSLOG_UMASK=077;
-    fi
-    umask $SYSLOG_UMASK
-   
-    which syslogd >/dev/null 2>/dev/null
-    if [ $? -eq 0 ]; then
-    	$start_service_f syslogd $SYSLOGD_OPTIONS
-    fi
-    which klogd > /dev/null 2>/dev/null
-    if [ $? -eq 0 ]; then
-    	$start_service_f klogd $KLOGD_OPTIONS
-    fi
+	if [ -n "$syslog_type" ]; then
+	  echo_local -n "Starting syslog server $syslog_type "
+	  $(echo ${syslog_type} | tr '-' '_')_start $*
+	  return_code $?
+	else
+	  return 1
+	fi
 }
 #******** cc_syslog_start
 
@@ -1340,7 +1426,13 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.36  2009-04-20 07:07:26  marc
+# Revision 1.37  2009-09-28 12:53:13  marc
+# - added functions
+#   cc_get
+#   cc_get_syslog*
+# - changed and implemented syslog functionality to support different types of syslog (rsyslogd, syslog-ng, syslogd)
+#
+# Revision 1.36  2009/04/20 07:07:26  marc
 # - bugfixes
 # - added cc_init and clusterfs_init
 #
