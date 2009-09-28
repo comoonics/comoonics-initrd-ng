@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.82 2009-08-19 16:10:44 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.83 2009-09-28 13:12:41 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.82 2009-08-19 16:10:44 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.83 2009-09-28 13:12:41 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -78,17 +78,17 @@ if [ $# -gt 1 ]; then
   return_code 0
 fi
 
+PYTHONPATH=$(python -c 'import os; import sys; print (os.path.join("/usr", "lib", "python%u.%u" %(int(sys.version[0]), int(sys.version[2])), "site-packages"))')
+export PYTHONPATH
+
 echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.82 $ $Date: 2009-08-19 16:10:44 $'
+echo_local 'Internal Version $Revision: 1.83 $ $Date: 2009-09-28 13:12:41 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
-getParameter newroot "/mnt/newroot" &>/dev/null
-getParameter cluster_conf $cluster_conf &>/dev/null
-
 x=`cat /proc/version`;
 KERNEL_VERSION=`expr "$x" : 'Linux version \([^ ]*\)'`
 echo_local "Kernel-version: ${KERNEL_VERSION}"
@@ -100,6 +100,8 @@ fi
 
 # boot parameters
 echo_local -n "Scanning for Bootparameters..."
+getParameter newroot "/mnt/newroot" &>/dev/null
+getParameter cluster_conf $cluster_conf &>/dev/null
 getParameter debug $debug &>/dev/null
 getParameter step $stepmode &>/dev/null
 getParameter dstep $dstepmode &>/dev/null
@@ -165,14 +167,8 @@ found_nics && udev_start # now we should be able to trigger this.
 found_nics && breakp $(errormsg err_hw_nicdriver)
 step "NIC modules loaded." "autonetconfig"
 
-cc_auto_syslogconfig $(repository_get_value cluster_conf) $(repository_get_value nodename) / "no" $(repository_get_value syslog_logfile)
-is_syslog=$?
-if [ $is_syslog -eq 0 ]; then
-  cc_syslog_start
-fi
-
 echo_local -n "Scanning other parameters "
-_ccparameters="votes tmpfix quorumack ip rootvolume rootsource"
+_ccparameters="votes tmpfix quorumack ip rootvolume rootsource syslogserver syslogfilter"
 _fsparameters="sourceserver lockmethod root mountopts scsifailover rootfsck mounttimes mountwait"
 echo_local_debug -n "cc: $_ccparameters fs: $_fsparameters "
 
@@ -204,7 +200,7 @@ _ipConfig=$(cluster_ip_config $(repository_get_value cluster_conf) $(repository_
 step "Inialization started" "init"
 
 echo_local_debug "*****<REPOSITORY>***************"
-repository_list_items ":"
+exec_local_debug repository_list_items ":"
 echo_local_debug "*****<REPOSITORY>**********"
 
 step "Parameter loaded" "parameter"
@@ -306,6 +302,13 @@ if [ -n $bridges ]; then
      return_code $?
   done
   step "Network bridges setup finished" "netbridge"
+fi
+
+cc_auto_syslogconfig $(repository_get_value cluster_conf) $(repository_get_value nodename) / "no" $(repository_get_value syslog_logfile)
+is_syslog=$?
+if [ $is_syslog -eq 0 ]; then
+  cc_syslog_start
+  step "Syslog started." "syslog"
 fi
 
 if clusterfs_blkstorage_needed $(repository_get_value rootfs); then
@@ -451,6 +454,7 @@ echo_local -n "Mounting the device file system"
 exec_local mount --move /dev $(repository_get_value newroot)/dev
 _error=$?
 exec_local cp -a $(repository_get_value newroot)/dev/console /dev/
+exec_local cp -a $(repository_get_value newroot)/dev/kmsg /dev/
 #exec_local mount --bind /dev $newroot/dev
 return_code $_error
 
@@ -467,8 +471,8 @@ for logfile_name in bootlog syslog_logfile; do
   fi
 done
 return_code_warning
-exec 3>> $bootlog
-exec 4>> $bootlog
+#exec 3>> $bootlog
+#exec 4>> $bootlog
 step "Logfiles copied" "logfiles"
 
 # FIXME: Remove line
@@ -478,7 +482,7 @@ if [ $is_syslog -eq 0 ]; then
   #TODO: remove lines as syslog can will stay in /comoonics
   echo_local -n "Stopping syslogd..."
   exec_local killall "klogd"
-  exec_local stop_service "syslogd" /
+  exec_local stop_service $(repository_get_value syslogtype) /
   return_code
 fi
 
@@ -537,7 +541,12 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.82  2009-08-19 16:10:44  marc
+# Revision 1.83  2009-09-28 13:12:41  marc
+# - Reimplemented syslog functionality
+# - Removed deps to output channels 3,4
+# - Some typos
+#
+# Revision 1.82  2009/08/19 16:10:44  marc
 # another fix for bug358
 #
 # Revision 1.81  2009/08/11 09:59:29  marc
