@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.3 2009-04-22 11:36:45 marc Exp $
+# $Id: hardware-lib.sh,v 1.4 2009-09-28 12:46:20 marc Exp $
 #
 # @(#)$File$
 #
@@ -90,10 +90,10 @@ function suse_hwconfig() {
 #  SOURCE
 #
 function sles10_hardware_detect() {
-    echo_local "HWSCAN: Detecting scsi-controller: "
-    exec_local suse_hwconfig "scsi-controller" "storage-ctrl" "scsi-hostadapter"
-    echo_local "HWSCAN: Detecting NIC: "
-    exec_local suse_hwconfig "nic" "netcard" "eth"
+#    echo_local "HWSCAN: Detecting scsi-controller: "
+#    exec_local suse_hwconfig "scsi-controller" "storage-ctrl" "scsi-hostadapter"
+#    echo_local "HWSCAN: Detecting NIC: "
+#    exec_local suse_hwconfig "nic" "netcard" "eth"
     sles10_udev_start
 }
 #************ sles10_hardware_detect
@@ -118,7 +118,10 @@ function sles10_udev_start() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.3  2009-04-22 11:36:45  marc
+# Revision 1.4  2009-09-28 12:46:20  marc
+# removed old functions
+#
+# Revision 1.3  2009/04/22 11:36:45  marc
 # - upstream for sles10
 #
 # Revision 1.2  2009/03/06 13:21:04  marc
