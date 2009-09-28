@@ -1,10 +1,9 @@
 expat
 # Not needed any more
 # comoonics-cs
-comoonics-cs-py
+comoonics-base-py
 comoonics-cluster-py
-SysVinit-comoonics
-sysvinit-comoonics
+comoonics-tools-py
 #comoonics-cs-xml
 #######
 # $Log$
