@@ -10,19 +10,22 @@
 #
 #*******
 #
-# chkconfig: 345 11 40
-# description: do the post settings for Comoonics Shared Root
-# Author: hlawatschek@atix.de
-#
-#
+### BEGIN INIT INFO
+# Provides: bootsr
+# Required-Start: network
+# Required-Stop: 
+# Should-Start: 
+# Should-Stop: $null
+# Default-Start: 3 5
+# Default-Stop: 0 1 2 6
+# Short-Description: Start bootsr (necessary for a Opensharedroot Configurations)
+# Description: Start bootsr (necessary for a Opensharedroot Configurations)
+### END INIT INFO
 
 #
-# /etc/rc.d/init.d/bootsr
+# /etc/init.d/bootsr
 #
-
-CCSD_OPTS=
-
-. /etc/init.d/functions
+. /etc/rc.status
 
 BOOTIMAGE_PATH=/opt/atix/comoonics-bootimage
 CCSD_LOCK_FILE="/var/lock/subsys/ccsd-chroot"
@@ -41,7 +44,7 @@ RETVAL=0
 sourceLibs ${BOOTIMAGE_PATH}/boot-scripts
 sourceRootfsLibs ${BOOTIMAGE_PATH}/boot-scripts
 
-
+rc_reset
 #****f* bootsr/check_mtab
 #  NAME
 #    check_mtab
