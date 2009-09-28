@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.4 2009-04-22 11:36:45 marc Exp $
+# $Id: network-lib.sh,v 1.5 2009-09-28 12:47:14 marc Exp $
 #
 # @(#)$File$
 #
@@ -108,10 +108,26 @@ function sles10_ip2Config() {
 }
 #************ sles10_ip2Config 
 
+#****f* boot-lib.sh/nicUp
+#  NAME
+#    nicUp
+#  SYNOPSIS
+#    function nicUp()
+#  DOCUMENTATION
+#    Powers up the network interface
+#  SOURCE
+#
+function nicUp() {
+   /sbin/ifup $1
+}
+#************ ifup
 
 #################
 # $Log: network-lib.sh,v $
-# Revision 1.4  2009-04-22 11:36:45  marc
+# Revision 1.5  2009-09-28 12:47:14  marc
+# added function nicUp to overwrite defaults nicUp
+#
+# Revision 1.4  2009/04/22 11:36:45  marc
 # - upstream for sles10
 #
 # Revision 1.3  2008/10/14 10:57:07  marc
