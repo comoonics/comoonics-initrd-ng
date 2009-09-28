@@ -1,5 +1,5 @@
 #
-# $Id: ocfs2-lib.sh,v 1.4 2009-04-14 14:54:16 marc Exp $
+# $Id: ocfs2-lib.sh,v 1.5 2009-09-28 13:04:01 marc Exp $
 #
 # @(#)$File$
 #
@@ -105,7 +105,7 @@ function ocfs2_getdefaults {
 #  SOURCE
 #
 function ocfs2_get_drivers {
-	echo "configfs ocfs2_nodemanager ocfs2_dlm ocfs2_dlmfs"
+	echo "configfs ocfs2_nodemanager ocfs2_dlm ocfs2_dlmfs ocfs2"
 }
 #************ ocfs2_get_drivers
 
@@ -150,13 +150,13 @@ function ocfs2_services_start {
     local lvm_sup=$3
 
     local CLUSTERCONF="/etc/ocfs2/cluster.conf"
-    local CLUSTER=$(com-queryclusterconf query_value /cluster/@name)
+    local CLUSTER=$(cc_get_clustername)
     
     echo_local -n "Creating $CLUSTERCONF ..."
-    mkdir $(dirname $CLUSTERCONF)
-    mkdir ${chroot_path}/$(dirname $CLUSTERCONF)
-    com-queryclusterconf convert ocfs2 > $CLUSTERCONF &&
-    com-queryclusterconf convert ocfs2 > ${chroot_path}/$CLUSTERCONF
+    mkdir $(dirname $CLUSTERCONF) 2>/dev/null
+    mkdir ${chroot_path}/$(dirname $CLUSTERCONF) 2>/dev/null
+    cc_convert ocfs2 > $CLUSTERCONF &&
+    cc_convert ocfs2 > ${chroot_path}/$CLUSTERCONF
     return_code $?
     
     if [ -z "$CLUSTER" ]
@@ -187,16 +187,15 @@ function ocfs2_services_start {
     echo_local -n "Starting O2CB cluster ${CLUSTER}: "
     OUTPUT="`o2cb_ctl -H -n "${CLUSTER}" -t cluster -a online=yes 2>&1`"
     return_c=$?
-    if [ $? = 0 ]
+    if [ $return_c -eq 0 ]
     then
         set_timeouts "/" $CLUSTER sys/kernel/config
         success
-        return 0
     else
     	failed
         echo_local "$OUTPUT"
-        return 1
     fi
+    return $return_c
 }
 #************ ocfs2_services_start
 
@@ -214,7 +213,7 @@ function ocfs2_services_stop {
     local chroot_path=$1
     local lock_method=$2
     local lvm_sup=$3
-    local CLUSTER=$(com-queryclusterconf query_value /cluster/@name)
+    local CLUSTER=$(cc_get_clustername)
     
     echo_local -n "Stopping O2CB cluster ${CLUSTER}: "
     OUTPUT="`o2cb_ctl -H -n "${CLUSTER}" -t cluster -a online=no 2>&1`"
@@ -287,8 +286,48 @@ function ocfs2_init {
 }
 #********* ocfs2_init
 
+#****f* ocfs2-lib.sh/ocfs2_fsck_needed
+#  NAME
+#    ocfs2_fsck_needed
+#  SYNOPSIS
+#    function ocfs2_fsck_needed(root, rootfs)
+#  DESCRIPTION
+#    Will always return 1 for no fsck needed. This can only be triggered by rootfsck 
+#    bootoption.
+#
+function ocfs2_fsck_needed {
+	local device=$1
+	fsck -t noopts -T $device
+}
+#********* ocfs2_fsck_needed
+
+#****f* ocfs2-lib.sh/ocfs2_fsck
+#  NAME
+#    ocfs2_fsck
+#  SYNOPSIS
+#    function ocfs2_fsck_needed(root, rootfs)
+#  DESCRIPTION
+#    If this function is called. It will always execute an ocfs2fsck on the given root.
+#    Be very very carefull with this function!!
+#
+function ocfs2_fsck {
+	local root="$1"
+	local fsck="fsck.ocfs2"
+	local options=""
+	echo_local -n "Calling $fsck on filesystem $root"
+	exec_local $fsck $options $root
+	return_code
+}
+#********* ocfs2_fsck
+
 # $Log: ocfs2-lib.sh,v $
-# Revision 1.4  2009-04-14 14:54:16  marc
+# Revision 1.5  2009-09-28 13:04:01  marc
+# - fixed some typos and return codes not being returned as expected
+# - removed deps for com-queryclusterconf to cc_ functions
+# - added ocfs2 as module to modules function
+# - added ocfs2_fsck function
+#
+# Revision 1.4  2009/04/14 14:54:16  marc
 # - added get_drivers functions
 #
 # Revision 1.3  2008/08/14 14:36:21  marc
