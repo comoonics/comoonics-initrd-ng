@@ -124,7 +124,8 @@ EOF
 /bin/true
 
 %preun
-chkconfig --del bootsr
+chkconfig --del bootsr &>/dev/null
+true
 
 %files
 %attr(755, root, root) %{INITDIR}/bootsr
