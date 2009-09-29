@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.106 2009-09-28 14:51:19 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.107 2009-09-29 12:50:23 marc Exp $
 #
 ##
 ##
@@ -96,7 +96,7 @@ Extra listfiles for special network configurations
 
 %package extras-nfs
 Version: 0.1
-Release: 13
+Release: 14
 Requires: comoonics-bootimage >= 1.4
 Summary: Listfiles for nfs sharedroot configurations
 Group:   System Environment/Base
@@ -434,8 +434,8 @@ OSR files needed for the compatibility to 1.2 releases
 
 %package fenceacksv
 Version: 0.3
-Release: 3
-Requires: comoonics-cs-py >= 0.1-43
+Release: 4
+Requires: comoonics-fenceacksv-py
 Requires: comoonics-bootimage >= 1.3-1
 Summary: The Fenceackserver is a service for last resort actions
 Group:   System Environment/Servers
@@ -1157,6 +1157,8 @@ rm -rf %{buildroot}
 - first release
 
 %changelog extras-nfs
+* Tue Sep 29 2009 Marc Grimme <grimme@atix.de> - 0.1-14
+- removed deps that are for the distfiles
 * Tue Aug 11 2009 Marc Grimme <grimme@atix.de> - 0.1-12
 - nfs4 for RHEL5
 * Tue Apr 14 2009 Marc Grimme <grimme@atix.de> - 0.1-10
@@ -1334,6 +1336,8 @@ rm -rf %{buildroot}
 - initial revision
 
 %changelog fenceacksv
+* Tue Sep 29 2009 Marc Grimme <grimme@atix.de> - 0.3-4
+- Removed deps and added comoonics-fenceacksv-py
 * Tue Jul 01 2009 Marc Grimme <grimme@atix.de> - 0.3-3
 - Fixed bug where logger was pathdependent
 * Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.3-2
@@ -1370,7 +1374,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.106  2009-09-28 14:51:19  marc
+# Revision 1.107  2009-09-29 12:50:23  marc
+# fenceacksv updates in order to obsolete comoonics-cs-py
+#
+# Revision 1.106  2009/09/28 14:51:19  marc
 # new versions
 #
 # Revision 1.105  2009/09/28 14:40:37  marc
