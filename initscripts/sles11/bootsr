@@ -264,7 +264,7 @@ case "$1" in
 	  if [ $? -eq 0 ]; then
 	    action "Cleaning up chroot environment" $UMOUNT_CHROOT
 	  fi
-  	  patch_files
+  	  # patch_files
         ;;
   status)
       exit 0
