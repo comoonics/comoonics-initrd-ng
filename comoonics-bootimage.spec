@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.107 2009-09-29 12:50:23 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.108 2009-10-07 12:08:30 marc Exp $
 #
 ##
 ##
@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 33
+Release: 34
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -601,6 +601,7 @@ fi
 %dir %{LIBDIR}/boot-scripts/proc
 %dir %{LIBDIR}/boot-scripts/dev
 %attr(0755, root, root) %{APPDIR}/create-gfs-initrd-generic.sh
+%attr(0755, root, root) %{APPDIR}/com-chroot
 %attr(0644, root, root) %{APPDIR}/create-gfs-initrd-lib.sh
 %attr(0755, root, root) %{APPDIR}/manage_chroot.sh
 %attr(0755, root, root) %{LIBDIR}/boot-scripts/com-halt.sh
@@ -894,6 +895,10 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Tue Oct 01 2009 Marc Grimme <grimme@atix.de> 1.4-34
+- Added com-chroot
+- Fixed Bug #365 where bootprocess hangs when using special kernels.
+- Minor bugfixes in halt and detection of halt
 * Mon Sep 28 2009 Marc Grimme <grimme@atix.de> 1.4-33
 - New finalized version
 - Some typos
@@ -1374,7 +1379,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.107  2009-09-29 12:50:23  marc
+# Revision 1.108  2009-10-07 12:08:30  marc
+# new version
+#
+# Revision 1.107  2009/09/29 12:50:23  marc
 # fenceacksv updates in order to obsolete comoonics-cs-py
 #
 # Revision 1.106  2009/09/28 14:51:19  marc

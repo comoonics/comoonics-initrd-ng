@@ -88,6 +88,9 @@ END{ exit exit_c}')
 	/sbin/chkconfig --del bootsr
   fi
 fi
+if [ -L /etc/init.d/halt.local ]; then
+   rm /etc/init.d/halt.local
+fi
 
 %post
 
