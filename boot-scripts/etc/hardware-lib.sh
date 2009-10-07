@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.37 2009-09-28 13:01:50 marc Exp $
+# $Id: hardware-lib.sh,v 1.38 2009-10-07 12:03:35 marc Exp $
 #
 # @(#)$File$
 #
@@ -453,6 +453,7 @@ function hardware_detect() {
   echo_local -n "Detecting Hardware "
   echo_local_debug -n "..(saving modules).."
   local modules=$( (listmodules; echo -e "$xmodules") | sort)
+  local allowedunloadmodules=$(find /lib/modules/$(uname -r)/kernel/drivers -path "*/net/*" -or -path "*/scsi/*" -type f -printf "%f\n")
   # detecting xen
   xen_domx_detect
   if [ $? -eq 0 ]; then
@@ -484,10 +485,10 @@ function hardware_detect() {
   		  fi
   	    done
   	    if [ $_xclude -eq 0 ]; then
-  	        exec_local modprobe -r -q $_module
+  	    	unload_module $_module $allowedunloadmodules
   	    fi
   	  else
-        exec_local modprobe -q -r $_module
+      	unload_module $_module $allowedunloadmodules
       fi
     done
     _modules=$(listmodules | sort)
@@ -529,13 +530,44 @@ function listmodules {
 #    lists all names of loaded modules
 #  SOURCE
 #
-function modprobe {
-	if [ "$1" != "ignore" ]; then
+modprobe() {
+	if [ -n "$1" ] && [ "$1" != "ignore" ] && [ "$(basename $1)" != "true" ]; then
 	  /sbin/modprobe $*
 	fi
 }
 #************ modprobe
 
+#****f* hardware-lib.sh/unload_module
+#  NAME
+#    unload_module
+#  SYNOPSIS
+#    function unload_module(module, allowedmodules)
+#  DESCRIPTION
+#    lists all names of loaded modules
+#  SOURCE
+#
+unload_module() {
+	if [ -n "$1" ] && [ "$1" != "ignore" ] && [ "$(basename $1)" != "true" ]; then
+		local module=$1
+		local _module
+		local ret=0
+		shift
+		local allowedmodules=$@
+		if [ -z "$allowedmodules" ]; then
+			modprobe -q -r $module
+			ret=$?
+		else
+		    for _module in $allowedmodules; do
+		    	if [ "$module" = "$_module" ]; then
+		    		modprobe -q -r $module
+		    		ret=$?
+		    	fi
+		    done
+	    fi
+	fi
+	return $ret
+}
+#************ modprobe
 
 #****f* hardware-lib.sh/hardware_ids
 #  NAME
@@ -663,7 +695,10 @@ function sysctl_load() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.37  2009-09-28 13:01:50  marc
+# Revision 1.38  2009-10-07 12:03:35  marc
+# - Fixes bug 365 where the bootprocess might hang while booting a clusternode
+#
+# Revision 1.37  2009/09/28 13:01:50  marc
 # moved devices from boot-lib.sh/initEnv to dev_start
 #
 # Revision 1.36  2009/08/11 09:54:58  marc
@@ -691,7 +726,7 @@ function sysctl_load() {
 # - added get_drivers functions to return modules in more general
 #
 # Revision 1.29  2009/03/06 13:22:47  marc
-# always call modprobe instead of anything else
+# always call modprunload_moduleead of anything else
 #
 # Revision 1.28  2009/02/27 10:33:51  marc
 # changed the calling of modprobe to use the function
