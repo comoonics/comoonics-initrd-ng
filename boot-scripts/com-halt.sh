@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: com-halt.sh,v 1.4 2009-09-28 13:09:02 marc Exp $
+# $Id: com-halt.sh,v 1.5 2009-10-07 11:41:16 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/com-halt.sh
 #  NAME
 #    com-halt.sh
-#    $Id: com-halt.sh,v 1.4 2009-09-28 13:09:02 marc Exp $
+#    $Id: com-halt.sh,v 1.5 2009-10-07 11:41:16 marc Exp $
 #  DESCRIPTION
 #    script called from /etc/init.d/halt
 #  USAGE
@@ -41,6 +41,7 @@ sourceLibs ${predir}
 CHROOT_PATH=$(/opt/atix/comoonics-bootimage/manage_chroot.sh -p)
 
 if [ -n "$CHROOT_PATH" ] && [ -d $CHROOT_PATH/mnt/newroot ]; then
+  initEnv
   actlevel=$(runlevel | awk '{ print $2;}')
   
   cd $CHROOT_PATH
@@ -57,8 +58,8 @@ if [ -n "$CHROOT_PATH" ] && [ -d $CHROOT_PATH/mnt/newroot ]; then
 
   if [ $# -eq 0 ]; then
     #FIXME: the following should be distribution dependent.
-    echo_local -n "Detecting power cycle type "
-    cmd=$(detectHalt $actlevel)
+    echo_local -n "Detecting power cycle type (actlevel=$actlevel)"
+    cmd=$(detectHalt "$actlevel" . /mnt/newroot)
     return_code $?
   else
     cmd=$@
@@ -68,7 +69,11 @@ if [ -n "$CHROOT_PATH" ] && [ -d $CHROOT_PATH/mnt/newroot ]; then
 fi
 ####################
 # $Log: com-halt.sh,v $
-# Revision 1.4  2009-09-28 13:09:02  marc
+# Revision 1.5  2009-10-07 11:41:16  marc
+# - added initEnv for nice UI
+# - added parameters to make detectHalt more generic
+#
+# Revision 1.4  2009/09/28 13:09:02  marc
 # - Implemented new way to also use com-halt as halt.local either in /sbin or /etc/init.d dependent on distribution
 #
 # Revision 1.3  2008/10/14 10:57:07  marc
