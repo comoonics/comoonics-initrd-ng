@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.76 2009-09-28 12:50:46 marc Exp $
+# $Id: boot-lib.sh,v 1.77 2009-10-07 12:04:19 marc Exp $
 #
 # @(#)$File$
 #
@@ -976,9 +976,9 @@ detectHalt() {
 	local distribution=$(repository_get_value distribution)
 	local shortdistribution=$(repository_get_value shortdistribution)
     local cmd="halt"
-    cmd=$(${distribution}_detectHalt $runlevel2)
+    cmd=$(${distribution}_detectHalt $* 2>/dev/null)
     if [ $? -ne 0 ] || [ -z "$cmd" ]; then
-      cmd=$(${shortdistribution}_detectHalt $runlevel2)
+      cmd=$(${shortdistribution}_detectHalt $* 2>/dev/null)
       if [ $? -ne 0 ] || [ -z "$cmd" ]; then
         if [ $runlevel2 -eq 0 ]; then
   	      cmd="halt -d -f"
@@ -998,7 +998,10 @@ detectHalt() {
 #************** detectHalt
 
 # $Log: boot-lib.sh,v $
-# Revision 1.76  2009-09-28 12:50:46  marc
+# Revision 1.77  2009-10-07 12:04:19  marc
+# passing more arguments to the distribution dependent function that should detect halt.
+#
+# Revision 1.76  2009/09/28 12:50:46  marc
 # - added detectHalt
 # - added default to getParameter
 # - fixed cosmetical bugs
