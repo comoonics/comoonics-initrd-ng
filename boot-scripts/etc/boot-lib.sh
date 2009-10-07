@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.77 2009-10-07 12:04:19 marc Exp $
+# $Id: boot-lib.sh,v 1.78 2009-10-07 14:07:58 marc Exp $
 #
 # @(#)$File$
 #
@@ -848,6 +848,7 @@ function clean_initrd() {
 	for p in $procs; do
 		killall -0 $p && killall -9 $p &> /dev/null
 	done
+	true
 }
 
 #************ clean_initrd
@@ -998,7 +999,10 @@ detectHalt() {
 #************** detectHalt
 
 # $Log: boot-lib.sh,v $
-# Revision 1.77  2009-10-07 12:04:19  marc
+# Revision 1.78  2009-10-07 14:07:58  marc
+# clean_initrd should return true
+#
+# Revision 1.77  2009/10/07 12:04:19  marc
 # passing more arguments to the distribution dependent function that should detect halt.
 #
 # Revision 1.76  2009/09/28 12:50:46  marc
