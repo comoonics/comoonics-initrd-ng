@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: com-realhalt.sh,v 1.10 2009-09-28 13:09:59 marc Exp $
+# $Id: com-realhalt.sh,v 1.11 2009-10-07 11:55:10 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/com-halt.sh
 #  NAME
 #    com-halt.sh
-#    $Id: com-realhalt.sh,v 1.10 2009-09-28 13:09:59 marc Exp $
+#    $Id: com-realhalt.sh,v 1.11 2009-10-07 11:55:10 marc Exp $
 #  DESCRIPTION
 #    script called from <chrootpath>/com-halt.sh
 #  USAGE
@@ -100,7 +100,8 @@ while getopts VdhsSr: option ; do
 	esac
 done
 shift $(($OPTIND - 1))
-cmd=$@
+cmd=$*
+repository_store_value haltcmd "$cmd"
 
 if [ -z "$COM_OLDROOT" ]; then
 	usage
@@ -114,8 +115,8 @@ echo_local "Starting ATIX exitrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.10 $ $Date: 2009-09-28 13:09:59 $'
-echo_local_debug "Calling cmd $cmd"
+echo_local 'Internal Version $Revision: 1.11 $ $Date: 2009-10-07 11:55:10 $'
+echo_local_debug "Calling cmd "$(repository_get_value haltcmd)
 #echo_local "Builddate: "$(date)
 
 
@@ -126,6 +127,7 @@ echo_local -n "Preparing chroot"
 /bin/mount -t sysfs none /sys &> /dev/null
 /bin/mount -t configfs none /sys/kernel/config &> /dev/null
 /bin/ln -sf /proc/mounts /etc/mtab
+[ -f $COM_OLDROOT/dev/initctl ] && [ -f /dev/initctl ] || cp -a $COM_OLDROOT/dev/initctl /dev/initctl
 success
 echo
 
@@ -145,27 +147,6 @@ if [ "$rootfs" = "gfs" ] && ! pidof fenced &> /dev/null; then
 	sleep 3
 fi 
 
-echo_local -n "Stopping processes in oldroot"
-# killall in /mnt/oldroot
-exec_local fuser -km -15 $COM_OLDROOT &> /dev/null
-sleep 5
-exec_local fuser -km -9 $COM_OLDROOT &> /dev/null
-success
-echo
-
-step "halt: Successfully stopped processes running in oldroot" "halt_stopoldroot"
-
-echo_local "Umounting filesystems in oldroot"
-exec_local mkdir /dev2
-exec_local "mount --move $COM_OLDROOT/dev /dev2"
-for fs in $(get_dep_filesystems $COM_OLDROOT); do
-	echo_local -n "Umounting $fs"
-	exec_local "umount $fs"
-	return_code 
-done
-
-step "halt: Successfully umounted filesystem in oldroot" "halt_umountoldroot"
-
 echo_local -n "Restarting init process in chroot"
 # restart init
 restart_init
@@ -173,22 +154,68 @@ return_code
 
 step "halt: Restarted init process in chroot" "halt_restartinit"
 
-echo_local -n "Umounting oldroot $COM_OLDROOT"
-exec_local /bin/umount $COM_OLDROOT
+echo_local -n "Moving dev filesystem"
+exec_local mkdir /dev2
+is_mounted $COM_OLDROOT/dev && exec_local "mount --move $COM_OLDROOT/dev /dev2" &&
+is_mounted /dev/pts || exec_local "mount -t devpts none /dev/pts" &&
+return_code
+step "Moved /dev filesystem" "movedevfs"
 
+rc=0
+echo_local -n "Umounting filesystems in oldroot"
+for fs in $(get_dep_filesystems $COM_OLDROOT); do
+#   echo_local_debug "Processes running in oldroot $fs"
+#   exec_local_debug fuser -mv $fs
+
+#   echo_local -n "Stopping processes in $fs"
+   # killall in /mnt/oldroot
+   fuser -km -15 $COM_OLDROOT/$fs &> /dev/null
+   sleep 2
+   fuser -km -9 $COM_OLDROOT/$fs &> /dev/null
+#   success
+#   echo_local -n "Umounting $fs"
+   exec_local "umount $fs"
+   [ $return_c -ne 1 ] && rc=$return_c
+   
+#   return_code 
+done
+return_code $rc
+
+step "halt: Successfully umounted filesystem in oldroot" "halt_umountoldroot"
+
+fs=$COM_OLDROOT
+echo_local_debug "Processes running in oldroot $fs"
+exec_local_debug fuser -mv $fs
+
+echo_local -n "Stopping processes in $fs"
+# killall in /mnt/oldroot
+exec_local fuser -km -15 $COM_OLDROOT &> /dev/null
+sleep 5
+exec_local fuser -km -9 $COM_OLDROOT &> /dev/null
+success
+step "halt: Successfully stopped processes running in oldroot" "halt_stopoldroot"
+
+echo_local -n "Umounting oldroot $fs"
+exec_local /bin/umount $fs
+return_code
 step "halt: Umounting oldroot" "halt_umountoldroot"
 
 clusterfs_services_stop
+
 sleep 2
 
 step "halt: Stopped clusterfs services" "halt_stopclusterfs"
 
-echo_local "Finally calling $cmd"
+echo_local "Finally calling "$(repository_get_value haltcmd) 
 $cmd
 
 #####################
 # $Log: com-realhalt.sh,v $
-# Revision 1.10  2009-09-28 13:09:59  marc
+# Revision 1.11  2009-10-07 11:55:10  marc
+# - Changed the halt process so that first every process accessing an fs is killed the the fs is umounted
+# - Cosmetics and usability changes
+#
+# Revision 1.10  2009/09/28 13:09:59  marc
 # - Implemented new way to also use com-realhalt as halt.local either in /sbin or /etc/init.d dependent on distribution
 # - debugging and stepmode autodetection
 #
