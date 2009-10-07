@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.6 2009-09-28 12:44:14 marc Exp $
+# $Id: boot-lib.sh,v 1.7 2009-10-07 12:06:40 marc Exp $
 #
 # @(#)$File$
 #
@@ -40,13 +40,12 @@ function create_chroot () {
   exec_local rm -rf $chroot_path/var/run/*
   exec_local mkdir -p $chroot_path/tmp
   exec_local chmod 755 $chroot_path
-  exec_local mount -t tmpfs none $chroot_path/dev
-  
+  is_mounted $chroot_path/dev || exec_local mount -t tmpfs none $chroot_path/dev
 #  exec_local mount --bind /dev $chroot_path/dev
   exec_local cp -a /dev $chroot_path/
-  exec_local mount -t devpts none $chroot_path/dev/pts
-  exec_local mount -t proc proc $chroot_path/proc
-  exec_local mount -t sysfs sysfs $chroot_path/sys
+  is_mounted $chroot_path/dev/pts || exec_local mount -t devpts none $chroot_path/dev/pts
+  is_mounted $chroot_path/proc || exec_local mount -t proc proc $chroot_path/proc
+  is_mounted $chroot_path/sys || exec_local mount -t sysfs sysfs $chroot_path/sys
 }
 #************ create_chroot
 
@@ -64,6 +63,9 @@ function create_chroot () {
 #
 rhel5_detectHalt() {
     local runlevel2=$1
+    local newroot=$2
+    local oldroot=$3
+    
     local command="halt -p"
     [ -z "$runlevel2" ] && runlevel2=0
     
@@ -81,7 +83,11 @@ rhel5_detectHalt() {
 
 #################
 # $Log: boot-lib.sh,v $
-# Revision 1.6  2009-09-28 12:44:14  marc
+# Revision 1.7  2009-10-07 12:06:40  marc
+# - accepting more arguments to be passed to detectHalt
+# - detection of already mounted fs in create_chroot
+#
+# Revision 1.6  2009/09/28 12:44:14  marc
 # Added exitrd function rhel5_detectHalt
 #
 # Revision 1.5  2009/08/11 09:52:17  marc
