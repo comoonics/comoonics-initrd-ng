@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# Changes to the comoonics changeroot environment and executes the given cmd.
+
+predir=/opt/atix/comoonics-bootimage/boot-scripts
+source ${predir}/etc/std-lib.sh
+sourceLibs ${predir}
+
+CHROOT_PATH=$(/opt/atix/comoonics-bootimage/manage_chroot.sh -p)
+
+if [ $# -eq 0 ]; then
+   exec chroot $CHROOT_PATH bash --rcfile /etc/bashrc
+else
+   exec chroot $CHROOT_PATH bash -c "source /etc/bashrc; $*"
+fi
