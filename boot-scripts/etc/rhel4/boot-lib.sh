@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.4 2009-04-14 14:49:22 marc Exp $
+# $Id: boot-lib.sh,v 1.5 2009-10-07 12:06:57 marc Exp $
 #
 # @(#)$File$
 #
@@ -51,11 +51,12 @@ function create_chroot () {
   exec_local rm -rf $chroot_path/var/run/*
   exec_local mkdir -p $chroot_path/tmp
   exec_local chmod 755 $chroot_path
+#  is_mounted $chroot_path/dev || exec_local mount -t tmpfs none $chroot_path/dev
   exec_local mount --bind /dev $chroot_path/dev
-#  exec_local cp -a /dev/* $chroot_path/dev/
-  exec_local mount -t devpts none $chroot_path/dev/pts
-  exec_local mount -t proc proc $chroot_path/proc
-  exec_local mount -t sysfs sysfs $chroot_path/sys
+#  exec_local cp -a /dev $chroot_path/
+  is_mounted $chroot_path/dev/pts || exec_local mount -t devpts none $chroot_path/dev/pts
+  is_mounted $chroot_path/proc || exec_local mount -t proc proc $chroot_path/proc
+  is_mounted $chroot_path/sys || exec_local mount -t sysfs sysfs $chroot_path/sys
 }
 #************ create_chroot
 
