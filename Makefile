@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.54 2009-09-28 14:51:19 marc Exp $
+# $Id: Makefile,v 1.55 2009-10-07 12:08:58 marc Exp $
 #
 # @(#)$file$
 #
@@ -99,6 +99,7 @@ INSTALL_DIR=/opt/atix/comoonics_bootimage
 #
 EXEC_FILES=create-gfs-initrd-generic.sh \
   manage_chroot.sh \
+  com-chroot \
   boot-scripts/com-halt.sh \
   boot-scripts/com-realhalt.sh \
   boot-scripts/linuxrc \
@@ -578,7 +579,10 @@ channel: rpm channelcopy channelbuild
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.54  2009-09-28 14:51:19  marc
+# Revision 1.55  2009-10-07 12:08:58  marc
+# added com-chroot
+#
+# Revision 1.54  2009/09/28 14:51:19  marc
 # new versions
 #
 # Revision 1.53  2009/09/28 14:40:45  marc
