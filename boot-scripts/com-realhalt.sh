@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: com-realhalt.sh,v 1.11 2009-10-07 11:55:10 marc Exp $
+# $Id: com-realhalt.sh,v 1.12 2009-10-08 08:05:04 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/com-halt.sh
 #  NAME
 #    com-halt.sh
-#    $Id: com-realhalt.sh,v 1.11 2009-10-07 11:55:10 marc Exp $
+#    $Id: com-realhalt.sh,v 1.12 2009-10-08 08:05:04 marc Exp $
 #  DESCRIPTION
 #    script called from <chrootpath>/com-halt.sh
 #  USAGE
@@ -115,10 +115,11 @@ echo_local "Starting ATIX exitrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.11 $ $Date: 2009-10-07 11:55:10 $'
+echo_local 'Internal Version $Revision: 1.12 $ $Date: 2009-10-08 08:05:04 $'
 echo_local_debug "Calling cmd "$(repository_get_value haltcmd)
 #echo_local "Builddate: "$(date)
 
+repository_store_value oldroot $COM_OLDROOT
 
 # Verify that chroot environment is in a good state
 # TODO remount /sys and /sys/kernel/config filesystems rw
@@ -127,9 +128,8 @@ echo_local -n "Preparing chroot"
 /bin/mount -t sysfs none /sys &> /dev/null
 /bin/mount -t configfs none /sys/kernel/config &> /dev/null
 /bin/ln -sf /proc/mounts /etc/mtab
-[ -f $COM_OLDROOT/dev/initctl ] && [ -f /dev/initctl ] || cp -a $COM_OLDROOT/dev/initctl /dev/initctl
+[ -f $(repository_get_value oldroot)/dev/initctl ] && [ -f /dev/initctl ] || cp -a $(repository_get_value oldroot)/dev/initctl /dev/initctl
 success
-echo
 
 step "halt: Chroot prepared" "halt_chrootprepared"
 
@@ -156,25 +156,38 @@ step "halt: Restarted init process in chroot" "halt_restartinit"
 
 echo_local -n "Moving dev filesystem"
 exec_local mkdir /dev2
-is_mounted $COM_OLDROOT/dev && exec_local "mount --move $COM_OLDROOT/dev /dev2" &&
+if is_mounted $(repository_get_value oldroot)/dev/pts; then
+   _filesystem=/dev/pts
+   fuser -m $(repository_get_value oldroot)/$_filesystem &> /dev/null &&
+   fuser -km -15 $(repository_get_value oldroot)/$_filesystem &> /dev/null
+   sleep 2
+   fuser -m $(repository_get_value oldroot)/$_filesystem &> /dev/null &&
+   fuser -km -9 $(repository_get_value oldroot)/$_filesystem &> /dev/null
+#   success
+#   echo_local -n "Umounting $_filesystem"
+   exec_local "umount $(repository_get_value oldroot)/$_filesystem"
+fi
+is_mounted $(repository_get_value oldroot)/dev && exec_local "mount --move $(repository_get_value oldroot)/dev /dev2" &&
 is_mounted /dev/pts || exec_local "mount -t devpts none /dev/pts" &&
 return_code
 step "Moved /dev filesystem" "movedevfs"
 
 rc=0
-echo_local -n "Umounting filesystems in oldroot"
-for fs in $(get_dep_filesystems $COM_OLDROOT); do
-#   echo_local_debug "Processes running in oldroot $fs"
-#   exec_local_debug fuser -mv $fs
+echo_local -n "Umounting filesystems in oldroot ("$(get_dep_filesystems $(repository_get_value oldroot))")"
+for _filesystem in $(get_dep_filesystems $(repository_get_value oldroot)); do
+#   echo_local_debug "Processes running in oldroot $_filesystem"
+#   exec_local_debug fuser -mv $_filesystem
 
-#   echo_local -n "Stopping processes in $fs"
+#   echo_local -n "Stopping processes in $_filesystem"
    # killall in /mnt/oldroot
-   fuser -km -15 $COM_OLDROOT/$fs &> /dev/null
+   fuser -m $(repository_get_value oldroot)/$_filesystem &> /dev/null &&
+   fuser -km -15 $(repository_get_value oldroot)/$_filesystem &> /dev/null
    sleep 2
-   fuser -km -9 $COM_OLDROOT/$fs &> /dev/null
+   fuser -m $(repository_get_value oldroot)/$_filesystem &> /dev/null &&
+   fuser -km -9 $(repository_get_value oldroot)/$_filesystem &> /dev/null
 #   success
-#   echo_local -n "Umounting $fs"
-   exec_local "umount $fs"
+   echo_local -n "Umounting $_filesystem"
+   exec_local "umount $_filesystem"
    [ $return_c -ne 1 ] && rc=$return_c
    
 #   return_code 
@@ -183,20 +196,20 @@ return_code $rc
 
 step "halt: Successfully umounted filesystem in oldroot" "halt_umountoldroot"
 
-fs=$COM_OLDROOT
-echo_local_debug "Processes running in oldroot $fs"
-exec_local_debug fuser -mv $fs
+_filesystem=$(repository_get_value oldroot)
+echo_local_debug "Processes running in oldroot $_filesystem"
+exec_local_debug fuser -mv $_filesystem
 
-echo_local -n "Stopping processes in $fs"
+echo_local -n "Stopping processes in $_filesystem"
 # killall in /mnt/oldroot
-exec_local fuser -km -15 $COM_OLDROOT &> /dev/null
+exec_local fuser -km -15 $(repository_get_value oldroot) &> /dev/null
 sleep 5
-exec_local fuser -km -9 $COM_OLDROOT &> /dev/null
+exec_local fuser -km -9 $(repository_get_value oldroot) &> /dev/null
 success
 step "halt: Successfully stopped processes running in oldroot" "halt_stopoldroot"
 
-echo_local -n "Umounting oldroot $fs"
-exec_local /bin/umount $fs
+echo_local -n "Umounting oldroot $_filesystem"
+exec_local /bin/umount $_filesystem
 return_code
 step "halt: Umounting oldroot" "halt_umountoldroot"
 
@@ -211,7 +224,11 @@ $cmd
 
 #####################
 # $Log: com-realhalt.sh,v $
-# Revision 1.11  2009-10-07 11:55:10  marc
+# Revision 1.12  2009-10-08 08:05:04  marc
+# oldroot in repo
+# and bugfix when umounting /dev/pts
+#
+# Revision 1.11  2009/10/07 11:55:10  marc
 # - Changed the halt process so that first every process accessing an fs is killed the the fs is umounted
 # - Cosmetics and usability changes
 #
