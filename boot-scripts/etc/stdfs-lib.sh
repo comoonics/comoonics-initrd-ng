@@ -1,5 +1,5 @@
 #
-# $Id: stdfs-lib.sh,v 1.5 2009-09-28 13:06:16 marc Exp $
+# $Id: stdfs-lib.sh,v 1.6 2009-10-08 08:00:05 marc Exp $
 #
 # @(#)$File$
 #
@@ -280,7 +280,10 @@ function get_dep_filesystems {
 	local rest=
 	local exclude=
 	local returnpaths=
+	local cleanmount=
+	local rc=
 	
+	[ -z "$MOUNTS" ] && cleanmount=1
 	[ -z "$MOUNTS" ] && MOUNTS=$(cat /proc/mounts)
 	
 	is_mounted $basepath || return 1
@@ -298,11 +301,16 @@ function get_dep_filesystems {
 			echo $path
 		fi
     done | sort -u -r
+    rc=$?
+    [ -n "$cleanmount" ] && unset MOUNTS
 }
 #************** get_dep_filesystems
 ######################
 # $Log: stdfs-lib.sh,v $
-# Revision 1.5  2009-09-28 13:06:16  marc
+# Revision 1.6  2009-10-08 08:00:05  marc
+# better clean up in get_dep_filesystems
+#
+# Revision 1.5  2009/09/28 13:06:16  marc
 # - implemented get_dep_filesystems
 # - defined is_mounted vars as local
 #
