@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.108 2009-10-07 12:08:30 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.109 2009-10-08 07:59:23 marc Exp $
 #
 ##
 ##
@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 34
+Release: 35
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -895,6 +895,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Thu Oct 08 2009 Marc Grimme <grimme@atix.de> 1.4-35
+- Fixed a bug in halt/reboot with sles10
+- Removed those annoying help messages when breaking. This will only come when typing help.
 * Tue Oct 01 2009 Marc Grimme <grimme@atix.de> 1.4-34
 - Added com-chroot
 - Fixed Bug #365 where bootprocess hangs when using special kernels.
@@ -1379,7 +1382,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.108  2009-10-07 12:08:30  marc
+# Revision 1.109  2009-10-08 07:59:23  marc
+# - new version
+#
+# Revision 1.108  2009/10/07 12:08:30  marc
 # new version
 #
 # Revision 1.107  2009/09/29 12:50:23  marc
