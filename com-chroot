@@ -9,6 +9,9 @@ sourceLibs ${predir}
 CHROOT_PATH=$(/opt/atix/comoonics-bootimage/manage_chroot.sh -p)
 
 if [ $# -eq 0 ]; then
+   echo "Type help to get more information.."
+   echo "Type exit to continue work.."
+
    exec chroot $CHROOT_PATH bash --rcfile /etc/bashrc
 else
    exec chroot $CHROOT_PATH bash -c "source /etc/bashrc; $*"
