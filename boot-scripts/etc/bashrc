@@ -24,10 +24,9 @@ export PS1="comoonics \! > " TERM=xterm
 
 source ${predir}/etc/std-lib.sh
 source ${predir}/etc/stdfs-lib.sh
-source  ${predir}/etc/hardware-lib.sh
+source ${predir}/etc/hardware-lib.sh
 
 # Load USB Modules so that USB keyboards work in Expertshell
-echo_local -n "Loading USB Modules.."
 usbLoad
 
 sourceLibs ${predir}
@@ -56,6 +55,8 @@ function drawline {
 	echo
 }
 function help {
+    local logo=$(repository_get_value logo)
+    logo $logo
 	local shellissue=$(repository_get_value shellissue)
     if [ -n "$shellissue" ] && [ -f "$shellissue" ]; then	
 	  cat $shellissue
@@ -73,14 +74,17 @@ function messages {
 	fi
 }
 	
-if [ -f "$logo" ]; then
-  cat $logo
-  drawline
-fi
-if [ -f "$shellissue" ]; then
-  cat $shellissue
-  drawline
-fi
+function logo() {
+  local logo=$1
+  if [ -f "$logo" ]; then
+    cat $logo
+    drawline
+  fi
+}
+#if [ -f "$shellissue" ]; then
+#  cat $shellissue
+#  drawline
+#fi
 if [ -f "$shellissuetmp" ]; then
   cat $shellissuetmp
   drawline

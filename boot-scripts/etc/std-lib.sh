@@ -1,5 +1,5 @@
 #
-# $Id: std-lib.sh,v 1.10 2009-09-28 13:07:55 marc Exp $
+# $Id: std-lib.sh,v 1.11 2009-10-08 08:01:52 marc Exp $
 #
 # @(#)$File$
 #
@@ -723,6 +723,7 @@ function breakp() {
     local issuetmp=$(repository_get_value shellissuetmp)
     [ -z "$shell" ] && shell="/bin/sh" 
     echo -e "$*" >  $issuetmp
+	echo "Type help to get more information.." >> $issuetmp
 	echo "Type exit to continue work.." >> $issuetmp
 	if [ -n "$simulation" ] && [ $simulation ]; then
 	  $shell
@@ -730,7 +731,7 @@ function breakp() {
 	  TERM=xterm $shell &>/dev/console
     fi
     echo_local "Back to work.."
-    rm -f $rcfile
+    rm -f $issuetmp
 }
 #*********** breakp
 
@@ -1003,7 +1004,10 @@ exec_ordered_skripts_in() {
 
 #################
 # $Log: std-lib.sh,v $
-# Revision 1.10  2009-09-28 13:07:55  marc
+# Revision 1.11  2009-10-08 08:01:52  marc
+# no more default output only with help
+#
+# Revision 1.10  2009/09/28 13:07:55  marc
 # - reimplemented debug and log functions to also write to /dev/kmsg
 # - removed deps to output fd 3,4
 #
