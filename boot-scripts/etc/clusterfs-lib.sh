@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.37 2009-09-28 12:53:13 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.38 2009-12-09 09:08:49 marc Exp $
 #
 # @(#)$File$
 #
@@ -431,7 +431,7 @@ function cc_getdefaults {
 #  DESCRIPTION
 #    gets a value generically
 #  SOURCE
-function cc_get_by_nodename {
+function cc_get {
   local clutype=$(repository_get_value clutype)
 
   ${clutype}_get $@
@@ -1426,7 +1426,10 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.37  2009-09-28 12:53:13  marc
+# Revision 1.38  2009-12-09 09:08:49  marc
+# typo in cc_get
+#
+# Revision 1.37  2009/09/28 12:53:13  marc
 # - added functions
 #   cc_get
 #   cc_get_syslog*
