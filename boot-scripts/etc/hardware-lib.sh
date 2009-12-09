@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.38 2009-10-07 12:03:35 marc Exp $
+# $Id: hardware-lib.sh,v 1.39 2009-12-09 10:57:15 marc Exp $
 #
 # @(#)$File$
 #
@@ -74,6 +74,7 @@ function udev_start() {
 #  SOURCE
 #
 function dev_start() {
+	[ -d /dev ] || exec_local mkdir /dev
     echo_local -n "Mounting dev "
     is_mounted /dev
     if [ $? -ne 0 ]; then 
@@ -84,19 +85,61 @@ function dev_start() {
     fi
 
     echo_local -n "Creating devices "
-    test -e /dev/console || exec_local mknod /dev/console c 5 1 &&
-    test -e /dev/null || exec_local mknod /dev/null c 1 3 &&
-    test -e /dev/zero || exec_local mknod /dev/zero c 1 5 &&
-    test -d /dev/pts || exec_local mkdir /dev/pts &&
-    test -d /dev/shm || exec_local mkdir -m1777 /dev/shm
-	test -e /dev/fd || ln -s /proc/self/fd /dev/fd
-    test -e /dev/stdin || ln -s /dev/fd/0 /dev/stdin
-    test -e /dev/stdout || ln -s /dev/fd/1 /dev/stdout
-    test -e /dev/stderr || ln -s fd/2 /dev/stderr
+    test -d /dev/pts ||     exec_local mkdir /dev/pts
+    is_mounted /dev/pts ||  exec_local mount -t devpts -o gid=5,mode=620 /dev/pts /dev/pts
+    test -d /dev/mapper ||  exec_local mkdir /dev/mapper
+    test -d /dev/shm ||     exec_local mkdir -m1777 /dev/shm
+    test -e /dev/null ||    exec_local mknod /dev/null c 1 3
+    test -e /dev/zero ||    exec_local mknod /dev/zero c 1 5
+    test -e /dev/systty ||  exec_local mknod /dev/systty c 4 0
+    test -e /dev/tty ||     exec_local mknod /dev/tty c 5 0
+    test -e /dev/console || exec_local mknod /dev/console c 5 1
+    test -e /dev/ptmx ||    exec_local mknod /dev/ptmx c 5 2
+    test -e /dev/rtc ||     exec_local mknod /dev/rtc c 10 135
+    test -e /dev/tty0    || exec_local mknod /dev/tty0 c 4 0
+    test -e /dev/tty1    || exec_local mknod /dev/tty1 c 4 1
+    test -e /dev/tty2    || exec_local mknod /dev/tty2 c 4 2
+    test -e /dev/tty3    || exec_local mknod /dev/tty3 c 4 3
+    test -e /dev/tty4    || exec_local mknod /dev/tty4 c 4 4
+    test -e /dev/tty5    || exec_local mknod /dev/tty5 c 4 5
+    test -e /dev/tty6    || exec_local mknod /dev/tty6 c 4 6
+    test -e /dev/tty7    || exec_local mknod /dev/tty7 c 4 7
+    test -e /dev/tty8    || exec_local mknod /dev/tty8 c 4 8
+    test -e /dev/tty9    || exec_local mknod /dev/tty9 c 4 9
+    test -e /dev/tty10   || exec_local mknod /dev/tty10 c 4 10
+    test -e /dev/tty11   || exec_local mknod /dev/tty11 c 4 11
+    test -e /dev/tty12   || exec_local mknod /dev/tty12 c 4 12
+    test -e /dev/ttyS0   || exec_local mknod /dev/ttyS0 c 4 64
+    test -e /dev/ttyS1   || exec_local mknod /dev/ttyS1 c 4 65
+    test -e /dev/ttyS2   || exec_local mknod /dev/ttyS2 c 4 66
+    test -e /dev/ttyS3   || exec_local mknod /dev/ttyS3 c 4 67
+    test -e /dev/kmsg ||    exec_local mknod /dev/kmsg c 1 11
+	test -e /dev/fd ||      exec_local ln -s /proc/self/fd /dev/fd
+    test -e /dev/stdin ||   exec_local ln -s /dev/fd/0 /dev/stdin
+    test -e /dev/stdout ||  exec_local ln -s /dev/fd/1 /dev/stdout
+    test -e /dev/stderr ||  exec_local ln -s fd/2 /dev/stderr
     
     return_code
 }
 #************dev_start
+
+#****f* hardware-lib.sh/move_dev
+#  NAME
+#    move_dev
+#  SYNOPSIS
+#    function boot-lib.sh/move_dev newroot
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function move_dev() {
+  local newroot=$1
+  mount --move /dev $newroot/dev &&
+  # Have these devfiles still available
+  test -e /dev/console || exec_local mknod /dev/console c 5 1 &&
+  test -e /dev/kmsg    || exec_local mknod /dev/kmsg c 1 11
+}
+#************move_dev
 
 #****f* boot-lib.sh/scsi_get_drivers
 #  NAME
@@ -272,14 +315,6 @@ function usbLoad() {
 #  SOURCE
 #
 function dm_start {
-   # Test because fencing is not working properly
-   #mount -o mode=0755 -t tmpfs none /dev
-   #mknod /dev/console c 5 1
-   #mknod /dev/null c 1 3
-   #mknod /dev/zero c 1 5
-   #mkdir /dev/pts
-   #mkdir /dev/shm
-
    echo_local -n "Loading device mapper modules"
    for module in $(dm_get_drivers); do
       exec_local modprobe $module >/dev/null 2>&1
@@ -459,6 +494,8 @@ function hardware_detect() {
   if [ $? -eq 0 ]; then
 	echo_local -n "..(xen DomX).."
 	xen_domx_hardware_detect
+    # Xen modules are not to be unloaded cause it does not work and makes no sense
+	modules=$(xen_get_drivers)
 #	drivers="$drivers xennet"
   elif [ -n "$drivers" ]; then
     for driver in $drivers; do
@@ -478,17 +515,17 @@ function hardware_detect() {
   for i in $(seq 0 $remove_times); do
     for _module in $(listmodules); do
       _xclude=0
-  	  if [ -n "$modules" ]; then
-  	    for _smodule in $modules; do
+	  if [ -n "$modules" ]; then
+	    for _smodule in $modules; do
   		  if [ "$_module" == "$_smodule" ]; then
-  		  	_xclude=1
+  		    _xclude=1
   		  fi
   	    done
   	    if [ $_xclude -eq 0 ]; then
-  	    	unload_module $_module $allowedunloadmodules
+  	      unload_module $_module $allowedunloadmodules
   	    fi
   	  else
-      	unload_module $_module $allowedunloadmodules
+        unload_module $_module $allowedunloadmodules
       fi
     done
     _modules=$(listmodules | sort)
@@ -685,9 +722,9 @@ function sysctl_load() {
 	local sysctlconf="$1"
 	[ -z "$sysctlconf" ] && sysctlconf="/etc/sysctl.conf" 
 	if [ -e "$sysctlconf" ]; then
-		echo_local "Loading sysctl.."
-		echo_local_debug "sysctl.conf: $sysctlconf"
-		exec_local "sysctl -p $sysctlconf > /dev/null"
+		echo_local -n "Loading sysctl.."
+		echo_local_debug -n "sysctl.conf: $sysctlconf"
+		exec_local "sysctl -q -p $sysctlconf > /dev/null"
 		return_code
 	fi
 }
@@ -695,7 +732,11 @@ function sysctl_load() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.38  2009-10-07 12:03:35  marc
+# Revision 1.39  2009-12-09 10:57:15  marc
+# cosmetics
+# no removement of modules with xen
+#
+# Revision 1.38  2009/10/07 12:03:35  marc
 # - Fixes bug 365 where the bootprocess might hang while booting a clusternode
 #
 # Revision 1.37  2009/09/28 13:01:50  marc
