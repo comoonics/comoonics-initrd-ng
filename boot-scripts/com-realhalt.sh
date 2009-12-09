@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: com-realhalt.sh,v 1.12 2009-10-08 08:05:04 marc Exp $
+# $Id: com-realhalt.sh,v 1.13 2009-12-09 09:28:45 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/com-halt.sh
 #  NAME
 #    com-halt.sh
-#    $Id: com-realhalt.sh,v 1.12 2009-10-08 08:05:04 marc Exp $
+#    $Id: com-realhalt.sh,v 1.13 2009-12-09 09:28:45 marc Exp $
 #  DESCRIPTION
 #    script called from <chrootpath>/com-halt.sh
 #  USAGE
@@ -115,7 +115,7 @@ echo_local "Starting ATIX exitrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.12 $ $Date: 2009-10-08 08:05:04 $'
+echo_local 'Internal Version $Revision: 1.13 $ $Date: 2009-12-09 09:28:45 $'
 echo_local_debug "Calling cmd "$(repository_get_value haltcmd)
 #echo_local "Builddate: "$(date)
 
@@ -157,15 +157,7 @@ step "halt: Restarted init process in chroot" "halt_restartinit"
 echo_local -n "Moving dev filesystem"
 exec_local mkdir /dev2
 if is_mounted $(repository_get_value oldroot)/dev/pts; then
-   _filesystem=/dev/pts
-   fuser -m $(repository_get_value oldroot)/$_filesystem &> /dev/null &&
-   fuser -km -15 $(repository_get_value oldroot)/$_filesystem &> /dev/null
-   sleep 2
-   fuser -m $(repository_get_value oldroot)/$_filesystem &> /dev/null &&
-   fuser -km -9 $(repository_get_value oldroot)/$_filesystem &> /dev/null
-#   success
-#   echo_local -n "Umounting $_filesystem"
-   exec_local "umount $(repository_get_value oldroot)/$_filesystem"
+   exec_local umount_filesystem $(repository_get_value oldroot)/dev/pts 1
 fi
 is_mounted $(repository_get_value oldroot)/dev && exec_local "mount --move $(repository_get_value oldroot)/dev /dev2" &&
 is_mounted /dev/pts || exec_local "mount -t devpts none /dev/pts" &&
@@ -174,42 +166,23 @@ step "Moved /dev filesystem" "movedevfs"
 
 rc=0
 echo_local -n "Umounting filesystems in oldroot ("$(get_dep_filesystems $(repository_get_value oldroot))")"
-for _filesystem in $(get_dep_filesystems $(repository_get_value oldroot)); do
-#   echo_local_debug "Processes running in oldroot $_filesystem"
-#   exec_local_debug fuser -mv $_filesystem
-
-#   echo_local -n "Stopping processes in $_filesystem"
-   # killall in /mnt/oldroot
-   fuser -m $(repository_get_value oldroot)/$_filesystem &> /dev/null &&
-   fuser -km -15 $(repository_get_value oldroot)/$_filesystem &> /dev/null
-   sleep 2
-   fuser -m $(repository_get_value oldroot)/$_filesystem &> /dev/null &&
-   fuser -km -9 $(repository_get_value oldroot)/$_filesystem &> /dev/null
-#   success
-   echo_local -n "Umounting $_filesystem"
-   exec_local "umount $_filesystem"
+for _filesystem in $(get_dep_filesystems $(repository_get_value oldroot)/sys) $(get_dep_filesystems $(repository_get_value oldroot)/proc) $(repository_get_value oldroot)/sys $(repository_get_value oldroot)/proc; do
+   echo_local "Umounting $_filesystem"
+   exec_local umount_filesystem $_filesystem
    [ $return_c -ne 1 ] && rc=$return_c
-   
-#   return_code 
+done	
+for _filesystem in $(get_dep_filesystems $(repository_get_value oldroot)); do
+   echo_local "Umounting $_filesystem"
+   exec_local umount_filesystem $_filesystem 1
+   [ $return_c -ne 1 ] && rc=$return_c
 done
 return_code $rc
 
 step "halt: Successfully umounted filesystem in oldroot" "halt_umountoldroot"
 
 _filesystem=$(repository_get_value oldroot)
-echo_local_debug "Processes running in oldroot $_filesystem"
-exec_local_debug fuser -mv $_filesystem
-
-echo_local -n "Stopping processes in $_filesystem"
-# killall in /mnt/oldroot
-exec_local fuser -km -15 $(repository_get_value oldroot) &> /dev/null
-sleep 5
-exec_local fuser -km -9 $(repository_get_value oldroot) &> /dev/null
-success
-step "halt: Successfully stopped processes running in oldroot" "halt_stopoldroot"
-
 echo_local -n "Umounting oldroot $_filesystem"
-exec_local /bin/umount $_filesystem
+exec_local umount_filesystem  $_filesystem 1
 return_code
 step "halt: Umounting oldroot" "halt_umountoldroot"
 
@@ -224,7 +197,10 @@ $cmd
 
 #####################
 # $Log: com-realhalt.sh,v $
-# Revision 1.12  2009-10-08 08:05:04  marc
+# Revision 1.13  2009-12-09 09:28:45  marc
+# introduced umount_filesystem instead of implementing anytime.
+#
+# Revision 1.12  2009/10/08 08:05:04  marc
 # oldroot in repo
 # and bugfix when umounting /dev/pts
 #
