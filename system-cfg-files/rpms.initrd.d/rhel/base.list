@@ -1,1 +1,3 @@
 libgcc			\.so
+SysVinit        ^/sbin
+SysVinit        ^/bin
