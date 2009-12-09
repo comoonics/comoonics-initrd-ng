@@ -1,5 +1,5 @@
 #
-# $Id: std-lib.sh,v 1.11 2009-10-08 08:01:52 marc Exp $
+# $Id: std-lib.sh,v 1.12 2009-12-09 09:27:18 marc Exp $
 #
 # @(#)$File$
 #
@@ -268,20 +268,17 @@ function return_code_passed() {
 #    returns formated OK
 #  SOURCE
 function success {
-  [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
-  echo -n "[  "
-#  echo -n "[  " >&3
-#  echo -n "[  " >&5
-  [ "$BOOTUP" = "color" ] && $SETCOLOR_SUCCESS
-  echo -n "OK"
-#  echo -n "OK" >&3
-#  echo -n "OK" >&5
-  [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
-  echo "  ]"
-#  echo "  ]" >&3
-#  echo "  ]" >&5
-  echo -ne "\r"
-#  echo -ne "\r" >&3
+  if [ -w /dev/kmsg ] && [ -z "$NOKMSG" ]; then
+    echo " [OK]" > /dev/kmsg
+  else 
+    [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
+    echo -n "[  "
+    [ "$BOOTUP" = "color" ] && $SETCOLOR_SUCCESS
+    echo -n "OK"
+    [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
+    echo "  ]"
+    echo -ne "\r"
+  fi
   return 0
 }
 #********** success
@@ -295,20 +292,17 @@ function success {
 #    returns formated FAILURE
 #  SOURCE
 function failure {
-  [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
-  echo -n "["
-#  echo -n "[" >&3
-#  echo -n "[" >&5
-  [ "$BOOTUP" = "color" ] && $SETCOLOR_FAILURE
-  echo -n "FAILED"
-#  echo -n "FAILED" >&3
-#  echo -n "FAILED" >&5
-  [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
-  echo "]"
-  echo -ne "\r"
-#  echo "]" >&3
-#  echo "]" >&5
-#  echo -ne "\r" >&3
+  if [ -w /dev/kmsg ] && [ -z "$NOKMSG" ]; then
+  	echo " [FAILED]" > /dev/kmsg 
+  else
+    [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
+    echo -n "["
+    [ "$BOOTUP" = "color" ] && $SETCOLOR_FAILURE
+    echo -n "FAILED"
+    [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
+    echo "]"
+    echo -ne "\r"
+  fi
   return 1
 }
 #********** warning
@@ -322,20 +316,17 @@ function failure {
 #    returns formated WARNING
 #  SOURCE
 function warning {
-  [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
-  echo -n "["
-#  echo -n "[" >&3
-#  echo -n "[" >&5
-  [ "$BOOTUP" = "color" ] && $SETCOLOR_WARNING
-  echo -n "WARNING"
-#  echo -n "WARNING" >&3
-#  echo -n "WARNING" >&5
-  [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
-  echo "]"
-  echo -ne "\r"
-#  echo "]" >&3
-#  echo "]" >&5
-#  echo -ne "\r" >&3
+  if [ -w /dev/kmsg ] && [ -z "$NOKMSG" ]; then
+    echo " [WARNING]" > /dev/kmsg
+  else 
+    [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
+    echo -n "["
+    [ "$BOOTUP" = "color" ] && $SETCOLOR_WARNING
+    echo -n "WARNING"
+    [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
+    echo "]"
+    echo -ne "\r"
+  fi
   return 1
 }
 #********** warning
@@ -349,20 +340,17 @@ function warning {
 #    returns formated PASSED
 #  SOURCE
 function passed {
-  [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
-  echo -n "["
-#  echo -n "[" >&3
-#  echo -n "[" >&5
-  [ "$BOOTUP" = "color" ] && $SETCOLOR_WARNING
-  echo -n "PASSED"
-#  echo -n "PASSED" >&3
-#  echo -n "PASSED" >&5
-  [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
-  echo "]"
-  echo -ne "\r"
-#  echo "]" >&3
-#  echo "]" >&5
-#  echo -ne "\r" >&3
+  if [ -w /dev/kmsg ] && [ -z "$NOKMSG" ]; then
+    echo " [PASSED]" > /dev/kmsg
+  else 
+    [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
+    echo -n "["
+    [ "$BOOTUP" = "color" ] && $SETCOLOR_WARNING
+    echo -n "PASSED"
+    [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
+    echo "]"
+    echo -ne "\r"
+  fi
   return 1
 }
 #********** passed
@@ -391,8 +379,11 @@ function echo_out() {
 #  SOURCE
 #
 function echo_local() {
-   echo ${*:0:$#-1} "${*:$#}"
-   [ -w /dev/kmsg ] && [ -z "$NOKMSG" ] && echo "<1>osr-bootimage(notice): ${*:$#}" > /dev/kmsg
+   if [ -z "$NOKMSG" ] && [ -w /dev/kmsg ]; then 
+     echo ${*:0:$#-1} "<1>osr(notice): ${*:$#}" > /dev/kmsg
+   else
+     echo ${*:0:$#-1} "${*:$#}"
+   fi
 #   echo ${*:0:$#-1} "${*:$#}" >&3
 #   echo ${*:0:$#-1} "${*:$#}" >&5
 #   echo ${*:0:$#-1} "${*:$#}" >> $bootlog
@@ -412,12 +403,11 @@ function echo_local() {
 function echo_local_debug() {
   local debug=$(repository_get_value debug)
    if [ ! -z "$debug" ]; then
-     echo ${*:0:$#-1} "${*:$#}"
-     [ -w /dev/kmsg ] && [ -z "$NOKMSG" ] && echo "<1>osr-bootimage(debug): ${*:$#}" > /dev/kmsg
-     #echo ${*:0:$#-1} "${*:$#}" >&3
-#     echo ${*:0:$#-1} "${*:$#}" >&5
-#     echo ${*:0:$#-1} "${*:$#}" >> $bootlog
-#     [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
+      if [ -z "$NOKMSG" ] && [ -w /dev/kmsg ]; then 
+        echo ${*:0:$#-1} "<1>osr(debug): ${*:$#}" > /dev/kmsg
+      else
+        echo ${*:0:$#-1} "${*:$#}"
+      fi
    fi
 }
 #************ echo_local_debug
@@ -433,8 +423,11 @@ function echo_local_debug() {
 #
 function error_out() {
 #    echo ${*:0:$#-1} "${*:$#}" >&4
-    echo ${*:0:$#-1} "${*:$#}" >&2
-     [ -w /dev/kmsg ] && [ -z "$NOKMSG" ] && echo "<1>osr-bootimage(error): ${*:$#}" > /dev/kmsg
+   if [ -z "$NOKMSG" ] && [ -w /dev/kmsg ]; then 
+     echo ${*:0:$#-1} "<1>osr(error): ${*:$#}" > /dev/kmsg
+   else
+     echo ${*:0:$#-1} "${*:$#}" >&2
+   fi
 }
 #************ error_out
 
@@ -449,8 +442,11 @@ function error_out() {
 #
 function warn() {
 #    echo ${*:0:$#-1} "${*:$#}" >&4
-    echo ${*:0:$#-1} "${*:$#}" >&2
-     [ -w /dev/kmsg ] && [ -z "$NOKMSG" ] && echo "<1>osr-bootimage(warn): ${*:$#}" > /dev/kmsg
+   if [ -z "$NOKMSG" ] && [ -w /dev/kmsg ]; then 
+     echo ${*:0:$#-1} "<1>osr(warn): ${*:$#}" > /dev/kmsg
+   else
+     echo ${*:0:$#-1} "${*:$#}" >&2
+   fi
 }
 #************ warn
 
@@ -464,12 +460,7 @@ function warn() {
 #  SOURCE
 #
 function error_local() {
-   echo ${*:0:$#-1} "${*:$#}" >&2
-   [ -w /dev/kmsg ] && [ -z "$NOKMSG" ] && echo "<1>osr-bootimage(info): ${*:$#}" > /dev/kmsg
-#   echo ${*:0:$#-1} "${*:$#}" >&4
-#   echo ${*:0:$#-1} "${*:$#}" >&5
-#   echo ${*:0:$#-1} "${*:$#}" >> $bootlog
-#   [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
+	error_out $*
 }
 #************ error_local
 
@@ -483,14 +474,9 @@ function error_local() {
 #  SOURCE
 #
 function error_local_debug() {
-  local debug=$(repository_get_value debug)
+   local debug=$(repository_get_value debug)
    if [ ! -z "$debug" ]; then
-     echo ${*:0:$#-1} "${*:$#}" >&2
-     [ -w /dev/kmsg ] && [ -z "$NOKMSG" ] && echo "<1>osr-bootimage(error): ${*:$#}" > /dev/kmsg
-#     echo ${*:0:$#-1} "${*:$#}" >&4
-#     echo ${*:0:$#-1} "${*:$#}" >&5
-#     echo ${*:0:$#-1} "${*:$#}" >> $bootlog
-#     [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
+   	  error_local $*
    fi
 }
 
@@ -528,13 +514,6 @@ function exec_local() {
   	echo "skipped"
   	return_c=$(true)
   fi
-#  if [ ! -z "$debug" ]; then
-#    echo "cmd: $*" >&2
-#    echo "OUTPUT: $output" >&2
-#  fi
-#  echo "cmd: $*" >> $bootlog
-#  echo -n "$output"
-#  echo -n "$output" > /dev/kmsg
   return $return_c
 }
 #************ exec_local
@@ -1004,7 +983,10 @@ exec_ordered_skripts_in() {
 
 #################
 # $Log: std-lib.sh,v $
-# Revision 1.11  2009-10-08 08:01:52  marc
+# Revision 1.12  2009-12-09 09:27:18  marc
+# logging
+#
+# Revision 1.11  2009/10/08 08:01:52  marc
 # no more default output only with help
 #
 # Revision 1.10  2009/09/28 13:07:55  marc
