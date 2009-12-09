@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc,v 1.24 2009-09-28 13:11:08 marc Exp $
+# $Id: linuxrc,v 1.25 2009-12-09 09:03:44 marc Exp $
 #
 # @(#)$File$
 #
@@ -34,7 +34,7 @@
 #****h* comoonics-bootimage/linuxrc
 #  NAME
 #    linuxrc
-#    $Id: linuxrc,v 1.24 2009-09-28 13:11:08 marc Exp $
+#    $Id: linuxrc,v 1.25 2009-12-09 09:03:44 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -119,7 +119,8 @@ mkdir -p $(dirname $bootlog)
   #exec 3>/dev/null 4>>$bootlog
   #exec 3>>$bootlog
 exec 10>&2
-exec 2> >(tee -a $bootlog | tee /dev/kmsg)
+exec 2> >(tee -a $bootlog | tee /dev/console)
+#exec 2>> $bootlog
 ./linuxrc.generic.sh | tee -a $bootlog
 #fi
 exec 2>&10
@@ -157,7 +158,10 @@ fi
 
 ################
 # $Log: linuxrc,v $
-# Revision 1.24  2009-09-28 13:11:08  marc
+# Revision 1.25  2009-12-09 09:03:44  marc
+# logging
+#
+# Revision 1.24  2009/09/28 13:11:08  marc
 # - Changed to use new way to output messages
 # - Importing /etc/hardware-lib.sh, /etc/stdfs-lib.sh
 # - Removed deps to output channel 3,4
