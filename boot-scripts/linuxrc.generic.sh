@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.84 2009-12-09 09:07:01 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.85 2009-12-09 10:58:42 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.84 2009-12-09 09:07:01 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.85 2009-12-09 10:58:42 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -85,7 +85,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.84 $ $Date: 2009-12-09 09:07:01 $'
+echo_local 'Internal Version $Revision: 1.85 $ $Date: 2009-12-09 10:58:42 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -190,6 +190,7 @@ if [ -n "$(repository_get_value ro)" ]; then
 elif [ -n "$(repository_get_value rw)" ]; then
   repository_append_value mount_opts "rw"
 fi
+success
 
 clusterfs_chroot_needed initrd
 __default=$?
@@ -452,12 +453,9 @@ step "CDSL tree mounted" "cdsl"
 echo_local -n "Mounting the device file system"
 #TODO
 # try an exec_local mount --move /dev $newroot/dev
-exec_local mount --move /dev $(repository_get_value newroot)/dev
-_error=$?
-exec_local cp -a $(repository_get_value newroot)/dev/console /dev/
-exec_local cp -a $(repository_get_value newroot)/dev/kmsg /dev/
+exec_local move_dev $(repository_get_value newroot)
 #exec_local mount --bind /dev $newroot/dev
-return_code $_error
+return_code
 
 for logfile_name in bootlog syslog_logfile; do
   logfile=$(repository_get_value $logfile_name)
@@ -528,10 +526,9 @@ step "Cleaned up initrd" "cleanup"
 
 #TODO umount $newroot/proc again
 
-echo_local -n "Restart services in newroot ..."
+echo_local "Restart services in newroot ..."
 exec_local prepare_newroot $(repository_get_value newroot)
 exec_local clusterfs_services_restart_newroot $(repository_get_value newroot) "$(repository_get_value lockmethod)" "$(repository_get_value lvm_sup)" "$(repository_get_value chroot_path)" || breakp $(errormsg err_cc_restart_service)
-return_code
 step "Initialization completed." "initcomplete"
 
 newroot=$(repository_get_value newroot)
@@ -542,7 +539,11 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.84  2009-12-09 09:07:01  marc
+# Revision 1.85  2009-12-09 10:58:42  marc
+# cosmetics
+# implemented move_dev function instead of plain here.
+#
+# Revision 1.84  2009/12/09 09:07:01  marc
 # cosmetics
 #
 # Revision 1.83  2009/09/28 13:12:41  marc
