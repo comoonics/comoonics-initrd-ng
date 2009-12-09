@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.16 2009-02-24 12:02:13 marc Exp $
+# $Id: network-lib.sh,v 1.17 2009-12-09 10:57:40 marc Exp $
 #
 # @(#)$File$
 #
@@ -217,13 +217,12 @@ function ip2Config() {
 
   # Bonding
   if [ -n "$ipAddr" ]; then
-  	echo_local -n "Generating ifcfg for ${distribution} ($ipAddr, $ipGate, $ipNetmask, $ipHostname, $ipDevice, $ipMAC)..."
+  	echo_local_debug -n "Generating ifcfg for ${distribution} ($ipAddr, $ipGate, $ipNetmask, $ipHostname, $ipDevice, $ipMAC)..."
     ${distribution}_ip2Config "$ipDevice" "$ipAddr" "$ipNetmask" "$ipHostname" "$ipGate" "$ipMAC" "$type" "$bridge" "$onboot"
   else
-	echo_local -n "Generating ifcfg for ${distribution} ($master, $slave, $bridge, $ipDevice, $ipMAC)..."
+	echo_local_debug -n "Generating ifcfg for ${distribution} ($master, $slave, $bridge, $ipDevice, $ipMAC)..."
     ${distribution}_ip2Config "$ipDevice" "" "$master" "$slave" "" "$ipMAC" "$type" "$bridge" "$onboot"
   fi
-  return_code $?
 }
 #************ ip2Config
 
@@ -297,7 +296,10 @@ function setPosAtIPString() {
 
 #############
 # $Log: network-lib.sh,v $
-# Revision 1.16  2009-02-24 12:02:13  marc
+# Revision 1.17  2009-12-09 10:57:40  marc
+# cosmetics
+#
+# Revision 1.16  2009/02/24 12:02:13  marc
 # *** empty log message ***
 #
 # Revision 1.15  2009/02/18 18:03:20  marc

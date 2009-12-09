@@ -1,5 +1,5 @@
 #
-# $Id: nfs-lib.sh,v 1.14 2009-08-11 09:58:16 marc Exp $
+# $Id: nfs-lib.sh,v 1.15 2009-12-09 10:57:56 marc Exp $
 #
 # @(#)$File$
 #
@@ -592,7 +592,7 @@ function nfs_services_restart_newroot {
   done
 #  nfs_stop_portmap $chroot_path
 
-  echo "Umounting $new_root/proc"
+  echo_local -n "Umounting $new_root/proc"
   exec_local umount $new_root/proc
   return_code
 }
@@ -634,7 +634,10 @@ function nfs_get_userspace_procs {
 #******** nfs_get_userspace_procs
 
 # $Log: nfs-lib.sh,v $
-# Revision 1.14  2009-08-11 09:58:16  marc
+# Revision 1.15  2009-12-09 10:57:56  marc
+# cosmetics
+#
+# Revision 1.14  2009/08/11 09:58:16  marc
 # fixed bug #357 where NFSv4 was not working with RHEL5
 #
 # Revision 1.13  2009/04/20 07:10:46  marc
