@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.7 2009-10-07 12:06:40 marc Exp $
+# $Id: boot-lib.sh,v 1.8 2009-12-09 09:07:41 marc Exp $
 #
 # @(#)$File$
 #
@@ -36,7 +36,7 @@ function create_chroot () {
   chroot_source=$1
   chroot_path=$2
 
-  exec_local cp -axf $chroot_source $chroot_path
+  cp -axf $chroot_source $chroot_path 2>/dev/null
   exec_local rm -rf $chroot_path/var/run/*
   exec_local mkdir -p $chroot_path/tmp
   exec_local chmod 755 $chroot_path
@@ -83,7 +83,10 @@ rhel5_detectHalt() {
 
 #################
 # $Log: boot-lib.sh,v $
-# Revision 1.7  2009-10-07 12:06:40  marc
+# Revision 1.8  2009-12-09 09:07:41  marc
+# no exec_local when copying and errors go to >/dev/null
+#
+# Revision 1.7  2009/10/07 12:06:40  marc
 # - accepting more arguments to be passed to detectHalt
 # - detection of already mounted fs in create_chroot
 #
