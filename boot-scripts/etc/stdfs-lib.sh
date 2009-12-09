@@ -1,5 +1,5 @@
 #
-# $Id: stdfs-lib.sh,v 1.6 2009-10-08 08:00:05 marc Exp $
+# $Id: stdfs-lib.sh,v 1.7 2009-12-09 09:26:57 marc Exp $
 #
 # @(#)$File$
 #
@@ -283,12 +283,13 @@ function get_dep_filesystems {
 	local cleanmount=
 	local rc=
 	
-	[ -z "$MOUNTS" ] && cleanmount=1
-	[ -z "$MOUNTS" ] && MOUNTS=$(cat /proc/mounts)
+#	[ -z "$MOUNTS" ] && cleanmount=1
+#	[ -z "$MOUNTS" ] && MOUNTS=$(cat /proc/mounts)
 	
 	is_mounted $basepath || return 1
 	
-	echo "$MOUNTS" | while read dev path fs rest; do
+    local paths=
+	while read dev path fs rest; do
 		exclude=0
 		if [ -n "$excludepaths" ]; then
 		  for excludepath in $excludepaths; do
@@ -298,16 +299,45 @@ function get_dep_filesystems {
 		  done
 		fi
 		if [ $exclude -eq 0 ] && [ ${#path} -gt ${#basepath} ] && [ "${path:0:${#basepath}}" = "$basepath" ]; then
-			echo $path
+		  echo $path
 		fi
-    done | sort -u -r
+    done < /proc/mounts | sort -u -r
     rc=$?
     [ -n "$cleanmount" ] && unset MOUNTS
 }
 #************** get_dep_filesystems
+
+#****f* std-lib.sh/umount_filesystem
+#  NAME
+#    umount_filesystem
+#  SYNOPSIS
+#    function umount_filesystem( path, killdepservices) {
+#  DESCRIPTION
+#    Umounts the given filesystem and kills all dependent service if killdepservices is set.
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function umount_filesystem {
+	local _filesystem=$1
+	local killsvc=$2
+	
+	if [ -n "$killsvc" ]; then
+	  fuser -m $_filesystem &> /dev/null &&
+      fuser -km -15 $_filesystem &> /dev/null
+      sleep 2
+      fuser -m $_filesystem &> /dev/null &&
+      fuser -km -9 $_filesystem &> /dev/null
+	fi
+    umount $_filesystem
+}
+#************ umount_filesystem
 ######################
 # $Log: stdfs-lib.sh,v $
-# Revision 1.6  2009-10-08 08:00:05  marc
+# Revision 1.7  2009-12-09 09:26:57  marc
+# fixed bug in get_dep_filesystems
+#
+# Revision 1.6  2009/10/08 08:00:05  marc
 # better clean up in get_dep_filesystems
 #
 # Revision 1.5  2009/09/28 13:06:16  marc
