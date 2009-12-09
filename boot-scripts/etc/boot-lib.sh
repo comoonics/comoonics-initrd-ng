@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.78 2009-10-07 14:07:58 marc Exp $
+# $Id: boot-lib.sh,v 1.79 2009-12-09 09:08:12 marc Exp $
 #
 # @(#)$File$
 #
@@ -389,16 +389,16 @@ function initBootProcess() {
   date=`/bin/date`
 
 
-  echo_local "***********************************"
+  echo "***********************************"
   # Print a text banner.
   release=$(cat ${predir}/etc/comoonics-release)
-  echo_local -en $"\t\tWelcome to "
+  echo -en $"\t\tWelcome to "
   [ "$BOOTUP" = "color" ] && echo -en "\\033[0;34m"
-  echo_local $release
+  echo $release
   [ "$BOOTUP" = "color" ] && echo -en "\\033[0;39m"
-  echo_local "Starting Open Shared Root Boot Process"
-  echo_local "Date: $date"
-  echo_local "***********************************"
+  echo "Starting Open Shared Root Boot Process"
+  echo "Date: $date"
+  echo "***********************************"
 
   echo_local_debug "*****************************"
   echo_local -n "Mounting Proc-FS"
@@ -839,12 +839,12 @@ function stop_service {
 #
 function clean_initrd() {
 	local procs="udevd"
-	echo_local_debug "Sending unnecessary processes the TERM signal"
+	echo_local_debug -n "Sending unnecessary processes the TERM signal"
 	for p in $procs; do
 		killall -0 $p && killall $p &> /dev/null
 	done
 	sleep 3
-	echo_local_debug "Sending unnecessary processes the KILL signal"
+	echo_local_debug -n "Sending unnecessary processes the KILL signal"
 	for p in $procs; do
 		killall -0 $p && killall -9 $p &> /dev/null
 	done
@@ -999,7 +999,10 @@ detectHalt() {
 #************** detectHalt
 
 # $Log: boot-lib.sh,v $
-# Revision 1.78  2009-10-07 14:07:58  marc
+# Revision 1.79  2009-12-09 09:08:12  marc
+# cosmetics
+#
+# Revision 1.78  2009/10/07 14:07:58  marc
 # clean_initrd should return true
 #
 # Revision 1.77  2009/10/07 12:04:19  marc

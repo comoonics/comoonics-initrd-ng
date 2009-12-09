@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.83 2009-09-28 13:12:41 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.84 2009-12-09 09:07:01 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.83 2009-09-28 13:12:41 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.84 2009-12-09 09:07:01 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -85,7 +85,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.83 $ $Date: 2009-09-28 13:12:41 $'
+echo_local 'Internal Version $Revision: 1.84 $ $Date: 2009-12-09 09:07:01 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -112,10 +112,11 @@ return_code 0
 if [ -z "$(repository_get_value nousb)" ]; then
   echo_local -n "Loading USB Modules.."
   exec_local usbLoad
+  return_code
 fi
 
 echo_local_debug "*****************************"
-echo_local -en $"\t\tPress 'I' to enter interactive startup."
+echo_local $"    Press 'I' to enter interactive startup."
 echo_local
 
 {
@@ -123,7 +124,7 @@ echo_local
 } &
 read -n1 -t5 confirm
 if [ "$confirm" = "i" ]; then
-  echo_local -e "\t\tInteractivemode recognized. Switching step_mode to on"
+  echo_local -e "    Interactivemode recognized. Switching step_mode to on"
   repository_store_value step
 fi
 wait
@@ -541,7 +542,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.83  2009-09-28 13:12:41  marc
+# Revision 1.84  2009-12-09 09:07:01  marc
+# cosmetics
+#
+# Revision 1.83  2009/09/28 13:12:41  marc
 # - Reimplemented syslog functionality
 # - Removed deps to output channels 3,4
 # - Some typos
