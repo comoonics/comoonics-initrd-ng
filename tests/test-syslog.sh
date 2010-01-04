@@ -1,9 +1,8 @@
-runonce
-if [ $? -eq 0 ]; then
+if ! runonce; then
   tempfile=$(tempfile)
   path=$(dirname $0)
 
-  echo "Tempfile $tempfile"
+  echo_local_debug "Tempfile $tempfile"
 
   for syslogtype in syslogd rsyslogd syslog-ng; do
     echo -n "Testing $syslogtype"
@@ -22,10 +21,8 @@ if [ $? -eq 0 ]; then
   detecterror $? "Could not find default syslog.conf for syslogtype $syslogtype"
   
   repository_store_value doexec 0
-  repository_store_value debug 1
   out=$(${syslogtype}_start /tmp)
   detecterror $? "Could not start syslog $syslogtype. Output: $out"
-  repository_store_value debug 0
   repository_store_value doexec 1
   rm -f $tempfile 
 fi

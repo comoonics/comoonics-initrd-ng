@@ -7,10 +7,21 @@
     <clusternode nodeid="1" name='gfs-node1' votes='1'>
       <com_info>
         <syslog name='gfs-node1'/>
-        <rootvolume name='/dev/VG_SHAREDROOT/LV_SHAREDROOT'/>
-        <eth ip='10.0.0.1' gateway='1.2.3.4' name='eth0' mac='00:0C:29:3B:XX:XX' mask='255.255.255.0' driver="e100"/>
+        <rootvolume name='/dev/VG_SHAREDROOT/LV_SHAREDROOT' fstype="gfs" mountopts="noatime,nodiratime,noquota"/>
+        <eth ip='10.0.0.1' gateway='1.2.3.4' name='eth0' mac='00:0C:29:3B:XX:XX' mask='255.255.255.0' driver="e100">
+          <properties>
+            <property name="MASTER">MASTER=no</property>
+            <property name="SLAVE">SLAVE=no</property>
+            <property name="BONDING_OPTS">BONDING_OPTS="miimon=100 mode=1"</property>
+          </properties>
+        </eth>
 	    <eth ip='10.0.0.9' gateway='' name='eth1' mac='01:0C:29:3B:XX:XX' mask='255.255.255.0' driver="tg3"/>
         <fenceackserver passwd='XXX' user='root'/>
+        <chrootenv      mountpoint      = "/var/comoonics/chroot"
+                                              fstype          = "ext3"
+                                              device          = "/dev/sda2"
+                                              chrootdir       = "/var/comoonics/chroot"
+                              />
       </com_info>
       <fence>
         <method name='1'>

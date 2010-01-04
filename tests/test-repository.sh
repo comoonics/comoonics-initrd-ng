@@ -1,5 +1,4 @@
-runonce
-if [ $? -eq 0 ]; then
+if ! runonce; then
   REPOSITORY_PATH=/var/tmp
 #  REPOSITORY_PREFIX="my_repository"
   REPOSITORY_DEFAULT="test_repository"

@@ -1,12 +1,14 @@
-runonce
-if [ $? -eq 0 ]; then
-  MOUNTS="/dev1 /a fstype1 rest
+if ! runonce; then
+  MOUNTSFILE=$(tempfile)
+  cat > $MOUNTSFILE <<EOF
+/dev1 /a fstype1 rest
 /dev2 /a/b fstype2 rest
 /dev3 /a/b/c fstype3 rest
 /dev4 /a/c fstype4 rest
 /dev5 /b fstype5 rest
 /dev6 /b/a fstype6 rest
-"
+EOF
+  
   echo "Testing stdfs-lib.."
 
   echo -n "Testing ismounted.."
@@ -20,28 +22,30 @@ if [ $? -eq 0 ]; then
   done
   echo "OK"
   
-  echo -n "Testing get_dep_filesystems"
+  echo -n "Testing get_dep_filesystems $MOUNTSFILE"
   out=$(get_dep_filesystems /a)
   result="/a/c
 /a/b/c
 /a/b"
-  [ "$out" = "$result" ]
+  test "$out" = "$result"
   detecterror $? "get_dep_filesystems /a: $out != $result"
 
   out=$(get_dep_filesystems /a /a/b)
   result="/a/c"
-  [ "$out" = "$result" ]
+  test "$out" = "$result"
   detecterror $? "get_dep_filesystems /a /a/b: $out != $result"
 
   out=$(get_dep_filesystems /a /a/c)
   result="/a/b/c
 /a/b"
-  [ "$out" = "$result" ]
+  test "$out" = "$result"
   detecterror $? "get_dep_filesystems /a /a/c: $out != $result"
 
 
   out=$(get_dep_filesystems /d /a/c)
   result=""
-  [ "$out" = "$result" ]
+  test "$out" = "$result"
   detecterror $? "get_dep_filesystems /d: $out != $result"
+  echo
+  rm -f $MOUNTSFILE
 fi

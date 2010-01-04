@@ -1,15 +1,61 @@
 #!/bin/bash
+
+usage() {
+	cat<<EOF
+`basename $0` [ [-h] | [-v] ] [test_file]*
+  -h help 
+  -d debug (even more chatty set -x before executing each testfile)
+  -V show version
+EOF
+}
 libdir=$(dirname $0)/../boot-scripts
 testdir=$(dirname $0)
 echo "Testdir: $testdir"
 
-root_filesystems="gfs ocfs2 ext3"
-cluster_types="gfs"
-distributions="rhel5 sles10"
+root_filesystems="gfs ocfs2 ext3 nfs"
+cluster_types="gfs osr"
+distributions="rhel5 sles10 sles11"
 
-testing_errors=0
 PYTHONPATH=$PYTHONPATH:../../comoonics-clustersuite/python/lib
-export testing_errors PYTHONPATH
+
+trace=0
+breakonerror=0
+while getopts dhvVr:c:D:b option ; do
+	case "$option" in
+	    V) # version
+		echo "$0 Version '$Revision $'"
+		exit 0
+		;;
+	    h) # help
+		usage
+		exit 0
+		;;
+		d) #debug
+		trace=1
+		;;
+		v) #verbose
+		debug=1
+		;;
+		r) #rootfilesystems
+	    root_filesystems="$OPTARG"
+	    ;;
+	    c) #clutypes
+	    cluster_types="$OPTARG"
+	    ;;
+	    D) # distributions
+	    distributions="$OPTARG"
+	    ;;
+	    b) # breakwhenerror
+	    breakonerror=1
+	    ;;
+	    *)	    
+		echo "Error wrong option." >&2
+		usage
+		exit 1
+		;;
+	esac
+done
+shift $(($OPTIND - 1))
 
 if [ -z "$1" ]; then
   tests=$(find $testdir -type f -name "test*.sh" -not -path '*/lib/*')
@@ -22,67 +68,62 @@ if [ -z "$tests" ]; then
 	exit 0
 fi
 
-source $testdir/lib/test-lib.sh
+shellopts=""
+
+. $libdir/etc/std-lib.sh
+. $libdir/etc/repository-lib.sh
+. $testdir/lib/test-lib.sh
+
+export testing_errors testing_errormsgs PYTHONPATH testing_errors libdir testdir root_filesystems cluster_types distributions
+export trace debug
+
+repository_clear
 
 for testscript in $tests; do
-	testname=$(basename $testscript)
-    testname=${testname#test-}
-    testname=${testname%.sh}
-    testname=${testname//-/_}
-    preparetest
-	source "$testscript"
-	if [ $testing_errors -ne 0 ]; then
-		echo "Error during execution of test \"$testscript\" \"$testing_errors\". Terminating!"
-		errormsg
-		exit 1
-	else
-	    echo "$testscript DONE"
-    fi
-    for distribution in $distributions; do
-    	for clutype in $cluster_types; do
-    		for rootfs in $root_filesystems; do
-    		    #echo "Testing distribution dependent files $clutype $rootfs $distribution"
-    			for testscript in $(find $testdir/$distribution -type f -name "$testscript" -not -path '*/lib/*' 2>/dev/null); do
-	    			preparetest $clutype $rootfs $distribution
-	    			source "$testscript"
-					if [ $testing_errors -ne 0 ]; then
-						echo "Error during execution of test \"$testscript\"  \"$testing_errors\". Terminating!"
-						exit 1
-					else
-	    				echo "$testscript DONE"
-	    				eval ${testname}_done=1
-    				fi
-    			done
-    			#echo "Testing cluster dependent files $clutype $rootfs $distribution"
-    			for testscript in $(find $testdir/$clutype -type f -name "$testscript" -not -path '*/lib/*' 2>/dev/null); do
-	    			preparetest $clutype $rootfs $distribution
-	    			source "$testscript"
-					if [ $testing_errors -ne 0 ]; then
-						echo "Error during execution of test \"$testscript\" \"$testing_errors\". Terminating!"
-						exit 1
-					else
-	    				echo "$testscript DONE"
-	    				eval ${testname}_done=1
-    				fi
-    			done
-    			#echo "Testing rootfs dependent files $clutype $rootfs $distribution"
-    			for testscript in $(find $testdir/$rootfs -type f -name "$testscript" -not -path '*/lib/*' 2>/dev/null); do
-	    			preparetest $clutype $rootfs $distribution
-	    			source "$testscript"
-					if [ $testing_errors -ne 0 ]; then
-						echo "Error during execution of test \"$testscript\" \"$testing_errors\". Terminating!"
-						exit 1
-					else
-	    				echo "$testscript DONE"
-	    				eval ${testname}_done=1
-    				fi
-    			done
-    			lastroofs=$rootfs
-    		done
-    		lastclutype=$clutype
-    	done
-    	lastdistribution=$distribution
+  testname=$(basename $testscript)
+  testname=${testname#test-}
+  testname=${testname%.sh}
+  testname=${testname//-/_}
+  for distribution in $distributions; do
+    shortdistribution=${distribution:0:4}
+    repository_store_value distribution $distribution
+    repository_store_value shortdistribution $shortdistribution
+    
+    for clutype in $cluster_types; do
+      repository_store_value clutype $clutype
+      for rootfs in $root_filesystems; do
+        repository_store_value rootfs $rootfs
+#          preparetest $clutype $rootfs $distribution
+        echo_local_debug "Testing $testscript with distribution=$distribution, clutype=$clutype, rootfs=$rootfs"
+        export rootfs clutype distribution shortdistribution lastrootfs lastclutype lastdistribution
+           
+        $testdir/do_execute_test.sh $testname $testscript
+        if [ $breakonerror -eq 1 ] && [ $(repository_get_value testing_errors 0) -ne 0 ]; then
+          errormsg
+          exit 1
+        else
+          echo_local_debug "$testscript DONE"
+        fi
+        lastrootfs=$rootfs
+        eval ${testname}_done=1
+        eval ${testname}_rootfs_done=1
+        eval export ${testname}_done ${testname}_rootfs_done
+      done
+      eval ${testname}_clutype_done=1
+      eval export ${testname}_clutype_done
+      eval unset  ${testname}_rootfs_done
+      unset lastrootfs
+      lastclutype=$clutype
     done
+    eval unset ${testname}_clutype_done
+    eval ${testname}_distribution_done=1
+    eval export ${testname}_distribution_done
+    unset lastclutype
+    lastdistribution=$distribution
+  done
+  eval unset ${testname}_distribution_done
+  unset lastdistribution
 done
 errormsg
+#repository_clear
 exit $?
