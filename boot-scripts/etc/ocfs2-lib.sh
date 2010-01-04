@@ -1,5 +1,5 @@
 #
-# $Id: ocfs2-lib.sh,v 1.5 2009-09-28 13:04:01 marc Exp $
+# $Id: ocfs2-lib.sh,v 1.6 2010-01-04 13:24:22 marc Exp $
 #
 # @(#)$File$
 #
@@ -73,7 +73,7 @@ function ocfs2_getdefaults {
 		    echo "ocfs2_dlm"
 		    ;;
 		mount_opts|mountopts)
-		    echo "noatime,nodiratime"
+		    echo "noatime"
 		    ;;
 		root_source|rootsource)
 		    echo "scsi"
@@ -213,7 +213,7 @@ function ocfs2_services_stop {
     local chroot_path=$1
     local lock_method=$2
     local lvm_sup=$3
-    local CLUSTER=$(cc_get_clustername)
+    local CLUSTER=$(cc_get_clustername $(repository_get_value nodeid))
     
     echo_local -n "Stopping O2CB cluster ${CLUSTER}: "
     OUTPUT="`o2cb_ctl -H -n "${CLUSTER}" -t cluster -a online=no 2>&1`"
@@ -321,7 +321,10 @@ function ocfs2_fsck {
 #********* ocfs2_fsck
 
 # $Log: ocfs2-lib.sh,v $
-# Revision 1.5  2009-09-28 13:04:01  marc
+# Revision 1.6  2010-01-04 13:24:22  marc
+# changed default mountops
+#
+# Revision 1.5  2009/09/28 13:04:01  marc
 # - fixed some typos and return codes not being returned as expected
 # - removed deps for com-queryclusterconf to cc_ functions
 # - added ocfs2 as module to modules function
