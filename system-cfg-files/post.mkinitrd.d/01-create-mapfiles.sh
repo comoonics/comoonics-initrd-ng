@@ -2,16 +2,21 @@
 
 DESTFILE=$1
 
-[ -z "$querymap" ] && querymap=/etc/comoonics/bootimage/query-map.cfg
+if [ -z "$querymap" ]; then
+  querymap=$(repository_get_value osrquerymap /etc/comoonics/querymap.cfg)
+fi
+if ! repository_has_key osrquerymap; then
+  repository_store_value osrquerymap /etc/comoonics/querymap.cfg
+fi
 
-echo > ${DESTFILE}/tmp/osr-nodeids
-oldclutype=$(repository_get_value clutype)
-repository_store_value clutype gfs
-for nodeid in cc_get_nodeids; do 
-	echo "$nodeid "$(cc_get_macs) >> ${DESTFILE}/tmp/osr-nodeids
-	osr_generate_nodevalues $nodeid $querymap > ${DESTFILE}/etc/conf.d/osr-nodeidvalues-${nodeid}.conf
+nodeids=$(cc_get nodeids)
+mkdir -p $(dirname ${DESTFILE}$(osr_nodeids_file)) $(dirname ${DESTFILE}/$(osr_nodeid_file 1))
+osr_create_nodeids_file $(repository_get_value clutype "") $(repository_get_value cluster_conf "") $querymap $nodeids > ${DESTFILE}$(osr_nodeids_file)
+for nodeid in $(cc_get nodeids); do 
+	osr_generate_nodevalues $nodeid $querymap > ${DESTFILE}/$(osr_nodeid_file ${nodeid})
+	nodename=$(osr_get_nodename_by_id ${DESTFILE}/$(osr_nodeids_file) $nodeid ${DESTFILE}/$(osr_nodeid_file $nodeid))
+#	echo "nodename: $nodename"
+	[ -n "$nodename" ] && ln ${DESTFILE}/$(osr_nodeid_file ${nodeid}) ${DESTFILE}/$(osr_nodeid_file ${nodename})
 done
-repository_store_value clutype $oldclutype
 
-unset oldclutype
-unset DESTFILE
+unset DESTFILE nodeids nodename nodeid
