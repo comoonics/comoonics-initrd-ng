@@ -1,5 +1,5 @@
 #
-# $Id: repository-lib.sh,v 1.4 2009-09-28 13:05:29 marc Exp $
+# $Id: repository-lib.sh,v 1.5 2010-01-04 13:14:42 marc Exp $
 #
 # @(#)$File$
 #
@@ -216,10 +216,10 @@ repository_get_value() {
 	if [ -f ${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}.$key ]; then
 		value=$(cat ${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}.$key)
 		eval "${REPOSITORY_PREFIX}${repository}${REPOSITORY_FS}${key}=\"$value\""
-		echo $value
+		echo "$value"
 		return 0
     elif [ -n "$default" ]; then
-        echo $default
+        echo "$default"
         return 0
 	else
 	    return 1
@@ -290,7 +290,10 @@ repository_clear() {
 
 #############
 # $Log: repository-lib.sh,v $
-# Revision 1.4  2009-09-28 13:05:29  marc
+# Revision 1.5  2010-01-04 13:14:42  marc
+# typos
+#
+# Revision 1.4  2009/09/28 13:05:29  marc
 # - backported repository-lib from osr-dracut
 # - moved to new implementation multiple files instead of one repository file
 #
