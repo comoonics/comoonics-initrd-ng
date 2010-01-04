@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.9 2009-02-27 08:38:22 marc Exp $
+# $Id: network-lib.sh,v 1.10 2010-01-04 12:57:31 marc Exp $
 #
 # @(#)$File$
 #
@@ -46,87 +46,84 @@ function rhel4_ip2Config() {
   local ipDevice=$1
   local ipAddr=$2
 
-  #Bonding
   echo "$ipAddr" | grep "[[:digit:]][[:digit:]]*.[[:digit:]][[:digit:]]*.[[:digit:]][[:digit:]]*.[[:digit:]][[:digit:]]*" </dev/null 2>&1
   if [ -n "$ipAddr" ]; then
     local ipNetmask=$3
-    local ipHostname=$3
+    local ipHostname=$4
     local ipGate=$5
   else
     local master=$3
     local slave=$4
   fi
-  local ipMAC=$6
+  local MAC=$6
   local type=$7
   local bridge=$8
   local onboot=$9
+  shift 9
+  local properties=$*
+  local property=""
 
   # reformating MAC from - to :
-  ipMAC=${ipMAC//-/:}
- 
-  if [ -z "$type" ]; then type="Ethernet"; fi
-  # just for testing
-  #local $pref="/tmp"
+  MAC=${MAC//-/:}
 
+  if [ -z "$type" ]; then type="Ethernet"; fi
   if [ -z "$ipHostname" ]; then ipHostname="localhost.localdomain"; fi
   if [ -z "$ipDevice" ]; then ipDevice="eth0"; fi
 
-  # first save
-#  if [ -e ${__prefix}/etc/sysconfig/network ]; then
-#    mv ${__prefix}/etc/sysconfig/network ${__prefix}/etc/sysconfig/network.com_back
-#  fi
-  if [ -e ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice ]; then
-    mv -f ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice ${__prefix}/etc/sysconfig/network-scripts/ifcfg-${ipDevice}.com_back
+  [ -z "$networkpath" ] && local networkpath=${__prefix}/etc/sysconfig/network-scripts/
+
+  if [ -e ${networkpath}/ifcfg-$ipDevice ]; then
+    mv -f ${networkpath}/ifcfg-$ipDevice ${networkpath}/ifcfg-$ipDevice.com_back
   fi
+
+  (echo "DEVICE=$ipDevice" &&
+   echo "ONBOOT=$onboot" &&
+   echo "TYPE=$type") > ${networkpath}/ifcfg-$ipDevice
+
+  [ -n "$MAC" ] && [ "$MAC" != "00:00:00:00:00:00" ] && echo "HWADDR=$MAC" >> ${networkpath}/ifcfg-$ipDevice
+
+  # test for vlan config
+  if [[ "$ipDevice" =~ "[a-z]+[0-9]+\.[0-9]+" ]]; then
+	echo "VLAN=yes" >> ${networkpath}/ifcfg-$ipDevice
+  fi
+
   if [ -n "$ipAddr" ]; then
     if [ "$ipAddr" = "dhcp" -o "$ipAddr" = "DHCP" -o -z "$ipAddr" ]; then
       bootproto="dhcp"
     else
-      bootproto="none"
+      bootproto="static"
     fi
 
-    (echo "DEVICE=$ipDevice" &&
-     echo "BOOTPROTO=$bootproto" &&
-     echo "ONBOOT=$onboot" &&
-     echo "TYPE=$type") > ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
-    if [ -n "$ipMAC" ] && [ "$ipMAC" != "00:00:00:00:00:00" ]; then
-    	echo "HWADDR=$ipMAC" >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
-    fi
+    echo "BOOTPROTO=$bootproto" >> ${networkpath}/ifcfg-$ipDevice
     if [ "$bootproto" != "dhcp" ]; then
       (echo "IPADDR=$ipAddr" &&
-      if [ -n "$ipNetmask" ]; then echo "NETMASK=$ipNetmask"; fi) >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
+       if [ -n "$ipNetmask" ]; then echo "NETMASK=$ipNetmask"; fi) >> ${networkpath}/ifcfg-$ipDevice
       if [ -n "$ipGate" ]; then
-	    echo "GATEWAY=$ipGate" >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
+	    echo "GATEWAY=$ipGate" >> ${networkpath}/ifcfg-$ipDevice
       fi
-      # test for vlan config
-	  if [[ "$ipDevice" =~ "[a-z]+[0-9]+\.[0-9]+" ]]; then
-		echo "VLAN=yes" >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
-	  fi
     fi
   else
-    (echo "DEVICE=$ipDevice" &&
-     echo "BOOTPROTO=none" &&
-     echo "ONBOOT=$onboot" &&
-     echo "MASTER=${master}" &&
-     echo "SLAVE=${slave}" &&
-     echo "TYPE=Ethernet") > ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
+     [ -n "$master" ] && echo "MASTER=${master}" >> ${networkpath}/ifcfg-$ipDevice
+     [ -n "$slave" ] &&  echo "SLAVE=${slave}"   >> ${networkpath}/ifcfg-$ipDevice
+     [ -n "$bridge" ] && echo "BRIDGE=${bridge}" >> ${networkpath}/ifcfg-$ipDevice
   fi
-#   (echo "NETWORKING=yes" &&
-#    echo "HOSTNAME=$ipHostname") > ${__prefix}/etc/sysconfig/network
-#   if [ $(/bin/hostname) = "(none)" ] || [ $(/bin/hostname) = "localhost.localdomain" ] || [ $(/bin/hostname) = "localhost" ]; then
-#       /bin/hostname $ipHostname;
-#   fi
-#   echo_local_debug "   /etc/sysconfig/network"
-#   exec_local_debug cat /etc/sysconfig/network
-#   echo_local_debug "   /etc/sysconfig/network-scripts/ifcfg-${ipDevice}"
-#   exec_local_debug cat /etc/sysconfig/network-scripts/ifcfg-${ipDevice}
-   return 0
+
+  local propertynames=$(echo "$properties" | sed -e 's/=\".*\"//g' -e "s/=\'.*\'//g" -e 's/=\S*//g')
+  eval "$properties"
+  
+  for property in $propertynames; do
+  	echo "$property=\""$(eval echo \$$property)"\"" >> ${networkpath}/ifcfg-$ipDevice
+  done
+  return 0
 }
 #************ rhel4_ip2Config
 
 #################
 # $Log: network-lib.sh,v $
-# Revision 1.9  2009-02-27 08:38:22  marc
+# Revision 1.10  2010-01-04 12:57:31  marc
+# added generic network config properties
+#
+# Revision 1.9  2009/02/27 08:38:22  marc
 # backport to rhel4
 #
 # Revision 1.8  2008/08/14 13:33:04  marc

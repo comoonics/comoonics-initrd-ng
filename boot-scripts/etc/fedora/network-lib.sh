@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.5 2010-01-04 12:54:28 marc Exp $
+# $Id: network-lib.sh,v 1.6 2010-01-04 12:57:31 marc Exp $
 #
 # @(#)$File$
 #
@@ -104,8 +104,12 @@ function fedora9_ip2Config() {
      [ -n "$slave" ] &&  echo "SLAVE=${slave}"   >> ${networkpath}/ifcfg-$ipDevice
      [ -n "$bridge" ] && echo "BRIDGE=${bridge}" >> ${networkpath}/ifcfg-$ipDevice
   fi
-  for property in $properties; do
-  	echo $property >> ${networkpath}/ifcfg-$ipDevice
+
+  local propertynames=$(echo "$properties" | sed -e 's/=\".*\"//g' -e "s/=\'.*\'//g" -e 's/=\S*//g')
+  eval "$properties"
+  
+  for property in $propertynames; do
+  	echo "$property=\""$(eval echo \$$property)"\"" >> ${networkpath}/ifcfg-$ipDevice
   done
   return 0
 }
@@ -113,7 +117,10 @@ function fedora9_ip2Config() {
 
 #################
 # $Log: network-lib.sh,v $
-# Revision 1.5  2010-01-04 12:54:28  marc
+# Revision 1.6  2010-01-04 12:57:31  marc
+# added generic network config properties
+#
+# Revision 1.5  2010/01/04 12:54:28  marc
 # added generic network config properties
 #
 # Revision 1.4  2009/08/11 09:53:06  marc

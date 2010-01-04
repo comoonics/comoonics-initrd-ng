@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.1 2009-09-28 12:45:31 marc Exp $
+# $Id: network-lib.sh,v 1.2 2010-01-04 12:57:31 marc Exp $
 #
 # @(#)$File$
 #
@@ -56,6 +56,9 @@ function sles11_ip2Config() {
   local type=$7
   local bridge=$8
   local onboot=$9
+  shift 9
+  local properties=$*
+  local property=""
   
   if [ "$onboot" = "yes" ]; then
   	onboot="nfsroot"
@@ -68,20 +71,21 @@ function sles11_ip2Config() {
   if [ -z "$ipHostname" ]; then ipHostname="localhost.localdomain"; fi
   if [ -z "$ipDevice" ]; then ipDevice="eth0"; fi
 
-  if [ -e ${__prefix}/etc/sysconfig/network/ifcfg-$ipDevice ]; then
-    mv -f ${__prefix}/etc/sysconfig/network/ifcfg-$ipDevice ${__prefix}/etc/sysconfig/network/ifcfg-${ipDevice}.com_back
+  [ -z "$networkpath" ] && local networkpath=${__prefix}/etc/sysconfig/network/
+  if [ -e ${networkpath}/ifcfg-$ipDevice ]; then
+    mv -f ${networkpath}/ifcfg-$ipDevice ${networkpath}/ifcfg-$ipDevice.com_back
   fi
 
   (echo 'NM_CONTROLLED=no' &&
    echo 'DEVICE="'$ipDevice'"' &&
    echo 'STARTMODE="'$onboot'"' &&
-   echo 'TYPE="'$type'"') > ${__prefix}/etc/sysconfig/network/ifcfg-$ipDevice
+   echo 'TYPE="'$type'"') > ${networkpath}/ifcfg-$ipDevice
 
   #[ -n "$MAC" ] && [ "$MAC" != "00:00:00:00:00:00" ] && echo "HWADDR=$MAC" >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
 
   # test for vlan config
   if [[ "$ipDevice" =~ "[a-z]+[0-9]+\.[0-9]+" ]]; then
-	echo 'VLAN="yes"' >> ${__prefix}/etc/sysconfig/network/ifcfg-$ipDevice
+	echo 'VLAN="yes"' >> ${networkpath}/ifcfg-$ipDevice
   fi
 
   if [ -n "$ipAddr" ]; then
@@ -91,19 +95,26 @@ function sles11_ip2Config() {
       bootproto="static"
     fi
 
-    echo 'BOOTPROTO="'$bootproto'"' >> ${__prefix}/etc/sysconfig/network/ifcfg-$ipDevice
+    echo 'BOOTPROTO="'$bootproto'"' >> ${networkpath}/ifcfg-$ipDevice
     if [ "$bootproto" != "dhcp" ]; then
       (echo 'IPADDR="'$ipAddr'"' &&
-      if [ -n "$ipNetmask" ]; then echo 'NETMASK="'$ipNetmask'"'; fi) >> ${__prefix}/etc/sysconfig/network/ifcfg-$ipDevice
+      if [ -n "$ipNetmask" ]; then echo 'NETMASK="'$ipNetmask'"'; fi) >> ${networkpath}/ifcfg-$ipDevice
       if [ -n "$ipGate" ]; then
-	    echo "default $ipGate 0.0.0.0 $ipDevice" > ${__prefix}/etc/sysconfig/network/ifroute-$ipDevice
+	    echo "default $ipGate 0.0.0.0 $ipDevice" > ${networkpath}/ifroute-$ipDevice
       fi
     fi
   else
-     [ -n "$master" ] && echo 'MASTER="'${master}'"' >> ${__prefix}/etc/sysconfig/network/ifcfg-$ipDevice
-     [ -n "$slave" ] &&  echo 'SLAVE="'${slave}'"'   >> ${__prefix}/etc/sysconfig/network/ifcfg-$ipDevice
-     [ -n "$bridge" ] && echo 'BRIDGE="'${bridge}'"' >> ${__prefix}/etc/sysconfig/network/ifcfg-$ipDevice
+     [ -n "$master" ] && echo 'MASTER="'${master}'"' >> ${networkpath}/ifcfg-$ipDevice
+     [ -n "$slave" ] &&  echo 'SLAVE="'${slave}'"'   >> ${networkpath}/ifcfg-$ipDevice
+     [ -n "$bridge" ] && echo 'BRIDGE="'${bridge}'"' >> ${networkpath}/ifcfg-$ipDevice
   fi
+
+  local propertynames=$(echo "$properties" | sed -e 's/=\".*\"//g' -e "s/=\'.*\'//g" -e 's/=\S*//g')
+  eval "$properties"
+  
+  for property in $propertynames; do
+  	echo "$property=\""$(eval echo \$$property)"\"" >> ${networkpath}/ifcfg-$ipDevice
+  done
   return 0
 }
 #************ sles11_ip2Config 
@@ -124,7 +135,10 @@ nicUp() {
 
 #################
 # $Log: network-lib.sh,v $
-# Revision 1.1  2009-09-28 12:45:31  marc
+# Revision 1.2  2010-01-04 12:57:31  marc
+# added generic network config properties
+#
+# Revision 1.1  2009/09/28 12:45:31  marc
 # initial revision
 #
 # Revision 1.4  2009/04/22 11:36:45  marc
