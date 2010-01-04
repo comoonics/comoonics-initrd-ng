@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.67 2009-09-28 12:59:28 marc Exp $
+# $Id: gfs-lib.sh,v 1.68 2010-01-04 13:12:13 marc Exp $
 #
 # @(#)$File$
 #
@@ -40,18 +40,17 @@
 #  DESCRIPTION
 #*******
 
-default_lockmethod="lock_dlm"
-default_mountopts="noatime"
-#ccs_xml_query="/opt/atix/comoonics-cs/ccs_xml_query"
-ccs_xml_query="/usr/bin/com-queryclusterconf"
-cl_check_nodes="/usr/bin/cl_checknodes"
+[ -z "$default_lockmethod" ] && default_lockmethod="lock_dlm"
+[ -z "$default_mountopts" ] && default_mountopts="noatime"
+[ -z "$ccs_xml_query" ] && ccs_xml_query="/usr/bin/com-queryclusterconf"
+[ -z "$cl_check_nodes" ] &&cl_check_nodes="/usr/bin/cl_checknodes"
 
 #****d* boot-scripts/etc/gfs-lib.sh/cluster_conf
 #  NAME
 #    cluster_conf
 #  DESCRIPTION
 #    clusterconfig file defaults to /etc/cluster/cluster.conf
-cluster_conf="/etc/cluster/cluster.conf"
+[ -z "$cluster_conf" ] && cluster_conf="/etc/cluster/cluster.conf"
 #******** cluster_conf
 
 #if [ ! -e $cluster_conf ]; then
@@ -156,14 +155,19 @@ function gfs_validate {
   local xml_cmd=$2
   
   [ -z "$cluster_conf" ] && cluster_conf="/etc/cluster/cluster.conf"
+  
+  # either cluster_conf exists which should be default or it is pregenerated
+  if [ -f "$cluster_conf" ]; then
+    [ -z "$xml_cmd" ] && xml_cmd="${ccs_xml_query} -f $cluster_conf"
 
-  [ -z "$xml_cmd" ] && xml_cmd="${ccs_xml_query} -f $cluster_conf"
-
-  errors=$($xml_cmd -q nodeids 2>&1 >/dev/null)
-  if [ -n "$errors" ]; then
-  	return 1
+    errors=$($xml_cmd -q nodeids 2>&1 >/dev/null)
+    if [ -n "$errors" ]; then
+  	  return 1
+    else
+      return 0
+    fi
   else
-    return 0
+    return $(osr_validate)
   fi
 }
 #*********** cc_validate
@@ -172,19 +176,27 @@ function gfs_validate {
 #  NAME
 #    gfs_get
 #  SYNOPSIS
-#    function gfs_get(cluster_conf)
+#    function gfs_get [cluster_conf] [querymap] opts
 #  DESCRIPTTION
 #    returns the name of the cluster.
 #  SOURCE
 #
 gfs_get() {
    local cluster_conf=$(repository_get_value cluster_conf)
+   local query_map=$(repository_get_value osrquerymap)
+   
    if [ -f "$1" ]; then
    	 cluster_conf=$1
    	 shift
    fi
+   if [ -f "$1" ]; then
+     query_map=$1
+     shift
+   fi
+   [ -n "$cluster_conf" ] && opts="--filename $cluster_conf"
+   [ -n "$query_map" ] && opts="$opts --querymapfile $query_map"
 
-   local xml_cmd="${ccs_xml_query} -f $cluster_conf"
+   local xml_cmd="${ccs_xml_query} $opts"
    $xml_cmd -q $@
 }
 # *********** gfs_get
@@ -603,21 +615,6 @@ function gfs_get_nodeid {
     $xml_cmd -f $ccs_file -q nodeid $mac
 }
 #************ gfs_get_nodeid
-
-#****f* gfs-lib.sh/gfs_get_clu_nodename
-#  NAME
-#    gfs_get_clu_nodename
-#  SYNOPSIS
-#    function gfs_get_clu_nodename()
-#  DESCRIPTION
-#    gets the nodename of this node from the cluster infrastructure
-#  SOURCE
-function gfs_get_clu_nodename {
-  cat /proc/cluster/status | grep "Node name:"  | awk  '{print $3}'
-}
-#******* cc_get_clu_nodename
-
-
 
 #****f* gfs-lib.sh/gfs_get_netdevs
 #  NAME
@@ -1451,7 +1448,13 @@ function gfs_fsck {
 #********* gfs_fsck
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.67  2009-09-28 12:59:28  marc
+# Revision 1.68  2010-01-04 13:12:13  marc
+# global variables will only be set if not already set anywhere else
+# gfs_validate: support for osr generated configuration
+# gfs_get: implementation will also support querymap
+# gfs_get_clu_nodename: obsolete, removed
+#
+# Revision 1.67  2009/09/28 12:59:28  marc
 # - added functions
 #   gfs_get
 #   gfs_get_syslog*
