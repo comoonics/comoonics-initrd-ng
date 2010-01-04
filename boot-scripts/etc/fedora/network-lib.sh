@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.4 2009-08-11 09:53:06 marc Exp $
+# $Id: network-lib.sh,v 1.5 2010-01-04 12:54:28 marc Exp $
 #
 # @(#)$File$
 #
@@ -56,6 +56,9 @@ function fedora9_ip2Config() {
   local type=$7
   local bridge=$8
   local onboot=$9
+  shift 9
+  local properties=$*
+  local property=""
 
   # reformating MAC from - to :
   MAC=${MAC//-/:}
@@ -64,19 +67,21 @@ function fedora9_ip2Config() {
   if [ -z "$ipHostname" ]; then ipHostname="localhost.localdomain"; fi
   if [ -z "$ipDevice" ]; then ipDevice="eth0"; fi
 
-  if [ -e ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice ]; then
-    mv -f ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice ${__prefix}/etc/sysconfig/network-scripts/ifcfg-${ipDevice}.com_back
+  [ -z "$networkpath" ] && local networkpath=${__prefix}/etc/sysconfig/network-scripts/
+
+  if [ -e ${networkpath}/ifcfg-$ipDevice ]; then
+    mv -f ${networkpath}/ifcfg-$ipDevice ${networkpath}/ifcfg-$ipDevice.com_back
   fi
 
   (echo "DEVICE=$ipDevice" &&
    echo "ONBOOT=$onboot" &&
-   echo "TYPE=$type") > ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
+   echo "TYPE=$type") > ${networkpath}/ifcfg-$ipDevice
 
-  [ -n "$MAC" ] && [ "$MAC" != "00:00:00:00:00:00" ] && echo "HWADDR=$MAC" >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
+  [ -n "$MAC" ] && [ "$MAC" != "00:00:00:00:00:00" ] && echo "HWADDR=$MAC" >> ${networkpath}/ifcfg-$ipDevice
 
   # test for vlan config
   if [[ "$ipDevice" =~ "[a-z]+[0-9]+\.[0-9]+" ]]; then
-	echo "VLAN=yes" >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
+	echo "VLAN=yes" >> ${networkpath}/ifcfg-$ipDevice
   fi
 
   if [ -n "$ipAddr" ]; then
@@ -86,26 +91,32 @@ function fedora9_ip2Config() {
       bootproto="static"
     fi
 
-    echo "BOOTPROTO=$bootproto" >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
+    echo "BOOTPROTO=$bootproto" >> ${networkpath}/ifcfg-$ipDevice
     if [ "$bootproto" != "dhcp" ]; then
       (echo "IPADDR=$ipAddr" &&
-       if [ -n "$ipNetmask" ]; then echo "NETMASK=$ipNetmask"; fi) >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
+       if [ -n "$ipNetmask" ]; then echo "NETMASK=$ipNetmask"; fi) >> ${networkpath}/ifcfg-$ipDevice
       if [ -n "$ipGate" ]; then
-	    echo "GATEWAY=$ipGate" >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
+	    echo "GATEWAY=$ipGate" >> ${networkpath}/ifcfg-$ipDevice
       fi
     fi
   else
-     [ -n "$master" ] && echo "MASTER=${master}" >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
-     [ -n "$slave" ] &&  echo "SLAVE=${slave}"   >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
-     [ -n "$bridge" ] && echo "BRIDGE=${bridge}" >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
+     [ -n "$master" ] && echo "MASTER=${master}" >> ${networkpath}/ifcfg-$ipDevice
+     [ -n "$slave" ] &&  echo "SLAVE=${slave}"   >> ${networkpath}/ifcfg-$ipDevice
+     [ -n "$bridge" ] && echo "BRIDGE=${bridge}" >> ${networkpath}/ifcfg-$ipDevice
   fi
+  for property in $properties; do
+  	echo $property >> ${networkpath}/ifcfg-$ipDevice
+  done
   return 0
 }
 #************ fedora9_ip2Config
 
 #################
 # $Log: network-lib.sh,v $
-# Revision 1.4  2009-08-11 09:53:06  marc
+# Revision 1.5  2010-01-04 12:54:28  marc
+# added generic network config properties
+#
+# Revision 1.4  2009/08/11 09:53:06  marc
 # - Added f11 support
 #
 # Revision 1.3  2009/04/22 11:35:56  marc
