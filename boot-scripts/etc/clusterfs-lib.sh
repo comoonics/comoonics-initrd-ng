@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.38 2009-12-09 09:08:49 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.39 2010-01-04 13:06:08 marc Exp $
 #
 # @(#)$File$
 #
@@ -100,6 +100,12 @@ function getClusterFSParameters() {
 function getCluType {
    local conf=$1
    local clutype=""
+   
+   if test -f $(osr_nodeids_file); then
+   	  echo "osr"
+   	  return 0
+   fi
+   
    if [ -z "$conf" ]; then
    	  conf=$cluster_conf
    fi
@@ -165,26 +171,30 @@ $2 == "'$root'" { print $3 }
 #  NAME
 #    getClusterParameter
 #  SYNOPSIS
-#    getClusterParameter(parametername, cluster_conf)
+#    getClusterParameter(parametername, cluster_conf, nodeid, nodename)
 #  DESCRIPTION
 #    returns the parameter of the cluster configuration
 #  SOURCE
 function getClusterParameter() {
 	local name=$1
-	local cluster_conf=$(repository_get_value cluster_conf)
-	if [ -n "$2" ] && [ -e $2 ]; then
-		cluster_conf=$2
-	fi
-	# check for the existance of the helper function
-	if ! type -t cc_get_$name >/dev/null; then
-		return 1
+	shift
+	local cluster_conf=""
+	local out=""
+	if [ -n "$1" ] && [ -e $1 ]; then
+		cluster_conf=$1
+		shift
+	else
+	    cluster_conf=$(repository_get_value cluster_conf)
 	fi
 	# first we need to find our nodeid
 	#maybe it is already in the repository
 	local nodeid=""
-	if repository_has_key nodeid; then
+    local nodename=""
+	[ -n "$1" ] && nodeid="$1"
+	[ -n "$2" ] && nodename="$2"
+	if [ -z "$nodeid" ] && repository_has_key nodeid; then
 		nodeid=$(repository_get_value nodeid)
-	else
+    elif [ -z "$nodeid" ]; then 
 		# we need to query it
 		nodeid=$(cc_find_nodeid $cluster_conf)
 		if [ -n "$nodeid" ]; then
@@ -193,10 +203,9 @@ function getClusterParameter() {
 			return 1
 		fi
 	fi	
-    local nodename=""
-	if repository_has_key nodename; then
+	if [ -z "$nodename" ] && repository_has_key nodename; then
 		nodename=$(repository_get_value nodename)
-	else
+    elif [ -z "$nodename" ]; then
 		nodename=$(cc_get_nodename_by_id $cluster_conf $nodeid) 
 		if [ -n "$nodename" ]; then
 			repository_store_value nodename $nodename
@@ -208,58 +217,14 @@ function getClusterParameter() {
 	if repository_has_key $name; then
 		repository_get_value $name
 	else
-		cc_get_$name $cluster_conf $nodename
+		out=$(cc_get_$name $cluster_conf $nodeid 2>/dev/null)
+		[ $? -eq 0 ] && [ -n "$out" ] || cc_get $cluster_conf $name $nodeid 2>/dev/null
+		[ $? -eq 0 ] && [ -n "$out" ] || cc_get_$name $cluster_conf $nodename 2>/dev/null
+		[ $? -eq 0 ] && [ -n "$out" ] || cc_get $cluster_conf $name $nodename 2>/dev/null
+		echo -n $out
+		test -n "$out"
 	fi
 }
-
-#****f* boot-scripts/etc/clusterfs-lib.sh/cluster_config
-#  NAME
-#    cluster_config
-#  SYNOPSIS
-#    cluster_config(cluster_conf, ipConfig)
-#  DESCRIPTION
-#    returns the following parameters got from the cluster configuration
-#      * nodeid: the unique id of this node
-#      * nodename: the name of this node
-#      * rootvolume: the root volume to be mounted by this node (can be
-#          overwritten by the bootparam "root"
-#      * ipConfig: the ipConfiguration used to do locking
-#  SOURCE
-function clusterfs_config {
-  local cluster_conf=$1
-  local ipConfig=$2
-
-  # Here we still have a dependency on eth0 should be changed soon!!!
-  local _nodeid=$3
-  local _nodename=$4
-  local _foundmac=
-  macs=$(ifconfig -a | grep -i hwaddr | awk '{print $5;};')
-  for mac in $macs; do
-    [ -z "$_nodeid" ] && _nodeid=$(cc_get_nodeid ${cluster_conf} $mac 2>/dev/null)
-    [ -z "$_nodename" ] && _nodename=$(cc_get_nodename ${cluster_conf} $mac 2>/dev/null)
-  done
-  echo $_nodeid
-  echo $_nodename
-
-  cc_get_rootvolume ${cluster_conf} $_nodename
-  echo
-  cc_get_mountopts ${cluster_conf} $_nodename
-  echo
-  scsifailover=$(cc_get_scsifailover ${cluster_conf} $_nodename)
-  [ -z "$scsifailover" ] && scsifailover="driver"
-  echo $scsifailover
-  __rootfs=$(cc_get_rootfs ${cluster_conf} $_nodename)
-  [ -z "$__rootfs" ] && __rootfs=$(getRootFS $cluster_conf $nodeid $nodename)
-  echo $__rootfs
-  __rootsource=$(cc_get_rootsource ${cluster_conf} $_nodename)
-  [ -z "$__rootsource" ] && __rootsource="scsi"
-  echo $__rootsource
-
-  for _dev in $(cc_get_netdevs ${cluster_conf} $_nodename); do
-    cc_auto_netconfig ${cluster_conf} $_nodename $_dev
-  done
-}
-#******** cluster_config
 
 #****f* boot-scripts/etc/clusterfs-lib.sh/cluster_ip_config
 #  NAME
@@ -273,9 +238,10 @@ function clusterfs_config {
 function cluster_ip_config {
   local cluster_conf=$1
   local nodename=$2
+  local nodeid=$4
 
-  for _dev in $(cc_get_netdevs ${cluster_conf} $nodename); do
-    cc_auto_netconfig ${cluster_conf} $nodename $_dev
+  for _dev in $(cc_get_netdevs "${cluster_conf}" $nodename); do
+    cc_auto_netconfig "${cluster_conf}" "$nodename" "$_dev" "$nodeid"
   done
 }
 #******** cluster_ip_config
@@ -388,7 +354,9 @@ function cc_get_cluster_drivers {
 #  SYNOPSIS
 #    function cc_find_nodeid(cluster_conf)
 #  DESCRIPTION
-#    try to find the nodeid of this node 
+#    try to find the nodeid of this node
+#  NOTE
+#    Must not be overwritten by cluster implementation 
 #  SOURCE
 function cc_find_nodeid {
 	local cluster_conf=$1
@@ -427,7 +395,7 @@ function cc_getdefaults {
 #  NAME
 #    cc_get
 #  SYNOPSIS
-#    function cc_get($*)
+#    function cc_get query
 #  DESCRIPTION
 #    gets a value generically
 #  SOURCE
@@ -437,38 +405,6 @@ function cc_get {
   ${clutype}_get $@
 }
 #******* cc_get
-
-#****f* clusterfs-lib.sh/cc_get_nodeid
-#  NAME
-#    cc_get_nodeid
-#  SYNOPSIS
-#    function cc_get_nodeid(cluster_conf, netdev)
-#  DESCRIPTION
-#    gets the nodeid of this node referenced by the networkdevice
-#  SOURCE
-function cc_get_nodeid_by_nodename {
-  local cluster_conf=$1
-  local mac=$2
-  local clutype=$(repository_get_value clutype)
-
-  ${clutype}_get_nodeid $cluster_conf $mac
-}
-#******* cc_get_nodeid
-
-#****f* clusterfs-lib.sh/cc_get_clu_nodename
-#  NAME
-#    cc_get_clu_nodename
-#  SYNOPSIS
-#    function cc_get_clu_nodename()
-#  DESCRIPTION
-#    gets the cluster nodename of this node from the cluster infrastructure
-#  SOURCE
-function cc_get_clu_nodename {
-  local clutype=$(repository_get_value clutype)
-  ${clutype}_get_clu_nodename
-}
-#******* cc_get_clu_nodename
-
 
 #****f* clusterfs-lib.sh/cc_get_nodeids
 #  NAME
@@ -518,22 +454,6 @@ function cc_get_nodeid {
   ${clutype}_get_nodeid $cluster_conf $mac
 }
 #******* cc_get_nodeid
-
-#****f* clusterfs-lib.sh/cc_get_nodename
-#  NAME
-#    cc_get_nodename
-#  SYNOPSIS
-#    function cc_get_nodename(cluster_conf, netdev)
-#  DESCRIPTION
-#    gets the nodename of this node referenced by the networkdevice
-#  SOURCE
-function cc_get_nodename {
-   local cluster_conf=$1
-   local mac=$2
-
-   ${clutype}_get_nodename $cluster_conf $mac
-}
-#******** cc_get_nodename
 
 #****f* clusterfs-lib.sh/cc_get_nodename_by_id
 #  NAME
@@ -634,10 +554,11 @@ function cc_get_mountopts {
   local cluster_conf=$1
   local nodename=$2
   local rootfs=$(repository_get_value rootfs)
+  local clutype=$(repository_get_value clutype)
    
-  typeset -f ${rootfs}_get_mountopts >/dev/null 2>/dev/null
+  typeset -f ${clutype}_get_mountopts >/dev/null 2>/dev/null
   if [ $? -eq 0 ]; then
-    ${rootfs}_get_mountopts $cluster_conf $nodename
+    ${clutype}_get_mountopts $cluster_conf $nodename
   else
     ${rootfs}_getdefaults mountopts
   fi
@@ -838,6 +759,7 @@ function cc_get_scsifailover {
 function cc_get_netdevs {
   local cluster_conf=$1
   local nodename=$2
+  local nodeid=$3
   local clutype=$(repository_get_value clutype)
 
   ${clutype}_get_netdevs $cluster_conf $nodename
@@ -851,14 +773,48 @@ function cc_get_netdevs {
 #    function cc_auto_netconfig(cluster_conf, nodename, netdev)
 #  DESCRIPTION
 #    gets the network devcices of this node referenced by the networkdevice
+#    The return syntax for ip is as follows:
+#    cc_auto_netconfig=> {ipaddr} :        :{gateway}:{netmask}::{netdev}:{mac_addr}:{type}:{bridge}:{onboot}:{driver}:({property:name=value}':')+ |
+#                                 :{master}:{slave}  :         ::{netdev}:{mac_addr}:{type}:{bridge}:{onboot}:{driver}:({attrs:name=value}':')+
 #  SOURCE
 function cc_auto_netconfig {
   local cluster_conf=$1
   local nodename=$2
   local netdev=$3
+  local nodeid=$4
   local clutype=$(repository_get_value clutype)
 
-  ${clutype}_auto_netconfig $cluster_conf $nodename $netdev
+  typeset -f ${clutype}_auto_netconfig &>/dev/null
+  # this is the old way you should not need to implement ${clutype}_auto_netconfig
+  if [ $? -eq 0 ]; then
+    ${clutype}_auto_netconfig $cluster_conf $nodename $netdev
+  else
+    if [ -z "$netdev" ]; then netdev="eth0"; fi
+
+    local ip_addr=$(cc_get $cluster_conf ip $nodeid $netdev 2>/dev/null)
+    local mac_addr=$(cc_get $cluster_conf eth_name_mac $nodeid $netdev 2>/dev/null)
+    local type=$(cc_get $cluster_conf eth_name_type $nodeid $netdev 2>/dev/null)
+    local bridge=$(cc_get $cluster_conf eth_name_bridge $nodeid $netdev 2>/dev/null)
+    local onboot=$(cc_get $cluster_conf eth_name_onboot $nodeid $netdev 2>/dev/null)
+    local driver=$(cc_get $cluster_conf eth_name_driver $nodeid $netdev 2>/dev/null)
+    local properties=$(cc_get $cluster_conf eth_name_properties $nodeid $netdev 2>/dev/null | tr " " ":")
+    if [ -z "$onboot" ]; then
+  	  onboot="yes"
+    fi 
+    if [ -z "$mac_addr" ]; then
+  	  local mac_addr=$(ip addr show $netdev scope link | grep link/ether | awk '{print $2;}')
+    fi
+    mac_addr=${mac_addr//:/-}
+    if [ $? -eq 0 ] && [ "$ip_addr" != "" ]; then
+      local gateway=$(cc_get $cluster_conf eth_name_gateway $nodeid $netdev 2>/dev/null) || local gateway=""
+      local netmask=$(cc_get $cluster_conf eth_name_mask $nodeid $netdev 2>/dev/null)
+      echo ${ip_addr}"::"${gateway}":"${netmask}"::"$netdev":"$mac_addr":"$type":"$bridge":"$onboot":"$driver":"$properties
+    else
+      local master=$(cc_get $cluster_conf eth_name_master $nodeid $netdev 2>/dev/null)
+      local slave= $(cc_get $cluster_conf eth_name_slave $nodeid $netdev 2>/dev/null)
+      echo ":"${master}":"${slave}":::"${netdev}":"${mac_addr}":"${type}":"${bridge}":"$onboot":"$driver":"$properties
+    fi
+  fi
 }
 #******** cc_auto_netconfig
 
@@ -875,9 +831,9 @@ function cc_auto_hosts {
   local clutype=$(repository_get_value clutype)
 
   cp /etc/hosts /etc/hosts.bak
-  ${clutype}_auto_hosts $cluster_conf /etc/hosts.bak > /etc/hosts
+  ${clutype}_auto_hosts "$cluster_conf" /etc/hosts.bak > /etc/hosts
 }
-#******** cc_auto_netconfig
+#******** cc_auto_hosts
 
 #****f* clusterfs-lib.sh/cc_auto_syslogconfig
 #  NAME
@@ -976,7 +932,12 @@ function cc_auto_getbridges {
   local nodename=$2
   local clutype=$(repository_get_value clutype)
 
-  ${clutype}_get_bridges $cluster_conf $nodename
+  typeset -f ${clutype}_get_bridges >/dev/null 2>/dev/null
+  if [ $? -eq 0 ]; then
+    ${clutype}_get_bridges $cluster_conf $nodename
+  else
+    return 1
+  fi
 }
 #******** cc_auto_getbridges
 
@@ -1136,9 +1097,9 @@ function clusterfs_mount {
   if [ ! -d $mountpoint ]; then
     mkdir -p $mountpoint
   fi
-  echo_local_debug "tries: $tries, waittime: $waittime"
+  echo_local_debug -n "tries: $tries, waittime: $waittime"
   while [ $i -lt $tries ]; do
-  	echo_local_debug "try: $i"
+  	echo_local_debug -n "try: $i"
   	let i=$i+1
   	sleep $waittime
   	exec_local mount -t $fstype -o $mountopts $dev $mountpoint && break
@@ -1426,7 +1387,24 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.38  2009-12-09 09:08:49  marc
+# Revision 1.39  2010-01-04 13:06:08  marc
+# getCluType: support for osr cluster
+# getClusterParameter: Test compatible, also accepts nodename and nodeid
+# cluster_ip_config: Support for nodeid
+# clusterfs_config: obsolete, removed
+# cc_find_nodeid: docu
+# cc_get: docu
+# cc_get_nodeid:obsolete, removed
+# cc_get_clu_nodename:obsolete, removed
+# cc_get_nodename:obsolete, removed
+# cc_get_mountopts: is dependent on rootfs not on clutype
+# cc_get_netdevs: nodeid might also be passed
+# cc_auto_netconfig: moved from gfs-lib.sh to here as it is cluster independent and added query for properties
+# cc_auto_hosts: typo
+# cc_auto_getbridges: optional to be implemented (by cluster)
+# clusterfs_mount: cosmetics
+#
+# Revision 1.38  2009/12/09 09:08:49  marc
 # typo in cc_get
 #
 # Revision 1.37  2009/09/28 12:53:13  marc
