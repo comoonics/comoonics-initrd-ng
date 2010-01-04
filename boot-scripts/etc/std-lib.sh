@@ -1,5 +1,5 @@
 #
-# $Id: std-lib.sh,v 1.12 2009-12-09 09:27:18 marc Exp $
+# $Id: std-lib.sh,v 1.13 2010-01-04 13:21:43 marc Exp $
 #
 # @(#)$File$
 #
@@ -34,7 +34,7 @@
 #  NAME
 #    sourceLibs
 #  SYNOPSIS
-#    function sourceLibs(predir) {
+#    function sourceLibs(predir, [clutype=autodetect], [distribution=autodetect], [shortdistribution=autodetect]) {
 #  DESCRIPTION
 #    Sources the libraries needed. Sets up clutype and distribution in repository.
 #  IDEAS
@@ -48,6 +48,7 @@ function sourceLibs {
     . ${predir}/etc/errors.sh
     . ${predir}/etc/chroot-lib.sh
     . ${predir}/etc/boot-lib.sh
+    [ -e ${predir}/etc/osr-lib.sh ] && . ${predir}/etc/osr-lib.sh
     . ${predir}/etc/hardware-lib.sh
     . ${predir}/etc/network-lib.sh
     . ${predir}/etc/clusterfs-lib.sh
@@ -59,14 +60,19 @@ function sourceLibs {
     [ -e ${predir}/etc/drbd-lib.sh ] && source ${predir}/etc/drbd-lib.sh
     [ -e ${predir}/etc/syslog-lib.sh ] && source ${predir}/etc/syslog-lib.sh
 
-    local clutype=$(getCluType)
+	[ -n "$2" ] && local clutype="$2"
+    [ -z "$clutype" ] && local clutype=$(getCluType)
     . ${predir}/etc/${clutype}-lib.sh
 
     # including all distribution dependent files
-    local distribution=$(getDistribution)
-    temp=( $(getDistributionList) )
-    local shortdistribution=${temp[0]}
-    unset temp
+	[ -n "$3" ] && local distribution="$3"
+    [ -z "$distribution" ] && local distribution=$(getDistribution)
+    [ -n "$4" ] && local shortdistribution="$4"
+    if [ -z "$shortdistribution" ]; then
+      temp=( $(getDistributionList) )
+      local shortdistribution=${temp[0]}
+      unset temp
+    fi
 
     for _distribution in $shortdistribution $distribution; do
       [ -e ${predir}/etc/${_distribution}/boot-lib.sh ] && source ${predir}/etc/${_distribution}/boot-lib.sh
@@ -90,7 +96,7 @@ function sourceLibs {
 #  NAME
 #    sourceLibs
 #  SYNOPSIS
-#    function sourceRootfsLibs(predir) {
+#    function sourceRootfsLibs(predir, [rootfs=autodetect], [clutype=fromrepo], [distribution=fromrepo], [shortdistribution=fromrepo]) {
 #  DESCRIPTION
 #    Sources the libraries needed for the specific roots. Sets up rootfs in repository.
 #  IDEAS
@@ -98,10 +104,14 @@ function sourceLibs {
 #
 function sourceRootfsLibs {
 	local predir=$1
-    local rootfs=$(getParameter rootfs $(cc_getdefaults rootfs))
-    local clutype=$(repository_get_value clutype)
-    local shortdistribution=$(repository_get_value shortdistribution)
-    local distribution=$(repository_get_value distribution)
+	[ -n "$2" ] && local rootfs="$2"
+    [ -z "$rootfs" ] && local rootfs=$(getParameter rootfs $(cc_getdefaults rootfs))
+	[ -n "$3" ] && local clutype="$3"
+    [ -z "$clutype" ] && local clutype=$(repository_get_value clutype)
+	[ -n "$4" ] && local shortdistribution="$4"
+    [ -z "$shortdistribution" ] && local shortdistribution=$(repository_get_value shortdistribution)
+	[ -n "$5" ] && local distribution="$5"
+    [ -z "$distribution" ] && local distribution=$(repository_get_value distribution)
 
     if [ "$clutype" != "$rootfs" ]; then
 	  [ -e ${predir}/etc/${rootfs}-lib.sh ] && source ${predir}/etc/${rootfs}-lib.sh
@@ -268,7 +278,7 @@ function return_code_passed() {
 #    returns formated OK
 #  SOURCE
 function success {
-  if [ -w /dev/kmsg ] && [ -z "$NOKMSG" ]; then
+  if [ -w /dev/kmsg ] && [ -n "$KMSG" ]; then
     echo " [OK]" > /dev/kmsg
   else 
     [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
@@ -292,7 +302,7 @@ function success {
 #    returns formated FAILURE
 #  SOURCE
 function failure {
-  if [ -w /dev/kmsg ] && [ -z "$NOKMSG" ]; then
+  if [ -w /dev/kmsg ] && [ -n "$KMSG" ]; then
   	echo " [FAILED]" > /dev/kmsg 
   else
     [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
@@ -316,7 +326,7 @@ function failure {
 #    returns formated WARNING
 #  SOURCE
 function warning {
-  if [ -w /dev/kmsg ] && [ -z "$NOKMSG" ]; then
+  if [ -w /dev/kmsg ] && [ -n "$KMSG" ]; then
     echo " [WARNING]" > /dev/kmsg
   else 
     [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
@@ -340,7 +350,7 @@ function warning {
 #    returns formated PASSED
 #  SOURCE
 function passed {
-  if [ -w /dev/kmsg ] && [ -z "$NOKMSG" ]; then
+  if [ -w /dev/kmsg ] && [ -n "$KMSG" ]; then
     echo " [PASSED]" > /dev/kmsg
   else 
     [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
@@ -379,7 +389,7 @@ function echo_out() {
 #  SOURCE
 #
 function echo_local() {
-   if [ -z "$NOKMSG" ] && [ -w /dev/kmsg ]; then 
+   if [ -n "$KMSG" ] && [ -w /dev/kmsg ]; then 
      echo ${*:0:$#-1} "<1>osr(notice): ${*:$#}" > /dev/kmsg
    else
      echo ${*:0:$#-1} "${*:$#}"
@@ -401,9 +411,9 @@ function echo_local() {
 #  SOURCE
 #
 function echo_local_debug() {
-  local debug=$(repository_get_value debug)
+   [ -z "$debug" ] && local debug=$(repository_get_value debug)
    if [ ! -z "$debug" ]; then
-      if [ -z "$NOKMSG" ] && [ -w /dev/kmsg ]; then 
+      if [ -n "$KMSG" ] && [ -w /dev/kmsg ]; then 
         echo ${*:0:$#-1} "<1>osr(debug): ${*:$#}" > /dev/kmsg
       else
         echo ${*:0:$#-1} "${*:$#}"
@@ -423,7 +433,7 @@ function echo_local_debug() {
 #
 function error_out() {
 #    echo ${*:0:$#-1} "${*:$#}" >&4
-   if [ -z "$NOKMSG" ] && [ -w /dev/kmsg ]; then 
+   if [ -n "$KMSG" ] && [ -w /dev/kmsg ]; then 
      echo ${*:0:$#-1} "<1>osr(error): ${*:$#}" > /dev/kmsg
    else
      echo ${*:0:$#-1} "${*:$#}" >&2
@@ -442,7 +452,7 @@ function error_out() {
 #
 function warn() {
 #    echo ${*:0:$#-1} "${*:$#}" >&4
-   if [ -z "$NOKMSG" ] && [ -w /dev/kmsg ]; then 
+   if [ -n "$KMSG" ] && [ -w /dev/kmsg ]; then 
      echo ${*:0:$#-1} "<1>osr(warn): ${*:$#}" > /dev/kmsg
    else
      echo ${*:0:$#-1} "${*:$#}" >&2
@@ -474,7 +484,7 @@ function error_local() {
 #  SOURCE
 #
 function error_local_debug() {
-   local debug=$(repository_get_value debug)
+   [ -z "$debug" ] && local debug=$(repository_get_value debug)
    if [ ! -z "$debug" ]; then
    	  error_local $*
    fi
@@ -958,10 +968,14 @@ function is_newer() {
 #  DESCRIPTION
 #    Executes all executable files found in skriptpath with two digits as startname to setup the order.
 #    Those skripts are given destpath as argument.
+#  NOTE:
+#    This function "executes" the files being found in skriptpath. 
+#    All files without executable flag and ending with .sh are sourced not executed!!
 #
 exec_ordered_skripts_in() {
    local skriptpath=$1
    local destpath=$2
+   local sourceit=$3
    local skript
    local return_C
    
@@ -969,21 +983,39 @@ exec_ordered_skripts_in() {
    	 return 1
    fi
    
-   for skript in "/$skriptpath"/*; do 
+   for skript in "$skriptpath"/*; do
+     local extension=$(echo $skript | sed -e 's/^.*\(\.[^.]*\)$/\1/') 
    	 if [ -x "$skript" ]; then
    	 	echo_local -n "Executing skript \"$skript\"."
    	 	$skript $destpath
    	 	return_code
    	 	[ "$return_c" -eq 0 ] || return_C=$return_c
+     elif [  "$extension" = ".sh" ]; then
+        echo_local -n "Sourcing skript \"$skript\"."
+        return_c=0
+        . $skript $destpath
+        return_code
    	 fi
    done
-   return return_C
+   return $return_C
 }
 #************ exec_ordered_skripts_in
 
 #################
 # $Log: std-lib.sh,v $
-# Revision 1.12  2009-12-09 09:27:18  marc
+# Revision 1.13  2010-01-04 13:21:43  marc
+# sourceLibs:
+#    * osr-lib.sh will always be included
+#    * accepting clutype, distributions and shortdistribution as parameter
+# sourceRootfsLibs:
+#    * accepting clutype, distributions, shortdistribution and rootfs as parameter
+# success,failure,warning,passed,echo_local,echo_local_debug,error_out,warn,error_local_debug:
+#    * output to /dev/kmsg if KMSG is set
+# exec_ordered_skripts_in:
+#   * executable files will be executed
+#   * .sh files will be sources
+#
+# Revision 1.12  2009/12/09 09:27:18  marc
 # logging
 #
 # Revision 1.11  2009/10/08 08:01:52  marc
