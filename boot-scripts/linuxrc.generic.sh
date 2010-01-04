@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.85 2009-12-09 10:58:42 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.86 2010-01-04 13:26:50 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.85 2009-12-09 10:58:42 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.86 2010-01-04 13:26:50 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -85,7 +85,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.85 $ $Date: 2009-12-09 10:58:42 $'
+echo_local 'Internal Version $Revision: 1.86 $ $Date: 2010-01-04 13:26:50 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -196,7 +196,7 @@ clusterfs_chroot_needed initrd
 __default=$?
 getParameter chrootneeded $__default &>/dev/null
 
-_ipConfig=$(cluster_ip_config $(repository_get_value cluster_conf) $(repository_get_value nodename))
+_ipConfig=$(cluster_ip_config "$(repository_get_value cluster_conf)" "$(repository_get_value nodename)" "" "$(repository_get_value nodeid)")
 [ -n "$_ipConfig" ] && ( [ -z "$(repository_get_value ipConfig)" ] || [ "$(repository_get_value ipConfig)" = "cluster" ] ) && repository_store_value ipConfig "$_ipConfig"
 
 step "Inialization started" "init"
@@ -539,7 +539,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.85  2009-12-09 10:58:42  marc
+# Revision 1.86  2010-01-04 13:26:50  marc
+# also passing nodeid to _ipConfig
+#
+# Revision 1.85  2009/12/09 10:58:42  marc
 # cosmetics
 # implemented move_dev function instead of plain here.
 #
