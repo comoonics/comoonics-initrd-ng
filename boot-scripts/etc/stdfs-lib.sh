@@ -1,5 +1,5 @@
 #
-# $Id: stdfs-lib.sh,v 1.7 2009-12-09 09:26:57 marc Exp $
+# $Id: stdfs-lib.sh,v 1.8 2010-01-04 13:15:26 marc Exp $
 #
 # @(#)$File$
 #
@@ -245,6 +245,7 @@ function is_mounted {
     local rest=
 
 	[ -z "$MOUNTS" ] && MOUNTS=$(cat /proc/mounts)
+	[ -n "$MOUNTSFILE" ] && MOUNTS=$(cat $MOUNTSFILE)
 	
     echo "$MOUNTS" | while read dev path rest; do
 	   if [ "$path" = "$1" ]; then
@@ -283,8 +284,7 @@ function get_dep_filesystems {
 	local cleanmount=
 	local rc=
 	
-#	[ -z "$MOUNTS" ] && cleanmount=1
-#	[ -z "$MOUNTS" ] && MOUNTS=$(cat /proc/mounts)
+	[ -z "$MOUNTSFILE" ] && local MOUNTSFILE="/proc/mounts"
 	
 	is_mounted $basepath || return 1
 	
@@ -301,9 +301,8 @@ function get_dep_filesystems {
 		if [ $exclude -eq 0 ] && [ ${#path} -gt ${#basepath} ] && [ "${path:0:${#basepath}}" = "$basepath" ]; then
 		  echo $path
 		fi
-    done < /proc/mounts | sort -u -r
+    done < $MOUNTSFILE | sort -u -r
     rc=$?
-    [ -n "$cleanmount" ] && unset MOUNTS
 }
 #************** get_dep_filesystems
 
@@ -334,7 +333,10 @@ function umount_filesystem {
 #************ umount_filesystem
 ######################
 # $Log: stdfs-lib.sh,v $
-# Revision 1.7  2009-12-09 09:26:57  marc
+# Revision 1.8  2010-01-04 13:15:26  marc
+# get_dep_mountpoints and is_mounted may not point to /proc/mounts
+#
+# Revision 1.7  2009/12/09 09:26:57  marc
 # fixed bug in get_dep_filesystems
 #
 # Revision 1.6  2009/10/08 08:00:05  marc
