@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.17 2009-12-09 10:57:40 marc Exp $
+# $Id: network-lib.sh,v 1.18 2010-01-04 13:13:29 marc Exp $
 #
 # @(#)$File$
 #
@@ -174,32 +174,42 @@ function network_setup_bridge {
 #    ip2Config
 #  SYNOPSIS
 #    function ip2Config(ipConfig)
-#    function ip2Config(ipAddr, ipGate, ipNetmask, ipHostname, ipDevice, master, slave, bridge)
+#    function ip2Config(ipAddr, ipGate, ipNetmask, ipHostname, ipDevice, master, slave, bridge, type, onboot, (name=value)*)
 #  MODIFICATION HISTORY
 #  IDEAS
+#    ipConfig=addr':'      ':'gateway':'netmask':'hostname':'device':'mac':'type':'bridge':'onboot':'(name'='value':')* |
+#                 ':'master':'slave  ':'       ':'        ':'device':'mac':'type':'bridge':'onboot':'(name'='value':')*
 #  SOURCE
 #
 function ip2Config() {
-  local distribution=$(repository_get_value distribution)
+  [ -z "$distribution" ] && local distribution=$(repository_get_value distribution)
 
   if [ $# -eq 1 ]; then
-    local ipAddr=$(getPosFromIPString 1, $1)
+    local ipAddr=$(getPosFromIPString 1, "$1")
 
     #Bonding
-    echo "$ipAddr" | grep "[[:digit:]][[:digit:]]*.[[:digit:]][[:digit:]]*.[[:digit:]][[:digit:]]*.[[:digit:]][[:digit:]]*" </dev/null 2>&1
     if [ -n "$ipAddr" ]; then
-      local ipGate=$(getPosFromIPString 3, $1)
-      local ipNetmask=$(getPosFromIPString 4, $1)
-      local ipHostname=$(getPosFromIPString 5, $1)
+      local ipGate=$(getPosFromIPString 3, "$1")
+      local ipNetmask=$(getPosFromIPString 4, "$1")
+      local ipHostname=$(getPosFromIPString 5, "$1")
     else
-      local master=$(getPosFromIPString 2, $1)
-      local slave=$(getPosFromIPString 3, $1)
+      local master=$(getPosFromIPString 2, "$1")
+      local slave=$(getPosFromIPString 3, "$1")
     fi
-    local ipDevice=$(getPosFromIPString 6, $1)
-    local ipMAC=$(getPosFromIPString 7, $1)
-    local type=$(getPosFromIPString 8, $1)
-    local bridge=$(getPosFromIPString 9, $1)
-    local onboot=$(getPosFromIPString 10, $1)
+    local ipDevice=$(getPosFromIPString 6, "$1")
+    local ipMAC=$(getPosFromIPString 7, "$1")
+    local type=$(getPosFromIPString 8, "$1")
+    local bridge=$(getPosFromIPString 9, "$1")
+    local onboot=$(getPosFromIPString 10, "$1")
+    local properties=""
+    local i=12
+    local property=$(getPosFromIPString $i, "$1") 
+    while [ $(echo "$1" | awk -F ":" 'END { print NF; }') -gt $i ]; do
+      properties="$properties $property"
+      i=$(($i + 1))
+      property=$(getPosFromIPString $i, "$1")
+    done
+    [ -n "$property" ] && properties="$properties $property"
   else
     local ipAddr=$1
     local ipGate=$2
@@ -213,15 +223,17 @@ function ip2Config() {
     local type=$10
     local onboot=$11
     [ -z "$onboot" ] && onboot="yes"
+    shift 11
+    local properties=$*
   fi
 
   # Bonding
   if [ -n "$ipAddr" ]; then
   	echo_local_debug -n "Generating ifcfg for ${distribution} ($ipAddr, $ipGate, $ipNetmask, $ipHostname, $ipDevice, $ipMAC)..."
-    ${distribution}_ip2Config "$ipDevice" "$ipAddr" "$ipNetmask" "$ipHostname" "$ipGate" "$ipMAC" "$type" "$bridge" "$onboot"
+    ${distribution}_ip2Config "$ipDevice" "$ipAddr" "$ipNetmask" "$ipHostname" "$ipGate" "$ipMAC" "$type" "$bridge" "$onboot" $properties
   else
 	echo_local_debug -n "Generating ifcfg for ${distribution} ($master, $slave, $bridge, $ipDevice, $ipMAC)..."
-    ${distribution}_ip2Config "$ipDevice" "" "$master" "$slave" "" "$ipMAC" "$type" "$bridge" "$onboot"
+    ${distribution}_ip2Config "$ipDevice" "" "$master" "$slave" "" "$ipMAC" "$type" "$bridge" "$onboot" $properties
   fi
 }
 #************ ip2Config
@@ -296,7 +308,10 @@ function setPosAtIPString() {
 
 #############
 # $Log: network-lib.sh,v $
-# Revision 1.17  2009-12-09 10:57:40  marc
+# Revision 1.18  2010-01-04 13:13:29  marc
+# ip2config: small typo and added properties support
+#
+# Revision 1.17  2009/12/09 10:57:40  marc
 # cosmetics
 #
 # Revision 1.16  2009/02/24 12:02:13  marc
