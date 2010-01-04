@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc,v 1.25 2009-12-09 09:03:44 marc Exp $
+# $Id: linuxrc,v 1.26 2010-01-04 13:26:18 marc Exp $
 #
 # @(#)$File$
 #
@@ -34,7 +34,7 @@
 #****h* comoonics-bootimage/linuxrc
 #  NAME
 #    linuxrc
-#    $Id: linuxrc,v 1.25 2009-12-09 09:03:44 marc Exp $
+#    $Id: linuxrc,v 1.26 2010-01-04 13:26:18 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -69,6 +69,11 @@ repository_clear
 mkdir -p /proc
 mount -t proc proc /proc 2>/dev/null
 
+# default make output to KMSG
+[ -z "$KMSG" ] && [ -z "$NOKMSG" ] && KMSG=1
+export KMSG
+
+repository_store_value kmsg $KMSG
 repository_store_value shellrcfile /etc/bashrc
 repository_store_value shellissue /etc/issue
 repository_store_value shellissuetmp /tmp/issue
@@ -158,7 +163,10 @@ fi
 
 ################
 # $Log: linuxrc,v $
-# Revision 1.25  2009-12-09 09:03:44  marc
+# Revision 1.26  2010-01-04 13:26:18  marc
+# setting KMSG environment variable
+#
+# Revision 1.25  2009/12/09 09:03:44  marc
 # logging
 #
 # Revision 1.24  2009/09/28 13:11:08  marc
