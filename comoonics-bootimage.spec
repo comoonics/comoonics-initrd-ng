@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.100.4.3 2009-08-19 16:06:42 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.100.4.4 2010-01-05 14:44:52 marc Exp $
 #
 ##
 ##
@@ -58,7 +58,7 @@ Requires: comoonics-cluster-py >= 0.1-2
 Requires: comoonics-bootimage-initscripts >= 1.4 
 Requires: comoonics-bootimage-listfiles-all
 #Conflicts:
-Release: 22_2
+Release: 22_3
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -758,6 +758,8 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Tue Jan 05 2009 Marc Grimme <grimme@atix.de> 1.4-22_3
+- Implemented Feature Bug#367, attributes for NICs 
 * Wed Aug 19 2009 Marc Grimme <grimme@atix.de> 1.4-22_2
 - Fixed second occurance of cc_auto_syslog to not write to localdisk.
 * Tue Aug 11 2009 Marc Grimme <grimme@atix.de> 1.4-22_1
@@ -1122,7 +1124,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.100.4.3  2009-08-19 16:06:42  marc
+# Revision 1.100.4.4  2010-01-05 14:44:52  marc
+# Implemented Feature Bug#367. Attributes for NICs.
+#
+# Revision 1.100.4.3  2009/08/19 16:06:42  marc
 # another fix for bug358
 #
 # Revision 1.100.4.2  2009/08/11 11:35:41  marc
