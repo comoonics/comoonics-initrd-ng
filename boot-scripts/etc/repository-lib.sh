@@ -1,5 +1,5 @@
 #
-# $Id: repository-lib.sh,v 1.3 2009-01-28 12:55:50 marc Exp $
+# $Id: repository-lib.sh,v 1.3.4.1 2010-01-05 13:59:05 marc Exp $
 #
 # @(#)$File$
 #
@@ -88,8 +88,8 @@ function repository_store_value() {
 	fi
 	local repository="$3"
 	[ -z "$repository" ] && repository=${REPOSITORY_DEFAULT}
-	eval "${REPOSITORY_PREFIX}${repository}${REPOSITORY_FS}$(repository_normalize_value ${1})=\"$value\""
-	echo "${REPOSITORY_PREFIX}${repository}${REPOSITORY_FS}$(repository_normalize_value ${1})=\"$value\"" >> ${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}
+	eval "${REPOSITORY_PREFIX}${repository}${REPOSITORY_FS}$(repository_normalize_value ${1})='"$value"'"
+	echo "${REPOSITORY_PREFIX}${repository}${REPOSITORY_FS}$(repository_normalize_value ${1})='"$value"'" >> ${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}
 }
 #******* repository_store_value
 
@@ -108,8 +108,8 @@ function repository_append_value() {
 	local repository="$3"
 	[ -z "$repository" ] && repository=${REPOSITORY_DEFAULT}
 	local value=$(repository_get_value $1)
-	eval "${REPOSITORY_PREFIX}${repository}${REPOSITORY_FS}$(repository_normalize_value ${1})=${value}\"$2\""
-	echo "${REPOSITORY_PREFIX}${repository}${REPOSITORY_FS}$(repository_normalize_value ${1})=${value}\"$2\"" >> ${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}
+	eval "${REPOSITORY_PREFIX}${repository}${REPOSITORY_FS}$(repository_normalize_value ${1})=${value}'"$2"'"
+	echo "${REPOSITORY_PREFIX}${repository}${REPOSITORY_FS}$(repository_normalize_value ${1})=${value}'"$2"'" >> ${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}
 }
 #******* repository_append_value
 
@@ -276,7 +276,10 @@ function repository_clear {
 
 #############
 # $Log: repository-lib.sh,v $
-# Revision 1.3  2009-01-28 12:55:50  marc
+# Revision 1.3.4.1  2010-01-05 13:59:05  marc
+# Implemented Feature Bug#367. Attributes for NICs.
+#
+# Revision 1.3  2009/01/28 12:55:50  marc
 # - some bugfixes
 # - cleaned the code
 # - added functions to make better use of it (clean, del, append)

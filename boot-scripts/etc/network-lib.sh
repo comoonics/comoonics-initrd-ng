@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.16 2009-02-24 12:02:13 marc Exp $
+# $Id: network-lib.sh,v 1.16.4.1 2010-01-05 13:59:05 marc Exp $
 #
 # @(#)$File$
 #
@@ -200,6 +200,15 @@ function ip2Config() {
     local type=$(getPosFromIPString 8, $1)
     local bridge=$(getPosFromIPString 9, $1)
     local onboot=$(getPosFromIPString 10, $1)
+    local properties=""
+    local i=12
+    local property=$(getPosFromIPString $i, "$1") 
+    while [ $(echo "$1" | awk -F ":" 'END { print NF; }') -gt $i ]; do
+      properties="$properties $property"
+      i=$(($i + 1))
+      property=$(getPosFromIPString $i, "$1")
+    done
+    [ -n "$property" ] && properties="$properties $property"
   else
     local ipAddr=$1
     local ipGate=$2
@@ -213,15 +222,17 @@ function ip2Config() {
     local type=$10
     local onboot=$11
     [ -z "$onboot" ] && onboot="yes"
+    shift 11
+    local properties=$*
   fi
 
   # Bonding
   if [ -n "$ipAddr" ]; then
   	echo_local -n "Generating ifcfg for ${distribution} ($ipAddr, $ipGate, $ipNetmask, $ipHostname, $ipDevice, $ipMAC)..."
-    ${distribution}_ip2Config "$ipDevice" "$ipAddr" "$ipNetmask" "$ipHostname" "$ipGate" "$ipMAC" "$type" "$bridge" "$onboot"
+    ${distribution}_ip2Config "$ipDevice" "$ipAddr" "$ipNetmask" "$ipHostname" "$ipGate" "$ipMAC" "$type" "$bridge" "$onboot" ${properties//;/ }
   else
 	echo_local -n "Generating ifcfg for ${distribution} ($master, $slave, $bridge, $ipDevice, $ipMAC)..."
-    ${distribution}_ip2Config "$ipDevice" "" "$master" "$slave" "" "$ipMAC" "$type" "$bridge" "$onboot"
+    ${distribution}_ip2Config "$ipDevice" "" "$master" "$slave" "" "$ipMAC" "$type" "$bridge" "$onboot" ${properties//;/ }
   fi
   return_code $?
 }
@@ -297,7 +308,10 @@ function setPosAtIPString() {
 
 #############
 # $Log: network-lib.sh,v $
-# Revision 1.16  2009-02-24 12:02:13  marc
+# Revision 1.16.4.1  2010-01-05 13:59:05  marc
+# Implemented Feature Bug#367. Attributes for NICs.
+#
+# Revision 1.16  2009/02/24 12:02:13  marc
 # *** empty log message ***
 #
 # Revision 1.15  2009/02/18 18:03:20  marc

@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.66 2009-04-20 20:18:56 marc Exp $
+# $Id: gfs-lib.sh,v 1.66.4.1 2010-01-05 13:59:05 marc Exp $
 #
 # @(#)$File$
 #
@@ -594,6 +594,10 @@ function gfs_auto_netconfig {
   local bridge=$($xml_cmd -f $xml_file -q query_value /cluster/clusternodes/clusternode[@name=\"$nodename\"]/com_info/eth[@name=\"$netdev\"]/@bridge 2>/dev/null)
   local onboot=$($xml_cmd -f $xml_file -q query_value /cluster/clusternodes/clusternode[@name=\"$nodename\"]/com_info/eth[@name=\"$netdev\"]/@onboot 2>/dev/null)
   local driver=$($xml_cmd -f $xml_file -q query_value /cluster/clusternodes/clusternode[@name=\"$nodename\"]/com_info/eth[@name=\"$netdev\"]/@driver 2>/dev/null)
+  local properties=""
+  for i in $(seq 1 10); do
+  	properties="$properties:"$($xml_cmd -f $xml_file -q query_xml '/cluster/clusternodes/clusternode[@name="'$nodename'"]/com_info/eth[@name="'$netdev'"]/properties/property['$i']/child::text()' 2>/dev/null)
+  done
   if [ -z "$onboot" ]; then
   	onboot="yes"
   fi 
@@ -604,11 +608,11 @@ function gfs_auto_netconfig {
   if [ $? -eq 0 ] && [ "$ip_addr" != "" ]; then
     local gateway=$($xml_cmd -f $xml_file -q gateway $nodename $netdev) || local gateway=""
     local netmask=$($xml_cmd -f $xml_file -q mask $nodename $netdev)
-    echo ${ip_addr}"::"${gateway}":"${netmask}"::"$netdev":"$mac_addr":"$type":"$bridge":"$onboot":"$driver
+    echo ${ip_addr}"::"${gateway}":"${netmask}"::"$netdev":"$mac_addr":"$type":"$bridge":"$onboot":"$driver$properties
   else
     local master=$($xml_cmd -f $xml_file -q master $nodename $netdev 2>/dev/null)
     local slave=$($xml_cmd -f $xml_file -q slave $nodename $netdev 2>/dev/null)
-    echo ":${master}:${slave}:::${netdev}:${mac_addr}:${type}:${bridge}:$onboot:$driver"
+    echo ":${master}:${slave}:::${netdev}:${mac_addr}:${type}:${bridge}:$onboot:$driver"$properties
   fi
 
 #  if [ -n "$debug" ]; then set +x; fi
@@ -1336,7 +1340,10 @@ function gfs_fsck {
 #********* gfs_fsck
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.66  2009-04-20 20:18:56  marc
+# Revision 1.66.4.1  2010-01-05 13:59:05  marc
+# Implemented Feature Bug#367. Attributes for NICs.
+#
+# Revision 1.66  2009/04/20 20:18:56  marc
 # - removed nodiratime option
 #
 # Revision 1.65  2009/04/20 07:41:56  marc
