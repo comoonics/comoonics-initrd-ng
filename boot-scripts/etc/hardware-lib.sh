@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.39 2009-12-09 10:57:15 marc Exp $
+# $Id: hardware-lib.sh,v 1.40 2010-01-11 10:05:08 marc Exp $
 #
 # @(#)$File$
 #
@@ -709,7 +709,7 @@ function get_default_drivers {
 }
 #************ get_default_drivers
 
-#****f* boot-lib.sh/sysctl_load
+#****f* hardware-lib.sh/sysctl_load
 #  NAME
 #    sysctl_load
 #  SYNOPSIS
@@ -730,9 +730,26 @@ function sysctl_load() {
 }
 #**************** sysctl_load
 
+#****f* hardware-lib.sh/stabilized
+#  NAME
+#    stabilized
+#  SYNOPSIS
+#    function stabilized() {
+#  DESCRIPTION
+#    Loads the sysctls if available
+#  SOURCE
+#
+stabilized() {
+  test -x /usr/bin/stabilized && /usr/bin/stabilized $* || /bin/true
+}
+#***************** stabilized
+
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.39  2009-12-09 10:57:15  marc
+# Revision 1.40  2010-01-11 10:05:08  marc
+# added function stabilized to also work without
+#
+# Revision 1.39  2009/12/09 10:57:15  marc
 # cosmetics
 # no removement of modules with xen
 #
