@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.68 2010-01-04 13:12:13 marc Exp $
+# $Id: gfs-lib.sh,v 1.69 2010-01-11 10:04:38 marc Exp $
 #
 # @(#)$File$
 #
@@ -664,50 +664,6 @@ function gfs_auto_hosts {
     return $ret
 }
 #************ gfs_auto_hosts
-
-#****f* gfs-lib.sh/gfs_auto_netconfig
-#  NAME
-#    gfs_auto_netconfig
-#  SYNOPSIS
-#    function gfs_auto_netconfig(ipConfig, $netdev, cluster_conf)
-#  DESCRIPTION
-#  IDEAS
-#  SOURCE
-#
-function gfs_auto_netconfig {
-#  if [ -n "$debug" ]; then set -x; fi
-  local xml_file=$1
-  local nodename=$2
-  local netdev=$3
-  local xml_cmd="${ccs_xml_query}"
-  if [ -z "$netdev" ]; then netdev="eth0"; fi
-
-  local ip_addr=$($xml_cmd -f $xml_file -q ip $nodename $netdev 2>/dev/null)
-  local mac_addr=$($xml_cmd -f $xml_file -q query_value /cluster/clusternodes/clusternode[@name=\"$nodename\"]/com_info/eth[@name=\"$netdev\"]/@mac 2>/dev/null)
-  local type=$($xml_cmd -f $xml_file -q query_value /cluster/clusternodes/clusternode[@name=\"$nodename\"]/com_info/eth[@name=\"$netdev\"]/@type 2>/dev/null)
-  local bridge=$($xml_cmd -f $xml_file -q query_value /cluster/clusternodes/clusternode[@name=\"$nodename\"]/com_info/eth[@name=\"$netdev\"]/@bridge 2>/dev/null)
-  local onboot=$($xml_cmd -f $xml_file -q query_value /cluster/clusternodes/clusternode[@name=\"$nodename\"]/com_info/eth[@name=\"$netdev\"]/@onboot 2>/dev/null)
-  local driver=$($xml_cmd -f $xml_file -q query_value /cluster/clusternodes/clusternode[@name=\"$nodename\"]/com_info/eth[@name=\"$netdev\"]/@driver 2>/dev/null)
-  if [ -z "$onboot" ]; then
-  	onboot="yes"
-  fi 
-  if [ -z "$mac_addr" ]; then
-  	local mac_addr=$(ifconfig $netdev | grep -i hwaddr | awk '{print $5;};')
-  fi
-  mac_addr=${mac_addr//:/-}
-  if [ $? -eq 0 ] && [ "$ip_addr" != "" ]; then
-    local gateway=$($xml_cmd -f $xml_file -q gateway $nodename $netdev) || local gateway=""
-    local netmask=$($xml_cmd -f $xml_file -q mask $nodename $netdev)
-    echo ${ip_addr}"::"${gateway}":"${netmask}"::"$netdev":"$mac_addr":"$type":"$bridge":"$onboot":"$driver
-  else
-    local master=$($xml_cmd -f $xml_file -q master $nodename $netdev 2>/dev/null)
-    local slave=$($xml_cmd -f $xml_file -q slave $nodename $netdev 2>/dev/null)
-    echo ":${master}:${slave}:::${netdev}:${mac_addr}:${type}:${bridge}:$onboot:$driver"
-  fi
-
-#  if [ -n "$debug" ]; then set +x; fi
-}
-#************ gfs_auto_netconfig
 
 #****f* gfs-lib.sh/gfs_get_syslogserver
 #  NAME
@@ -1448,7 +1404,10 @@ function gfs_fsck {
 #********* gfs_fsck
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.68  2010-01-04 13:12:13  marc
+# Revision 1.69  2010-01-11 10:04:38  marc
+# removed gfs_auto_netconfig cc_auto_netconfig does this now.
+#
+# Revision 1.68  2010/01/04 13:12:13  marc
 # global variables will only be set if not already set anywhere else
 # gfs_validate: support for osr generated configuration
 # gfs_get: implementation will also support querymap
