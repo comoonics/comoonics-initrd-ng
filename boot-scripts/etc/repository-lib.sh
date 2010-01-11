@@ -1,5 +1,5 @@
 #
-# $Id: repository-lib.sh,v 1.5 2010-01-04 13:14:42 marc Exp $
+# $Id: repository-lib.sh,v 1.6 2010-01-11 10:06:01 marc Exp $
 #
 # @(#)$File$
 #
@@ -52,7 +52,7 @@ repository_load() {
 	local repository="$1"
 	[ -z "$repository" ] && repository=${REPOSITORY_DEFAULT}
 	for file in ${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}.*; do
-	  repository_get_value ${file#${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}.} $repository
+	  repository_get_value ${file#${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}.} "" $repository
     done
 }
 #******* repository_load
@@ -114,7 +114,7 @@ repository_append_value() {
 	local key=$(repository_normalize_value $1)
 	local repository="$3"
 	[ -z "$repository" ] && repository=${REPOSITORY_DEFAULT}
-	local value=$(repository_get_value $key $repository)
+	local value=$(repository_get_value $key "" $repository)
 	eval "${REPOSITORY_PREFIX}${repository}${REPOSITORY_FS}${key}=${value}\"$2\""
 	echo -n "$2" >> ${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}.$key
 }
@@ -134,7 +134,7 @@ repository_list_keys() {
 	local repository="$1"
 	[ -z "$repository" ] && repository=${REPOSITORY_DEFAULT}
 	local values=""
-	local key
+	local key=""
 #	repository_load $repository
 	for key in ${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}.*; do
 		key="${key#${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}.}"
@@ -149,13 +149,15 @@ repository_list_keys() {
 #  NAME
 #    repository_list_values
 #  SYNOPSIS
-#    function repository_list_values(repository_name)
+#    function repository_list_values(quoted=0|1, repository_name)
 #  DESCRIPTION
 #    return a list of all variablevalues found in the given repository
 #  IDEAS
 #  SOURCE
 #
 repository_list_values() {
+	local quoted="$1"
+	[ -z "$quoted" ] && quoted=0
 	local repository="$1"
 	[ -z "$repository" ] && repository=${REPOSITORY_DEFAULT}
 	local index=0
@@ -163,7 +165,11 @@ repository_list_values() {
 	for key in ${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}.*; do
 		key="${key#${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}.}"
 		if [ "$key" != "*" ]; then
-		  echo "$(repository_get_value $key $repository)"
+		  if [ -n "$quoted" ] && [ $quoted -eq 0 ]; then
+		    echo "\"$(repository_get_value $key "" $repository)\""
+		  else
+		    echo "$(repository_get_value $key "" $repository)"
+		  fi
 		fi
    	done		
 }
@@ -190,7 +196,7 @@ repository_list_items() {
 	local key
 	for key in $(repository_list_keys $repository); do
 		if repository_has_key $key $repository; then
-	      values=${values}${LS}${key}${OFS}$(repository_get_value $key $repository)
+	      values=${values}${LS}${key}${OFS}$(repository_get_value $key "" $repository)
 		fi
   	done		
  	echo -e $values
@@ -260,7 +266,7 @@ repository_del_value() {
 	local key=$(repository_normalize_value $1)
 	local repository="$2"
 	[ -z "$repository" ] && repository=${REPOSITORY_DEFAULT}
-	val=$(repository_get_value $key $repository)
+	val=$(repository_get_value $key "" $repository)
 	if [ $? -eq 0 ]; then
 		eval "unset ${repository}${REPOSITORY_FS}${key}"
 		rm -f ${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}.$key
@@ -290,7 +296,10 @@ repository_clear() {
 
 #############
 # $Log: repository-lib.sh,v $
-# Revision 1.5  2010-01-04 13:14:42  marc
+# Revision 1.6  2010-01-11 10:06:01  marc
+# bugfix for multiple attributes for attribute
+#
+# Revision 1.5  2010/01/04 13:14:42  marc
 # typos
 #
 # Revision 1.4  2009/09/28 13:05:29  marc
