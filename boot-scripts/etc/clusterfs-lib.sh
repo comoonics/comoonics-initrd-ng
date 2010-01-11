@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.39 2010-01-04 13:06:08 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.40 2010-01-11 10:03:55 marc Exp $
 #
 # @(#)$File$
 #
@@ -802,16 +802,16 @@ function cc_auto_netconfig {
   	  onboot="yes"
     fi 
     if [ -z "$mac_addr" ]; then
-  	  local mac_addr=$(ip addr show $netdev scope link | grep link/ether | awk '{print $2;}')
+  	  local mac_addr=$(ip addr show $netdev scope link 2>/dev/null | grep link/ether | awk '{print $2;}')
     fi
     mac_addr=${mac_addr//:/-}
-    if [ $? -eq 0 ] && [ "$ip_addr" != "" ]; then
+    if [ "$ip_addr" != "" ]; then
       local gateway=$(cc_get $cluster_conf eth_name_gateway $nodeid $netdev 2>/dev/null) || local gateway=""
       local netmask=$(cc_get $cluster_conf eth_name_mask $nodeid $netdev 2>/dev/null)
       echo ${ip_addr}"::"${gateway}":"${netmask}"::"$netdev":"$mac_addr":"$type":"$bridge":"$onboot":"$driver":"$properties
     else
       local master=$(cc_get $cluster_conf eth_name_master $nodeid $netdev 2>/dev/null)
-      local slave= $(cc_get $cluster_conf eth_name_slave $nodeid $netdev 2>/dev/null)
+      local slave=$(cc_get $cluster_conf eth_name_slave $nodeid $netdev 2>/dev/null)
       echo ":"${master}":"${slave}":::"${netdev}":"${mac_addr}":"${type}":"${bridge}":"$onboot":"$driver":"$properties
     fi
   fi
@@ -1387,7 +1387,10 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.39  2010-01-04 13:06:08  marc
+# Revision 1.40  2010-01-11 10:03:55  marc
+# corrected typos
+#
+# Revision 1.39  2010/01/04 13:06:08  marc
 # getCluType: support for osr cluster
 # getClusterParameter: Test compatible, also accepts nodename and nodeid
 # cluster_ip_config: Support for nodeid
