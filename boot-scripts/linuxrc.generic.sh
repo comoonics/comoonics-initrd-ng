@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.86 2010-01-04 13:26:50 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.87 2010-01-11 10:06:33 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.86 2010-01-04 13:26:50 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.87 2010-01-11 10:06:33 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -78,14 +78,17 @@ if [ $# -gt 1 ]; then
   return_code 0
 fi
 
-PYTHONPATH=$(python -c 'import os; import sys; print (os.path.join("/usr", "lib", "python%u.%u" %(int(sys.version[0]), int(sys.version[2])), "site-packages"))')
-export PYTHONPATH
+which python &>/dev/null
+if [ $? -eq 0 ]; then
+  PYTHONPATH=$(python -c 'import os; import sys; print (os.path.join("/usr", "lib", "python%u.%u" %(int(sys.version[0]), int(sys.version[2])), "site-packages"))')
+  export PYTHONPATH
+fi
 
 echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.86 $ $Date: 2010-01-04 13:26:50 $'
+echo_local 'Internal Version $Revision: 1.87 $ $Date: 2010-01-11 10:06:33 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -539,7 +542,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.86  2010-01-04 13:26:50  marc
+# Revision 1.87  2010-01-11 10:06:33  marc
+# PYTHONPATH will only be set if python is available.
+#
+# Revision 1.86  2010/01/04 13:26:50  marc
 # also passing nodeid to _ipConfig
 #
 # Revision 1.85  2009/12/09 10:58:42  marc
