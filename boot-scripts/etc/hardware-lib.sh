@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.40 2010-01-11 10:05:08 marc Exp $
+# $Id: hardware-lib.sh,v 1.41 2010-02-05 12:35:58 marc Exp $
 #
 # @(#)$File$
 #
@@ -220,14 +220,14 @@ function scsi_start() {
       for dev in $devs; do
         for channel in $channels; do
           id=$(basename $dev)
-          echo_local -n "$dev On id $id and channel $channel"
+          echo_local -N -n "$dev On id $id and channel $channel"
           add_scsi_device $id $channel $dev
           return_code
         done
       done
     fi
     stabilized -g 5 -t hash /proc/scsi/scsi
-    echo_local_debug "3.3 Configured SCSI-Devices:"
+    echo_local_debug "Configured SCSI-Devices:"
     exec_local_debug /bin/cat /proc/scsi/scsi
   fi
 }
@@ -486,13 +486,13 @@ function hardware_detect() {
   local xmodules=$(cat /etc/xmodules 2>/dev/null)
 
   echo_local -n "Detecting Hardware "
-  echo_local_debug -n "..(saving modules).."
+  echo_local_debug -N -n "..(saving modules).."
   local modules=$( (listmodules; echo -e "$xmodules") | sort)
   local allowedunloadmodules=$(find /lib/modules/$(uname -r)/kernel/drivers -path "*/net/*" -or -path "*/scsi/*" -type f -printf "%f\n")
   # detecting xen
   xen_domx_detect
   if [ $? -eq 0 ]; then
-	echo_local -n "..(xen DomX).."
+	echo_local -n -N "..(xen DomX).."
 	xen_domx_hardware_detect
     # Xen modules are not to be unloaded cause it does not work and makes no sense
 	modules=$(xen_get_drivers)
@@ -723,7 +723,7 @@ function sysctl_load() {
 	[ -z "$sysctlconf" ] && sysctlconf="/etc/sysctl.conf" 
 	if [ -e "$sysctlconf" ]; then
 		echo_local -n "Loading sysctl.."
-		echo_local_debug -n "sysctl.conf: $sysctlconf"
+		echo_local_debug -N -n "sysctl.conf: $sysctlconf"
 		exec_local "sysctl -q -p $sysctlconf > /dev/null"
 		return_code
 	fi
@@ -746,7 +746,10 @@ stabilized() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.40  2010-01-11 10:05:08  marc
+# Revision 1.41  2010-02-05 12:35:58  marc
+# - some typos
+#
+# Revision 1.40  2010/01/11 10:05:08  marc
 # added function stabilized to also work without
 #
 # Revision 1.39  2009/12/09 10:57:15  marc
