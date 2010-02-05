@@ -1,18 +1,20 @@
 # Library to collect all clusterrelevant functions
 
 osr_generate_nodevalues() {
-	nodeid=$1
-	osr_querymap="$2"
+	local nodeid=$1
+	local osr_querymap="$2"
+	local key2=""
 	repository_store_value osrquerymap $osr_querymap
 	for element in $(osr_get_cluster_elements); do # e.g. eth
-		keyname=$(osr_get_cluster_element_key $element)    # e.g. name
+		local keyname=$(osr_get_cluster_element_key $element)    # e.g. name
 		error_local_debug "osr_generate_nodevalues nodeid: $nodeid element: $element, keyname: $keyname"
 		if [ -n "$keyname" ]; then
-			keys=$(cc_get $element"_"$keyname $nodeid)
+			local keys=$(cc_get $element"_"$keyname $nodeid)
 			echo $element"_"$keyname"='"$keys"'"
 			for key in $keys; do
+				key2=$(osr_quote_or_remove $key)
 				for attribute in $(osr_get_cluster_attributes $element); do  # e.g. ip
-					echo $element"_"$key"_"$attribute="'"$(cc_get $element"_"$keyname"_"$attribute $nodeid $key)"'"
+					echo $element"_"$key2"_"$attribute="'"$(cc_get $element"_"$keyname"_"$attribute $nodeid $key)"'"
 				done
 			done
 		else
@@ -26,17 +28,19 @@ osr_generate_nodevalues() {
 #
 # Returns a "string" as list of elements to be found in a cluster configuration
 osr_get_cluster_elements() {
-	echo "name clustername eth syslog rootvolume fenceacksv scsi rootsource chrootenv"
+	echo "name clustername eth syslog rootvolume fenceacksv scsi rootsource chrootenv filesystem"
 } 
 
 #
 # Returns a key for the element of the cluster configuration to be used. 
 # This key needs to be unique for this node.  
 osr_get_cluster_element_key() {
-	element=$1
+	local element=$1
+	local key=""
 	case "$element" in
 		"eth") key="name" ;;
 		"eth_*_properties") key="name" ;;
+	    "filesystem") key="dest" ;;
 		*) key=""
 	esac
 	echo $key
@@ -51,6 +55,7 @@ osr_get_cluster_attributes() {
 		"scsi") echo "name driver failover" ;;
 		"syslog") echo "name level subsys type filter" ;;
 		"rootvolume") echo "name fstype mountopts" ;;
+	    "filesystem") echo "dest source fstype mountopts mounttimes mountwait" ;;
 		"rootsource") echo "name" ;;
 		"fenceacksv") echo "name" ;;
 		"name") echo "name" ;;
@@ -196,7 +201,9 @@ osr_resolve_element_alias() {
 osr_get_clustername() {
    local nodeconf=$3
    local nodeid=$1
-   [ -z "$nodeconf" ] && nodeconf=$(osr_nodeid_file $nodeid)
+   if [ -z "$nodeconf" ]; then
+     local nodeconf=$(osr_nodeid_file $nodeid)
+   fi
    osr_get_node_attrs "name" "clustername" "$nodeid" "" "" "$2" "$nodeconf"
 }
 
@@ -222,13 +229,23 @@ osr_get_all_drivers() {
 }
 
 #
+# osr_quote_or_remove keyname [symbolstoacceptasstring=[:alnum:]]
+# removes unusable strings from key. Note that this could lead to not unique keys if they are having 
+# special characters
+osr_quote_or_remove() {
+  local attr="$1"
+  local acceptedsyms="[:alnum:]" 
+  [ -n "$2" ] && acceptedsyms="$2"
+  echo "$attr" | tr -c -d "$acceptedsyms"
+}
+#
 # osr_get_node_attrs(attr subpath nodeid nodename name [nodesconf] [nodeconf])
 osr_get_node_attrs() {
-  local attr=$1
+  local attr=$(osr_quote_or_remove $1)
   local elements=$2
   local nodeid=$3
   local nodename=$4
-  local name=$5
+  local name=$(osr_quote_or_remove $5)
   local nodesconf=$6
   local nodeconf=$7
   local element=""
@@ -266,6 +283,7 @@ osr_get_node_attrs() {
       eval value=\$${element}_${attr}
       if [ -z "$value" ] && [ -n "$keyname" ]; then
       	for key in $(osr_get_node_attrs "$keyname" "$element" "$nodeid" "$nodename" "" "$nodesconf" "$nodeconf"); do 
+      	  key=$(osr_quote_or_remove "$key")
       	  eval value=\$${element}_${key}_${attr}
       	  test -n "$value" && values="${values}${delim}${value}"
         done
@@ -606,10 +624,12 @@ osr_get() {
   local nodeid=$2
   local key=$3
   if [ -f "$4" ]; then
-    nodeconf="$4"
+    local nodeconf="$4"
     shift
   fi 
-  [ -z "$nodeconf" ] && nodeconf=$(osr_nodeid_file $nodeid)
+  if [ -z "$nodeconf" ]; then
+  	local nodeconf=$(osr_nodeid_file $nodeid)
+  fi
   
   local element=$(echo $query | cut -f1 -d_)
   local keyname=$(osr_get_cluster_element_key $element)
@@ -648,6 +668,7 @@ osr_auto_hosts() {
   local netdev=""
   local nodename=""
   local ip=""
+  local nodeconf=""
   
   if [ -f "$1" ]; then
   	nodesconf="$1"
