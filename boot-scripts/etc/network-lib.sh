@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.18 2010-01-04 13:13:29 marc Exp $
+# $Id: network-lib.sh,v 1.19 2010-02-05 12:36:33 marc Exp $
 #
 # @(#)$File$
 #
@@ -87,7 +87,7 @@ function nicConfig {
       macwish=${macwish//-/:}  	  
   	  if [ -z "$driver" ] && [ -n "$devmay" ] && [ -n "$macmay" ] && [ -n "$macwish" ] && [ "$macmay" = "$macwish" ] && [ "$dev" != "$devmay" ]; then
   	  	if [ -z "$macis" ] || [ "$macis" != "$macwish" ]; then
-  	  	  echo_local -n "moving nicname from $dev => $devmay." >&2
+  	  	  echo_local -N -n "moving nicname from $dev => $devmay." >&2
   	      ipconfig=$(setPosAtIPString 6 $devmay $ipconfig)
   	  	fi
   	  fi  
@@ -229,10 +229,10 @@ function ip2Config() {
 
   # Bonding
   if [ -n "$ipAddr" ]; then
-  	echo_local_debug -n "Generating ifcfg for ${distribution} ($ipAddr, $ipGate, $ipNetmask, $ipHostname, $ipDevice, $ipMAC)..."
+  	echo_local_debug -N -n ".. ifcfg for ${distribution} ($ipAddr, $ipGate, $ipNetmask, $ipHostname, $ipDevice, $ipMAC)..."
     ${distribution}_ip2Config "$ipDevice" "$ipAddr" "$ipNetmask" "$ipHostname" "$ipGate" "$ipMAC" "$type" "$bridge" "$onboot" $properties
   else
-	echo_local_debug -n "Generating ifcfg for ${distribution} ($master, $slave, $bridge, $ipDevice, $ipMAC)..."
+	echo_local_debug -N -n ".. ifcfg for ${distribution} ($master, $slave, $bridge, $ipDevice, $ipMAC)..."
     ${distribution}_ip2Config "$ipDevice" "" "$master" "$slave" "" "$ipMAC" "$type" "$bridge" "$onboot" $properties
   fi
 }
@@ -308,7 +308,10 @@ function setPosAtIPString() {
 
 #############
 # $Log: network-lib.sh,v $
-# Revision 1.18  2010-01-04 13:13:29  marc
+# Revision 1.19  2010-02-05 12:36:33  marc
+# - added -N to echo_local[_debug] where appropriate
+#
+# Revision 1.18  2010/01/04 13:13:29  marc
 # ip2config: small typo and added properties support
 #
 # Revision 1.17  2009/12/09 10:57:40  marc
