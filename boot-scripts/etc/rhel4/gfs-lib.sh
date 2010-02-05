@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.3 2009-04-14 14:50:03 marc Exp $
+# $Id: gfs-lib.sh,v 1.4 2010-02-05 12:26:52 marc Exp $
 #
 # @(#)$File$
 #
@@ -52,9 +52,75 @@ function gfs_get_userspace_procs {
 }
 #******** gfs_get_userspace_procs
 
+#****f* bootsr/get_lockcount
+#  NAME
+#    get_getlockcount
+#  SYNOPSIS
+#    function get_lockcount default_lockcount
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function get_lockcount {
+  local DEF_LOCK_COUNT=$1
+  local MAX_LOCK_COUNT=$2
+  [ -z "$DEF_LOCK_COUNT" ] && DEF_LOCK_COUNT=${DEFAULT_LOCK_COUNT}
+  [ -z "$DEF_LOCK_COUNT" ] && DEF_LOCK_COUNT=50000
+  [ -z "$MAX_LOCK_COUNT" ] && MAX_LOCK_COUNT=0
+  cat /proc/meminfo | grep MemTotal | awk -v maxlockcount=$MAX_LOCK_COUNT -v deflockcount=$DEF_LOCK_COUNT '
+  {
+  	lockcount=int($2/1024/512*deflockcount);
+  	if ((lockcount > maxlockcount) && (maxlockcount > 0))
+  	  lockcount=maxlockcount;
+  	print lockcount;
+  }
+'
+}
+#************ get_lockcount
+
+#****f* gfs-lib.sh/gfs_init
+#  NAME
+#    gfs_init
+#  SYNOPSIS
+#    function gfs_init(start|stop|restart) rootfs CHROOT_PATH
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function gfs_init {
+  local DEFAULT_LOCK_COUNT=50000
+  local action=$1
+  local rootfs="gfs"
+  local CHROOT_PATH=$3
+  local VAR_RUN_FILES="cluster/ccsd.pid cluster/ccsd.sock cman_admin cman_client"
+	
+  case "$action" in
+        start)
+           /bin/mount -at $rootfs 2>&1 | tee -a /var/log/bootsr | logger -t com-bootsr
+           count=$(get_lockcount ${DEFAULT_LOCK_COUNT} ${MAX_LOCK_COUNT})
+	       echo_local_debug -n "Changing dlm:drop_count to $count"
+	       echo $count > /proc/cluster/lock_dlm/drop_count
+           # Create symbolic links
+           for file in ${VAR_RUN_FILES}; do
+  	          [ -e /var/run/${file} ] && rm -f /var/run/${file}
+  	          test -d /var/run/$(dirname ${file}) || mkdir -p /var/run/$(dirname ${file}) 2>/dev/null
+  	          test -e ${CHROOT_PATH}/var/run/${file} && /bin/ln -sf ${CHROOT_PATH}/var/run/${file} /var/run/$(dirname $file)
+           done
+           ;;
+         stop)
+           ;;
+  esac
+  return 0
+}
+#********* gfs_init
+
 ###############
 # $Log: gfs-lib.sh,v $
-# Revision 1.3  2009-04-14 14:50:03  marc
+# Revision 1.4  2010-02-05 12:26:52  marc
+# - backport to upstream
+# - moved get_lockcount to be defined here (used by bootsr)
+#
+# Revision 1.3  2009/04/14 14:50:03  marc
 # overwritten gfs_get_userspaceprocs are there are none needed in RHEL4
 #
 # Revision 1.2  2009/03/25 13:52:52  marc
