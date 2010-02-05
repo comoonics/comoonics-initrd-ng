@@ -254,6 +254,25 @@ if ! runonce; then
     detecterror "$?" "osr_get did not return \"$expectedresult\" for nodeid $nodeid but \"$result\" errorcode $errorcode"
     echo " eth_name_ip 1 eth1=$result"
 
+    echo -n "Testing function osr_get for filesystem"
+    expectedresult="/var /var2"
+    result=$(nodeconf=$nodeconf osr_get $nodeidsfile filesystem_dest $nodeid)
+    errorcode=$?
+    test "$result" = "$expectedresult"
+    detecterror "$?" "osr_get for filesystem did not return \"$expectedresult\" for nodeid $nodeid but \"$result\" errorcode $errorcode" || echo "FAILED"
+    echo " dests=$result"
+
+    echo -n "Testing function osr_get for filesystem_var_source"
+    for dest in "/var" "/var2"; do
+       expectedresult="/cluster/cdsl/1/var"
+       result=$(nodeconf=$nodeconf osr_get $nodeidsfile filesystem_dest_source $nodeid "$dest")
+       errorcode=$?
+       test "${result:0:${#expectedresult}}" = "$expectedresult"
+       detecterror "$?" "osr_get for filesystem_var_source did not return \"$expectedresult\" for nodeid $nodeid but \"$result\" errorcode $errorcode" || echo "FAILED"
+       echo -n " dests=$result"
+    done
+    echo
+
     repository_store_value clutype osr      
     echo -n "Testing function cc_auto_netconfig"
     expectedresult="10.0.0.1::1.2.3.4:255.255.255.0::eth0:00-0C-29-3B-XX-XX:::yes:e100:MASTER=no:SLAVE=no:BONDING_OPTS=\"miimon=100:mode=1\""

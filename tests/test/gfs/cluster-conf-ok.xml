@@ -8,6 +8,10 @@
       <com_info>
         <syslog name='gfs-node1'/>
         <rootvolume name='/dev/VG_SHAREDROOT/LV_SHAREDROOT' fstype="gfs" mountopts="noatime,nodiratime,noquota"/>
+        <filesystems>
+          <filesystem source='/cluster/cdsl/%(param0)s/var' dest='/var' fstype='bind' mountopts='default' mountwait='1' mounttimes='1'/>
+          <filesystem source='/cluster/cdsl/%(param0)s/var2' dest='/var2' fstype='bind' mountopts='default'/>
+        </filesystems>
         <eth ip='10.0.0.1' gateway='1.2.3.4' name='eth0' mac='00:0C:29:3B:XX:XX' mask='255.255.255.0' driver="e100">
           <properties>
             <property name="MASTER">MASTER=no</property>
