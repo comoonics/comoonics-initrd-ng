@@ -1,5 +1,5 @@
 #
-# $Id: repository-lib.sh,v 1.6 2010-01-11 10:06:01 marc Exp $
+# $Id: repository-lib.sh,v 1.7 2010-02-05 12:40:40 marc Exp $
 #
 # @(#)$File$
 #
@@ -49,11 +49,12 @@
 #  SOURCE
 #
 repository_load() {
-	local repository="$1"
-	[ -z "$repository" ] && repository=${REPOSITORY_DEFAULT}
-	for file in ${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}.*; do
-	  repository_get_value ${file#${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}.} "" $repository
-    done
+#	local repository="$1"
+#	[ -z "$repository" ] && repository=${REPOSITORY_DEFAULT}
+#	for file in ${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}.*; do
+#	  repository_get_value ${file#${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}.} "" $repository
+#    done
+   true
 }
 #******* repository_load
 
@@ -296,7 +297,10 @@ repository_clear() {
 
 #############
 # $Log: repository-lib.sh,v $
-# Revision 1.6  2010-01-11 10:06:01  marc
+# Revision 1.7  2010-02-05 12:40:40  marc
+# - repository_load is obsolete
+#
+# Revision 1.6  2010/01/11 10:06:01  marc
 # bugfix for multiple attributes for attribute
 #
 # Revision 1.5  2010/01/04 13:14:42  marc
