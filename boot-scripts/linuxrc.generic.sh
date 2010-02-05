@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.87 2010-01-11 10:06:33 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.88 2010-02-05 12:46:24 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.87 2010-01-11 10:06:33 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.88 2010-02-05 12:46:24 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -88,7 +88,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.87 $ $Date: 2010-01-11 10:06:33 $'
+echo_local 'Internal Version $Revision: 1.88 $ $Date: 2010-02-05 12:46:24 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -127,7 +127,7 @@ echo_local
 } &
 read -n1 -t5 confirm
 if [ "$confirm" = "i" ]; then
-  echo_local -e "    Interactivemode recognized. Switching step_mode to on"
+  echo_local "    Interactivemode recognized. Switching step_mode to on"
   repository_store_value step
 fi
 wait
@@ -153,14 +153,14 @@ if [ -z "$simulation" ] || [ "$simulation" -ne 1 ]; then
 fi
 step "Hardwaredetection finished" "hwdetect"
 
-echo_local -n "Detecting nodeid & nodename ..."
+echo_local -n "Detecting nodeid & nodename "
 
 #nodeid must be first
 nodeid=$(getParameter nodeid $(cc_getdefaults nodeid))
 [ -z "$nodeid" ] && breakp $(errormsg err_cc_nodeid)
 nodename=$(getParameter nodename $(cc_getdefaults nodename))
 [ -z "$nodename" ] && breakp $(errormsg err_cc_nodename)
-echo_local -n "nodeid: $nodeid, nodename: $nodename "
+echo_local -N -n "nodeid: $nodeid, nodename: $nodename "
 
 sourceRootfsLibs ${predir}
 success
@@ -174,7 +174,7 @@ step "NIC modules loaded." "autonetconfig"
 echo_local -n "Scanning other parameters "
 _ccparameters="votes tmpfix quorumack ip rootvolume rootsource syslogserver syslogfilter"
 _fsparameters="sourceserver lockmethod root mountopts scsifailover rootfsck mounttimes mountwait"
-echo_local_debug -n "cc: $_ccparameters fs: $_fsparameters "
+echo_local_debug -N -n "cc: $_ccparameters fs: $_fsparameters "
 
 for _parameter in $_ccparameters; do
   getParameter $_parameter $(cc_getdefaults $_parameter) &>/dev/null
@@ -230,7 +230,6 @@ netdevs=""
 for ipconfig in $(repository_get_value ipConfig); do
   dev=$(getPosFromIPString 6, $ipconfig)
 
-#  echo_local "Device $dev"
   # Special case for bonding
   { echo "$dev"| grep "^bond" && grep -v "alias $dev" $modules_conf; } >/dev/null 2>&1
   if [ $? -eq 0 ]; then
@@ -302,7 +301,7 @@ step "Network started" "netstart"
 bridges=$(cc_auto_getbridges $(repository_get_value cluster_conf) $(repository_get_value nodename))
 if [ -n $bridges ]; then
   for bridge in $bridges; do
-     echo_local -e "Setting up network bridge $bridge"
+     echo_local -n "Setting up network bridge $bridge"
      network_setup_bridge $bridge $(repository_get_value nodename) $(repository_get_value cluster_conf)
      return_code $?
   done
@@ -488,6 +487,30 @@ if [ $is_syslog -eq 0 ]; then
   return_code
 fi
 
+filesystems=$(cc_get $(repository_get_value cluster_conf) filesystem_dest $(repository_get_value nodeid))
+if [ $? -eq 0 ] && [ -n "$filesystems" ]; then
+  for dest in $filesystems; do
+    fstype=$(cc_get $(repository_get_value cluster_conf) filesystem_dest_fstype $(repository_get_value nodeid) $dest)
+    source=$(cc_get $(repository_get_value cluster_conf) filesystem_dest_source $(repository_get_value nodeid) $dest)
+    [ "$fstype" = "bind" ] && source=$(repository_get_value newroot)/$source
+    mountopts=$(cc_get $(repository_get_value cluster_conf) filesystem_dest_mountopts $(repository_get_value nodeid) $dest)
+    mountwait=$(cc_get $(repository_get_value cluster_conf) filesystem_dest_mountwait $(repository_get_value nodeid) $dest)
+    mounttimes=$(cc_get $(repository_get_value cluster_conf) filesystem_dest_mounttimes $(repository_get_value nodeid) $dest)
+    dest=$(repository_get_value newroot)/$(cc_get $(repository_get_value cluster_conf) filesystem_dest_dest $(repository_get_value nodeid) $dest)
+    [ -z "$mountwait" ] && mountwait="$(repository_get_value mountwait)"
+    [ -z "$mounttimes" ] && mountwait="$(repository_get_value mounttimes)"
+    if repository_has_key fsck || clusterfs_fsck_needed $source $fstype; then
+	    clusterfs_fsck $source $fstype
+	    if [ $? -ne 0 ]; then
+		  errormsgissue err_clusterfs_fsck
+		  breakp "Please try to check the filesystem on $source manually." 
+	    fi
+    fi 
+    clusterfs_mount "$fstype" "$source" "$dest" "$mountopts" "$mounttimes" "$mountwait" 
+  done
+  step "Additional filesystems $filesystems mounted." "fsmount"
+fi
+
 if [ $(repository_get_value chrootneeded) -eq 0 ]; then
   echo_local -n "Moving chroot environment $(repository_get_value chroot_path) to $(repository_get_value newroot)"
   move_chroot $(repository_get_value chroot_mount) $(repository_get_value newroot)/$(repository_get_value chroot_mount)
@@ -499,9 +522,11 @@ if [ $(repository_get_value chrootneeded) -eq 0 ]; then
   return_code
   step "Moving chroot successfully done." "movechroot"
 else
-  echo_local -n "Removing reference to chrootpath."
-  rm -f $(repository_get_value newroot)/var/comoonics/chrootpath 2>/dev/null
-  success
+  if [ -f $(repository_get_value newroot)/var/comoonics/chrootpath ]; then
+    echo_local -n "Removing reference to chrootpath."
+    exec_local rm -f $(repository_get_value newroot)/var/comoonics/chrootpath 2>/dev/null
+    return_code
+  fi
 fi
 
 echo_local -n "Writing xtab.. "
@@ -521,10 +546,10 @@ create_xkillall_procs "$(repository_get_value newroot)/$(repository_get_value xk
 success
 step "Created xtab,xrootfs,xkillall_procs file" "xfiles"
 	 
-echo_local -n "cleaning up initrd ..."
+echo_local -n "Cleaning up initrd ..."
 exec_local clean_initrd
 success
-echo
+echo_local
 step "Cleaned up initrd" "cleanup"
 
 #TODO umount $newroot/proc again
@@ -542,7 +567,11 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.87  2010-01-11 10:06:33  marc
+# Revision 1.88  2010-02-05 12:46:24  marc
+# - removed format characters or tabs or newlines where unnecessary
+# - added being able to mount more filesystems other then only /
+#
+# Revision 1.87  2010/01/11 10:06:33  marc
 # PYTHONPATH will only be set if python is available.
 #
 # Revision 1.86  2010/01/04 13:26:50  marc
