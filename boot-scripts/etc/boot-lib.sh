@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.79 2009-12-09 09:08:12 marc Exp $
+# $Id: boot-lib.sh,v 1.80 2010-02-05 12:44:43 marc Exp $
 #
 # @(#)$File$
 #
@@ -740,7 +740,7 @@ function create_builddate_file {
 	local bd_file=$1
 	# patching build file
 	if [ -n "$bd_file" ]; then
-		echo_local -n "builddate_file"
+		echo_local -N -n "builddate_file"
     	echo "Build Date: "$(date) >> $bd_file
     	return_code $?
 	else
@@ -839,12 +839,12 @@ function stop_service {
 #
 function clean_initrd() {
 	local procs="udevd"
-	echo_local_debug -n "Sending unnecessary processes the TERM signal"
+	echo_local_debug -N -n "Sending unnecessary processes the TERM signal"
 	for p in $procs; do
 		killall -0 $p && killall $p &> /dev/null
 	done
 	sleep 3
-	echo_local_debug -n "Sending unnecessary processes the KILL signal"
+	echo_local_debug -N -n "Sending unnecessary processes the KILL signal"
 	for p in $procs; do
 		killall -0 $p && killall -9 $p &> /dev/null
 	done
@@ -999,7 +999,10 @@ detectHalt() {
 #************** detectHalt
 
 # $Log: boot-lib.sh,v $
-# Revision 1.79  2009-12-09 09:08:12  marc
+# Revision 1.80  2010-02-05 12:44:43  marc
+# - added -N to echo_local[_debug] where appropriate
+#
+# Revision 1.79  2009/12/09 09:08:12  marc
 # cosmetics
 #
 # Revision 1.78  2009/10/07 14:07:58  marc
