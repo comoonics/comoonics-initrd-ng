@@ -2,7 +2,7 @@
 #****h* comoonics-bootimage/bootsr
 #  NAME
 #    bootsr
-#    $Id: bootsr,v 1.22 2009-04-20 07:18:08 marc Exp $
+#    $Id: bootsr,v 1.23 2010-02-05 12:47:30 marc Exp $
 #  DESCRIPTION
 #    Comoonics Shared Root post boot settings
 #  AUTHOR
@@ -20,14 +20,10 @@
 # /etc/rc.d/init.d/bootsr
 #
 
-CCSD_OPTS=
-
 . /etc/init.d/functions
 
 BOOTIMAGE_PATH=/opt/atix/comoonics-bootimage
-CCSD_LOCK_FILE="/var/lock/subsys/ccsd-chroot"
-DEFAULT_LOCK_COUNT=50000
-CHROOT_PATH=$(/opt/atix/comoonics-bootimage/manage_chroot.sh -p) 
+CHROOT_PATH=$(${BOOTIMAGE_PATH}/manage_chroot.sh -p) 
 UPDATE_CHROOT="${BOOTIMAGE_PATH}/manage_chroot.sh -a update"
 UMOUNT_CHROOT="${BOOTIMAGE_PATH}/manage_chroot.sh -a umount"
 MOUNT_CHROOT="${BOOTIMAGE_PATH}/manage_chroot.sh -a mount"
@@ -37,7 +33,6 @@ PATCH_FILES="${BOOTIMAGE_PATH}/manage_chroot.sh -a patch_files"
 UNPATCH_FILES="${BOOTIMAGE_PATH}/manage_chroot.sh -a unpatch_files"
 CREATE_XFILES="${BOOTIMAGE_PATH}/manage_chroot.sh -a createxfiles"
 BUILD_FILE="/etc/comoonics-build.txt"
-VAR_RUN_FILES="cman_admin cman_client"
 
 RETVAL=0
 
@@ -132,33 +127,6 @@ function umount_chroot {
 }
 #************ get_runlevel
 
-#****f* bootsr/get_lockcount
-#  NAME
-#    get_getlockcount
-#  SYNOPSIS
-#    function get_lockcount default_lockcount
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function get_lockcount {
-  DEF_LOCK_COUNT=$1
-  MAX_LCOK_COUNT=$2
-  [ -z "$DEF_LOCK_COUNT" ] && DEF_LOCK_COUNT=${DEFAULT_LOCK_COUNT}
-  [ -z "$DEF_LOCK_COUNT" ] && DEF_LOCK_COUNT=50000
-  [ -z "$MAX_LOCK_COUNT" ] && MAX_LOCK_COUNT=0
-  cat /proc/meminfo | grep MemTotal | awk -v maxlockcount=$MAX_LOCK_COUNT -v deflockcount=$DEF_LOCK_COUNT '
-  {
-  	lockcount=int($2/1024/512*deflockcount);
-  	if ((lockcount > maxlockcount) && (maxlockcount > 0))
-  	  lockcount=maxlockcount;
-  	print lockcount;
-  }
-'
-}
-#************ get_lockcount
-
-
 #****f* bootsr/main
 #  NAME
 #    main
@@ -184,56 +152,31 @@ clutype=$(repository_get_value clutype)
 case "$1" in
   start)
   	# will do
-  	# - activate swap partitions (currently disabled)
-  	# - mount everything except nfs (na)
   	# - update chroot environment for additional services (fence_ack_server)
     
   	# first clean old repos
     check_mtab $rootfs
     
-    check_sharedroot $rootfs
-    sharedroot=$?
-    if  [ -n "$rootfs" ] && [ $sharedroot ]; then
-#      runlevel=$(get_runlevel)
-      touch /var/lock/subsys/bootsr
-#      echo `date` Doing the Comoonics Shared Root post settings | tee -a /var/log/bootsr | logger -t com-bootsr
-#      /sbin/swapon -av 2>&1 | tee -a /var/log/bootsr | logger -t com-bootsr
-      if [ "$rootfs" = "gfs" ]; then
-        echo  -n "Doing the Comoonics Shared Root post settings "
-        /bin/mount -at $rootfs 2>&1 | tee -a /var/log/bootsr | logger -t com-bootsr
-	    # Create symbolic links
-	    for file in ${VAR_RUN_FILES}; do
-	  	  [ -e /var/run/${file} ] && rm -f /var/run/${file}
-	  	  test -e ${CHROOT_PATH}/var/run/${file} && /bin/ln -sf ${CHROOT_PATH}/var/run/${file} /var/run/
-        done
-        mkdir -p /var/run/cluster
-        for file in ccsd.pid ccsd.sock; do
-            ln -s ${CHROOT_PATH}/var/run/cluster/$file /var/run/cluster
-        done
-        success
-      fi
-      
-	  # Update chroot environment with files from /etc/comoonics/bootimage-chroot
-      if [ -z "$chrootneeded" ]; then
-        clusterfs_chroot_needed init
-        __default=$?
-        chrootneeded=$(getParameter chroot $__default)
-      fi
-	  if [ $chrootneeded -eq 0 ]; then
- 	  	action "Mounting filesystems to chroot" $MOUNT_CHROOT
-	  	action "Updating chroot environment" $UPDATE_CHROOT
-  	  fi 
+    touch /var/lock/subsys/bootsr
+    if [ -z "$chrootneeded" ]; then
+      clusterfs_chroot_needed init
+      __default=$?
+      chrootneeded=$(getParameter chroot $__default)
+    fi
+    if [ $chrootneeded -eq 0 ]; then
+       action "Mounting filesystems to chroot" $MOUNT_CHROOT
+       action "Updating chroot environment" $UPDATE_CHROOT
+    fi 
  	  
-   	  typeset -f cc_init >/dev/null && action "Starting ${clutype} dependent services" cc_init start
- 	  if [ "${clutype}" != "${rootfs}" ]; then
- 	   	typeset -f clusterfs_init >/dev/null && action "Starting ${rootfs} dependent services" clusterfs_init start
- 	  fi
+    typeset -f cc_init >/dev/null && action "Starting ${clutype} dependent services" cc_init start "$CHROOT_PATH" "$clutype"
+    if [ "${clutype}" != "${rootfs}" ]; then
+       typeset -f clusterfs_init >/dev/null && action "Starting ${clutype} dependent services" "$CHROOT_PATH" "$clutype"
     fi
     ;;
   stop)
- 	  typeset -f cc_init >/dev/null && action "Stopping ${clutype} dependent services" cc_init stop
+ 	  typeset -f cc_init >/dev/null && action "Stopping ${clutype} dependent services" cc_init stop "$CHROOT_PATH" "$clutype"
  	  if [ "${clutype}" != "${rootfs}" ]; then
-   	    typeset -f clusterfs_init >/dev/null && action "Stopping ${rootfs} dependent services" clusterfs_init stop
+   	    typeset -f clusterfs_init >/dev/null && action "Stopping ${rootfs} dependent services" clusterfs_init stop "$CHROOT_PATH" "$rootfs"
  	  fi 
   	  [ -e /var/lock/subsys/bootsr ] && rm -f /var/lock/subsys/bootsr 
 	  typeset -f ${rootfs}_needed >/dev/null && ${rootfs}_chroot_needed init
@@ -272,7 +215,12 @@ exit $RETVAL
 #************ main
 ###############
 # $Log: bootsr,v $
-# Revision 1.22  2009-04-20 07:18:08  marc
+# Revision 1.23  2010-02-05 12:47:30  marc
+# - clean up
+# - moved functionality to libs
+# - RHEL4 support
+#
+# Revision 1.22  2009/04/20 07:18:08  marc
 # - got that xfiles and patching right
 #
 # Revision 1.21  2009/04/14 15:26:54  marc
