@@ -1,5 +1,5 @@
 #
-# $Id: errors.sh,v 1.1 2009-01-28 12:52:26 marc Exp $
+# $Id: errors.sh,v 1.2 2010-02-05 12:34:59 marc Exp $
 #
 # @(#)$File$
 #
@@ -56,8 +56,8 @@ $errors
 err_cc_wrongbootparamter="The bootparameter \"$name\" cannot be validated. 
 Read errormessage below.
 $errors"
-err_clusterfs_fsck="Either could not find executable to auto fsck the rootfilesystem or this
-rootfilesystem does not support autofsck. This means you have to do it manually. 
+err_clusterfs_fsck="Either could not find executable to auto fsck the filesystem or this
+filesystem does not support autofsck. This means you have to do it manually. 
 This should be done if you end up here.
 
 CAUTION: If you are using a clusterfilesystem never ever fsck with other cluster nodes being online!
@@ -137,6 +137,9 @@ Error: $errors \n
 "
 ##################
 # $Log: errors.sh,v $
-# Revision 1.1  2009-01-28 12:52:26  marc
+# Revision 1.2  2010-02-05 12:34:59  marc
+# typo
+#
+# Revision 1.1  2009/01/28 12:52:26  marc
 # initial revision
 #
