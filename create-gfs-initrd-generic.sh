@@ -6,7 +6,7 @@
 #  DESCRIPTION
 #*******
 #
-# $Id: create-gfs-initrd-generic.sh,v 1.26 2009-09-28 14:22:13 marc Exp $
+# $Id: create-gfs-initrd-generic.sh,v 1.27 2010-02-05 12:52:52 marc Exp $
 #
 # @(#)$File$
 #
@@ -55,6 +55,8 @@ del_kernels=""
 update=
 index_list=".index.lst"
 modules=""
+pre_do=1
+post_do=1
 
 initEnv
 
@@ -97,6 +99,8 @@ for localfilesystems.
 -U: switch to update modes
 -A kernelversion: add this kernelversion to this initrd (can be specified multiple times)
 -D kernelversion: remove this kernelversion from this initrd  (can be specified multiple times)
+-p: toggle pre  initrd generated skripts found in $pre_mkinitrd_path (default: $predo)
+-P: toggle post initrd generated skripts found in $post_mkinitrd_path (default: $postdo)
 
 initrdname: which file should be the initrd
 kernel-version: which kernel version should be included in this initrd (=-A) (can be specified multiple times) 
@@ -115,10 +119,10 @@ USAGE_EOF
 #
 function getoptions() {
     local i=0
-    while getopts LUoRFVvhlm:fd:s:r:b:A:D:M: option ; do
+    while getopts LUoRFVvhlpPm:fd:s:r:b:A:D:M: option ; do
 	case "$option" in
 	    v) # version
-		echo "$0 Version "'$Revision: 1.26 $'
+		echo "$0 Version "'$Revision: 1.27 $'
 		exit 0
 		;;
 	    h) # help
@@ -174,6 +178,12 @@ function getoptions() {
         M) # add a specific module
         modules="$modules $OPTARG"
         ;;
+        p) # toggle premkinitrd skripts execute
+        pre_do=$((! $pre_do))
+        ;;
+        P) # toggle postmkinitrd skripts execute
+        post_do=$((! $post_do))
+        ;;
 	    *)
 		echo "Error wrong option."
 		exit 1
@@ -226,7 +236,7 @@ fi
 prgdir=${predir}
 
 if [ -e $lockfile ] && [ -z "$Force" ]; then
-  echo "L/etc/comoonics/bootimage/files.initrd.d/comoonics.listockfile "$lockfile" exists. "
+  echo "Lockfile "$lockfile" exists. "
   echo "Another $(basename $0) is running. Please check if another process is running or remove the lockfile.."
   echo "..or start with force mode."
   exit 1
@@ -283,7 +293,7 @@ if [ ! -e "$initrdname" ] && [ -n "$update" ]; then
 	exit 5
 fi
 
-echo_local -n "Validating cluster configuration."
+echo_local -n -N "Validating cluster configuration."
 exec_local cc_validate
 return_code
 if [ $? -ne 0 ]; then
@@ -292,18 +302,12 @@ if [ $? -ne 0 ]; then
    exit 10
 fi
 
-if [ -d "$pre_mkinitrd_path" ]; then
-  echo_local -n "Executing files before mkinitrd."
-  exec_local exec_ordered_skripts_in $pre_mkinitrd_path $mountpoint
-  return_code
-fi
-
 if [ -z "$initramfs" ] || [ $initramfs -eq 0 ]; then
-  echo -n "Makeing initrd ..."
+  echo_local -N -n "Makeing initrd ..."
   make_initrd $initrdname $size || (failure && rm $lockfile && exit $?)
   success
 
-  echo -n "Mounting initrd ..."
+  echo_local -N -n "Mounting initrd ..."
   mount_initrd $initrdname $mountpoint || (failure && rm $lockfile && exit $?)
   success
 fi
@@ -311,29 +315,35 @@ fi
 map_paths=$(get_mappaths_from_depfiles $dep_filename)
 
 pushd $mountpoint >/dev/null 2>&1  	
+
+if [ -d "$pre_mkinitrd_path" ] && [ -n "$pre_do" ] && [ $pre_do -eq 1 ]; then
+  echo_local -N "Executing files before mkinitrd."
+  exec_ordered_skripts_in $pre_mkinitrd_path $mountpoint
+fi
+
 if [ -z "$update" ]; then
   # extracting rpms
   if [ -n "$rpm_filename" ] && [ -e "$rpm_filename" ]; then
-    echo -n "Extracting rpms..."
+    echo_local -N -n "Extracting rpms..."
     #extract_all_rpms $rpm_filename $mountpoint $rpm_dir $verbose || echo "(WARNING)"
     rpmfilelist=$(get_filelist_from_rpms $rpm_filename $filters_filename $verbose)
     success
   fi
 
-  echo -n "Retrieving dependent files..."
+  echo_local -N -n "Retrieving dependent files..."
   # compiling marked perlfiles in this function
   #dep_files=$(get_all_depfiles $dep_filename $verbose)
   filelist=$(get_all_files_dependent $dep_filename $verbose)
   files=( $( ( echo $rpmfilelist; echo $filelist ) | tr ' ' '\n'| sort -u | grep -v "^.$" | grep -v "^..$" | tr '&' '\n') ) 
   echo ${files[@]} | tr ' ' '\n' > ${mountpoint}/file-list.txt
 #  create_filelist $mountpoint > ${mountpoint}/$index_list
-  echo -n "found "${#files[@]}" files" && success
+  echo_local -N -n "found "${#files[@]}" files" && success
 else
-  echo -n "Unpacking initrd => ${mountpoint} .."
+  echo_local -N -n "Unpacking initrd => ${mountpoint} .."
   unzip_and_uncpio_initrd $mountpoint $initrdname $force
   if [ ! -e "${mountpoint}/$index_list" ]; then
-  	echo "Could not find valid index file."
-  	echo -n "Autocreating index file .."
+  	echo_local -N "Could not find valid index file."
+  	echo_local -N -n "Autocreating index file .."
     create_filelist $mountpoint > ${mountpoint}/$index_list || (failure; echo "Could not create index file. Breaking." >&2; exit 5)
     success
   fi
@@ -347,13 +357,13 @@ stdlib.get_files_newer(open("'$index_list'"),
     rm $lockfile
     exit 11
   fi
-  echo "Files to update "${#files[@]}
+  echo_local -N "Files to update "${#files[@]}
   if [ -n "$verbose" ]; then
-    echo ${files[@]} | tr ' ' '\n'
+    echo_local -N ${files[@]} | tr ' ' '\n'
   fi
 fi
 
-echo -n "Copying files..."
+echo_local -N -n "Copying files..."
 i=0
 while [ $i -lt ${#files[@]} ]; do
   file=${files[$i]}
@@ -401,7 +411,7 @@ if [ -z "$update" ] || [ -n "$kernel" ]; then
   # first remove any kernel already specified
   if [ -n "$del_kernels" ]; then
   	for del_kernel in $del_kernels; do
-  	  echo -n "Removing kernel $del_kernel"
+  	  echo_local -N -n "Removing kernel $del_kernel"
   	  if [ -d ${mountpoint}/lib/modules/$del_kernel ]; then
   	    rm -rf ${mountpoint}/lib/modules/$del_kernel
   	  fi
@@ -410,7 +420,7 @@ if [ -z "$update" ] || [ -n "$kernel" ]; then
   fi
   # copying kernel modules
   for _kernel in ${kernel[@]}; do
-    echo -n "Copying kernelmodules ($_kernel)..."
+    echo_local -N -n "Copying kernelmodules ($_kernel)..."
 
     if [ ! -d ${mountpoint}/lib/modules/$_kernel ]; then
       mkdir -p ${mountpoint}/lib/modules
@@ -421,23 +431,29 @@ if [ -z "$update" ] || [ -n "$kernel" ]; then
 	  for module in $(get_min_modules $default_modules $modules | sort -u); do
 		for file in `find /lib/modules/$_kernel -name "$module.ko"`; do
 			if [ -n "$verbose" ]; then
-				echo "Copying module $file"
+				echo_local -N "Copying module $file"
 			fi
 			tar -chf - $file 2>/dev/null | tar -xf - -C ${mountpoint};
 		done
 	  done || (failure && rm $lockfile && exit $?)
     else
-	  cp -a /lib/modules/$_kernel ${mountpoint}/lib/modules/$_kernel || (failure && rm $lockfile && exit $?)
+      args=$(get_global_filters $filters_filename | awk '{printf(" -regex %s -or", $0);} END { print " -false"; }')
+      if [ -n "$verbose" ]; then
+      	echo_local -N "Calling find with find /lib/modules/$_kernel -type f -not \( $args \)"
+	  fi
+	  # no globbing
+	  set -f
+      for file in $(find /lib/modules/$_kernel -type f -not \( $args \) ); do
+		if [ -n "$verbose" ]; then
+			echo_local -N "Copying module $file"
+		fi
+	    tar -chf - $file 2>/dev/null | tar -xf - -C ${mountpoint};
+      done
+      set +f
     fi
     success
   done
 fi
-
-create_builddate_file $build_file # && success || failure
-
-echo -n "Creating index file .."
-create_filelist $mountpoint > ${mountpoint}/$index_list || (failure; echo "Could not create index file. Breaking." >&2; exit 5)
-success
 
 #for module in $FC_MODULE $FC_MODULES $GFS_MODULES; do
 #  dirname=`dirname ${MODULES_DIR}/${module}`
@@ -445,16 +461,10 @@ success
 #  copy_file ${MODULES_DIR}/${module} ${mountpoint}$dirname
 #done
 
-if [ -d "$post_mkinitrd_path" ]; then
-  echo_local -n "Executing files after mkinitrd."
-  exec_local exec_ordered_skripts_in $post_mkinitrd_path $mountpoint
-  return_code
-fi
-
 #echo "The following files reside on the image:"
 #find .
 if [ -z "$update" ]; then
-  echo -n "Post settings .."
+  echo_local -N -n "Post settings .."
   chown -R root:root $mountpoint
   if [ -z "$initramfs" ] || [ $initramfs -eq 0 ]; then
     if [ ! -e ${mountpoint}/linuxrc ] && [ -e ${mountpoint}/init ]; then
@@ -470,13 +480,24 @@ if [ -z "$update" ]; then
   success
 fi
 
+if [ -d "$post_mkinitrd_path" ] && [ -n "$post_do" ] && [ $post_do -eq 1 ]; then
+  echo_local -N "Executing files after mkinitrd."
+  exec_ordered_skripts_in $post_mkinitrd_path $mountpoint
+fi
+
+create_builddate_file $build_file # && success || failure
+
+echo_local -N -n "Creating index file .."
+create_filelist $mountpoint > ${mountpoint}/$index_list || (failure; echo "Could not create index file. Breaking." >&2; exit 5)
+success
+
 if [ -z "$initramfs" ] || [ $initramfs -eq 0 ]; then
   cd $pwd
-  echo -n "Unmounting and compressing.."
+  echo_local -N -n "Unmounting and compressing.."
   (umount_and_zip_initrd $mountpoint $initrdname $force && \
    rm $lockfile) || (failure && rm $lockfile && exit $?)
 else
-  echo -n "Cpio and compress.."
+  echo_local -N -n "Cpio and compress.."
   (cpio_and_zip_initrd $mountpoint $initrdname $force && \
    rm $lockfile) || (failure && rm $lockfile && exit $?)
 fi
@@ -484,7 +505,7 @@ success
 
 cd $pwd
 if [ -z "$no_remove_tmp" ]; then
-  echo -n "Cleaning up ($mountpoint, $no_remove_tmp)..."
+  echo_local -N -n "Cleaning up ($mountpoint, $no_remove_tmp)..."
   rm -fr $mountpoint
   success
 fi
@@ -493,7 +514,13 @@ ls -lk $initrdname
 
 ##########################################
 # $Log: create-gfs-initrd-generic.sh,v $
-# Revision 1.26  2009-09-28 14:22:13  marc
+# Revision 1.27  2010-02-05 12:52:52  marc
+# - added pre and postdo functionality where skripts/programs might be executed before or after building initrd
+# - -p/-P toggles if pre and postscripts should be executed or not.
+# - added -N to echo_local, echo_local_debug where appropriate
+# - filtering kernel modules if filters are specified
+#
+# Revision 1.26  2009/09/28 14:22:13  marc
 # - added way to execute commands in $pre/post_mkinitrd_path
 #
 # Revision 1.25  2009/06/05 07:29:06  marc
