@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.69 2010-01-11 10:04:38 marc Exp $
+# $Id: gfs-lib.sh,v 1.70 2010-02-05 12:35:30 marc Exp $
 #
 # @(#)$File$
 #
@@ -1360,12 +1360,30 @@ function gfs_checkhosts_alive {
 #  NAME
 #    gfs_init
 #  SYNOPSIS
-#    function gfs_init(start|stop|restart)
+#    function gfs_init(start|stop|restart) rootfs CHROOT_PATH 
 #  MODIFICATION HISTORY
 #  IDEAS
 #  SOURCE
 #
 function gfs_init {
+	local action=$1
+	local CHROOT_PATH=$2
+	local rootfs="gfs"
+	local VAR_RUN_FILES="cluster/ccsd.pid cluster/ccsd.sock cman_admin cman_client"
+	
+	case "$action" in
+        start)
+           /bin/mount -at $rootfs 2>&1 | tee -a /var/log/bootsr | logger -t com-bootsr
+           # Create symbolic links
+           for file in ${VAR_RUN_FILES}; do
+  	          [ -e /var/run/${file} ] && rm -f /var/run/${file}
+  	          test -d /var/run/$(dirname ${file}) || mkdir -p /var/run/$(dirname ${file}) 2>/dev/null
+  	          test -e ${CHROOT_PATH}/var/run/${file} && /bin/ln -sf ${CHROOT_PATH}/var/run/${file} /var/run/$(dirname $file)
+           done
+           ;;
+         stop)
+           ;;
+    esac
 	return 0
 }
 #********* gfs_init
@@ -1404,7 +1422,10 @@ function gfs_fsck {
 #********* gfs_fsck
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.69  2010-01-11 10:04:38  marc
+# Revision 1.70  2010-02-05 12:35:30  marc
+# - moved functionality from bootsr to here
+#
+# Revision 1.69  2010/01/11 10:04:38  marc
 # removed gfs_auto_netconfig cc_auto_netconfig does this now.
 #
 # Revision 1.68  2010/01/04 13:12:13  marc
