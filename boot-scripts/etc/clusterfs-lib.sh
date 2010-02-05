@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.40 2010-01-11 10:03:55 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.41 2010-02-05 12:34:12 marc Exp $
 #
 # @(#)$File$
 #
@@ -38,7 +38,7 @@
 #    cdsl_local_dir
 #  DESCRIPTION
 #    where the local dir for cdsls can be found
-repository_store_value cdsl_local_dir "/cdsl.local"
+repository_has_key cdsl_local_dir || repository_store_value cdsl_local_dir "/cdsl.local"
 #******** cdsl_local_dir
 
 #****d* boot-scripts/etc/clusterfs-lib.sh/cdsl_prefix
@@ -46,7 +46,7 @@ repository_store_value cdsl_local_dir "/cdsl.local"
 #    cdsl_prefix
 #  DESCRIPTION
 #    where the local dir for cdsls can be found
-repository_store_value cdsl_prefix "/cluster/cdsl"
+repository_has_key cdsl_prefix || repository_store_value cdsl_prefix "/cluster/cdsl"
 #******** cdsl_prefix
 
 #****f* boot-scripts/etc/clusterfs-lib.sh/getClusterFSParameters
@@ -713,14 +713,14 @@ ${clutype}_get_syslogfilter $@
 #  NAME
 #    cc_init
 #  SYNOPSIS
-#    function cc_init(start|stop|restart)
+#    function cc_init( start|stop|restart clutype CHROOT_PATH [opts])
 #  MODIFICATION HISTORY
 #  IDEAS
 #  SOURCE
 #
 function cc_init {
   local proc=
-  local clutype=
+  local clutype=$2
   [ -z "$clutype" ] && clutype=$(repository_get_value clutype)
 
   typeset -f ${clutype}_init >/dev/null 2>/dev/null
@@ -1091,20 +1091,25 @@ function clusterfs_mount {
 
   #TODO: skip device check at least for nfs services
   echo_local -n "Mounting $dev on $mountpoint.."
-  if [ ! -e $dev -a ${fstype:0:3} != "nfs" ]; then
+  if [ ! -e $dev ] && [ "${fstype:0:3}" != "nfs" ] && [ "${fstype}" != "bind" ]  && [ "${fstype}" != "rbind" ]; then
      breakp $(errormsg err_rootfs_device)
   fi
   if [ ! -d $mountpoint ]; then
     mkdir -p $mountpoint
   fi
-  echo_local_debug -n "tries: $tries, waittime: $waittime"
+  echo_local_debug -N -n "tries: $tries, waittime: $waittime "
   while [ $i -lt $tries ]; do
-  	echo_local_debug -n "try: $i"
+  	echo_local -N -n "."
   	let i=$i+1
   	sleep $waittime
-  	exec_local mount -t $fstype -o $mountopts $dev $mountpoint && break
+  	return_c=0
+  	[ -n "$mountopts" ] && mountopts="-o $mountopts"
+  	[ -n "$fstype" ] && ! [ "$fstype" = "bind" ] && fstype="-t $fstype"
+  	[ "$fstype" = "bind" ] && fstype="--$fstype"
+  	exec_local mount $fstype $mountopts $dev $mountpoint && break
+  	return_c=$?
   done
-  return_code
+  return_code $return_c
 }
 #***** clusterfs_mount
 
@@ -1131,14 +1136,14 @@ function clusterfs_get_userspace_procs {
 #  NAME
 #    clusterfs_init
 #  SYNOPSIS
-#    function clusterfs_init(start|stop|restart)
+#    function clusterfs_init(start|stop|restart) rootfs CHROOT_PATH
 #  MODIFICATION HISTORY
 #  IDEAS
 #  SOURCE
 #
 function clusterfs_init {
   local proc=
-  local rootfs=
+  local rootfs=$2
   [ -z "$rootfs" ] && rootfs=$(repository_get_value rootfs)
 
   typeset -f ${rootfs}_init >/dev/null 2>/dev/null
@@ -1188,7 +1193,7 @@ function cluster_checkhosts_alive {
 #  NAME
 #    clusterfs_mount_cdsl
 #  SYNOPSIS
-#    function clusterfs_mount_cdsl(mountpoint, cdsl_dir, nodeid, prefix="/cluster/cdsl")
+#    function clusterfs_mount_cdsl(mountpoint, cdsl_dir, nodeid, prefix="/cluster/cdsl", bindtype="rbind")
 #  MODIFICATION HISTORY
 #  IDEAS
 #  SOURCE
@@ -1201,13 +1206,15 @@ function clusterfs_mount_cdsl {
   if [ -n "$4" ]; then
     prefix=$4
   fi
+  local bindtype="rbind"
+  [ -n "$5" ] && local bindtype="$5"
 
   echo_local -n "Mounting $cdsl_dir on ${prefix}/${nodeid}.."
   if [ ! -d ${mountpoint}/${prefix} ]; then
     echo_local "no cdsldir found \"${mountpoint}/${prefix}\""
     warning
   fi
-  exec_local mount --bind  ${mountpoint}/${prefix}/${nodeid} ${mountpoint}/${cdsl_dir}
+  exec_local mount --${bindtype} ${mountpoint}/${prefix}/${nodeid} ${mountpoint}/${cdsl_dir}
   return_code
 }
 #***** clusterfs__mount_cdsl
@@ -1371,7 +1378,7 @@ function copy_relevant_files {
 #    cd $newroot &&
 #    ln -fs ${cdsl_local_dir}/etc/sysconfig/hwconf etc/sysconfig/hwconf)
   return_code=$return_c
-  echo_local -n ".(hw $return_c)."
+  echo_local -N -n ".(hw $return_c)."
 #  cd $newroot
 #  for netdev in $netdevs; do
 #    cp -f /etc/sysconfig/network-scripts/ifcfg-$netdev $newroot/${cdsl_local_dir}/etc/sysconfig/network-scripts/ifcfg-$netdev &&
@@ -1387,7 +1394,14 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.40  2010-01-11 10:03:55  marc
+# Revision 1.41  2010-02-05 12:34:12  marc
+# - global parameters (cdsl_local_dir, cdsl_prefix) will only be defined if not already defined.
+# - cc_init: gets clusterconf as optional parameter
+# - clusterfs_mount: bind mounts are also working when called, return_code returned
+# - clusterfs_init: will get parameters
+# - clusterfs_mount_cdsl: default rbind is used;
+#
+# Revision 1.40  2010/01/11 10:03:55  marc
 # corrected typos
 #
 # Revision 1.39  2010/01/04 13:06:08  marc
