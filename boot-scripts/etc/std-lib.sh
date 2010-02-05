@@ -1,5 +1,5 @@
 #
-# $Id: std-lib.sh,v 1.13 2010-01-04 13:21:43 marc Exp $
+# $Id: std-lib.sh,v 1.14 2010-02-05 12:43:50 marc Exp $
 #
 # @(#)$File$
 #
@@ -220,8 +220,6 @@ function return_code {
   else
     failure
   fi
-  local code=$return_c
-  return $code
 }
 #************ return_code
 
@@ -269,6 +267,25 @@ function return_code_passed() {
 }
 #************ return_code_passed
 
+#****f* boot-lib.sh/action
+#  NAME
+#    action
+#  SYNOPSIS
+#    function action "Message" command args
+#  DESCRIPTION
+#    Executes the command before outputting this string and return_code afterwards.
+#  SOURCE
+function action {
+  local STRING rc
+
+  STRING=$1
+  echo_local -n -N "$STRING "
+  shift
+  exec_local "$@" 
+  return_code
+}
+#************ action
+
 #****f* boot-lib.sh/success
 #  NAME
 #    success
@@ -311,7 +328,7 @@ function failure {
     echo -n "FAILED"
     [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
     echo "]"
-    echo -ne "\r"
+    echo -e "\r"
   fi
   return 1
 }
@@ -335,7 +352,7 @@ function warning {
     echo -n "WARNING"
     [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
     echo "]"
-    echo -ne "\r"
+    echo -e "\r"
   fi
   return 1
 }
@@ -359,7 +376,7 @@ function passed {
     echo -n "PASSED"
     [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
     echo "]"
-    echo -ne "\r"
+    echo -e "\r"
   fi
   return 1
 }
@@ -379,6 +396,39 @@ function echo_out() {
 }
 #************ echo_out
 
+#
+# Base function that will do the echo
+#  echo_base "level" [-N] $*
+#    -N means no level output
+echo_base(){
+   [ -z "$echoprefix" ] && local echoprefix="osr"
+   local level="$echoprefix($1)"
+   shift
+   local leveloutput=0
+   local opts=""
+   while [ "${1:0:1}" = "-" ]; do
+      if [ "$1" = "-N" ]; then
+         leveloutput=1
+         shift
+      else
+         opts="$1 $opts"
+         shift
+      fi
+   done
+   if [ -n "$KMSG" ] && [ -w /dev/kmsg ]; then
+   	 if [ $leveloutput -eq 0 ]; then 
+        echo $opts "<1>$level: $*" > /dev/kmsg
+     else
+        echo $opts "$*" > /dev/kmsg
+     fi
+   else
+   	 if [ $leveloutput -eq 0 ]; then 
+        echo $opts "$level $*"
+     else
+        echo $opts "$*"
+     fi
+   fi
+}
 #****f* boot-lib.sh/echo_local
 #  NAME
 #    echo_local
@@ -389,15 +439,7 @@ function echo_out() {
 #  SOURCE
 #
 function echo_local() {
-   if [ -n "$KMSG" ] && [ -w /dev/kmsg ]; then 
-     echo ${*:0:$#-1} "<1>osr(notice): ${*:$#}" > /dev/kmsg
-   else
-     echo ${*:0:$#-1} "${*:$#}"
-   fi
-#   echo ${*:0:$#-1} "${*:$#}" >&3
-#   echo ${*:0:$#-1} "${*:$#}" >&5
-#   echo ${*:0:$#-1} "${*:$#}" >> $bootlog
-#   [ -n "$logger" ] && echo ${*:0:$#-1} "${*:$#}" | $logger
+   echo_base "notice" "$@"
 }
 #************ echo_local
 
@@ -413,11 +455,7 @@ function echo_local() {
 function echo_local_debug() {
    [ -z "$debug" ] && local debug=$(repository_get_value debug)
    if [ ! -z "$debug" ]; then
-      if [ -n "$KMSG" ] && [ -w /dev/kmsg ]; then 
-        echo ${*:0:$#-1} "<1>osr(debug): ${*:$#}" > /dev/kmsg
-      else
-        echo ${*:0:$#-1} "${*:$#}"
-      fi
+      echo_base "debug" "$@"
    fi
 }
 #************ echo_local_debug
@@ -432,12 +470,7 @@ function echo_local_debug() {
 #  SOURCE
 #
 function error_out() {
-#    echo ${*:0:$#-1} "${*:$#}" >&4
-   if [ -n "$KMSG" ] && [ -w /dev/kmsg ]; then 
-     echo ${*:0:$#-1} "<1>osr(error): ${*:$#}" > /dev/kmsg
-   else
-     echo ${*:0:$#-1} "${*:$#}" >&2
-   fi
+   echo_base "error" "$@"
 }
 #************ error_out
 
@@ -451,12 +484,7 @@ function error_out() {
 #  SOURCE
 #
 function warn() {
-#    echo ${*:0:$#-1} "${*:$#}" >&4
-   if [ -n "$KMSG" ] && [ -w /dev/kmsg ]; then 
-     echo ${*:0:$#-1} "<1>osr(warn): ${*:$#}" > /dev/kmsg
-   else
-     echo ${*:0:$#-1} "${*:$#}" >&2
-   fi
+   echo_base "warn" "$@"
 }
 #************ warn
 
@@ -692,7 +720,7 @@ function listBreakpoints {
 	sub(/step[[:space:]]+/, "", step); 
 	gsub(/"/, "", step); split(step, steps); 
 	print steps[NF-1];
-}' < $file; done
+}' < $file | sort -u; done
 }
 #************ listBreakpoints
 
@@ -985,13 +1013,17 @@ exec_ordered_skripts_in() {
    
    for skript in "$skriptpath"/*; do
      local extension=$(echo $skript | sed -e 's/^.*\(\.[^.]*\)$/\1/') 
-   	 if [ -x "$skript" ]; then
-   	 	echo_local -n "Executing skript \"$skript\"."
+   	 if [ -d "$skript" ]; then
+   	 	# silently skip directories
+   	 	echo_local_debug -N "Skipping \"$skript\" as it is a directory"
+   	 	true
+   	 elif [ -x "$skript" ]; then
+   	 	echo_local -n -N "Executing skript \"$skript\"."
    	 	$skript $destpath
    	 	return_code
    	 	[ "$return_c" -eq 0 ] || return_C=$return_c
      elif [  "$extension" = ".sh" ]; then
-        echo_local -n "Sourcing skript \"$skript\"."
+        echo_local -n -N "Sourcing skript \"$skript\"."
         return_c=0
         . $skript $destpath
         return_code
@@ -1003,7 +1035,16 @@ exec_ordered_skripts_in() {
 
 #################
 # $Log: std-lib.sh,v $
-# Revision 1.13  2010-01-04 13:21:43  marc
+# Revision 1.14  2010-02-05 12:43:50  marc
+# return_code: removed obsolete code
+# action: added
+# failure,warning,passed,success: no new line in the end
+# echo_base: base function for echo_local, ..
+# echo_local, echo_local_debug,..: use echo_base
+# listBreakpoints: will be sorted
+# exec_ordered_skripts_in: silently skip directories, use echo_local -N
+#
+# Revision 1.13  2010/01/04 13:21:43  marc
 # sourceLibs:
 #    * osr-lib.sh will always be included
 #    * accepting clutype, distributions and shortdistribution as parameter
