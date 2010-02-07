@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.41 2010-02-05 12:34:12 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.42 2010-02-07 20:34:35 marc Exp $
 #
 # @(#)$File$
 #
@@ -101,7 +101,8 @@ function getCluType {
    local conf=$1
    local clutype=""
    
-   if test -f $(osr_nodeids_file); then
+   typedef -f osr_nodeids_file &> /dev/null
+   if test $? -eq 0 && test -f $(osr_nodeids_file); then
    	  echo "osr"
    	  return 0
    fi
@@ -1394,7 +1395,10 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.41  2010-02-05 12:34:12  marc
+# Revision 1.42  2010-02-07 20:34:35  marc
+# - removed osr-lib deps.
+#
+# Revision 1.41  2010/02/05 12:34:12  marc
 # - global parameters (cdsl_local_dir, cdsl_prefix) will only be defined if not already defined.
 # - cc_init: gets clusterconf as optional parameter
 # - clusterfs_mount: bind mounts are also working when called, return_code returned
