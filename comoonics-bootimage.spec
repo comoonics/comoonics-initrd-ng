@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.109 2009-10-08 07:59:23 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.110 2010-02-07 20:35:13 marc Exp $
 #
 ##
 ##
@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 35
+Release: 37
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -273,6 +273,7 @@ Release: 6
 Requires: comoonics-bootimage >= 1.3-36
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-all
+Requires: comoonics-cluster-tools-py
 Group: System Environment/Base
 Summary: Extrafiles for RedHat Enterprise Linux 
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
@@ -348,7 +349,7 @@ OSR extra files that are only relevant for Novell SLES 10
 
 %package listfiles-sles10
 Version: 0.1
-Release: 2
+Release: 3
 Requires: comoonics-bootimage >= 1.4-28
 Requires: /etc/SuSE-release
 Requires: comoonics-bootimage-listfiles-sles
@@ -895,6 +896,15 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Fri Feb 05 2010 Marc Grimme <grimme@atix.de> 1.4-37
+- removed dep to osr-lib in clusterfs-lib
+* Fri Feb 05 2010 Marc Grimme <grimme@atix.de> 1.4-36
+- More on osr-lib.sh
+- Added pre and postscripts for mkinitrd
+- RHEL4 Backport
+- bootsr review
+- Better logging
+- NIC Properties
 * Thu Oct 08 2009 Marc Grimme <grimme@atix.de> 1.4-35
 - Fixed a bug in halt/reboot with sles10
 - Removed those annoying help messages when breaking. This will only come when typing help.
@@ -1298,6 +1308,8 @@ rm -rf %{buildroot}
   - initial revision 
 
 %changelog listfiles-sles10
+* Thu Oct 08 2009 Marc Grimme <grimme@atix.de> - 0.1-3
+- removed python-devel dep.
 * Mon Sep 28 2009 Marc Grimme <grimme@atix.de> - 0.1-2
 - Finalized version with all changes
 * Wed Sep 16 2009 Marc Grimme <grimme@atix.de> - 0.1-1
@@ -1382,7 +1394,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.109  2009-10-08 07:59:23  marc
+# Revision 1.110  2010-02-07 20:35:13  marc
+# - latest versions
+#
+# Revision 1.109  2009/10/08 07:59:23  marc
 # - new version
 #
 # Revision 1.108  2009/10/07 12:08:30  marc

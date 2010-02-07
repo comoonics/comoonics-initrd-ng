@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage-initscripts-el4.spec,v 1.12 2009-02-25 14:25:16 marc Exp $
+# $Id: comoonics-bootimage-initscripts-el4.spec,v 1.13 2010-02-07 20:35:13 marc Exp $
 #
 ##
 ##
@@ -45,9 +45,13 @@ Name: comoonics-bootimage-initscripts
 Summary: Initscripts used by the OSR cluster environment.
 Version: 1.4
 BuildArch: noarch
-Requires: comoonics-bootimage >= 1.4-6
+Requires: comoonics-bootimage >= 1.4-36
+Requires: SysVinit-comoonics
+Requires: comoonics-bootimage-listfiles-all
+Requires: comoonics-bootimage-listfiles-rhel
+Requires: comoonics-bootimage-listfiles-rhel4
 #Conflicts:
-Release: 1.rhel4
+Release: 3.rhel4
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -137,7 +141,10 @@ chkconfig --del bootsr
 - first revision
 # ------
 # $Log: comoonics-bootimage-initscripts-el4.spec,v $
-# Revision 1.12  2009-02-25 14:25:16  marc
+# Revision 1.13  2010-02-07 20:35:13  marc
+# - latest versions
+#
+# Revision 1.12  2009/02/25 14:25:16  marc
 # backport of new features to rhel4
 # new version 1.4-1
 #

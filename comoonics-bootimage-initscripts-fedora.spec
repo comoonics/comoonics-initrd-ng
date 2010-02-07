@@ -51,7 +51,7 @@ Requires: comoonics-bootimage >= 1.4-16
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-fedora
 #Conflicts: 
-Release: 11.fedora
+Release: 12.fedora
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -76,18 +76,18 @@ install -d -m 755 $RPM_BUILD_ROOT/%{INITDIR}
 install -m755 initscripts/fedora/bootsr $RPM_BUILD_ROOT/%{INITDIR}/bootsr
 install -d -m 755 $RPM_BUILD_ROOT/%{APPDIR}/patches
 install -m600 initscripts/fedora/halt-xtab.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/halt-xtab.patch
-install -m600 initscripts/fedora/halt-local.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/halt-local.patch
+#install -m600 initscripts/fedora/halt-local.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/halt-local.patch
 install -m600 initscripts/fedora/halt-killall.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/halt-killall.patch
 install -m600 initscripts/fedora/halt-comoonics.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/halt-comoonics.patch
 install -m600 initscripts/fedora/netfs-xtab.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/netfs-xtab.patch
 install -m600 initscripts/fedora/netfs-comoonics.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/netfs-comoonics.patch
 install -m600 initscripts/fedora/network-xrootfs.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/network-xrootfs.patch
 install -m600 initscripts/fedora/network-comoonics.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/network-comoonics.patch
-install -m600 initscripts/fedora/halt.orig $RPM_BUILD_ROOT/%{APPDIR}/patches/halt.orig
+#install -m600 initscripts/fedora/halt.orig $RPM_BUILD_ROOT/%{APPDIR}/patches/halt.orig
 install -m600 initscripts/fedora/network.orig $RPM_BUILD_ROOT/%{APPDIR}/patches/network.orig
 install -m600 initscripts/fedora/netfs.orig $RPM_BUILD_ROOT/%{APPDIR}/patches/netfs.orig
 install -d $RPM_BUILD_ROOT/%{SBINDIR}
-install -m755 initscripts/fedora/halt.local $RPM_BUILD_ROOT/%{SBINDIR}/halt.local
+#install -m755 initscripts/fedora/halt.local $RPM_BUILD_ROOT/%{SBINDIR}/halt.local
 
 #%preun
 #if [ "$1" -eq 0 ]; then
@@ -198,6 +198,16 @@ for service in $services; do
    /sbin/chkconfig --del $service &> /dev/null
 done
 
+echo "Creating link for halt.local"
+if [ -e /sbin/halt.local ]; then
+   echo "Could not create link /sbin/halt.local."
+   echo "In order to be able to reboot properly with cluster filesystems it is important to link"
+   echo "/opt/atix/comoonics-bootimage/boot-scripts/com-halt.sh /sbin/halt.local"
+   echo "Please try to fix or validate manually"
+else
+   ln -sf  /opt/atix/comoonics-bootimage/boot-scripts/com-halt.sh /sbin/halt.local
+fi
+
 /bin/true
 
 %files
@@ -205,21 +215,23 @@ done
 %attr(755, root, root) %{INITDIR}/bootsr
 %attr(644, root, root) %{APPDIR}/patches/halt-comoonics.patch
 %attr(644, root, root) %{APPDIR}/patches/halt-killall.patch
-%attr(644, root, root) %{APPDIR}/patches/halt-local.patch
+#%attr(644, root, root) %{APPDIR}/patches/halt-local.patch
 %attr(644, root, root) %{APPDIR}/patches/halt-xtab.patch
 %attr(644, root, root) %{APPDIR}/patches/netfs-comoonics.patch
 %attr(644, root, root) %{APPDIR}/patches/netfs-xtab.patch
 %attr(644, root, root) %{APPDIR}/patches/network-comoonics.patch
 %attr(644, root, root) %{APPDIR}/patches/network-xrootfs.patch
-%attr(755, root, root) %{APPDIR}/patches/halt.orig
+#%attr(755, root, root) %{APPDIR}/patches/halt.orig
 %attr(755, root, root) %{APPDIR}/patches/network.orig
 %attr(755, root, root) %{APPDIR}/patches/netfs.orig
-%attr(755, root, root) %{SBINDIR}/halt.local
+#%attr(755, root, root) %{SBINDIR}/halt.local
 
 %clean
 rm -rf %{buildroot}
 
 %changelog
+* Fri Oct 09 2009 Marc Grimme <grimme@atix.de> 1.4-12fedora
+- removed halt patches as the are not needed with /sbin/halt.local
 * Tue Jul 07 2009 Marc Grimme <grimme@atix.de> 1.4-11fedora
 - Removed the patches to be applied automatically
 * Mon Apr 20 2009 Marc Grimme <grimme@atix.de> 1.4-10fedora

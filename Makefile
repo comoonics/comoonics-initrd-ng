@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.55 2009-10-07 12:08:58 marc Exp $
+# $Id: Makefile,v 1.56 2010-02-07 20:35:26 marc Exp $
 #
 # @(#)$file$
 #
@@ -376,15 +376,15 @@ RPM_PACKAGE_SOURCE_DIR=$(RPM_PACKAGE_DIR)/SOURCES
 
 
 CHANNELBASEDIR=/atix/dist-mirrors
-ALL_DISTROS=rhel5 sles10 fedora sles11
+ALL_DISTROS=rhel4 rhel5 sles10 fedora sles11
 # Which directories are used for installation
-CHANNELDIRS=comoonics/rhel5/preview comoonics/sles10/preview comoonics/fedora/preview comoonics/sles11/preview
+CHANNELDIRS=comoonics/rhel4/preview comoonics/rhel5/preview comoonics/sles10/preview comoonics/fedora/preview comoonics/sles11/preview
 CHANNELSUBDIRS=i386 x86_64 noarch SRPMS
 
 TEST_DIR=tests
 
 .PHONY: install
-install: test
+install: 
 	@echo -n "Installing executables..."
 	@if [ -n "$(EXEC_FILES)" ]; then \
 	  ((install -d $(PREFIX)/$(INSTALL_DIR) && \
@@ -579,7 +579,10 @@ channel: rpm channelcopy channelbuild
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.55  2009-10-07 12:08:58  marc
+# Revision 1.56  2010-02-07 20:35:26  marc
+# - latest versions
+#
+# Revision 1.55  2009/10/07 12:08:58  marc
 # added com-chroot
 #
 # Revision 1.54  2009/09/28 14:51:19  marc
