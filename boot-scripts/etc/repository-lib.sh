@@ -1,5 +1,5 @@
 #
-# $Id: repository-lib.sh,v 1.7 2010-02-05 12:40:40 marc Exp $
+# $Id: repository-lib.sh,v 1.8 2010-02-09 21:44:25 marc Exp $
 #
 # @(#)$File$
 #
@@ -72,7 +72,7 @@ repository_load() {
 repository_normalize_value() {
 	echo $1 | tr '-' '_'
 }
-#******* repository_store_value
+#******* repository_normalize_value
 
 #****f* repository-lib.sh/repository_store_value
 #  NAME
@@ -297,7 +297,10 @@ repository_clear() {
 
 #############
 # $Log: repository-lib.sh,v $
-# Revision 1.7  2010-02-05 12:40:40  marc
+# Revision 1.8  2010-02-09 21:44:25  marc
+# typo
+#
+# Revision 1.7  2010/02/05 12:40:40  marc
 # - repository_load is obsolete
 #
 # Revision 1.6  2010/01/11 10:06:01  marc
