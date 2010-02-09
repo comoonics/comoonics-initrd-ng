@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.56 2010-02-07 20:35:26 marc Exp $
+# $Id: Makefile,v 1.57 2010-02-09 21:45:19 marc Exp $
 #
 # @(#)$file$
 #
@@ -296,7 +296,8 @@ CFG_FILES=basefiles.list \
     rpms.initrd.d/fedora/nfs.list \
     filters.list \
     filters.initrd.d/empty.list \
-    post.mkinitrd.d/01-create-mapfiles.sh
+    post.mkinitrd.d/01-create-mapfiles.sh \
+    post.mkinitrd.d/02-create-cdsl-repository.sh
 	
 #************ CFG_FILES 
 
@@ -579,7 +580,10 @@ channel: rpm channelcopy channelbuild
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.56  2010-02-07 20:35:26  marc
+# Revision 1.57  2010-02-09 21:45:19  marc
+# new versions
+#
+# Revision 1.56  2010/02/07 20:35:26  marc
 # - latest versions
 #
 # Revision 1.55  2009/10/07 12:08:58  marc

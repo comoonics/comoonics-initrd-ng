@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.110 2010-02-07 20:35:13 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.111 2010-02-09 21:45:19 marc Exp $
 #
 ##
 ##
@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 37
+Release: 38
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -258,7 +258,7 @@ Syslog implementation for osr. Supports syslog classic, syslog-ng, rsyslog (See 
 
 %package listfiles-all
 Version: 0.1
-Release: 8
+Release: 10
 Requires: comoonics-bootimage >= 1.3-36
 Group:   System Environment/Base
 Summary: OSR listfilesfiles for all distributions 
@@ -523,6 +523,8 @@ install -d -m 755 $RPM_BUILD_ROOT/%{FENCECLIENTS_DIR}
 install -d -m 755 $RPM_BUILD_ROOT/%{FENCECLIENTS_DOC}
 install -m755 %{FENCECLIENTS_SOURCE}/fence_ilo.py  $RPM_BUILD_ROOT/%{FENCECLIENTS_DIR}/fence_ilo
 install -d -m 755 $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/rpms.initrd.d
+install -d -m 755 $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/pre.mkinitrd.d
+install -d -m 755 $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/post.mkinitrd.d
 install -m755 %{FENCECLIENTS_SOURCE}/rpms-fence_ilo.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/rpms.initrd.d/fence_ilo.list
 install -m755 %{FENCECLIENTS_SOURCE}/fence_ilomp.py  $RPM_BUILD_ROOT/%{FENCECLIENTS_DIR}/fence_ilomp
 install -m755 %{FENCECLIENTS_SOURCE}/rpms-fence_ilomp.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/rpms.initrd.d/fence_ilomp.list
@@ -751,6 +753,8 @@ fi
 %dir %{CONFIGDIR}/bootimage/files.initrd.d
 %dir %{CONFIGDIR}/bootimage/rpms.initrd.d
 %dir %{CONFIGDIR}/bootimage/filters.initrd.d
+%dir %{CONFIGDIR}/bootimage/pre.mkinitrd.d
+%dir %{CONFIGDIR}/bootimage/post.mkinitrd.d
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/base.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/bonding.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/comoonics.list
@@ -767,6 +771,7 @@ fi
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/lvm.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/python.list
 %config %attr(0644, root, root)  %{CONFIGDIR}/bootimage/filters.initrd.d/empty.list
+%config %attr(0644, root, root)  %{CONFIGDIR}/bootimage/post.mkinitrd.d/02-create-cdsl-repository.sh
 
 %config(noreplace) %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/user_edit.list
 
@@ -896,6 +901,8 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Tue Feb 09 2010 Marc Grimme <grimme@atix.de> 1.4-38
+- fixed typo in comoonics-bootimage.cfg
 * Fri Feb 05 2010 Marc Grimme <grimme@atix.de> 1.4-37
 - removed dep to osr-lib in clusterfs-lib
 * Fri Feb 05 2010 Marc Grimme <grimme@atix.de> 1.4-36
@@ -1250,6 +1257,9 @@ rm -rf %{buildroot}
 - initial revision
 
 %changelog listfiles-all
+* Tue Feb 09 2010 Marc Grimme <grimme@atix.de> - 0.1-10
+- added 02-create-cdsl-repository.sh in the post.mkinitrd.d section to fix bug #370 
+  and support rootfilesystems with different cdsl environments  
 * Mon Sep 28 2009 Marc Grimme <grimme@atix.de> - 0.1-9
 - Finalized version with all changes
 * Thu Sep 24 2009 Marc Grimme <grimme@atix.de> - 0.1-8
@@ -1394,7 +1404,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.110  2010-02-07 20:35:13  marc
+# Revision 1.111  2010-02-09 21:45:19  marc
+# new versions
+#
+# Revision 1.110  2010/02/07 20:35:13  marc
 # - latest versions
 #
 # Revision 1.109  2009/10/08 07:59:23  marc
