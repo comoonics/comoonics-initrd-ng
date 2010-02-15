@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.70 2010-02-05 12:35:30 marc Exp $
+# $Id: gfs-lib.sh,v 1.71 2010-02-15 14:06:17 marc Exp $
 #
 # @(#)$File$
 #
@@ -1421,8 +1421,16 @@ function gfs_fsck {
 }
 #********* gfs_fsck
 
+# for gfs we need a chroot
+function gfs_chroot_needed {
+	return 0
+}
+
 # $Log: gfs-lib.sh,v $
-# Revision 1.70  2010-02-05 12:35:30  marc
+# Revision 1.71  2010-02-15 14:06:17  marc
+# added chroot_needed
+#
+# Revision 1.70  2010/02/05 12:35:30  marc
 # - moved functionality from bootsr to here
 #
 # Revision 1.69  2010/01/11 10:04:38  marc
