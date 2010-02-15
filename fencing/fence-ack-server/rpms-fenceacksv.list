@@ -3,5 +3,8 @@
 ####################
 # $Id$
 pyOpenSSL
+comoonics-bootimage-fenceacksv
+comoonics-cluster-tools-py
+comoonics-tools-py
 ###################
 # $Log$
