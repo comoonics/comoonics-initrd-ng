@@ -7,7 +7,7 @@
 #  DESCRIPTION
 #*******
 #
-# $Id: manage_chroot.sh,v 1.14 2009-04-20 07:43:18 marc Exp $
+# $Id: manage_chroot.sh,v 1.15 2010-02-15 14:20:05 marc Exp $
 #
 # @(#)$File$
 #
@@ -132,7 +132,7 @@ function mount_chroot() {
 	local retc=0
 	local subdir fstype device
 	local i=
-	local mounts=( "/dev/pts" "devpts" "none"  "/proc" "proc" "proc" "/sys" "sysfs" "sysfs" )
+	mounts=( "/dev/pts" "devpts" "none"  "/proc" "proc" "proc" "/sys" "sysfs" "sysfs" )
 	if [ -z "$chrootdir" ]; then
 		return 1
 	fi
@@ -144,21 +144,22 @@ function mount_chroot() {
   		repository_store_value chroot_mount ${res[0]}
   		#FIXME: chroot_path should be the same as chrootdir but what to do here? How to decide?
   		repository_store_value chroot_path ${res[1]}
-		echo_local "res: $res -> chroot_mount="$(repository_get_value chroot_mount)", chroot_path="$(repository_get_value chroot_path)
+		echo_local -n -N "res: $res -> chroot_mount="$(repository_get_value chroot_mount)", chroot_path="$(repository_get_value chroot_path)
 		return_code $retc 
 	fi		
-	echo_local -n "subdirs "
+	echo_local -N -n "subdirs "
 	while [ ${#mounts} -gt 0 ]; do
 		subdir=${mounts[0]}
 		fstype=${mount[1]}
 		device=${mount[2]}
 		mounts=( ${mounts[@]:3} )
 		if ! is_mounted "${chrootdir}${subdir}" && ! is_mounted $(repository_get_value cdsl_local_dir)${chrootdir}${subdir}; then
-			echo_local -n "..${subdir}.."
+			echo_local -N -n "..${subdir}.."
 			mkdir -p $chrootdir${subdir} >/dev/null 2>&1
 			mount -t $fstype $device $chrootdir${subdir}
 		fi
 	done
+	unset mounts
 	true
 }
 
@@ -200,18 +201,18 @@ function update_chroot() {
 
 	# extracting rpms
 	if [ -n "$rpm_filename" ] && [ -e "$rpm_filename" ]; then
-		echo_local -n "rpmfiles.."
+		echo_local -N -n "rpmfiles.."
   		extract_all_rpms $rpm_filename $chrootdir $rpm_dir $verbose
 		[ $rc -eq 0 ] && rc=$?
 	fi
 
-	echo_local -n "dependent files "
+	echo_local -N -n "dependent files "
 
 	files=( $(get_all_files_dependent $dep_filename $verbose | sort -u | grep -v "^.$" | grep -v "^..$"| tr '&' '\n'))
 	[ $rc -eq 0 ] && rc=$?
-	echo_local -n "\"${#files[@]}\" .." 
+	echo_local -N -n "\"${#files[@]}\" .." 
 
-	echo_local -n "copying... "
+	echo_local -N -n "copying... "
 	copy_filelist $chrootdir ${files[@]}
 	[ $rc -eq 0 ] && rc=$?
 	return $rc
