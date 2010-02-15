@@ -2,7 +2,7 @@
 #****h* comoonics-bootimage/bootsr
 #  NAME
 #    bootsr
-#    $Id: bootsr,v 1.23 2010-02-05 12:47:30 marc Exp $
+#    $Id: bootsr,v 1.24 2010-02-15 14:04:15 marc Exp $
 #  DESCRIPTION
 #    Comoonics Shared Root post boot settings
 #  AUTHOR
@@ -92,9 +92,9 @@ function clean_start {
 function check_sharedroot {
   local root_fstype=$1
   if [ "$root_fstype" = "gfs" ] || [ "$root_fstype" = "ocfs2" ] || [ "$root_fstype" = "nfs" ] || [ "$root_fstype" = "glusterfs" ]; then
-    return 1
-  else
     return 0
+  else
+    return 1
   fi
 }
 #************ check_sharedroot
@@ -157,24 +157,26 @@ case "$1" in
   	# first clean old repos
     check_mtab $rootfs
     
-    touch /var/lock/subsys/bootsr
-    if [ -z "$chrootneeded" ]; then
-      clusterfs_chroot_needed init
-      __default=$?
-      chrootneeded=$(getParameter chroot $__default)
-    fi
-    if [ $chrootneeded -eq 0 ]; then
-       action "Mounting filesystems to chroot" $MOUNT_CHROOT
-       action "Updating chroot environment" $UPDATE_CHROOT
-    fi 
+    if  [ -n "$rootfs" ] && check_sharedroot $rootfs; then
+      touch /var/lock/subsys/bootsr
+      if [ -z "$chrootneeded" ]; then
+        clusterfs_chroot_needed init
+        __default=$?
+        chrootneeded=$(getParameter chroot $__default)
+      fi
+	  if [ $chrootneeded -eq 0 ]; then
+ 	  	action "Mounting filesystems to chroot" $MOUNT_CHROOT
+	  	action "Updating chroot environment" $UPDATE_CHROOT
+  	  fi 
  	  
-    typeset -f cc_init >/dev/null && action "Starting ${clutype} dependent services" cc_init start "$CHROOT_PATH" "$clutype"
-    if [ "${clutype}" != "${rootfs}" ]; then
-       typeset -f clusterfs_init >/dev/null && action "Starting ${clutype} dependent services" "$CHROOT_PATH" "$clutype"
+   	  typeset -f cc_init >/dev/null && action "Starting ${clutype} dependent services" cc_init start "$CHROOT_PATH" "$rootfs"
+ 	  if [ "${clutype}" != "${rootfs}" ]; then
+ 	   	typeset -f clusterfs_init >/dev/null && action "Starting ${rootfs} dependent services" clusterfs_init start "$CHROOT_PATH" "$rootfs"
+ 	  fi
     fi
     ;;
   stop)
- 	  typeset -f cc_init >/dev/null && action "Stopping ${clutype} dependent services" cc_init stop "$CHROOT_PATH" "$clutype"
+ 	  typeset -f cc_init >/dev/null && action "Stopping ${clutype} dependent services" cc_init stop "$CHROOT_PATH" "$rootfs"
  	  if [ "${clutype}" != "${rootfs}" ]; then
    	    typeset -f clusterfs_init >/dev/null && action "Stopping ${rootfs} dependent services" clusterfs_init stop "$CHROOT_PATH" "$rootfs"
  	  fi 
@@ -190,9 +192,9 @@ case "$1" in
       exit 0
       ;;
   reload)
-      if [ check_sharedroot ]; then
-  	    typeset -f ${rootfs}_needed >/dev/null && ${rootfs}_chroot_needed init
-	    if [ $? -eq 0 ]; then
+      if check_sharedroot $rootfs; then
+  	    
+	    if clusterfs_chroot_needed init; then
 	      action "Updating chroot environment" $UPDATE_CHROOT
 	    fi
 	  fi
@@ -215,7 +217,10 @@ exit $RETVAL
 #************ main
 ###############
 # $Log: bootsr,v $
-# Revision 1.23  2010-02-05 12:47:30  marc
+# Revision 1.24  2010-02-15 14:04:15  marc
+# fixed check_sharedroot
+#
+# Revision 1.23  2010/02/05 12:47:30  marc
 # - clean up
 # - moved functionality to libs
 # - RHEL4 support

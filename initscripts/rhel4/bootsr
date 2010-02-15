@@ -2,7 +2,7 @@
 #****h* comoonics-bootimage/bootsr
 #  NAME
 #    bootsr
-#    $Id: bootsr,v 1.7 2010-02-05 12:47:30 marc Exp $
+#    $Id: bootsr,v 1.8 2010-02-15 14:06:36 marc Exp $
 #  DESCRIPTION
 #    Comoonics Shared Root post boot settings
 #  AUTHOR
@@ -92,9 +92,9 @@ function clean_start {
 function check_sharedroot {
   local root_fstype=$1
   if [ "$root_fstype" = "gfs" ] || [ "$root_fstype" = "ocfs2" ] || [ "$root_fstype" = "nfs" ] || [ "$root_fstype" = "glusterfs" ]; then
-    return 1
-  else
     return 0
+  else
+    return 1
   fi
 }
 #************ check_sharedroot
@@ -157,9 +157,7 @@ case "$1" in
   	# first clean old repos
     check_mtab $rootfs
     
-    check_sharedroot $rootfs
-    sharedroot=$?
-    if  [ -n "$rootfs" ] && [ $sharedroot ]; then
+    if  [ -n "$rootfs" ] && check_sharedroot $rootfs; then
       touch /var/lock/subsys/bootsr
       if [ -z "$chrootneeded" ]; then
         clusterfs_chroot_needed init
@@ -194,9 +192,9 @@ case "$1" in
       exit 0
       ;;
   reload)
-      if [ check_sharedroot ]; then
-  	    typeset -f ${rootfs}_needed >/dev/null && ${rootfs}_chroot_needed init
-	    if [ $? -eq 0 ]; then
+      if check_sharedroot $rootfs; then
+  	    
+	    if clusterfs_chroot_needed init; then
 	      action "Updating chroot environment" $UPDATE_CHROOT
 	    fi
 	  fi
@@ -219,7 +217,10 @@ exit $RETVAL
 #************ main
 ###############
 # $Log: bootsr,v $
-# Revision 1.7  2010-02-05 12:47:30  marc
+# Revision 1.8  2010-02-15 14:06:36  marc
+# fixed check_sharedroot
+#
+# Revision 1.7  2010/02/05 12:47:30  marc
 # - clean up
 # - moved functionality to libs
 # - RHEL4 support
