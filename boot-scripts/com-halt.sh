@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: com-halt.sh,v 1.5 2009-10-07 11:41:16 marc Exp $
+# $Id: com-halt.sh,v 1.6 2010-02-15 14:05:53 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/com-halt.sh
 #  NAME
 #    com-halt.sh
-#    $Id: com-halt.sh,v 1.5 2009-10-07 11:41:16 marc Exp $
+#    $Id: com-halt.sh,v 1.6 2010-02-15 14:05:53 marc Exp $
 #  DESCRIPTION
 #    script called from /etc/init.d/halt
 #  USAGE
@@ -43,6 +43,9 @@ CHROOT_PATH=$(/opt/atix/comoonics-bootimage/manage_chroot.sh -p)
 if [ -n "$CHROOT_PATH" ] && [ -d $CHROOT_PATH/mnt/newroot ]; then
   initEnv
   actlevel=$(runlevel | awk '{ print $2;}')
+  	
+  # First check for the chroot environment being mounted as ro
+  mount -o remount,rw $CHROOT_PATH &>/dev/null
   
   cd $CHROOT_PATH
   /sbin/pivot_root . ./mnt/newroot
@@ -69,7 +72,10 @@ if [ -n "$CHROOT_PATH" ] && [ -d $CHROOT_PATH/mnt/newroot ]; then
 fi
 ####################
 # $Log: com-halt.sh,v $
-# Revision 1.5  2009-10-07 11:41:16  marc
+# Revision 1.6  2010-02-15 14:05:53  marc
+# remount chroot rw
+#
+# Revision 1.5  2009/10/07 11:41:16  marc
 # - added initEnv for nice UI
 # - added parameters to make detectHalt more generic
 #
