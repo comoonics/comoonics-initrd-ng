@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.7 2009-02-27 08:38:22 marc Exp $
+# $Id: hardware-lib.sh,v 1.8 2010-02-16 10:06:14 marc Exp $
 #
 # @(#)$File$
 #
@@ -83,9 +83,26 @@ function rhel4_udev_start() {
 }
 #************rhel4_udev_start
 
+#****f* boot-lib.sh/dm_get_drivers
+#  NAME
+#    dm_get_drivers
+#  SYNOPSIS
+#    function dm_get_drivers() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function dm_get_drivers {
+	echo "dm_round_robin dm_multipath dm_snapshot dm_mirror dm_mod"
+}
+#************ dm_get_drivers
+
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.7  2009-02-27 08:38:22  marc
+# Revision 1.8  2010-02-16 10:06:14  marc
+# - fixed device mapper multipath drivers
+#
+# Revision 1.7  2009/02/27 08:38:22  marc
 # backport to rhel4
 #
 # Revision 1.6  2008/08/14 13:32:46  marc
