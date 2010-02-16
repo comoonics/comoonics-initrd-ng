@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: com-realhalt.sh,v 1.13 2009-12-09 09:28:45 marc Exp $
+# $Id: com-realhalt.sh,v 1.14 2010-02-16 10:04:27 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/com-halt.sh
 #  NAME
 #    com-halt.sh
-#    $Id: com-realhalt.sh,v 1.13 2009-12-09 09:28:45 marc Exp $
+#    $Id: com-realhalt.sh,v 1.14 2010-02-16 10:04:27 marc Exp $
 #  DESCRIPTION
 #    script called from <chrootpath>/com-halt.sh
 #  USAGE
@@ -115,7 +115,7 @@ echo_local "Starting ATIX exitrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.13 $ $Date: 2009-12-09 09:28:45 $'
+echo_local 'Internal Version $Revision: 1.14 $ $Date: 2010-02-16 10:04:27 $'
 echo_local_debug "Calling cmd "$(repository_get_value haltcmd)
 #echo_local "Builddate: "$(date)
 
@@ -141,11 +141,11 @@ echo_local "com-realhalt: detected distribution: $distribution, clutype: $clutyp
 
 #nasty workaround for a bug that causes fenced to exit on sigstop sigcont
 # see also rh bz#318571
-if [ "$rootfs" = "gfs" ] && ! pidof fenced &> /dev/null; then
-	fenced -c
-	fence_tool join -w -c
-	sleep 3
-fi 
+#if [ "$rootfs" = "gfs" ] && ! pidof fenced &> /dev/null; then
+#	fenced -c
+#	fence_tool join -w -c
+#	sleep 3
+#fi 
 
 echo_local -n "Restarting init process in chroot"
 # restart init
@@ -197,7 +197,10 @@ $cmd
 
 #####################
 # $Log: com-realhalt.sh,v $
-# Revision 1.13  2009-12-09 09:28:45  marc
+# Revision 1.14  2010-02-16 10:04:27  marc
+# removed fenced -c and fence_tool lines as they belong to gfs relevant libs if need be.
+#
+# Revision 1.13  2009/12/09 09:28:45  marc
 # introduced umount_filesystem instead of implementing anytime.
 #
 # Revision 1.12  2009/10/08 08:05:04  marc
