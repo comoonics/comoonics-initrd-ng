@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.4 2010-02-05 12:26:52 marc Exp $
+# $Id: gfs-lib.sh,v 1.5 2010-02-16 10:06:01 marc Exp $
 #
 # @(#)$File$
 #
@@ -114,9 +114,41 @@ function gfs_init {
 }
 #********* gfs_init
 
+#****f* gfs-lib.sh/gfs_services_stop
+#  NAME
+#    gfs_services_stop
+#  SYNOPSIS
+#    function gfs_services_stop
+#  DESCRIPTION
+#    This function loads all relevant gfs modules
+#  IDEAS
+#  SOURCE
+#
+function gfs_services_stop {
+  local chroot_path=$1
+  local lock_method=$2
+  local lvm_sup=$3
+
+  local services="fenced cman"
+  if [ -n "$lvm_sup" ] && [ $lvm_sup -eq 0 ]; then
+  	services="fenced clvmd cman"
+  fi
+  for service in $services; do
+    gfs_stop_$service $chroot_path
+#    if [ $? -ne 0 ]; then
+#      return $?
+#    fi
+  done
+  return $return_c
+}
+#************ gfs_services_stop
+
 ###############
 # $Log: gfs-lib.sh,v $
-# Revision 1.4  2010-02-05 12:26:52  marc
+# Revision 1.5  2010-02-16 10:06:01  marc
+# - added gfs_services_stop
+#
+# Revision 1.4  2010/02/05 12:26:52  marc
 # - backport to upstream
 # - moved get_lockcount to be defined here (used by bootsr)
 #
