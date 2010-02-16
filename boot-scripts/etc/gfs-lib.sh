@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.71 2010-02-15 14:06:17 marc Exp $
+# $Id: gfs-lib.sh,v 1.72 2010-02-16 10:05:15 marc Exp $
 #
 # @(#)$File$
 #
@@ -1030,7 +1030,8 @@ function gfs_start_cman {
 #
 function gfs_stop_cman {
   echo_local -n "Leaving the cluster"
-  exec_local cman_tool leave remove -w
+  exec_local cman_tool leave remove -w ||
+  exec_local cman_tool leave force
   return_code
 }
 #************ gfs_stop_cman
@@ -1427,7 +1428,10 @@ function gfs_chroot_needed {
 }
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.71  2010-02-15 14:06:17  marc
+# Revision 1.72  2010-02-16 10:05:15  marc
+# added cman_tool leave force if leave did not work
+#
+# Revision 1.71  2010/02/15 14:06:17  marc
 # added chroot_needed
 #
 # Revision 1.70  2010/02/05 12:35:30  marc
