@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.57 2010-02-09 21:45:19 marc Exp $
+# $Id: Makefile,v 1.58 2010-02-16 10:07:15 marc Exp $
 #
 # @(#)$file$
 #
@@ -264,6 +264,7 @@ CFG_FILES=basefiles.list \
     rpms.initrd.d/rsyslogd.list \
     rpms.initrd.d/syslog-ng.list \
     rpms.initrd.d/syslogd.list \
+    rpms.initrd.d/fencevirsh.list \
     rpms.initrd.d/rhel/base.list \
     rpms.initrd.d/rhel/dm_multipath.list \
     rpms.initrd.d/rhel/comoonics.list \
@@ -542,7 +543,7 @@ channelcopy:
 		touch $$TMPFILE; \
 		sleep 1; \
 		echo "Copying rpms to channel $$channeldir..$$TMPFILE"; \
-		# Create an array of all CHANNELDIRS distros (second dir in path) and one without numbers at the end ready to be feeded in find \
+		# Create an array of all CHANNELDIRS distros (second dir in path) and one without numbers at the end ready to be feeded in find
 		includeddistros=`echo -n $$channeldir | awk -F/ '{ print "-name \"*"$$2"*\" -or -name \"*"gensub("[0-9]+$$","","",$$2)"-*\" -or "; }'`; \
 		excludeddistros=`echo -n $(ALL_DISTROS) | awk -F/ 'BEGIN { RS=" "; } $$0=="'$$includedistro'" { next; } { print "-not -name \"*"$$0"*\" -and -not -name \"*"gensub("[0-9]+$$","","",$$0)"*\" -and "; }'`; \
 		for subdir in $(CHANNELSUBDIRS); do \
@@ -580,7 +581,10 @@ channel: rpm channelcopy channelbuild
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.57  2010-02-09 21:45:19  marc
+# Revision 1.58  2010-02-16 10:07:15  marc
+# new versions
+#
+# Revision 1.57  2010/02/09 21:45:19  marc
 # new versions
 #
 # Revision 1.56  2010/02/07 20:35:26  marc

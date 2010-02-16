@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage-initscripts-el4.spec,v 1.13 2010-02-07 20:35:13 marc Exp $
+# $Id: comoonics-bootimage-initscripts-el4.spec,v 1.14 2010-02-16 10:07:15 marc Exp $
 #
 ##
 ##
@@ -51,7 +51,7 @@ Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-rhel
 Requires: comoonics-bootimage-listfiles-rhel4
 #Conflicts:
-Release: 3.rhel4
+Release: 5.rhel4
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -75,6 +75,7 @@ install -d -m 755 $RPM_BUILD_ROOT/%{INITDIR}
 install -m755 initscripts/rhel4/bootsr $RPM_BUILD_ROOT/%{INITDIR}/bootsr
 install -m755 initscripts/rhel4/ccsd-chroot $RPM_BUILD_ROOT/%{INITDIR}/ccsd-chroot
 install -m755 initscripts/rhel4/fenced-chroot $RPM_BUILD_ROOT/%{INITDIR}/fenced-chroot
+install -m644 initscripts/rhel4/halt-overwrite.sh $RPM_BUILD_ROOT/%{SYSCONFIGDIR}/halt-overwrite
 
 %clean
 rm -rf %{buildroot}
@@ -115,6 +116,20 @@ echo "Disabling services ($services)"
 for service in $services; do
    /sbin/chkconfig --del $service &> /dev/null
 done
+
+echo "Creating link for halt.local"
+if [ -e /sbin/halt.local ]; then
+   echo "Could not create link /sbin/halt.local."
+   echo "In order to be able to reboot properly with cluster filesystems it is important to link"
+   echo "/opt/atix/comoonics-bootimage/boot-scripts/com-halt.sh /sbin/halt.local"
+   echo "Please try to fix or validate manually"
+else
+   ln -sf  /opt/atix/comoonics-bootimage/boot-scripts/com-halt.sh /sbin/halt.local
+fi
+
+echo "Configuring halt-overwrite.."
+grep "halt-overwrite" /etc/sysconfig/clock || echo ". /etc/sysconfig/halt-overwrite" >> /etc/sysconfig/clock
+
 /bin/true
 
 %preun
@@ -127,6 +142,12 @@ chkconfig --del bootsr
 %attr(755, root, root) %{INITDIR}/ccsd-chroot
 
 %changelog
+* Tue Feb 16 2010 Marc Grimme <grimme@atix.de> 1.4-5
+- introduced halt-overwrite to solve the halt_get_remaining problem and one patch less.
+* Mon Feb 15 2010 Marc Grimme <grimme@atix.de> 1.4-4
+- clean up check_sharedroot
+* Fri Feb 12 2010 Marc Grimme <grimme@atix.de> 1.4-3
+- fixed many bugs in bootsr and diet and upstream.
 * Wed Feb 25 2009 Marc Grimme <grimme@atix.de> 1.4-1
 - Backport of important features to rhel4
 * Fri Feb 29 2008 Mark Hlawatschek <hlawatschek@atix.de> 1.3.5
@@ -141,7 +162,10 @@ chkconfig --del bootsr
 - first revision
 # ------
 # $Log: comoonics-bootimage-initscripts-el4.spec,v $
-# Revision 1.13  2010-02-07 20:35:13  marc
+# Revision 1.14  2010-02-16 10:07:15  marc
+# new versions
+#
+# Revision 1.13  2010/02/07 20:35:13  marc
 # - latest versions
 #
 # Revision 1.12  2009/02/25 14:25:16  marc

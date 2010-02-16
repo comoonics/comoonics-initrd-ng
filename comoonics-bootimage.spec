@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.111 2010-02-09 21:45:19 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.112 2010-02-16 10:07:15 marc Exp $
 #
 ##
 ##
@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 38
+Release: 41
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -258,7 +258,7 @@ Syslog implementation for osr. Supports syslog classic, syslog-ng, rsyslog (See 
 
 %package listfiles-all
 Version: 0.1
-Release: 10
+Release: 11
 Requires: comoonics-bootimage >= 1.3-36
 Group:   System Environment/Base
 Summary: OSR listfilesfiles for all distributions 
@@ -377,7 +377,7 @@ OSR extra files that are only relevant for Novell SLES 11
 
 %package listfiles-fenceacksv-plugins
 Version: 0.1
-Release: 2
+Release: 3
 Requires: comoonics-bootimage >= 1.3-20
 Requires: comoonics-cs-sysreport-templates
 Requires: comoonics-fenceacksv-py
@@ -422,6 +422,17 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 %description listfiles-syslog-ng
 Syslog listfiles for syslog-ng daemon
 
+%package listfiles-fencevirsh
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage-extras-syslog
+Summary: Syslog listfiles for the virsh fenceagent
+Group:   System Environment/Base
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description listfiles-fencevirsh
+Listfiles for the virsh fenceagent to be imported in the bootimage.
+
 %package compat
 Version: 0.1
 Release: 2
@@ -435,9 +446,10 @@ OSR files needed for the compatibility to 1.2 releases
 
 %package fenceacksv
 Version: 0.3
-Release: 4
+Release: 7
 Requires: comoonics-fenceacksv-py
 Requires: comoonics-bootimage >= 1.3-1
+Requires: comoonics-tools-py
 Summary: The Fenceackserver is a service for last resort actions
 Group:   System Environment/Servers
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
@@ -856,6 +868,9 @@ fi
 %files listfiles-syslog-ng
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/syslog-ng.list
 
+%files listfiles-fencevirsh
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fencevirsh.list
+
 %files fenceacksv
 %attr(0755, root, root) %{FENCEACKSV_DIR}/fence_ack_server.py*
 #%attr(0755, root, root) %{FENCEACKSV_DIR}/fence_ack_server.pyc
@@ -901,6 +916,15 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Tue Feb 15 2010 Marc Grimme <grimme@atix.de> 1.4-41
+- fixed com-halt.sh to remount / and chroot rw if it was mounted ro
+- added cman_tool leave force if cman_tool leave does not work
+- Rhel4 devicemapper drivers changed
+- com-realhalt.sh removed the fenced -c and fence_tool if needed it should be moved to gfs relevant environment.
+* Mon Feb 15 2010 Marc Grimme <grimme@atix.de> 1.4-40
+- removed repository_clean in linuxrc in order to allow parts being precreated.
+* Fri Feb 12 2010 Marc Grimme <grimme@atix.de> 1.4-39
+- fixed bug with cdsl environment not being detected when other then cdls.local and cluster/cdsl.
 * Tue Feb 09 2010 Marc Grimme <grimme@atix.de> 1.4-38
 - fixed typo in comoonics-bootimage.cfg
 * Fri Feb 05 2010 Marc Grimme <grimme@atix.de> 1.4-37
@@ -1257,6 +1281,8 @@ rm -rf %{buildroot}
 - initial revision
 
 %changelog listfiles-all
+* Mon Feb 15 2010 Marc Grimme <grimme@atix.de> - 0.1-11
+- removed bug in 02-create-cdsl-repository.sh where file where created at the wrong destination.
 * Tue Feb 09 2010 Marc Grimme <grimme@atix.de> - 0.1-10
 - added 02-create-cdsl-repository.sh in the post.mkinitrd.d section to fix bug #370 
   and support rootfilesystems with different cdsl environments  
@@ -1365,7 +1391,18 @@ rm -rf %{buildroot}
 * Wed Sep 09 2009 Marc Grimme <grimme@atix.de> - 0.1-1
 - initial revision
 
+%changelog listfiles-fenceacksv-plugins
+* Fri Feb 12 2010 Marc Grimme <grimme@atix.de> - 0.1-4
+- Removed comoonics-cs-py dep.
+
 %changelog fenceacksv
+* Mon Feb 15 2010 Marc Grimme <grimme@atix.de> - 0.3-7
+- Upstream fixes.
+* Fri Feb 12 2010 Marc Grimme <grimme@atix.de> - 0.3-6
+- Fixed imports and errors during starting
+- Added dep to comoonics-tools-py
+* Fri Feb 12 2010 Marc Grimme <grimme@atix.de> - 0.3-5
+- Removed deps to GetOpts. Imports.
 * Tue Sep 29 2009 Marc Grimme <grimme@atix.de> - 0.3-4
 - Removed deps and added comoonics-fenceacksv-py
 * Tue Jul 01 2009 Marc Grimme <grimme@atix.de> - 0.3-3
@@ -1404,7 +1441,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.111  2010-02-09 21:45:19  marc
+# Revision 1.112  2010-02-16 10:07:15  marc
+# new versions
+#
+# Revision 1.111  2010/02/09 21:45:19  marc
 # new versions
 #
 # Revision 1.110  2010/02/07 20:35:13  marc
