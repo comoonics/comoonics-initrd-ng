@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: com-halt.sh,v 1.6 2010-02-15 14:05:53 marc Exp $
+# $Id: com-halt.sh,v 1.7 2010-02-16 10:04:49 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,27 +26,28 @@
 #****h* comoonics-bootimage/com-halt.sh
 #  NAME
 #    com-halt.sh
-#    $Id: com-halt.sh,v 1.6 2010-02-15 14:05:53 marc Exp $
+#    $Id: com-halt.sh,v 1.7 2010-02-16 10:04:49 marc Exp $
 #  DESCRIPTION
 #    script called from /etc/init.d/halt
 #  USAGE
 #    com-halt.sh chrootpath haltcmd
 #*******
 
-# include libraries
-predir=/opt/atix/comoonics-bootimage/boot-scripts
-source ${predir}/etc/std-lib.sh
-sourceLibs ${predir}
-
-CHROOT_PATH=$(/opt/atix/comoonics-bootimage/manage_chroot.sh -p)
+CHROOT_PATH=$(/opt/atix/comoonics-bootimage/manage_chroot.sh -p 2>/dev/null)
 
 if [ -n "$CHROOT_PATH" ] && [ -d $CHROOT_PATH/mnt/newroot ]; then
+  mount -o remount,rw $CHROOT_PATH &>/dev/null
+  mount -o remount,rw / &>/dev/null
+  bash
+  
+  # include libraries
+  predir=/opt/atix/comoonics-bootimage/boot-scripts
+  source ${predir}/etc/std-lib.sh
+  sourceLibs ${predir}
   initEnv
   actlevel=$(runlevel | awk '{ print $2;}')
   	
   # First check for the chroot environment being mounted as ro
-  mount -o remount,rw $CHROOT_PATH &>/dev/null
-  
   cd $CHROOT_PATH
   /sbin/pivot_root . ./mnt/newroot
 
@@ -58,12 +59,14 @@ if [ -n "$CHROOT_PATH" ] && [ -d $CHROOT_PATH/mnt/newroot ]; then
   getParameter dstep $dstepmode &>/dev/null &&
   getParameter nousb &>/dev/null &&
   return_code 0
+  echo_local -N
 
   if [ $# -eq 0 ]; then
     #FIXME: the following should be distribution dependent.
     echo_local -n "Detecting power cycle type (actlevel=$actlevel)"
     cmd=$(detectHalt "$actlevel" . /mnt/newroot)
     return_code $?
+    echo_local -N
   else
     cmd=$@
   fi
@@ -72,7 +75,10 @@ if [ -n "$CHROOT_PATH" ] && [ -d $CHROOT_PATH/mnt/newroot ]; then
 fi
 ####################
 # $Log: com-halt.sh,v $
-# Revision 1.6  2010-02-15 14:05:53  marc
+# Revision 1.7  2010-02-16 10:04:49  marc
+# - remount / and chroot rw if they were mounted ro.
+#
+# Revision 1.6  2010/02/15 14:05:53  marc
 # remount chroot rw
 #
 # Revision 1.5  2009/10/07 11:41:16  marc
