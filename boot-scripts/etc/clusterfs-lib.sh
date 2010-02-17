@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.42 2010-02-07 20:34:35 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.43 2010-02-17 09:45:43 marc Exp $
 #
 # @(#)$File$
 #
@@ -101,7 +101,7 @@ function getCluType {
    local conf=$1
    local clutype=""
    
-   typedef -f osr_nodeids_file &> /dev/null
+   typeset -f osr_nodeids_file &> /dev/null
    if test $? -eq 0 && test -f $(osr_nodeids_file); then
    	  echo "osr"
    	  return 0
@@ -1395,7 +1395,10 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.42  2010-02-07 20:34:35  marc
+# Revision 1.43  2010-02-17 09:45:43  marc
+# typedef => typeset in getCluType fixed for type osr
+#
+# Revision 1.42  2010/02/07 20:34:35  marc
 # - removed osr-lib deps.
 #
 # Revision 1.41  2010/02/05 12:34:12  marc
