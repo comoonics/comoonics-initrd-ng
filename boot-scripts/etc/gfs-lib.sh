@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.72 2010-02-16 10:05:15 marc Exp $
+# $Id: gfs-lib.sh,v 1.73 2010-02-17 09:48:06 marc Exp $
 #
 # @(#)$File$
 #
@@ -64,13 +64,13 @@
 #  NAME
 #    getGFSMajorVersion
 #  SYNOPSIS
-#    function getGFSMajorVersion()
+#    getGFSMajorVersion
 #  DESCRIPTION
 #    returns the gfs-majorversion
 #  IDEAS
 #  SOURCE
 #
-function getGFSMajorVersion {
+function getGFSMajorVersion() {
     modinfo gfs | awk '$1 == "description:" {
   match($5, /v([[:digit:]]+)\./, version);
   print version[1];
@@ -82,13 +82,13 @@ function getGFSMajorVersion {
 #  NAME
 #    getGFSMinorVersion
 #  SYNOPSIS
-#    function getGFSMinorVersion()
+#    getGFSMinorVersion
 #  DESCRIPTION
 #    returns the gfs-minorversion
 #  IDEAS
 #  SOURCE
 #
-function getGFSMinorVersion {
+function getGFSMinorVersion() {
     modinfo gfs | awk '$1 == "description:" {
   match($5, /v[[:digit:]]+\.([[:digit:]]+)/, version);
   print version[1];
@@ -104,7 +104,7 @@ function getGFSMinorVersion {
 #  DESCRIPTION
 #    returns defaults for the specified filesystem. Parameter must be given to return the apropriate default
 #  SOURCE
-function gfs_getdefaults {
+function gfs_getdefaults() {
 	local param=$1
 	local distribution=$(repository_get_value distribution)
 	
@@ -146,11 +146,11 @@ function gfs_getdefaults {
 #  NAME
 #    gfs_validate
 #  SYNOPSIS
-#    function gfs_validate(cluster_conf)
+#    gfs_validate
 #  DESCRIPTION
 #    validates the cluster configuration. 
 #  SOURCE
-function gfs_validate {
+function gfs_validate() {
   local cluster_conf=$1
   local xml_cmd=$2
   
@@ -176,7 +176,7 @@ function gfs_validate {
 #  NAME
 #    gfs_get
 #  SYNOPSIS
-#    function gfs_get [cluster_conf] [querymap] opts
+#    gfs_get [cluster_conf] [querymap] opts
 #  DESCRIPTTION
 #    returns the name of the cluster.
 #  SOURCE
@@ -205,7 +205,7 @@ gfs_get() {
 #  NAME
 #    gfs_get_clustername
 #  SYNOPSIS
-#    function gfs_get_clustername(cluster_conf)
+#    gfs_get_clustername(cluster_conf)
 #  DESCRIPTTION
 #    returns the name of the cluster.
 #  SOURCE
@@ -219,7 +219,7 @@ gfs_get_clustername() {
 #  NAME
 #    gfs_convert
 #  SYNOPSIS
-#    function gfs_convert(cluster_conf)
+#    gfs_convert(cluster_conf)
 #  DESCRIPTTION
 #    returns the name of the cluster.
 #  SOURCE
@@ -244,12 +244,12 @@ gfs_convert() {
 #  NAME
 #    gfs_get_rootfs
 #  SYNOPSIS
-#    function gfs_get_rootfs(cluster_conf, nodeid, nodename)
+#    gfs_get_rootfs(cluster_conf, nodeid, nodename)
 #  DESCRIPTTION
 #    returns the type of the root filesystem.
 #  SOURCE
 #
-function gfs_get_rootfs {
+function gfs_get_rootfs() {
    local cluster_conf=$1
    local nodeid=$2
    local nodename=$3
@@ -269,7 +269,7 @@ function gfs_get_rootfs {
 #  IDEAS
 #  SOURCE
 #
-function gfs_get_rootvolume {
+function gfs_get_rootvolume() {
    local xml_file=$1
    local hostname=$2
    [ -z "$hostname" ] && hostname=$(gfs_get_nodename $xml_file)
@@ -288,7 +288,7 @@ function gfs_get_rootvolume {
 #  IDEAS
 #  SOURCE
 #
-function gfs_get_rootsource {
+function gfs_get_rootsource() {
    local xml_file=$1
    local hostname=$2
    [ -z "$hostname" ] && hostname=$(gfs_get_nodename $xml_file)
@@ -309,7 +309,7 @@ function gfs_get_rootsource {
 #  IDEAS
 #  SOURCE
 #
-function gfs_get_rootfs {
+function gfs_get_rootfs() {
    local xml_file=$1
    local hostname=$2
 
@@ -330,11 +330,11 @@ function gfs_get_rootfs {
 #  NAME
 #    gfs_get_userspace_procs
 #  SYNOPSIS
-#    function gfs_get_userspace_procs(cluster_conf, nodename)
+#    gfs_get_userspace_procs(cluster_conf, nodename)
 #  DESCRIPTION
 #    gets userspace programs that are to be running dependent on rootfs
 #  SOURCE
-function gfs_get_userspace_procs {
+function gfs_get_userspace_procs() {
   local clutype=$1
   local rootfs=$2
 
@@ -360,7 +360,7 @@ clvmd"
 #  IDEAS
 #  SOURCE
 #
-function gfs_get_mountopts {
+function gfs_get_mountopts() {
    local xml_file=$1
    local hostname=$2
    [ -z "$hostname" ] && hostname=$(gfs_get_nodename $xml_file)
@@ -384,7 +384,7 @@ function gfs_get_mountopts {
 #  IDEAS
 #  SOURCE
 #
-function gfs_get_chroot_mountpoint {
+function gfs_get_chroot_mountpoint() {
    local xml_file=$1
    local hostname=$2
    [ -z "$hostname" ] && hostname=$(gfs_get_nodename $xml_file)
@@ -404,7 +404,7 @@ function gfs_get_chroot_mountpoint {
 #  IDEAS
 #  SOURCE
 #
-function gfs_get_chroot_fstype {
+function gfs_get_chroot_fstype() {
    local xml_file=$1
    local hostname=$2
    [ -z "$hostname" ] && hostname=$(gfs_get_nodename $xml_file)
@@ -424,7 +424,7 @@ function gfs_get_chroot_fstype {
 #  IDEAS
 #  SOURCE
 #
-function gfs_get_chroot_device {
+function gfs_get_chroot_device() {
    local xml_file=$1
    local hostname=$2
    [ -z "$hostname" ] && hostname=$(gfs_get_nodename $xml_file)
@@ -444,7 +444,7 @@ function gfs_get_chroot_device {
 #  IDEAS
 #  SOURCE
 #
-function gfs_get_chroot_mountopts {
+function gfs_get_chroot_mountopts() {
    local xml_file=$1
    local hostname=$2
    [ -z "$hostname" ] && hostname=$(gfs_get_nodename $xml_file)
@@ -464,7 +464,7 @@ function gfs_get_chroot_mountopts {
 #  IDEAS
 #  SOURCE
 #
-function gfs_get_chroot_dir {
+function gfs_get_chroot_dir() {
    local xml_file=$1
    local hostname=$2
    [ -z "$hostname" ] && hostname=$(gfs_get_nodename $xml_file)
@@ -486,7 +486,7 @@ function gfs_get_chroot_dir {
 #  IDEAS
 #  SOURCE
 #
-function gfs_get_scsifailover {
+function gfs_get_scsifailover() {
    local xml_file=$1
    local nodename=$2
    [ -z "$nodename" ] && nodename=$(getParameter nodename)
@@ -507,11 +507,10 @@ function gfs_get_scsifailover {
 #    gfs_get_node_hostname(clusterconf, [nodename])
 #  DESCRIPTION
 #    returns the hostname for this node
-#    !!!THIS FUNCTION SHOULD NOT BE NEEDED ANY MORE!!!!
 #  IDEAS
 #  SOURCE
 #
-function gfs_get_node_hostname {
+function gfs_get_node_hostname() {
    local xml_file=$1
    local nodename=$2
    [ -z "$nodename" ] && nodename=$(getParameter nodename)
@@ -525,13 +524,13 @@ function gfs_get_node_hostname {
 #  NAME
 #    gfs_get_nodename
 #  SYNOPSIS
-#    function gfs_get_nodename(cluster_conf, netdev)
+#    gfs_get_nodename(cluster_conf, netdev)
 #  DESCRIPTION
 #    gets for this very host the nodename (identified by the macaddress)
 #  IDEAS
 #  SOURCE
 #
-function gfs_get_nodename {
+function gfs_get_nodename() {
     local ccs_file=$1
     local mac=$2
 
@@ -544,13 +543,13 @@ function gfs_get_nodename {
 #  NAME
 #    gfs_get_nodename_by_id
 #  SYNOPSIS
-#    function gfs_get_nodename_by_id(cluster_conf, id)
+#    gfs_get_nodename_by_id(cluster_conf, id)
 #  DESCRIPTION
 #    gets for this very host the nodename (identified by the nodeid)
 #  IDEAS
 #  SOURCE
 #
-function gfs_get_nodename_by_id {
+function gfs_get_nodename_by_id() {
     local ccs_file=$1
     local id=$2
 
@@ -563,13 +562,13 @@ function gfs_get_nodename_by_id {
 #  NAME
 #    gfs_get_nodeids
 #  SYNOPSIS
-#    function gfs_get_nodeids(cluster_conf, mac)
+#    gfs_get_nodeids(cluster_conf, mac)
 #  DESCRIPTION
 #    gets for this very host the nodeid (identified by the macaddress)
 #  IDEAS
 #  SOURCE
 #
-function gfs_get_nodeids {
+function gfs_get_nodeids() {
     local ccs_file=$1
     local mac=$2
 
@@ -582,13 +581,13 @@ function gfs_get_nodeids {
 #  NAME
 #    gfs_get_macs
 #  SYNOPSIS
-#    function gfs_get_macs(cluster_conf, mac)
+#    gfs_get_macs(cluster_conf, mac)
 #  DESCRIPTION
 #    gets for this very host the nodeid (identified by the macaddress)
 #  IDEAS
 #  SOURCE
 #
-function gfs_get_macs {
+function gfs_get_macs() {
     local ccs_file=$1
     local mac=$2
 
@@ -601,13 +600,13 @@ function gfs_get_macs {
 #  NAME
 #    gfs_get_nodeid
 #  SYNOPSIS
-#    function gfs_get_nodeid(cluster_conf, mac)
+#    gfs_get_nodeid(cluster_conf, mac)
 #  DESCRIPTION
 #    gets for this very host the nodeid (identified by the macaddress)
 #  IDEAS
 #  SOURCE
 #
-function gfs_get_nodeid {
+function gfs_get_nodeid() {
     local ccs_file=$1
     local mac=$2
 
@@ -620,14 +619,14 @@ function gfs_get_nodeid {
 #  NAME
 #    gfs_get_netdevs
 #  SYNOPSIS
-#    function gfs_get_netdevs(cluster_conf, nodename)
+#    gfs_get_netdevs(cluster_conf, nodename)
 #  DESCRIPTION
 #    returns all configured networkdevices from the cluster.conf xml file
 #    seperated by " "
 #  IDEAS
 #  SOURCE
 #
-function gfs_get_netdevs {
+function gfs_get_netdevs() {
 #	if [ -n "$debug" ]; then set -x; fi
   local xml_cmd="${ccs_xml_query}"
   local xmlfile=$1
@@ -644,13 +643,13 @@ function gfs_get_netdevs {
 #  NAME
 #    gfs_auto_hosts
 #  SYNOPSIS
-#    function gfs_auto_hosts(cluster_conf)
+#    gfs_auto_hosts(cluster_conf)
 #  DESCRIPTION
 #    Generates a hostsfile of all hosts in the cluster configuration
 #  IDEAS
 #  SOURCE
 #
-function gfs_auto_hosts {
+function gfs_auto_hosts() {
     local xml_cmd="${ccs_xml_query}"
     local xmlfile=$1
     local hostsfile=$2
@@ -669,13 +668,13 @@ function gfs_auto_hosts {
 #  NAME
 #    gfs_get_syslogserver
 #  SYNOPSIS
-#    function gfs_get_syslogserver(cluster_conf)
+#    gfs_get_syslogserver(cluster_conf)
 #  DESCRIPTION
-#    This function starts the syslog-server to log the gfs-bootprocess
+#    This Function starts the syslog-server to log the gfs-bootprocess
 #  IDEAS
 #  SOURCE
 #
-function gfs_get_syslogserver {
+function gfs_get_syslogserver() {
   local xml_file=$1
   local xml_cmd="${ccs_xml_query}"
   local nodename=$2
@@ -687,13 +686,13 @@ function gfs_get_syslogserver {
 #  NAME
 #    gfs_get_syslogfilter
 #  SYNOPSIS
-#    function gfs_get_syslogfilter(cluster_conf)
+#    gfs_get_syslogfilter(cluster_conf)
 #  DESCRIPTION
-#    This function starts the syslog-server to log the gfs-bootprocess
+#    This Function starts the syslog-server to log the gfs-bootprocess
 #  IDEAS
 #  SOURCE
 #
-function gfs_get_syslogfilter {
+function gfs_get_syslogfilter() {
   local xml_file=$1
   local xml_cmd="${ccs_xml_query}"
   local nodename=$2
@@ -705,13 +704,13 @@ function gfs_get_syslogfilter {
 #  NAME
 #    gfs_get_bridges
 #  SYNOPSIS
-#    function gfs_get_bridges(cluster_conf)
+#    gfs_get_bridges(cluster_conf)
 #  DESCRIPTION
-#    This function returns all names of defined bridges
+#    This Function returns all names of defined bridges
 #  IDEAS
 #  SOURCE
 #
-function gfs_get_bridges {
+function gfs_get_bridges() {
   local xml_file=$1
   local nodename=$2
   local xml_cmd="${ccs_xml_query}"
@@ -724,7 +723,7 @@ function gfs_get_bridges {
 }
 #************ gfs_get_bridges
 
-function gfs_get_bridge_param {
+function gfs_get_bridge_param() {
   local xml_file=$1
   local nodename=$2
   local bridge=$3
@@ -742,12 +741,12 @@ function gfs_get_bridge_param {
 #  NAME
 #    gfs_get_nic_names
 #  SYNOPSIS
-#    function gfs_get_nic_names(nodeid, nodename, nic, clusterconf)
+#    gfs_get_nic_names(nodeid, nodename, nic, clusterconf)
 #  DESCRIPTION
 #    Returns the nic drivers for the given node if specified in cluster configuration.
 #    If node is left out all drivers will be returned. 
 #  SOURCE
-function gfs_get_nic_names {
+function gfs_get_nic_names() {
 	gfs_get_node_attrs "name" "eth" "$1" "$2" "$3" "$4"
 }
 #*********** gfs_get_nic_names
@@ -756,12 +755,12 @@ function gfs_get_nic_names {
 #  NAME
 #    gfs_get_nic_drivers
 #  SYNOPSIS
-#    function gfs_get_nic_drivers(nodeid, nodename, nic, clusterconf)
+#    gfs_get_nic_drivers(nodeid, nodename, nic, clusterconf)
 #  DESCRIPTION
 #    Returns the nic drivers for the given node if specified in cluster configuration.
 #    If node is left out all drivers will be returned. 
 #  SOURCE
-function gfs_get_nic_drivers {
+function gfs_get_nic_drivers() {
 	gfs_get_node_attrs "driver" "eth" "$1" "$2" "$3" "$4"
 }
 #*********** gfs_get_nic_drivers
@@ -770,12 +769,12 @@ function gfs_get_nic_drivers {
 #  NAME
 #    gfs_get_nic_drivers
 #  SYNOPSIS
-#    function gfs_get_nic_drivers(nodeid, nodename, name, clusterconf)
+#    gfs_get_nic_drivers(nodeid, nodename, name, clusterconf)
 #  DESCRIPTION
 #    Returns the nic drivers for the given node if specified in cluster configuration.
 #    If node is left out all drivers will be returned. 
 #  SOURCE
-function gfs_get_all_drivers {
+function gfs_get_all_drivers() {
 	gfs_get_node_attrs "driver" "" "$1" "$2" "$3" "$4"
 }
 #*********** gfs_get_nic_drivers
@@ -784,12 +783,12 @@ function gfs_get_all_drivers {
 #  NAME
 #    gfs_get_node_attrs
 #  SYNOPSIS
-#    function gfs_get_node_attrs(attr, subpath, nodeid, nodename, name, clusterconf)
+#    gfs_get_node_attrs(attr, subpath, nodeid, nodename, name, clusterconf)
 #  DESCRIPTION
 #    Returns the drivers for the given node if specified in cluster configuration.
 #    If node is left out all drivers will be returned. 
 #  SOURCE
-function gfs_get_node_attrs {
+function gfs_get_node_attrs() {
   local attr=$1
   local subpath=$2
   local nodeid=$3
@@ -802,11 +801,14 @@ function gfs_get_node_attrs {
   if [ -n "$name" ]; then
   	subquery="[@name=\"$name\"]"
   fi
-  local query="/cluster/clusternodes/clusternode[@name=\"$nodename\" or @nodeid=\"$nodeid\"]/com_info/${sub_path}$subquery/@$attr"
+  local xml_cmd_opts="--filename=$xml_file --queriesfile=- --suffix=;"
+  local out=$(
   if [ -z "$nodeid" ] && [ -z "$nodename" ]; then
-    query="/cluster/clusternodes/clusternode/com_info/${subpath}$subquery/@$attr"
-  fi
-  local out=$($xml_cmd -f $xml_file query_value "$query")
+    echo "query=query_value /cluster/clusternodes/clusternode/com_info/${subpath}$subquery/@$attr"
+  else
+    echo "query=query_value /cluster/clusternodes/clusternode[@nodeid=\"$nodeid\"]/com_info/${subpath}$subquery/@$attr"
+    echo "query=query_value /cluster/clusternodes/clusternode[@name=\"$nodename\"]/com_info/${subpath}$subquery/@$attr"
+  fi | $xml_cmd $xml_cmd_opts | cut -f1 -d';')
   if [ -z "$out" ]; then
   	return 1
   else
@@ -819,11 +821,11 @@ function gfs_get_node_attrs {
 #  NAME
 #    gfs_get_drivers
 #  SYNOPSIS
-#    function gfs_get_drivers()
+#    gfs_get_drivers()
 #  DESCRIPTION
 #    Returns the all drivers for this clusterfs. 
 #  SOURCE
-function gfs_get_drivers {
+function gfs_get_drivers() {
 	echo "dlm lock_dlm gfs gfs2 configfs lock_nolock"
 }
 #*********** gfs_get_drivers
@@ -832,13 +834,13 @@ function gfs_get_drivers {
 #  NAME
 #    gfs_load
 #  SYNOPSIS
-#    function gfs_load(lockmethod)
+#    gfs_load(lockmethod)
 #  DESCRIPTION
-#    This function loads all relevant gfs modules
+#    This Function loads all relevant gfs modules
 #  IDEAS
 #  SOURCE
 #
-function gfs_load {
+function gfs_load() {
   ## THIS will be overwritten for rhel5 ##
   local lock_method=$1
 
@@ -873,13 +875,13 @@ function gfs_load {
 #  NAME
 #    gfs_services_start
 #  SYNOPSIS
-#    function gfs_services_start(lockmethod)
+#    gfs_services_start(lockmethod)
 #  DESCRIPTION
-#    This function loads all relevant gfs modules
+#    This Function loads all relevant gfs modules
 #  IDEAS
 #  SOURCE
 #
-function gfs_services_start {
+function gfs_services_start() {
   ## THIS will be overwritten for rhel5 ##
   local chroot_path=$1
   local lock_method=$2
@@ -903,9 +905,9 @@ function gfs_services_start {
 #  NAME
 #    gfs_services_restart_newroot
 #  SYNOPSIS
-#    function gfs_services_restart_newroot()
+#    gfs_services_restart_newroot()
 #  DESCRIPTION
-#    This function starts all needed services in newroot
+#    This Function starts all needed services in newroot
 #  IDEAS
 #  SOURCE
 #
@@ -919,13 +921,13 @@ function gfs_services_restart_newroot() {
 #  NAME
 #    gfs_services_restart
 #  SYNOPSIS
-#    function gfs_services_restart(lockmethod)
+#    gfs_services_restart(lockmethod)
 #  DESCRIPTION
-#    This function loads all relevant gfs modules
+#    This Function loads all relevant gfs modules
 #  IDEAS
 #  SOURCE
 #
-function gfs_services_restart {
+function gfs_services_restart() {
   local old_root=$1
   local new_root=$2
 
@@ -945,13 +947,13 @@ function gfs_services_restart {
 #  NAME
 #    gfs_start_lock_gulm
 #  SYNOPSIS
-#    function gfs_start_lock_gulm
+#    gfs_start_lock_gulm
 #  DESCRIPTION
 #    Function starts the lock_gulm in a changeroot environment
 #  IDEAS
 #  SOURCE
 #
-function gfs_start_lock_gulm {
+function gfs_start_lock_gulm() {
   local chroot_path=$1
   start_service_chroot $chroot_path '/sbin/lock_gulmd'
   touch $chroot_path/var/lock/lockgulmd
@@ -975,13 +977,13 @@ function gfs_start_lock_gulm {
 #  NAME
 #    gfs_start_lock_dlm
 #  SYNOPSIS
-#    function gfs_start_lock_dlm
+#    gfs_start_lock_dlm
 #  DESCRIPTION
 #    Function starts the lock_dlm in a changeroot environment
 #  IDEAS
 #  SOURCE
 #
-function gfs_start_lock_dlm {
+function gfs_start_lock_dlm() {
   udev_start
   return 0
 }
@@ -991,13 +993,13 @@ function gfs_start_lock_dlm {
 #  NAME
 #    gfs_start_cman
 #  SYNOPSIS
-#    function gfs_start_cman
+#    gfs_start_cman
 #  DESCRIPTION
 #    Function starts the cman in a changeroot environment
 #  IDEAS
 #  SOURCE
 #
-function gfs_start_cman {
+function gfs_start_cman() {
   local cmd="cman_tool join -w"
   
   if repository_has_key votes; then
@@ -1022,13 +1024,13 @@ function gfs_start_cman {
 #  NAME
 #    gfs_stop_cman
 #  SYNOPSIS
-#    function gfs_stop_cman
+#    gfs_stop_cman
 #  DESCRIPTION
 #    Function stops the cman in a changeroot environment
 #  IDEAS
 #  SOURCE
 #
-function gfs_stop_cman {
+function gfs_stop_cman() {
   echo_local -n "Leaving the cluster"
   exec_local cman_tool leave remove -w ||
   exec_local cman_tool leave force
@@ -1040,13 +1042,13 @@ function gfs_stop_cman {
 #  NAME
 #    gfs_start_fenced
 #  SYNOPSIS
-#    function gfs_start_fenced {
+#    gfs_start_fenced() {
 #  DESCRIPTION
 #    Function starts the fenced in a changeroot environment
 #  IDEAS
 #  SOURCE
 #
-function gfs_start_fenced {
+function gfs_start_fenced() {
   ## THIS will be overwritten for rhel5 ##
   local chroot_path=$1
   #start_service_chroot $chroot_path 'fenced -c'
@@ -1060,13 +1062,13 @@ function gfs_start_fenced {
 #  NAME
 #    gfs_stop_fenced
 #  SYNOPSIS
-#    function gfs_stop_fenced {
+#    gfs_stop_fenced()
 #  DESCRIPTION
 #    Function stops the fenced in a changeroot environment
 #  IDEAS
 #  SOURCE
 #
-function gfs_stop_fenced {
+function gfs_stop_fenced() {
   local chroot_path=$1
   echo_local "stopping fenced"
   exec_local '/sbin/fence_tool leave -w' && \
@@ -1079,13 +1081,13 @@ function gfs_stop_fenced {
 #  NAME
 #    gfs61_start_ccsd
 #  SYNOPSIS
-#    function gfs_start_ccsd {
+#    gfs_start_ccsd
 #  DESCRIPTION
 #    Function starts the ccsd in nochroot environment
 #  IDEAS
 #  SOURCE
 #
-function gfs_start_ccsd {
+function gfs_start_ccsd() {
   local chroot_path=$1
   start_service_chroot $chroot_path /sbin/ccsd && \
   touch $chroot_path/var/lock/subsys/ccsd 2>/dev/null
@@ -1098,13 +1100,13 @@ function gfs_start_ccsd {
 #  NAME
 #    gfs_restart_ccsd
 #  SYNOPSIS
-#    function gfs_restart_ccsd(old_root, new_root)
+#    gfs_restart_ccsd(old_root, new_root)
 #  DESCRIPTION
 #    Function restarts the ccsd for removing the deps on /initrd
 #  IDEAS
 #  SOURCE
 #
-function gfs_restart_ccsd {
+function gfs_restart_ccsd() {
    old_root=$1
    new_root=$2
 
@@ -1136,13 +1138,13 @@ function gfs_restart_ccsd {
 #  NAME
 #    gfs_start_clvmd
 #  SYNOPSIS
-#    function gfs_start_clvmd(chroot)
+#    gfs_start_clvmd(chroot)
 #  DESCRIPTION
 #    Function starts the clvmd in a chroot environment
 #  IDEAS
 #  SOURCE
 #
-function gfs_start_clvmd {
+function gfs_start_clvmd() {
    local chroot_path=$1
 
    #echo_local -n "Starting clvmd ($chroot_path) "
@@ -1164,13 +1166,13 @@ function gfs_start_clvmd {
 #  NAME
 #    gfs_stop_clvmd
 #  SYNOPSIS
-#    function gfs_stop_clvmd(chroot)
+#    gfs_stop_clvmd(chroot)
 #  DESCRIPTION
 #    Function stops the clvmd in a chroot environment
 #  IDEAS
 #  SOURCE
 #
-function gfs_stop_clvmd {
+function gfs_stop_clvmd() {
    chroot_path=$1
 
    echo_local -n "Stopping clvmd ($chroot_path) "
@@ -1189,13 +1191,13 @@ function gfs_stop_clvmd {
 #  NAME
 #    gfs_restart_clvmd
 #  SYNOPSIS
-#    function gfs_restart_clvmd(old_root, new_root)
+#    gfs_restart_clvmd(old_root, new_root)
 #  DESCRIPTION
 #    Function restarts the clvmd for removing the deps on /initrd
 #  IDEAS
 #  SOURCE
 #
-function gfs_restart_clvmd {
+function gfs_restart_clvmd() {
    local old_root=$1
    local new_root=$2
 
@@ -1220,7 +1222,7 @@ function gfs_restart_clvmd {
 #  IDEAS
 #  SOURCE
 #
-function gfs_restart_fenced {
+function gfs_restart_fenced() {
    old_root=$1
    new_root=$2
 
@@ -1256,13 +1258,13 @@ function gfs_restart_fenced {
 #  NAME
 #    gfs_start_qdiskd
 #  SYNOPSIS
-#    function gfs_start_qdiskd {
+#    gfs_start_qdiskd
 #  DESCRIPTION
 #    Function starts the qdiskd in chroot environment
 #  IDEAS
 #  SOURCE
 #
-function gfs_start_qdiskd {
+function gfs_start_qdiskd() {
   ## THIS will be overwritten for rhel5 ##
   local chroot_path=$1
 
@@ -1283,13 +1285,13 @@ function gfs_start_qdiskd {
 #  NAME
 #    gfs_start_groupd
 #  SYNOPSIS
-#    function gfs_start_groupd {
+#    gfs_start_groupd
 #  DESCRIPTION
 #    Function starts the groupd in chroot environment
 #  IDEAS
 #  SOURCE
 #
-function gfs_start_groupd {
+function gfs_start_groupd() {
   local chroot_path=$1
   start_service_chroot $chroot_path  /sbin/groupd && \
   touch $chroot_path/var/lock/subsys/groupd 2>/dev/null
@@ -1301,14 +1303,14 @@ function gfs_start_groupd {
 #  NAME
 #    gfs_start_dlm_controld
 #  SYNOPSIS
-#    function gfs_start_dlm_controld {
+#    gfs_start_dlm_controld
 #
 #  DESCRIPTION
 #    Function starts the dlm_controld in chroot environment
 #  IDEAS
 #  SOURCE
 #
-function gfs_start_dlm_controld {
+function gfs_start_dlm_controld() {
   local chroot_path=$1
   start_service_chroot $chroot_path /sbin/dlm_controld && \
   touch $chroot_path/var/lock/subsys/dlmcontrold 2>/dev/null
@@ -1320,14 +1322,14 @@ function gfs_start_dlm_controld {
 #  NAME
 #    gfs_start_gfs_controld
 #  SYNOPSIS
-#    function gfs_start_gfs_controld {
+#    gfs_start_gfs_controld
 #
 #  DESCRIPTION
 #    Function starts the gfs_controld in chroot environment
 #  IDEAS
 #  SOURCE
 #
-function gfs_start_gfs_controld {
+function gfs_start_gfs_controld() {
   local chroot_path=$1
   start_service_chroot $chroot_path /sbin/gfs_controld && \
   touch $chroot_path/var/lock/subsys/gfscontrold 2>/dev/null
@@ -1341,12 +1343,12 @@ function gfs_start_gfs_controld {
 #  NAME
 #    gfs_checkhosts_alive
 #  SYNOPSIS
-#    function gfs_checkhosts_alive()
+#    gfs_checkhosts_alive()
 #  MODIFICATION HISTORY
 #  IDEAS
 #  SOURCE
 #
-function gfs_checkhosts_alive {
+function gfs_checkhosts_alive() {
 #   local xml_file=/etc/cluster/cluster.conf
 #   local twonodes=$($ccs_xml_query -f $xml_file -q query_value cluster/cman/@two_node 2>/dev/null) || local twonodes=0
 #   if [ $twonodes -eq 1 ]; then
@@ -1361,12 +1363,12 @@ function gfs_checkhosts_alive {
 #  NAME
 #    gfs_init
 #  SYNOPSIS
-#    function gfs_init(start|stop|restart) rootfs CHROOT_PATH 
+#    gfs_init(start|stop|restart) rootfs CHROOT_PATH 
 #  MODIFICATION HISTORY
 #  IDEAS
 #  SOURCE
 #
-function gfs_init {
+function gfs_init() {
 	local action=$1
 	local CHROOT_PATH=$2
 	local rootfs="gfs"
@@ -1393,12 +1395,12 @@ function gfs_init {
 #  NAME
 #    gfs_fsck_needed
 #  SYNOPSIS
-#    function gfs_fsck_needed(root, rootfs)
+#    gfs_fsck_needed(root, rootfs)
 #  DESCRIPTION
 #    Will always return 1 for no fsck needed. This can only be triggered by rootfsck 
 #    bootoption.
 #
-function gfs_fsck_needed {
+function gfs_fsck_needed() {
 	return 1
 }
 #********* gfs_fsck_needed
@@ -1407,12 +1409,12 @@ function gfs_fsck_needed {
 #  NAME
 #    gfs_fsck
 #  SYNOPSIS
-#    function gfs_fsck_needed(root, rootfs)
+#    gfs_fsck_needed(root, rootfs)
 #  DESCRIPTION
-#    If this function is called. It will always execute an gfsfsck on the given root.
-#    Be very very carefull with this function!!
+#    If this Function is called. It will always execute an gfsfsck on the given root.
+#    Be very very carefull with this Function!!
 #
-function gfs_fsck {
+function gfs_fsck() {
 	local root="$1"
 	local fsck="fsck.gfs"
 	local options="-y"
@@ -1423,12 +1425,15 @@ function gfs_fsck {
 #********* gfs_fsck
 
 # for gfs we need a chroot
-function gfs_chroot_needed {
+function gfs_chroot_needed() {
 	return 0
 }
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.72  2010-02-16 10:05:15  marc
+# Revision 1.73  2010-02-17 09:48:06  marc
+# typos
+#
+# Revision 1.72  2010/02/16 10:05:15  marc
 # added cman_tool leave force if leave did not work
 #
 # Revision 1.71  2010/02/15 14:06:17  marc
