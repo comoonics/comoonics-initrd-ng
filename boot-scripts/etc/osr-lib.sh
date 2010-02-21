@@ -694,5 +694,4 @@ osr_auto_hosts() {
   done 
 }
 
-[ -z "$cluster_conf" ] && cluster_conf=$(osr_nodeids_file)
-repository_store_value osrquerymap /etc/comoonics/querymap.cfg 
+[ -z "$cluster_conf" ] && [ -f $(osr_nodeids_file) ] && cluster_conf=$(osr_nodeids_file)
