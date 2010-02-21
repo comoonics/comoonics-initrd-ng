@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.88 2010-02-05 12:46:24 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.89 2010-02-21 12:05:56 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.88 2010-02-05 12:46:24 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.89 2010-02-21 12:05:56 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -88,7 +88,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.88 $ $Date: 2010-02-05 12:46:24 $'
+echo_local 'Internal Version $Revision: 1.89 $ $Date: 2010-02-21 12:05:56 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -189,9 +189,9 @@ fi
 getParameter ro $(clusterfs_getdefaults readonly) &>/dev/null
 getParameter rw &>/dev/null
 if [ -n "$(repository_get_value ro)" ]; then
-  repository_append_value mount_opts "ro"
+  repository_append_value mountopts "ro"
 elif [ -n "$(repository_get_value rw)" ]; then
-  repository_append_value mount_opts "rw"
+  repository_append_value mountopts "rw"
 fi
 success
 
@@ -567,7 +567,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.88  2010-02-05 12:46:24  marc
+# Revision 1.89  2010-02-21 12:05:56  marc
+# there are no mount_opts but mountopts
+#
+# Revision 1.88  2010/02/05 12:46:24  marc
 # - removed format characters or tabs or newlines where unnecessary
 # - added being able to mount more filesystems other then only /
 #
