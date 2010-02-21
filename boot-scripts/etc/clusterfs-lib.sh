@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.43 2010-02-17 09:45:43 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.44 2010-02-21 12:00:23 marc Exp $
 #
 # @(#)$File$
 #
@@ -48,6 +48,9 @@ repository_has_key cdsl_local_dir || repository_store_value cdsl_local_dir "/cds
 #    where the local dir for cdsls can be found
 repository_has_key cdsl_prefix || repository_store_value cdsl_prefix "/cluster/cdsl"
 #******** cdsl_prefix
+
+repository_has_key osrquerymap || repository_store_value osrquerymap /etc/comoonics/querymap.cfg 
+
 
 #****f* boot-scripts/etc/clusterfs-lib.sh/getClusterFSParameters
 #  NAME
@@ -557,9 +560,9 @@ function cc_get_mountopts {
   local rootfs=$(repository_get_value rootfs)
   local clutype=$(repository_get_value clutype)
    
-  typeset -f ${clutype}_get_mountopts >/dev/null 2>/dev/null
+  typeset -f ${rootfs}_get_mountopts >/dev/null 2>/dev/null
   if [ $? -eq 0 ]; then
-    ${clutype}_get_mountopts $cluster_conf $nodename
+    ${rootfs}_get_mountopts $cluster_conf $nodename
   else
     ${rootfs}_getdefaults mountopts
   fi
@@ -721,7 +724,7 @@ ${clutype}_get_syslogfilter $@
 #
 function cc_init {
   local proc=
-  local clutype=$2
+  local clutype=$3
   [ -z "$clutype" ] && clutype=$(repository_get_value clutype)
 
   typeset -f ${clutype}_init >/dev/null 2>/dev/null
@@ -1144,7 +1147,7 @@ function clusterfs_get_userspace_procs {
 #
 function clusterfs_init {
   local proc=
-  local rootfs=$2
+  local rootfs=$3
   [ -z "$rootfs" ] && rootfs=$(repository_get_value rootfs)
 
   typeset -f ${rootfs}_init >/dev/null 2>/dev/null
@@ -1395,7 +1398,10 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.43  2010-02-17 09:45:43  marc
+# Revision 1.44  2010-02-21 12:00:23  marc
+# added default for querymap
+#
+# Revision 1.43  2010/02/17 09:45:43  marc
 # typedef => typeset in getCluType fixed for type osr
 #
 # Revision 1.42  2010/02/07 20:34:35  marc
