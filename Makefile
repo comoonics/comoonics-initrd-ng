@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.58 2010-02-16 10:07:15 marc Exp $
+# $Id: Makefile,v 1.59 2010-02-21 12:10:13 marc Exp $
 #
 # @(#)$file$
 #
@@ -538,12 +538,12 @@ rpmsign:
 
 .PHONY: channelcopy
 channelcopy:
+	# Create an array of all CHANNELDIRS distros (second dir in path) and one without numbers at the end ready to be feeded in find
 	@for channeldir in $(CHANNELDIRS); do \
 		TMPFILE="$(CHANNELBASEDIR)/$$channeldir/.channelcopy"$$$$; \
 		touch $$TMPFILE; \
 		sleep 1; \
 		echo "Copying rpms to channel $$channeldir..$$TMPFILE"; \
-		# Create an array of all CHANNELDIRS distros (second dir in path) and one without numbers at the end ready to be feeded in find
 		includeddistros=`echo -n $$channeldir | awk -F/ '{ print "-name \"*"$$2"*\" -or -name \"*"gensub("[0-9]+$$","","",$$2)"-*\" -or "; }'`; \
 		excludeddistros=`echo -n $(ALL_DISTROS) | awk -F/ 'BEGIN { RS=" "; } $$0=="'$$includedistro'" { next; } { print "-not -name \"*"$$0"*\" -and -not -name \"*"gensub("[0-9]+$$","","",$$0)"*\" -and "; }'`; \
 		for subdir in $(CHANNELSUBDIRS); do \
@@ -581,7 +581,10 @@ channel: rpm channelcopy channelbuild
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.58  2010-02-16 10:07:15  marc
+# Revision 1.59  2010-02-21 12:10:13  marc
+# moved a comment
+#
+# Revision 1.58  2010/02/16 10:07:15  marc
 # new versions
 #
 # Revision 1.57  2010/02/09 21:45:19  marc
