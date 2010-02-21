@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: com-halt.sh,v 1.7 2010-02-16 10:04:49 marc Exp $
+# $Id: com-halt.sh,v 1.8 2010-02-21 12:05:19 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/com-halt.sh
 #  NAME
 #    com-halt.sh
-#    $Id: com-halt.sh,v 1.7 2010-02-16 10:04:49 marc Exp $
+#    $Id: com-halt.sh,v 1.8 2010-02-21 12:05:19 marc Exp $
 #  DESCRIPTION
 #    script called from /etc/init.d/halt
 #  USAGE
@@ -38,7 +38,6 @@ CHROOT_PATH=$(/opt/atix/comoonics-bootimage/manage_chroot.sh -p 2>/dev/null)
 if [ -n "$CHROOT_PATH" ] && [ -d $CHROOT_PATH/mnt/newroot ]; then
   mount -o remount,rw $CHROOT_PATH &>/dev/null
   mount -o remount,rw / &>/dev/null
-  bash
   
   # include libraries
   predir=/opt/atix/comoonics-bootimage/boot-scripts
@@ -75,7 +74,10 @@ if [ -n "$CHROOT_PATH" ] && [ -d $CHROOT_PATH/mnt/newroot ]; then
 fi
 ####################
 # $Log: com-halt.sh,v $
-# Revision 1.7  2010-02-16 10:04:49  marc
+# Revision 1.8  2010-02-21 12:05:19  marc
+# kicked an old bash
+#
+# Revision 1.7  2010/02/16 10:04:49  marc
 # - remount / and chroot rw if they were mounted ro.
 #
 # Revision 1.6  2010/02/15 14:05:53  marc
