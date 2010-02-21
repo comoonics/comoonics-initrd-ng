@@ -28,12 +28,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage-initscripts-el4.spec,v 1.14 2010-02-16 10:07:15 marc Exp $
+# $Id: comoonics-bootimage-initscripts-el4.spec,v 1.15 2010-02-21 12:08:14 marc Exp $
 #
 ##
 ##
 
 %define _user root
+%define _sysconfdir /etc
 %define CONFIGDIR /%{_sysconfdir}/comoonics
 %define APPDIR    /opt/atix/%{name}
 %define ENVDIR    /etc/profile.d
@@ -72,6 +73,7 @@ Initscripts used by the OSR cluster environment.
 
 %install
 install -d -m 755 $RPM_BUILD_ROOT/%{INITDIR}
+install -d -m 755 $RPM_BUILD_ROOT/%{SYSCONFIGDIR}
 install -m755 initscripts/rhel4/bootsr $RPM_BUILD_ROOT/%{INITDIR}/bootsr
 install -m755 initscripts/rhel4/ccsd-chroot $RPM_BUILD_ROOT/%{INITDIR}/ccsd-chroot
 install -m755 initscripts/rhel4/fenced-chroot $RPM_BUILD_ROOT/%{INITDIR}/fenced-chroot
@@ -140,6 +142,7 @@ chkconfig --del bootsr
 %attr(755, root, root) %{INITDIR}/bootsr
 %attr(755, root, root) %{INITDIR}/fenced-chroot
 %attr(755, root, root) %{INITDIR}/ccsd-chroot
+%attr(644, root, root) %{SYSCONFIGDIR}/halt-overwrite
 
 %changelog
 * Tue Feb 16 2010 Marc Grimme <grimme@atix.de> 1.4-5
@@ -162,7 +165,10 @@ chkconfig --del bootsr
 - first revision
 # ------
 # $Log: comoonics-bootimage-initscripts-el4.spec,v $
-# Revision 1.14  2010-02-16 10:07:15  marc
+# Revision 1.15  2010-02-21 12:08:14  marc
+# added halt-overwrite to /etc/sysconfig.
+#
+# Revision 1.14  2010/02/16 10:07:15  marc
 # new versions
 #
 # Revision 1.13  2010/02/07 20:35:13  marc
