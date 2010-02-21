@@ -7,7 +7,7 @@
 #  DESCRIPTION
 #*******
 #
-# $Id: manage_chroot.sh,v 1.15 2010-02-15 14:20:05 marc Exp $
+# $Id: manage_chroot.sh,v 1.16 2010-02-21 12:08:50 marc Exp $
 #
 # @(#)$File$
 #
@@ -51,7 +51,7 @@ if ! [ -e $(dirname $0)/boot-scripts/etc/std-lib.sh ]; then
 fi
 
 source $(dirname $0)/boot-scripts/etc/std-lib.sh
-sourceLibs $(dirname $0)/boot-scripts
+source $(dirname $0)/boot-scripts/etc/repository-lib.sh
 repository_clear
 sourceLibs $(dirname $0)/boot-scripts
 clutype=$(repository_get_value clutype)
