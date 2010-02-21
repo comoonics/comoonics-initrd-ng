@@ -6,7 +6,7 @@
 #  DESCRIPTION
 #*******
 #
-# $Id: create-gfs-initrd-generic.sh,v 1.27 2010-02-05 12:52:52 marc Exp $
+# $Id: create-gfs-initrd-generic.sh,v 1.28 2010-02-21 12:09:32 marc Exp $
 #
 # @(#)$File$
 #
@@ -122,7 +122,7 @@ function getoptions() {
     while getopts LUoRFVvhlpPm:fd:s:r:b:A:D:M: option ; do
 	case "$option" in
 	    v) # version
-		echo "$0 Version "'$Revision: 1.27 $'
+		echo "$0 Version "'$Revision: 1.28 $'
 		exit 0
 		;;
 	    h) # help
@@ -439,11 +439,11 @@ if [ -z "$update" ] || [ -n "$kernel" ]; then
     else
       args=$(get_global_filters $filters_filename | awk '{printf(" -regex %s -or", $0);} END { print " -false"; }')
       if [ -n "$verbose" ]; then
-      	echo_local -N "Calling find with find /lib/modules/$_kernel -type f -not \( $args \)"
+      	echo_local -N "Calling find with find /lib/modules/$_kernel -type f -or -type l -not \( $args \)"
 	  fi
 	  # no globbing
 	  set -f
-      for file in $(find /lib/modules/$_kernel -type f -not \( $args \) ); do
+      for file in $(find /lib/modules/$_kernel -type f -or -type l -not \( $args \) ); do
 		if [ -n "$verbose" ]; then
 			echo_local -N "Copying module $file"
 		fi
@@ -514,7 +514,10 @@ ls -lk $initrdname
 
 ##########################################
 # $Log: create-gfs-initrd-generic.sh,v $
-# Revision 1.27  2010-02-05 12:52:52  marc
+# Revision 1.28  2010-02-21 12:09:32  marc
+# fixed bug in copy of kernel modules were linked modules would not be copied.
+#
+# Revision 1.27  2010/02/05 12:52:52  marc
 # - added pre and postdo functionality where skripts/programs might be executed before or after building initrd
 # - -p/-P toggles if pre and postscripts should be executed or not.
 # - added -N to echo_local, echo_local_debug where appropriate
