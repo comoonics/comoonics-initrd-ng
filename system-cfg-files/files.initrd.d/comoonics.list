@@ -1,2 +1,3 @@
 # Comoonics files
 /etc/cluster/cluster.conf
+/etc/comoonics/querymap.cfg
