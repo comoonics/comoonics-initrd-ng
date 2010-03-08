@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.44 2010-02-21 12:00:23 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.45 2010-03-08 13:08:36 marc Exp $
 #
 # @(#)$File$
 #
@@ -222,9 +222,9 @@ function getClusterParameter() {
 		repository_get_value $name
 	else
 		out=$(cc_get_$name $cluster_conf $nodeid 2>/dev/null)
-		[ $? -eq 0 ] && [ -n "$out" ] || cc_get $cluster_conf $name $nodeid 2>/dev/null
-		[ $? -eq 0 ] && [ -n "$out" ] || cc_get_$name $cluster_conf $nodename 2>/dev/null
-		[ $? -eq 0 ] && [ -n "$out" ] || cc_get $cluster_conf $name $nodename 2>/dev/null
+		[ $? -eq 0 ] && [ -n "$out" ] || out=$(cc_get $cluster_conf $name $nodeid 2>/dev/null)
+		[ $? -eq 0 ] && [ -n "$out" ] || out=$(cc_get_$name $cluster_conf $nodename 2>/dev/null)
+		[ $? -eq 0 ] && [ -n "$out" ] || out=$(cc_get $cluster_conf $name $nodename 2>/dev/null)
 		echo -n $out
 		test -n "$out"
 	fi
@@ -1398,7 +1398,10 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.44  2010-02-21 12:00:23  marc
+# Revision 1.45  2010-03-08 13:08:36  marc
+# bug in getClusterParameter that would not return in special cases.
+#
+# Revision 1.44  2010/02/21 12:00:23  marc
 # added default for querymap
 #
 # Revision 1.43  2010/02/17 09:45:43  marc
