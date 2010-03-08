@@ -50,7 +50,7 @@ Requires: comoonics-bootimage >= 1.4
 Requires: comoonics-bootimage-listfiles-sles11
 Requires: sysvinit-comoonics
 #Conflicts:
-Release: 2.sles11
+Release: 6.sles11
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -77,17 +77,6 @@ install -m755 initscripts/sles11/bootsr $RPM_BUILD_ROOT/%{INITDIR}/bootsr
 rm -rf %{buildroot}
 
 %postun
-
-if [ "$1" -eq 0 ]; then
-  echo "Postuninstalling comoonics-bootimage-initscripts"
-  root_fstype=$(mount | grep "/ " | awk '
-BEGIN { exit_c=1; }
-{ if ($5) {  print $5; exit_c=0; } }
-END{ exit exit_c}')
-  if [ "$root_fstype" != "gfs" ]; then
-	/sbin/chkconfig --del bootsr
-  fi
-fi
 if [ -L /etc/init.d/halt.local ]; then
    rm /etc/init.d/halt.local
 fi
@@ -127,12 +116,20 @@ EOF
 /bin/true
 
 %preun
-chkconfig --del bootsr
+true
 
 %files
 %attr(755, root, root) %{INITDIR}/bootsr
 
 %changelog
+* Tue Feb 23 2010 Marc Grimme <grimme@atix.de> 1.4-6.sles11
+- more backports with cdsl mounts and enable bootsr
+* Tue Feb 23 2010 Marc Grimme <grimme@atix.de> 1.4-5.sles11
+- more backports with cdsl mounts and enable bootsr
+* Tue Feb 23 2010 Marc Grimme <grimme@atix.de> 1.4-4.sles11
+- more backports with cdsl mounts and enable bootsr
+* Tue Feb 23 2010 Marc Grimme <grimme@atix.de> 1.4-3.sles11
+- Backported bootsr from RHEL5
 * Mon Sep 28 2009 Marc Grimme <grimme@atix.de> 1.4-1.sles11
 - Finalized new version
 - added /etc/init.d/halt.local link instead of using boot.localfs

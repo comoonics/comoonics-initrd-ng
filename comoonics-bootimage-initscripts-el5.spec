@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.24 2010-02-07 20:35:13 marc Exp $
+# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.25 2010-03-08 19:35:14 marc Exp $
 #
 ##
 ##
@@ -52,7 +52,7 @@ Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-rhel
 Requires: comoonics-bootimage-listfiles-rhel5
 #Conflicts: 
-Release: 14.rhel5
+Release: 15.rhel5
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -231,6 +231,8 @@ fi
 rm -rf %{buildroot}
 
 %changelog
+* Tue Feb 23 2010 Marc Grimme <grimme@atix.de> 1.4-15el5
+- Fixes in check_mtab
 * Fri Oct 09 2009 Marc Grimme <grimme@atix.de> 1.4-13el5
 - removed halt patches as the are not needed with /sbin/halt.local
 * Thu Oct 08 2009 Marc Grimme <grimme@atix.de> 1.4-12el5
@@ -269,7 +271,10 @@ rm -rf %{buildroot}
 - first revision
 # ------
 # $Log: comoonics-bootimage-initscripts-el5.spec,v $
-# Revision 1.24  2010-02-07 20:35:13  marc
+# Revision 1.25  2010-03-08 19:35:14  marc
+# comoonics-4.6-rc1
+#
+# Revision 1.24  2010/02/07 20:35:13  marc
 # - latest versions
 #
 # Revision 1.23  2009/08/11 12:17:10  marc

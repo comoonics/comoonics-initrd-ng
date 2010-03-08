@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.112 2010-02-16 10:07:15 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.113 2010-03-08 19:35:14 marc Exp $
 #
 ##
 ##
@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 41
+Release: 45
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -74,7 +74,7 @@ Scripts for creating an initrd in a OSR cluster environment
 
 %package extras-osr
 Version: 0.1
-Release: 1
+Release: 3
 Requires: comoonics-bootimage >= 1.3-1
 Summary: Extra for cluster configuration via osr
 Group:   System Environment/Base
@@ -85,7 +85,7 @@ Extra for cluster configuration via osr.
 
 %package extras-network
 Version: 0.1
-Release: 2
+Release: 3
 Requires: comoonics-bootimage >= 1.3-1
 Summary: Listfiles for special network configurations (vlan)
 Group:   System Environment/Base
@@ -96,7 +96,7 @@ Extra listfiles for special network configurations
 
 %package extras-nfs
 Version: 0.1
-Release: 14
+Release: 15
 Requires: comoonics-bootimage >= 1.4
 Summary: Listfiles for nfs sharedroot configurations
 Group:   System Environment/Base
@@ -107,7 +107,7 @@ Extra listfiles for nfs sharedroot configurations
 
 %package extras-ocfs2
 Version: 0.1
-Release: 6
+Release: 7
 Requires: comoonics-bootimage >= 1.4
 Summary: Listfiles for ocfs2 sharedroot configurations
 Group:   System Environment/Base
@@ -119,7 +119,7 @@ Extra listfiles for ocfs2 sharedroot configurations
 # Overwritten by extras-dm-multipath-rhel so we add deps
 %package extras-dm-multipath
 Version: 0.1
-Release: 3
+Release: 5
 Requires: comoonics-bootimage >= 1.3-36
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-rhel
@@ -133,7 +133,7 @@ Extra listfiles for device mapper multipath OSR configurations
 
 %package extras-md
 Version: 0.1
-Release: 1
+Release: 2
 Requires: comoonics-bootimage >= 1.3-46
 Summary: Listfiles for md support
 Group:   System Environment/Base
@@ -144,7 +144,7 @@ Extra listfiles for md in OSR configurations
 
 %package extras-dm-multipath-rhel
 Version: 0.1
-Release: 2
+Release: 3
 Requires: comoonics-bootimage >= 1.3-36
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-rhel
@@ -157,7 +157,7 @@ Extra listfiles for device mapper multipath OSR configurations for RHEL
 
 %package extras-dm-multipath-fedora
 Version: 0.1
-Release: 2
+Release: 3
 Requires: comoonics-bootimage >= 1.3-41
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-fedora
@@ -170,7 +170,7 @@ Extra listfiles for device mapper multipath OSR configurations for fedora
 
 %package extras-dm-multipath-sles
 Version: 0.1
-Release: 1
+Release: 2
 Requires: comoonics-bootimage >= 1.4
 Requires: multipath-tools
 Summary: Listfiles for device mapper multipath OSR configurations for SLES
@@ -182,7 +182,7 @@ Extra listfiles for device mapper multipath OSR configurations for SLES
 
 %package extras-rdac-multipath
 Version: 0.1
-Release: 3
+Release: 4
 Requires: comoonics-bootimage >= 1.3-8
 Summary: Listfiles for rdac multipath sharedroot configurations
 Group:   System Environment/Base
@@ -193,7 +193,7 @@ Extra listfiles for rdac multipath OSR configurations
 
 %package extras-xen
 Version: 0.1
-Release: 5
+Release: 6
 Requires: comoonics-bootimage >= 1.3-14
 Summary: Listfiles for xen support in the open-sharedroot cluster
 Group:   System Environment/Base
@@ -204,7 +204,7 @@ listfiles for xen support in the OSR cluster
 
 %package extras-iscsi
 Version: 0.1
-Release: 4
+Release: 5
 Requires: comoonics-bootimage >= 1.3-33
 Summary: Listfiles for iscsi support in the open-sharedroot cluster
 Group:   System Environment/Base
@@ -215,7 +215,7 @@ ISCSI support in the OSR cluster
 
 %package extras-drbd
 Version: 0.1
-Release: 3
+Release: 4
 Requires: comoonics-bootimage >= 1.3-33
 Summary: Listfiles for drbd support in the open-sharedroot cluster
 Group:   System Environment/Base
@@ -226,7 +226,7 @@ DRBD support in the OSR cluster
 
 %package extras-glusterfs
 Version: 0.1
-Release: 2
+Release: 3
 Requires: comoonics-bootimage >= 1.3-44
 Summary: Extras for glusterfs support in the open-sharedroot cluster
 Group:   System Environment/Base
@@ -237,7 +237,7 @@ GlusterFS support in the OSR cluster
 
 %package extras-sysctl
 Version: 0.1
-Release: 1
+Release: 2
 Requires: comoonics-bootimage >= 1.3-44
 Summary: Extras for sysctl support in the open-sharedroot cluster
 Group:   System Environment/Base
@@ -248,7 +248,7 @@ Sysctl support in the OSR cluster
 
 %package extras-syslog
 Version: 0.1
-Release: 4
+Release: 5
 Requires: comoonics-bootimage >= 1.4-27
 Summary: Syslog implementation for osr
 Group:   System Environment/Base
@@ -258,7 +258,7 @@ Syslog implementation for osr. Supports syslog classic, syslog-ng, rsyslog (See 
 
 %package listfiles-all
 Version: 0.1
-Release: 11
+Release: 13
 Requires: comoonics-bootimage >= 1.3-36
 Group:   System Environment/Base
 Summary: OSR listfilesfiles for all distributions 
@@ -269,7 +269,7 @@ OSR Listfiles that are only relevant for all linux distributions
 
 %package listfiles-rhel
 Version: 0.1
-Release: 6
+Release: 7
 Requires: comoonics-bootimage >= 1.3-36
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-all
@@ -283,7 +283,7 @@ OSR extra files that are only relevant for RHEL Versions
 
 %package listfiles-fedora
 Version: 0.1
-Release: 9
+Release: 10
 Requires: comoonics-bootimage >= 1.3-41
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-all
@@ -296,7 +296,7 @@ OSR extra files that are only relevant for Fedora Versions
 
 %package listfiles-fedora-nfs
 Version: 0.1
-Release: 5
+Release: 6
 Requires: comoonics-bootimage-listfiles-fedora
 Group: System Environment/Base
 Summary: Extrafiles for Fedora Core NFS support 
@@ -307,7 +307,7 @@ OSR extra files that are only relevant for Fedora Versions and nfs support
 
 %package listfiles-rhel4
 Version: 0.1
-Release: 2
+Release: 3
 Requires: comoonics-bootimage >= 1.3-36
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-rhel
@@ -321,7 +321,7 @@ OSR extra files that are only relevant for RHEL4
 
 %package listfiles-rhel5
 Version: 0.1
-Release: 4
+Release: 5
 Requires: comoonics-bootimage >= 1.3-36
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-rhel
@@ -335,7 +335,7 @@ OSR extra files that are only relevant for RHEL4
 
 %package listfiles-sles
 Version: 0.1
-Release: 5
+Release: 6
 Requires: comoonics-bootimage >= 1.3-37
 Requires: /etc/SuSE-release
 Requires: comoonics-bootimage-listfiles-all
@@ -349,7 +349,7 @@ OSR extra files that are only relevant for Novell SLES 10
 
 %package listfiles-sles10
 Version: 0.1
-Release: 3
+Release: 4
 Requires: comoonics-bootimage >= 1.4-28
 Requires: /etc/SuSE-release
 Requires: comoonics-bootimage-listfiles-sles
@@ -363,10 +363,10 @@ OSR extra files that are only relevant for Novell SLES 10
 
 %package listfiles-sles11
 Version: 0.1
-Release: 2
+Release: 4
 Requires: comoonics-bootimage >= 1.4-27
 Requires: /etc/SuSE-release
-Requires: comoonics-bootimage-listfiles-all
+Requires: comoonics-bootimage-listfiles-sles
 Group: System Environment/Base
 Summary: Extrafiles for Novell SuSE Enterprise Server
 Conflicts: comoonics-bootimage-listfiles-rhel 
@@ -377,7 +377,7 @@ OSR extra files that are only relevant for Novell SLES 11
 
 %package listfiles-fenceacksv-plugins
 Version: 0.1
-Release: 3
+Release: 4
 Requires: comoonics-bootimage >= 1.3-20
 Requires: comoonics-cs-sysreport-templates
 Requires: comoonics-fenceacksv-py
@@ -391,7 +391,7 @@ OSR extrafiles for plugins in fenceacksv.
 
 %package listfiles-syslogd
 Version: 0.1
-Release: 1
+Release: 2
 Requires: comoonics-bootimage-extras-syslog
 Summary: Syslog listfiles for syslog classic
 Group:   System Environment/Base
@@ -402,7 +402,7 @@ Syslog listfiles for syslog classic
 
 %package listfiles-rsyslogd
 Version: 0.1
-Release: 1
+Release: 2
 Requires: comoonics-bootimage-extras-syslog
 Summary: Syslog listfiles for the rsyslog daemon
 Group:   System Environment/Base
@@ -413,7 +413,7 @@ Syslog listfiles for rsyslog daemon
 
 %package listfiles-syslog-ng
 Version: 0.1
-Release: 1
+Release: 2
 Requires: comoonics-bootimage-extras-syslog
 Summary: Syslog listfiles for the syslog-ng daemon
 Group:   System Environment/Base
@@ -422,20 +422,20 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 %description listfiles-syslog-ng
 Syslog listfiles for syslog-ng daemon
 
-%package listfiles-fencevirsh
+%package listfiles-fencelib
 Version: 0.1
 Release: 1
-Requires: comoonics-bootimage-extras-syslog
-Summary: Syslog listfiles for the virsh fenceagent
+Requires: comoonics-bootimage
+Summary: Listfiles for Fencelibs
 Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description listfiles-fencevirsh
-Listfiles for the virsh fenceagent to be imported in the bootimage.
+Listfiles for the fencelibs to be imported in the bootimage.
 
 %package compat
 Version: 0.1
-Release: 2
+Release: 3
 Requires: comoonics-bootimage >= 1.3-1
 Summary: Files needed for compatibility to 1.2 releases
 Group:   System Environment/Base
@@ -446,7 +446,7 @@ OSR files needed for the compatibility to 1.2 releases
 
 %package fenceacksv
 Version: 0.3
-Release: 7
+Release: 8
 Requires: comoonics-fenceacksv-py
 Requires: comoonics-bootimage >= 1.3-1
 Requires: comoonics-tools-py
@@ -459,7 +459,7 @@ The Fenceackserver is a service for last resort actions
 
 %package fenceclient-ilo
 Version: 0.1
-Release: 19
+Release: 20
 Summary: An alternative fence client for ilo cards of HP servers.
 Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
@@ -469,7 +469,7 @@ An alternative fence client for ilo cards of HP servers.
 
 %package fenceclient-ilomp
 Version: 0.1
-Release: 2
+Release: 3
 Summary: A fence client for iloMP cards of HP inegrity servers.
 Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
@@ -679,6 +679,7 @@ fi
 %dir %{CONFIGDIR}/bootimage-chroot/rpms.initrd.d
 
 %config(noreplace) %attr(0644, root, root) %{CONFIGDIR}/comoonics-bootimage.cfg
+%config(noreplace) %attr(0644, root, root) %{CONFIGDIR}/querymap.cfg
 
 %doc %attr(0644, root, root) CHANGELOG
 
@@ -687,7 +688,6 @@ fi
 
 %files extras-osr
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/osr-lib.sh
-%config(noreplace) %attr(0644, root, root) %{CONFIGDIR}/querymap.cfg
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/01-create-mapfiles.sh
 
 %files extras-network
@@ -916,6 +916,18 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 1.4-45
+- first version for comoonics-4.6-rc1 
+* Tue Feb 23 2010 Marc Grimme <grimme@atix.de> 1.4-44
+- Bugfix with readonly filesystem
+* Tue Feb 23 2010 Marc Grimme <grimme@atix.de> 1.4-43
+- Fixed bug with rdac multipath
+- Fixed bug with parameter detection
+- added bonding and vlans for sles
+* Sun Feb 21 2010 Marc Grimme <grimme@atix.de> 1.4-42
+- Moved the querymap from extras-osr to here
+- Fixed bug in copy of kernel modules
+- SLES10/SLES11 support for bonding and vlans
 * Tue Feb 15 2010 Marc Grimme <grimme@atix.de> 1.4-41
 - fixed com-halt.sh to remount / and chroot rw if it was mounted ro
 - added cman_tool leave force if cman_tool leave does not work
@@ -933,7 +945,7 @@ rm -rf %{buildroot}
 - More on osr-lib.sh
 - Added pre and postscripts for mkinitrd
 - RHEL4 Backport
-- bootsr review
+-  review
 - Better logging
 - NIC Properties
 * Thu Oct 08 2009 Marc Grimme <grimme@atix.de> 1.4-35
@@ -1016,7 +1028,7 @@ rm -rf %{buildroot}
 - Backport to RHEL4
 * Wed Feb 25 2009 Marc Grimme <grimme@atix.de> 1.4-6
 - fixed bug in xen hardwaredetection
-- and rootfs and clutype in bootsr
+- and rootfs and clutype in 
 * Tue Feb 24 2009 Marc Grimme <grimme@atix.de> 1.4-5
 - first offical 1.4 rc
 - Hardwaredetection: restricted hwdetection implemented (@driver)
@@ -1139,7 +1151,7 @@ rm -rf %{buildroot}
 - added support for dm_multipath partitions
 * Fri Feb 09 2007 Marc Grimme <grimme@atix.de> 1.0.81-rc
 - added nodeid parameter at boottime (bonding not clear)
-- bootsr will only rebuild if needed
+-  will only rebuild if needed
 - added nsswitch.conf to chroot. Because of ccs_tool update sometime failed.
 - better step continue mode
 * Mon Jan 22 2007 Mark Hlawatschek <hlawatschek at atix.de> 1.0.73
@@ -1158,16 +1170,25 @@ rm -rf %{buildroot}
 - first offical rpm version
 
 %changelog extras-osr
+* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-3
+- first version for comoonics-4.6-rc1 
+* Sun Feb 21 2010 Marc Grimme <grimme@atix.de> - 0.1-2
+- moved querymap from here to main package
+- only set osr cluster_conf if the file really exists 
 * Thu Sep 24 2009 Marc Grimme <grimme@atix.de> - 0.1-1
 - first release
 
 %changelog extras-rdac-multipath
+* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-3
+- first version for comoonics-4.6-rc1 
 * Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-2
 - First version on the way to rpmlint BUG#290
 * Fri Sep 14 2007 Marc Grimme <grimme@atix.de> - 0.1-1
 - first release
 
 %changelog extras-xen
+* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-6
+- first version for comoonics-4.6-rc1 
 * Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-5
 - First version on the way to rpmlint BUG#290
 * Wed Aug 06 2008 Marc Grimme <grimme@atix.de> - 0.1-4
@@ -1179,6 +1200,8 @@ rm -rf %{buildroot}
 - first release
 
 %changelog extras-iscsi
+* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-7
+- first version for comoonics-4.6-rc1 
 * Tue Aug 11 2009 Marc Grimme <grimme@atix.de> - 0.1-6
 - Upstream patches for iscsi owerwriting initiator <rootsource name="iscsi://<target-ip>:<port>/<Initiatorname>"/>
   (Michael Peus)
@@ -1194,6 +1217,8 @@ rm -rf %{buildroot}
 - first release
 
 %changelog extras-drbd
+* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-6
+- first version for comoonics-4.6-rc1 
 * Tue Apr 14 2009 Marc Grimme <grimme@atix.de> - 0.1-5
 - get_drivers function implemented
 * Mon Mar 30 2009 Marc Grimme <grimme@atix.de> - 0.1-4
@@ -1206,6 +1231,8 @@ rm -rf %{buildroot}
 - first release
 
 %changelog extras-nfs
+* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-15
+- first version for comoonics-4.6-rc1 
 * Tue Sep 29 2009 Marc Grimme <grimme@atix.de> - 0.1-14
 - removed deps that are for the distfiles
 * Tue Aug 11 2009 Marc Grimme <grimme@atix.de> - 0.1-12
@@ -1228,6 +1255,8 @@ rm -rf %{buildroot}
 - added nfs-lib.sh file
 
 %changelog extras-ocfs2
+* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-7
+- first version for comoonics-4.6-rc1 
 * Thu Sep 10 2009 Marc Grimme <grimme@atix.de> 0.1-6
 - Reuncomented the generation of /etc/ocfs2/cluster.conf in chroot.
 * Thu Sep 10 2009 Marc Grimme <grimme@atix.de> 0.1-5
@@ -1239,26 +1268,38 @@ rm -rf %{buildroot}
 - Added ocfs2_get_drivers
 
 %changelog extras-md
+* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-2
+- first version for comoonics-4.6-rc1 
 * Sun Feb 08 2009 Marc Grimme <grimme@atix.de> - 0.1-1
   initial revision (Thanks to Gordan)
   
 %changelog extras-dm-multipath
+* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-4
+- first version for comoonics-4.6-rc1 
 * Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-3
 - introduced the changelog
 
 %changelog extras-dm-multipath-rhel
+* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-3
+- first version for comoonics-4.6-rc1 
 * Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-2
 - introduced the changelog
 
 %changelog extras-dm-multipath-sles
+* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-2
+- first version for comoonics-4.6-rc1 
 * Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-1
 - initial revision
 
 %changelog extras-dm-multipath-fedora
+* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-3
+- first version for comoonics-4.6-rc1 
 * Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-2
 - introduced the changelog
 
 %changelog extras-glusterfs
+* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-5
+- first version for comoonics-4.6-rc1 
 * Tue Aug 11 2009 Marc Grimme <grimme@atix.de> - 0.1-4
 - Upstream patches from Gordan Bobic
 * Mon Mar 30 2009 Marc Grimme <grimme@atix.de> - 0.1-3
@@ -1267,10 +1308,14 @@ rm -rf %{buildroot}
 - initial revision (thanks to Gordan)
 
 %changelog extras-sysctl
+* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-2
+- first version for comoonics-4.6-rc1 
 * Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-1
 - initial revision
 
 %changelog extras-syslog
+* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-5
+- first version for comoonics-4.6-rc1 
 * Thu Sep 24 2009 Marc Grimme <grimme@atix.de> - 0.1-4
 - Small bugfixes (syslog-ng => syslog_ng when calling functions)
 - Some better errormessages
@@ -1281,6 +1326,10 @@ rm -rf %{buildroot}
 - initial revision
 
 %changelog listfiles-all
+* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-13
+- first version for comoonics-4.6-rc1 
+* Sun Feb 21 2010 Marc Grimme <grimme@atix.de> - 0.1-12
+- Moved the querymap into files.initrd.d/comoonics.list
 * Mon Feb 15 2010 Marc Grimme <grimme@atix.de> - 0.1-11
 - removed bug in 02-create-cdsl-repository.sh where file where created at the wrong destination.
 * Tue Feb 09 2010 Marc Grimme <grimme@atix.de> - 0.1-10
@@ -1302,22 +1351,28 @@ rm -rf %{buildroot}
   - initial revision 
 
 %changelog listfiles-rhel
+* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-5
+- first version for comoonics-4.6-rc1 
 * Mon Sep 28 2009 Marc Grimme <grimme@atix.de> - 0.1-4
 - Finalized version with all changes
 * Thu Sep 10 2009 Marc Grimme <grimme@atix.de> - 0.1-3
 - Moved dep to other files in order to have less warnings
 * Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-2
 - First version on the way to rpmlint BUG#290
-* Thu Aug 14 2008 Marc Grimme <grimme@atix.de - 0.1-1
+* Thu Aug 14 2008 Marc Grimme <grimme@atix.de> - 0.1-1
   - initial revision 
 
 %changelog listfiles-rhel4
+* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-3
+- first version for comoonics-4.6-rc1 
 * Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-2
 - First version on the way to rpmlint BUG#290
-* Thu Aug 14 2008 Marc Grimme <grimme@atix.de - 0.1-1
+* Thu Aug 14 2008 Marc Grimme <grimme@atix.de> - 0.1-1
   - initial revision 
 
 %changelog listfiles-rhel5
+* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-6
+- first version for comoonics-4.6-rc1 
 * Mon Sep 28 2009 Marc Grimme <grimme@atix.de> - 0.1-5
 - Finalized version with all changes
 * Tue Feb 24 2009 Marc Grimme <grimme@atix.de> - 0.1-4
@@ -1326,10 +1381,12 @@ rm -rf %{buildroot}
 - Removed and added more files
 * Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-2
 - First version on the way to rpmlint BUG#290
-* Thu Aug 14 2008 Marc Grimme <grimme@atix.de - 0.1-1
+* Thu Aug 14 2008 Marc Grimme <grimme@atix.de> - 0.1-1
   - initial revision 
 
 %changelog listfiles-sles
+* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-7
+- first version for comoonics-4.6-rc1 
 * Mon Sep 28 2009 Marc Grimme <grimme@atix.de> - 0.1-6
 - Finalized version with all changes
 * Thu Sep 10 2009 Marc Grimme <grimme@atix.de> - 0.1-5
@@ -1344,6 +1401,8 @@ rm -rf %{buildroot}
   - initial revision 
 
 %changelog listfiles-sles10
+* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-4
+- first version for comoonics-4.6-rc1 
 * Thu Oct 08 2009 Marc Grimme <grimme@atix.de> - 0.1-3
 - removed python-devel dep.
 * Mon Sep 28 2009 Marc Grimme <grimme@atix.de> - 0.1-2
@@ -1352,12 +1411,18 @@ rm -rf %{buildroot}
 - initial revision
 
 %changelog listfiles-sles11
+* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-4
+- first version for comoonics-4.6-rc1 
+* Mon Feb 22 2010 Marc Grimme <grimme@atix.de> - 0.1-3
+- added dep comoonics-bootimage-listfiles-sles.
 * Mon Sep 28 2009 Marc Grimme <grimme@atix.de> - 0.1-2
 - Finalized version with all changes
 * Wed Sep 09 2009 Marc Grimme <grimme@atix.de> - 0.1-1
 - initial revision
 
 %changelog listfiles-fedora
+* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-10
+- first version for comoonics-4.6-rc1 
 * Mon Sep 28 2009 Marc Grimme <grimme@atix.de> - 0.1-9
 - Finalized version with all changes
 * Thu Sep 10 2009 Marc Grimme <grimme@atix.de> - 0.1-8
@@ -1372,6 +1437,8 @@ rm -rf %{buildroot}
 - introduced the changelog
 
 %changelog listfiles-fedora-nfs
+* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-6
+- first version for comoonics-4.6-rc1 
 * Mon Sep 28 2009 Marc Grimme <grimme@atix.de> - 0.1-5
 - Finalized version with all changes
 * Tue Aug 11 2009 Marc Grimme <grimme@atix.de> - 0.1-4
@@ -1380,22 +1447,32 @@ rm -rf %{buildroot}
 - introduced the changelog
 
 %changelog listfiles-syslogd
+* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-2
+- first version for comoonics-4.6-rc1 
 * Wed Sep 09 2009 Marc Grimme <grimme@atix.de> - 0.1-1
 - initial revision
 
 %changelog listfiles-rsyslogd
+* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-2
+- first version for comoonics-4.6-rc1 
 * Wed Sep 09 2009 Marc Grimme <grimme@atix.de> - 0.1-1
 - initial revision
 
 %changelog listfiles-syslog-ng
+* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-2
+- first version for comoonics-4.6-rc1 
 * Wed Sep 09 2009 Marc Grimme <grimme@atix.de> - 0.1-1
 - initial revision
 
 %changelog listfiles-fenceacksv-plugins
+* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-5
+- first version for comoonics-4.6-rc1 
 * Fri Feb 12 2010 Marc Grimme <grimme@atix.de> - 0.1-4
 - Removed comoonics-cs-py dep.
 
 %changelog fenceacksv
+* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> - 0.3-8
+- first version for comoonics-4.6-rc1 
 * Mon Feb 15 2010 Marc Grimme <grimme@atix.de> - 0.3-7
 - Upstream fixes.
 * Fri Feb 12 2010 Marc Grimme <grimme@atix.de> - 0.3-6
@@ -1420,6 +1497,8 @@ rm -rf %{buildroot}
 - introducted changelog
 
 %changelog fenceclient-ilo
+* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-19
+- first version for comoonics-4.6-rc1 
 * Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-18
 - First version on the way to rpmlint BUG#290
 * Mon Jul 30 2007 Marc Grimme <grimme@atix.de> - 0.1-17
@@ -1441,7 +1520,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.112  2010-02-16 10:07:15  marc
+# Revision 1.113  2010-03-08 19:35:14  marc
+# comoonics-4.6-rc1
+#
+# Revision 1.112  2010/02/16 10:07:15  marc
 # new versions
 #
 # Revision 1.111  2010/02/09 21:45:19  marc
@@ -1774,7 +1856,7 @@ rm -rf %{buildroot}
 # first stable 0.3
 #
 # Revision 1.7  2006/01/23 14:05:30  mark
-# added bootsr
+# added 
 #
 # Revision 1.6  2005/07/08 13:15:57  mark
 # added some files
