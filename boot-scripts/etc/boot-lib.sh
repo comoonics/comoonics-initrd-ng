@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.80 2010-02-05 12:44:43 marc Exp $
+# $Id: boot-lib.sh,v 1.81 2010-03-08 13:07:38 marc Exp $
 #
 # @(#)$File$
 #
@@ -998,8 +998,41 @@ detectHalt() {
 }
 #************** detectHalt
 
+#****f* bootsr/check_mtab
+#  NAME
+#    check_mtab
+#  SYNOPSIS
+#    function check_mtab rootfstype cdslpath cdsllink
+#  IDEAS
+#    Checks if the mtab is a file (not a link) and if so checks if all filesystems mounted within the initrd are also in the mtab
+function check_mtab {
+	local rootfs_type=$1
+	local mountpoint=$2
+	local cdslpath=$3
+	local cdsllink=$4
+	
+	[ -z "$mountpoint" ] && mountpoint="/"
+	[ -z "$cdslpath" ] && cdslpath=".cluster/cdsl"
+	[ -z "$cdsllink" ] && cdsllink=".cdsl.local"
+	
+	if [ -f /etc/mtab ] && [ -n "${mountpoint}$cdsllink" ] && [ -e "${mountpoint}$cdsllink" ]; then
+		cat /proc/mounts | cut -d" " -f2 | grep ${mountpoint}$cdsllink >/dev/null &>/dev/null
+		if [ $? -eq 0 ]; then
+			cat /etc/mtab | cut -d" " -f2 | grep ${mountpoint}$cdsllink >/dev/null &>/dev/null
+			if [ $? -ne 0 ]; then
+				return 0
+			fi
+		fi
+	fi
+	return 1
+} 
+#************** check_mtab
+
 # $Log: boot-lib.sh,v $
-# Revision 1.80  2010-02-05 12:44:43  marc
+# Revision 1.81  2010-03-08 13:07:38  marc
+# moved check_mtab to here.
+#
+# Revision 1.80  2010/02/05 12:44:43  marc
 # - added -N to echo_local[_debug] where appropriate
 #
 # Revision 1.79  2009/12/09 09:08:12  marc
