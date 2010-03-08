@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.41 2010-02-05 12:35:58 marc Exp $
+# $Id: hardware-lib.sh,v 1.42 2010-03-08 13:09:40 marc Exp $
 #
 # @(#)$File$
 #
@@ -315,12 +315,16 @@ function usbLoad() {
 #  SOURCE
 #
 function dm_start {
-   echo_local -n "Loading device mapper modules"
-   for module in $(dm_get_drivers); do
-      exec_local modprobe $module >/dev/null 2>&1
-   done
-   return_code $?
-
+  local scsifailover=$1
+   if [ -n "$scsifailover" ] && [ "$scsifailover" = "rdac" ]; then
+      passed
+   else
+     echo_local -n "Loading device mapper modules"
+     for module in $(dm_get_drivers); do
+       exec_local modprobe $module >/dev/null 2>&1
+     done
+     return_code $?
+   fi
    #/sbin/udevstart
 }
 #************ dm_start
@@ -746,7 +750,10 @@ stabilized() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.41  2010-02-05 12:35:58  marc
+# Revision 1.42  2010-03-08 13:09:40  marc
+# dm_start might take scsi_failover as param
+#
+# Revision 1.41  2010/02/05 12:35:58  marc
 # - some typos
 #
 # Revision 1.40  2010/01/11 10:05:08  marc
