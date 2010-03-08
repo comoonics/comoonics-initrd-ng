@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.89 2010-02-21 12:05:56 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.90 2010-03-08 13:06:28 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.89 2010-02-21 12:05:56 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.90 2010-03-08 13:06:28 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -88,7 +88,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.89 $ $Date: 2010-02-21 12:05:56 $'
+echo_local 'Internal Version $Revision: 1.90 $ $Date: 2010-03-08 13:06:28 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -186,12 +186,24 @@ done
 if ! $(repository_has_key root); then
 	repository_store_value root $(repository_get_value rootvolume)
 fi
-getParameter ro $(clusterfs_getdefaults readonly) &>/dev/null
+getParameter ro &>/dev/null
 getParameter rw &>/dev/null
 if [ -n "$(repository_get_value ro)" ]; then
-  repository_append_value mountopts "ro"
+  if [ -z "$(getPosFromList ro $(repository_get_value mountopts) ,)" ]; then
+    if [ -z $(repository_get_value mountopts) ]; then
+      repository_store_value mountopts "ro"
+    else
+      repository_append_value mountopts ",ro"
+    fi
+  fi
 elif [ -n "$(repository_get_value rw)" ]; then
-  repository_append_value mountopts "rw"
+  if [ -z "$(getPosFromList rw $(repository_get_value mountopts) ,)" ]; then
+    if [ -z $(repository_get_value mountopts) ]; then
+      repository_store_value mountopts "rw"
+    else
+      repository_append_value mountopts ",rw"
+    fi
+  fi
 fi
 success
 
@@ -316,8 +328,8 @@ if [ $is_syslog -eq 0 ]; then
 fi
 
 if clusterfs_blkstorage_needed $(repository_get_value rootfs); then
-  udev_start
-  dm_start
+  udev_start $(repository_get_value scsi_failover)
+  dm_start $(repository_get_value scsi_failover)
   scsi_start $(repository_get_value scsi_failover)
 
   # start iscsi if apropriate
@@ -459,19 +471,22 @@ exec_local move_dev $(repository_get_value newroot)
 #exec_local mount --bind /dev $newroot/dev
 return_code
 
-for logfile_name in bootlog syslog_logfile; do
-  logfile=$(repository_get_value $logfile_name)
-  if [ -n "$logfile" ] && [ -e "$logfile" ]; then
-    echo_local -n "Copying logfile to \"$logfile\"..."
-    exec_local cp -f ${logfile} $(repository_get_value newroot)/${logfile} || cp -f ${logfile} $(repository_get_value newroot)/$(basename $logfile)
-    if [ -f $(repository_get_value newroot)/$logfile ]; then
-      repository_store_value logfile_name $(repository_get_value newroot)/$logfile
-    else
-      repository_store_value logfile_name $(repository_get_value newroot)/$(basename $logfile)
+# do something only on rw mounted filesystems
+if [ -z $(getPosFromList "ro" "$(repository_get_value mountopts)" ",") ]; then
+  for logfile_name in bootlog syslog_logfile; do
+    logfile=$(repository_get_value $logfile_name)
+    if [ -n "$logfile" ] && [ -e "$logfile" ]; then
+      echo_local -n "Copying logfile to \"$logfile\"..."
+      exec_local cp -f ${logfile} $(repository_get_value newroot)/${logfile} || cp -f ${logfile} $(repository_get_value newroot)/$(basename $logfile)
+      if [ -f $(repository_get_value newroot)/$logfile ]; then
+        repository_store_value logfile_name $(repository_get_value newroot)/$logfile
+      else
+        repository_store_value logfile_name $(repository_get_value newroot)/$(basename $logfile)
+      fi
     fi
-  fi
-done
-return_code_warning
+  done
+  return_code_warning
+fi
 #exec 3>> $bootlog
 #exec 4>> $bootlog
 step "Logfiles copied" "logfiles"
@@ -522,29 +537,31 @@ if [ $(repository_get_value chrootneeded) -eq 0 ]; then
   return_code
   step "Moving chroot successfully done." "movechroot"
 else
-  if [ -f $(repository_get_value newroot)/var/comoonics/chrootpath ]; then
+  if [ -f $(repository_get_value newroot)/var/comoonics/chrootpath ] && [ -z $(getPosFromList "ro" "$(repository_get_value mountopts)" ",") ]; then
     echo_local -n "Removing reference to chrootpath."
     exec_local rm -f $(repository_get_value newroot)/var/comoonics/chrootpath 2>/dev/null
     return_code
   fi
 fi
 
-echo_local -n "Writing xtab.. "
-if [ $(repository_get_value chrootneeded) -eq 0 ]; then
-  create_xtab "$(repository_get_value newroot)/$(repository_get_value xtabfile)" "$(repository_get_value cdsl_local_dir)" "$(repository_get_value chroot_mount)" 
-else  
-  create_xtab "$(repository_get_value newroot)/$(repository_get_value xtabfile)" "$(repository_get_value cdsl_local_dir)"
+if [ -z $(getPosFromList "ro" "$(repository_get_value mountopts)" ",") ]; then
+  echo_local -n "Writing xtab.. "
+  if [ $(repository_get_value chrootneeded) -eq 0 ]; then
+    create_xtab "$(repository_get_value newroot)/$(repository_get_value xtabfile)" "$(repository_get_value cdsl_local_dir)" "$(repository_get_value chroot_mount)" 
+  else  
+    create_xtab "$(repository_get_value newroot)/$(repository_get_value xtabfile)" "$(repository_get_value cdsl_local_dir)"
+  fi
+  success
+
+  echo_local -n "Writing xrootfs.. "
+  create_xrootfs $(repository_get_value newroot)/$(repository_get_value xrootfsfile) $(repository_get_value rootfs)
+  success
+
+  echo_local -n "Writing xkillall_procs.. "
+  create_xkillall_procs "$(repository_get_value newroot)/$(repository_get_value xkillallprocsfile)" "$(repository_get_value clutype)" "$(repository_get_value rootfs)"
+  success
+  step "Created xtab,xrootfs,xkillall_procs file" "xfiles"
 fi
-success
-
-echo_local -n "Writing xrootfs.. "
-create_xrootfs $(repository_get_value newroot)/$(repository_get_value xrootfsfile) $(repository_get_value rootfs)
-success
-
-echo_local -n "Writing xkillall_procs.. "
-create_xkillall_procs "$(repository_get_value newroot)/$(repository_get_value xkillallprocsfile)" "$(repository_get_value clutype)" "$(repository_get_value rootfs)"
-success
-step "Created xtab,xrootfs,xkillall_procs file" "xfiles"
 	 
 echo_local -n "Cleaning up initrd ..."
 exec_local clean_initrd
@@ -567,7 +584,12 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.89  2010-02-21 12:05:56  marc
+# Revision 1.90  2010-03-08 13:06:28  marc
+# - added sematic to check if / is mounted ro and then do no rw action
+# - fixed bug with mountopts (ro/rw)
+# - fixed bug with scsi-failover and scsifailover as bootparameter
+#
+# Revision 1.89  2010/02/21 12:05:56  marc
 # there are no mount_opts but mountopts
 #
 # Revision 1.88  2010/02/05 12:46:24  marc
