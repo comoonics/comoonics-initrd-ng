@@ -2,7 +2,7 @@
 #****h* comoonics-bootimage/bootsr
 #  NAME
 #    bootsr
-#    $Id: bootsr,v 1.15 2008/11/18 14:19:58 marc Exp $
+#    $Id:$
 #  DESCRIPTION
 #    Comoonics Shared Root post boot settings
 #  AUTHOR
@@ -28,43 +28,26 @@
 . /etc/rc.status
 
 BOOTIMAGE_PATH=/opt/atix/comoonics-bootimage
-CCSD_LOCK_FILE="/var/lock/subsys/ccsd-chroot"
-DEFAULT_LOCK_COUNT=50000
-CHROOT_PATH=$(/opt/atix/comoonics-bootimage/manage_chroot.sh -p) 
+CHROOT_PATH=$(${BOOTIMAGE_PATH}/manage_chroot.sh -p) 
 UPDATE_CHROOT="${BOOTIMAGE_PATH}/manage_chroot.sh -a update"
 UMOUNT_CHROOT="${BOOTIMAGE_PATH}/manage_chroot.sh -a umount"
 MOUNT_CHROOT="${BOOTIMAGE_PATH}/manage_chroot.sh -a mount"
 MOUNT_CDSL="${BOOTIMAGE_PATH}/manage_chroot.sh -a mount_cdsl"
 CLEAN_START="${BOOTIMAGE_PATH}/manage_chroot.sh -a clean"
+PATCH_FILES="${BOOTIMAGE_PATH}/manage_chroot.sh -a patch_files"
+UNPATCH_FILES="${BOOTIMAGE_PATH}/manage_chroot.sh -a unpatch_files"
+CREATE_XFILES="${BOOTIMAGE_PATH}/manage_chroot.sh -a createxfiles"
 BUILD_FILE="/etc/comoonics-build.txt"
-VAR_RUN_FILES="cman_admin cman_client"
 
 RETVAL=0
+
+if [ -f /etc/sysconfig/comoonics-chroot ]; then
+	source /etc/sysconfig/comoonics-chroot
+fi
+
 . ${BOOTIMAGE_PATH}/boot-scripts/etc/std-lib.sh
 sourceLibs ${BOOTIMAGE_PATH}/boot-scripts
 sourceRootfsLibs ${BOOTIMAGE_PATH}/boot-scripts
-
-rc_reset
-#****f* bootsr/check_mtab
-#  NAME
-#    check_mtab
-#  SYNOPSIS
-#    function check_mtab rootfstype
-#  IDEAS
-#    Checks if the mtab is a file (not a link) and if so checks if all filesystems mounted within the initrd are also in the mtab
-function check_mtab {
-	local rootfs_type=$1
-	
-	if [ -f /etc/mtab ]; then
-		cat /proc/mounts | cut -d" " -f2 | grep /cdsl.local >/dev/null &>/dev/null
-		if [ $? -eq 0 ]; then
-			cat /etc/mtab | cut -d" " -f2 | grep /cdsl.local >/dev/null &>/dev/null
-			if [ $? -ne 0 ]; then
-				$MOUNT_CDSL
-			fi
-		fi
-	fi
-} 
 
 #****f* bootsr/clean_start
 #  NAME
@@ -91,10 +74,10 @@ function clean_start {
 #
 function check_sharedroot {
   local root_fstype=$1
-  if [ "$root_fstype" = "gfs" ] || [ "$root_fstype" = "ocfs2" ]; then
-    return 1
-  else
+  if [ "$root_fstype" = "gfs" ] || [ "$root_fstype" = "ocfs2" ] || [ "$root_fstype" = "nfs" ] || [ "$root_fstype" = "glusterfs" ]; then
     return 0
+  else
+    return 1
   fi
 }
 #************ check_sharedroot
@@ -112,36 +95,6 @@ function get_runlevel {
 }
 #************ get_runlevel
 
-#****f* bootsr/patch_files
-#  NAME
-#    patch_files
-#  SYNOPSIS
-#    function patch_files
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function patch_files {
-	# we patch all versions here
-	# halt
-	if ! grep "comoonics patch " /etc/init.d/halt > /dev/null; then
-		echo "Patching halt"
-		cd /etc/init.d/ && patch -f -r /tmp/halt.patch.rej > /dev/null < /opt/atix/comoonics-bootimage/patches/halt.patch
-	fi
-	# netfs
-	if ! grep "comoonics patch " /etc/init.d/netfs > /dev/null; then
-		echo "Patching netfs"
-		cd /etc/init.d/ && patch -f -r /tmp/netfs.patch.rej > /dev/null < /opt/atix/comoonics-bootimage/patches/netfs.patch
-	fi
-	# network
-	if ! grep "comoonics patch " /etc/init.d/network > /dev/null; then
-		echo "Patching network"
-		cd /etc/init.d/ && patch -f -r /tmp/network.patch.rej > /dev/null < /opt/atix/comoonics-bootimage/patches/network.patch
-	fi
-	
-}
-#************ patch_files
-
 #************ umount_chroot
 #****f* bootsr/umount_chroot
 #  NAME
@@ -156,33 +109,6 @@ function umount_chroot {
   return $(runlevel | cut -d" " -f2)
 }
 #************ get_runlevel
-
-#****f* bootsr/get_lockcount
-#  NAME
-#    get_getlockcount
-#  SYNOPSIS
-#    function get_lockcount default_lockcount
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function get_lockcount {
-  DEF_LOCK_COUNT=$1
-  MAX_LCOK_COUNT=$2
-  [ -z "$DEF_LOCK_COUNT" ] && DEF_LOCK_COUNT=${DEFAULT_LOCK_COUNT}
-  [ -z "$DEF_LOCK_COUNT" ] && DEF_LOCK_COUNT=50000
-  [ -z "$MAX_LOCK_COUNT" ] && MAX_LOCK_COUNT=0
-  cat /proc/meminfo | grep MemTotal | awk -v maxlockcount=$MAX_LOCK_COUNT -v deflockcount=$DEF_LOCK_COUNT '
-  {
-  	lockcount=int($2/1024/512*deflockcount);
-  	if ((lockcount > maxlockcount) && (maxlockcount > 0))
-  	  lockcount=maxlockcount;
-  	print lockcount;
-  }
-'
-}
-#************ get_lockcount
-
 
 #****f* bootsr/main
 #  NAME
@@ -202,77 +128,58 @@ exec 5>> $logfile
 exec 6>> $logfile
 exec 7>> $logfile
 
+rootfs=$(repository_get_value rootfs)
+clutype=$(repository_get_value clutype)
+
 # See how we were called.
 case "$1" in
   start)
   	# will do
-  	# - activate swap partitions (currently disabled)
-  	# - mount everything except nfs (na)
   	# - update chroot environment for additional services (fence_ack_server)
     
   	# first clean old repos
-  	clean_start
+  	cdsllink=$(com-mkcdslinfrastructure --get link)
+  	cdsltree=$(com-mkcdslinfrastructure --get tree)
+    check_mtab $rootfs / $cdsltree $cdsllink && $MOUNT_CDSL / $cdsltree $cdsllink
     
-    check_mtab $rootfs
-    
-    check_sharedroot $rootfs
-    sharedroot=$?
-    if  [ -n "$rootfs" ] && [ $sharedroot ]; then
-#      runlevel=$(get_runlevel)
-      echo  -n "Doing the Comoonics Shared Root post settings "
+    if  [ -n "$rootfs" ] && check_sharedroot $rootfs; then
       touch /var/lock/subsys/bootsr
-#      echo `date` Doing the Comoonics Shared Root post settings | tee -a /var/log/bootsr | logger -t com-bootsr
-#      /sbin/swapon -av 2>&1 | tee -a /var/log/bootsr | logger -t com-bootsr
-      /bin/mount -at $rootfs 2>&1 | tee -a /var/log/bootsr | logger -t com-bootsr
-	  # Create symbolic links
-	  for file in ${VAR_RUN_FILES}; do
-	  	test -f ${CHROOT_PATH}/var/run/${file} && /bin/ln -sf ${CHROOT_PATH}/var/run/${file} /var/run/
-      done
-      mkdir -p /var/run/cluster
-      for file in ccsd.pid ccsd.sock; do
-            ln -s ${CHROOT_PATH}/var/run/cluster/$file /var/run/cluster
-      done
-      
-      success
-      echo	
-      # Start ccsd-chroot if it will not be started from init in Runlevel 3
-      # FIXME: There will be propably be no $FENCE_CHROOT this time.
-#      chkconfig --list ccsd-chroot | grep "3:on" >/dev/null 2>/dev/null
-#      if [ $? -eq 1 ] && [ ! -e /var/run/cluster/ccsd.pid ]; then
-#         /etc/init.d/ccsd-chroot start
-#      fi
-	  # Update chroot environment with files from /etc/comoonics/bootimage-chroot
-	  clusterfs_chroot_needed init
-	  if [ $? -eq 0 ]; then
-	  	action "Updating chroot environment" $UPDATE_CHROOT
+      if [ -z "$chrootneeded" ]; then
+        clusterfs_chroot_needed init
+        __default=$?
+        chrootneeded=$(getParameter chroot $__default)
+      fi
+	  if [ $chrootneeded -eq 0 ]; then
  	  	action "Mounting filesystems to chroot" $MOUNT_CHROOT
- 	  
- 	  	typeset -f ${clutype}_init >/dev/null && action "Starting ${clutype} dependent services" ${clutype}_init start
- 	  	if [ "${clutype}" != "${rootfs}" ]; then
- 	    	typeset -f ${rootfs}_init >/dev/null && action "Starting ${rootfs} dependent services" ${rootfs}_init start
- 	  	fi
+	  	action "Updating chroot environment" $UPDATE_CHROOT
   	  fi 
+ 	  
+   	  typeset -f cc_init >/dev/null && action "Starting ${clutype} dependent services" cc_init start "$CHROOT_PATH" "$rootfs"
+ 	  if [ "${clutype}" != "${rootfs}" ]; then
+ 	   	typeset -f clusterfs_init >/dev/null && action "Starting ${rootfs} dependent services" clusterfs_init start "$CHROOT_PATH" "$rootfs"
+ 	  fi
     fi
     ;;
   stop)
- 	  typeset -f ${clutype}_init >/dev/null && action "Stopping ${clutype} dependent services" ${clutype}_init stop
+ 	  typeset -f cc_init >/dev/null && action "Stopping ${clutype} dependent services" cc_init stop "$CHROOT_PATH" "$rootfs"
  	  if [ "${clutype}" != "${rootfs}" ]; then
-   	    typeset -f ${rootfs}_init >/dev/null && action "Stopping ${rootfs} dependent services" ${rootfs}_init stop
+   	    typeset -f clusterfs_init >/dev/null && action "Stopping ${rootfs} dependent services" clusterfs_init stop "$CHROOT_PATH" "$rootfs"
  	  fi 
   	  [ -e /var/lock/subsys/bootsr ] && rm -f /var/lock/subsys/bootsr 
-	  typeset -f ${rootfs}_init >/dev/null && ${rootfs}_chroot_needed init
+	  typeset -f ${rootfs}_needed >/dev/null && ${rootfs}_chroot_needed init
 	  if [ $? -eq 0 ]; then
 	    action "Cleaning up chroot environment" $UMOUNT_CHROOT
 	  fi
-  	  # patch_files
+  	  $PATCH_FILES
+  	  $CREATE_XFILES
         ;;
   status)
       exit 0
       ;;
   reload)
-      if [ check_sharedroot ]; then
-  	    typeset -f ${rootfs}_init >/dev/null && ${rootfs}_chroot_needed init
-	    if [ $? -eq 0 ]; then
+      if check_sharedroot $rootfs; then
+  	    
+	    if clusterfs_chroot_needed init; then
 	      action "Updating chroot environment" $UPDATE_CHROOT
 	    fi
 	  fi
@@ -282,12 +189,11 @@ case "$1" in
   	 $0 start 
       ;;
   patch_files)
-  	 check_sharedroot $rootfs
-     sharedroot=$?
-     if  [ -n "$rootfs" ] && [ $sharedroot ]; then
-  	   patch_files
-     fi
-     ;;
+      $PATCH_FILES
+      ;;
+  unpatch_files)
+      $UNPATCH_FILES
+      ;;
   *)
         echo "Usage: bootsr {start|stop|status|restart|reload}"
         exit 1
