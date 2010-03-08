@@ -2,7 +2,7 @@
 #****h* comoonics-bootimage/bootsr
 #  NAME
 #    bootsr
-#    $Id: bootsr,v 1.24 2010-02-15 14:04:15 marc Exp $
+#    $Id: bootsr,v 1.25 2010-03-08 13:17:08 marc Exp $
 #  DESCRIPTION
 #    Comoonics Shared Root post boot settings
 #  AUTHOR
@@ -43,28 +43,6 @@ fi
 . ${BOOTIMAGE_PATH}/boot-scripts/etc/std-lib.sh
 sourceLibs ${BOOTIMAGE_PATH}/boot-scripts
 sourceRootfsLibs ${BOOTIMAGE_PATH}/boot-scripts
-
-
-#****f* bootsr/check_mtab
-#  NAME
-#    check_mtab
-#  SYNOPSIS
-#    function check_mtab rootfstype
-#  IDEAS
-#    Checks if the mtab is a file (not a link) and if so checks if all filesystems mounted within the initrd are also in the mtab
-function check_mtab {
-	local rootfs_type=$1
-	
-	if [ -f /etc/mtab ]; then
-		cat /proc/mounts | cut -d" " -f2 | grep /cdsl.local >/dev/null &>/dev/null
-		if [ $? -eq 0 ]; then
-			cat /etc/mtab | cut -d" " -f2 | grep /cdsl.local >/dev/null &>/dev/null
-			if [ $? -ne 0 ]; then
-				$MOUNT_CDSL
-			fi
-		fi
-	fi
-} 
 
 #****f* bootsr/clean_start
 #  NAME
@@ -155,7 +133,9 @@ case "$1" in
   	# - update chroot environment for additional services (fence_ack_server)
     
   	# first clean old repos
-    check_mtab $rootfs
+  	cdsllink=$(com-mkcdslinfrastructure --get link)
+  	cdsltree=$(com-mkcdslinfrastructure --get tree)
+    check_mtab $rootfs / $cdsltree $cdsllink && $MOUNT_CDSL / $cdsltree $cdsllink
     
     if  [ -n "$rootfs" ] && check_sharedroot $rootfs; then
       touch /var/lock/subsys/bootsr
@@ -217,7 +197,11 @@ exit $RETVAL
 #************ main
 ###############
 # $Log: bootsr,v $
-# Revision 1.24  2010-02-15 14:04:15  marc
+# Revision 1.25  2010-03-08 13:17:08  marc
+# - support for different cdsl environments
+# - moved check_mtab to std-lib.sh
+#
+# Revision 1.24  2010/02/15 14:04:15  marc
 # fixed check_sharedroot
 #
 # Revision 1.23  2010/02/05 12:47:30  marc
