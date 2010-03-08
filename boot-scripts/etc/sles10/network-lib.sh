@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.6 2010-01-04 12:57:31 marc Exp $
+# $Id: network-lib.sh,v 1.7 2010-03-08 13:15:00 marc Exp $
 #
 # @(#)$File$
 #
@@ -72,20 +72,28 @@ function sles10_ip2Config() {
   if [ -z "$ipDevice" ]; then ipDevice="eth0"; fi
 
   [ -z "$networkpath" ] && local networkpath=${__prefix}/etc/sysconfig/network/
-  if [ -e ${networkpath}/ifcfg-$ipDevice ]; then
-    mv -f ${networkpath}/ifcfg-$ipDevice ${networkpath}/ifcfg-$ipDevice.com_back
+#  if [ -e ${networkpath}/ifcfg-$ipDevice ]; then
+#    mv -f ${networkpath}/ifcfg-$ipDevice ${networkpath}/ifcfg-$ipDevice.com_back
+#  fi
+  local vlan=
+  if [[ "$ipDevice" =~ "[a-z]+[0-9]+\.[0-9]+" ]]; then
+    vlan=$(echo $ipDevice | sed -e 's/^.*\.\([[:digit:]][[:digit:]]\)/\1/')
+    etherdevice=$(echo $ipDevice | sed -e 's/^\(.*\).[[:digit:]][[:digit:]]/\1/')
+    repository_store_value "${ipDevice}_alias" "vlan$vlan"
+    ipDevice="vlan$vlan"
   fi
 
   (echo 'NM_CONTROLLED=no' &&
    echo 'DEVICE="'$ipDevice'"' &&
    echo 'STARTMODE="'$onboot'"' &&
-   echo 'TYPE="'$type'"') > ${networkpath}/ifcfg-$ipDevice
+   echo 'TYPE="'$type'"') >> ${networkpath}/ifcfg-$ipDevice
 
   #[ -n "$MAC" ] && [ "$MAC" != "00:00:00:00:00:00" ] && echo "HWADDR=$MAC" >> ${__prefix}/etc/sysconfig/network-scripts/ifcfg-$ipDevice
 
   # test for vlan config
-  if [[ "$ipDevice" =~ "[a-z]+[0-9]+\.[0-9]+" ]]; then
+  if [ -n "$vlan" ]; then   
 	echo 'VLAN="yes"' >> ${networkpath}/ifcfg-$ipDevice
+	echo 'ETHERDEVICE="'$etherdevice'"' >> ${networkpath}/ifcfg-$ipDevice
   fi
 
   if [ -n "$ipAddr" ]; then
@@ -104,8 +112,9 @@ function sles10_ip2Config() {
       fi
     fi
   else
-     [ -n "$master" ] && echo 'MASTER="'${master}'"' >> ${networkpath}/ifcfg-$ipDevice
-     [ -n "$slave" ] &&  echo 'SLAVE="'${slave}'"'   >> ${networkpath}/ifcfg-$ipDevice
+     local slaveno=$(echo $ipDevice | sed -e 's/.*\([[:digit:]][[:digit:]]*\)/\1/')
+     [ -n "$master" ] && echo 'BONDING_SLAVE'${slaveno}'="'$ipDevice'"' >> ${networkpath}/ifcfg-$master
+     [ -n "$slave" ] &&  echo 'BONDING_MASTER="'${slave}'"'   >> ${networkpath}/ifcfg-$master
      [ -n "$bridge" ] && echo 'BRIDGE="'${bridge}'"' >> ${networkpath}/ifcfg-$ipDevice
   fi
 
@@ -129,13 +138,17 @@ function sles10_ip2Config() {
 #  SOURCE
 #
 function nicUp() {
-   /sbin/ifup $1
+   local alias=$(repository_get_value "$1_alias" $1)
+   /sbin/ifup $alias
 }
 #************ ifup
 
 #################
 # $Log: network-lib.sh,v $
-# Revision 1.6  2010-01-04 12:57:31  marc
+# Revision 1.7  2010-03-08 13:15:00  marc
+# - added vlans and bonding
+#
+# Revision 1.6  2010/01/04 12:57:31  marc
 # added generic network config properties
 #
 # Revision 1.5  2009/09/28 12:47:14  marc
