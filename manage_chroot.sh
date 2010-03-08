@@ -7,7 +7,7 @@
 #  DESCRIPTION
 #*******
 #
-# $Id: manage_chroot.sh,v 1.16 2010-02-21 12:08:50 marc Exp $
+# $Id: manage_chroot.sh,v 1.17 2010-03-08 13:19:35 marc Exp $
 #
 # @(#)$File$
 #
@@ -219,12 +219,13 @@ function update_chroot() {
 }
 
 function mount_cdsl {
-	local cdsl_path=$1
-	local cdsl_local=$2
+    local mountpoint=$1
+	local cdsl_path=$2
+	local cdsl_local=$3
 
 	local nodeid=$(getParameter nodeid $(cc_getdefaults nodeid))
-	local newroot="/"
 	
+    [ -z "$mountpoint" ] && mountpoint="/"
 	[ -z "$cdsl_path" ] && cdsl_path=$(repository_get_value cdsl_prefix)
 	[ -z "$cdsl_local" ] && cdsl_local=$(repository_get_value cdsl_local_dir)
 	
@@ -232,7 +233,7 @@ function mount_cdsl {
 		echo_local "Could not detect nodeid. Therefore I couldn't mount $cdsl_path" >&2
 		exit 1
 	fi
-	clusterfs_mount_cdsl $newroot $cdsl_local $nodeid $cdsl_path	
+	clusterfs_mount_cdsl $mountpoint $cdsl_local $nodeid $cdsl_path	
 }
 
 function createxfiles {
