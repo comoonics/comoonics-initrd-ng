@@ -1,5 +1,5 @@
 #
-# $Id: std-lib.sh,v 1.14 2010-02-05 12:43:50 marc Exp $
+# $Id: std-lib.sh,v 1.15 2010-03-08 13:14:27 marc Exp $
 #
 # @(#)$File$
 #
@@ -40,7 +40,7 @@
 #  IDEAS
 #  SOURCE
 #
-function sourceLibs {
+function sourceLibs() {
 	local predir=$1
 	[ -e ${predir}/etc/sysconfig/comoonics ] && . ${predir}/etc/sysconfig/comoonics
 
@@ -595,7 +595,7 @@ function exec_local_stabilized() {
  		if [ ! -z "$debug" ]; then
  			echo "start_service_chroot run: $i, sleeptime: $stime"
  		fi
-   		output=$($exec_local $*) 
+   		output=$(exec_local $*) 
    		if [ $? -eq 0 ]; then
    			ret=0
    			break
@@ -864,6 +864,58 @@ function unzip_and_uncpio_initrd() {
   popd >/dev/null 2>&1
 }
 #************ unzip_and_uncpio_initrd
+	
+#****f* boot-lib.sh/getPosFromList
+#  NAME
+#    getPosFromList
+#  SYNOPSIS
+#    function getPosFromList(pos, strlist, delim) {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function getPosFromList() {
+  local pos=$1
+  local str=$2
+  local delim=$3
+  echo $str | awk -v pos=$pos -v FS="$delim" '{ print $pos; }'
+}
+#************ getPosFromList
+
+#****f* boot-lib.sh/getPosInList
+#  NAME
+#    getPosFromList
+#  SYNOPSIS
+#    function getPosInList(str, strlist, delim) {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function getPosInList() {
+  local val=$1
+  local str=$2
+  local delim=$3
+  echo $str | awk -v FS="$delim" -v val="$val" '{ for (i=0; i<=NF; i++) if ($i == val) print i; }'
+}
+#************ getPosInList
+
+#****f* boot-lib.sh/setPosAtList
+#  NAME
+#    setPosAtList
+#  SYNOPSIS
+#    function setPosAtList(pos, value, strlist, delim) {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function setPosAtList() {
+  local pos=$1
+  local value=$2
+  local str=$3
+  local delim=$4
+  echo -n $str | awk -v FS="$delim" -v pos="$pos" -v newval="$value" -v OFS="$delim" '{$pos=newval; print; }'
+}
+#************ setPosAtList
 
 #****f* std-lib.sh/get_files_newer
 #  NAME
@@ -1035,7 +1087,11 @@ exec_ordered_skripts_in() {
 
 #################
 # $Log: std-lib.sh,v $
-# Revision 1.14  2010-02-05 12:43:50  marc
+# Revision 1.15  2010-03-08 13:14:27  marc
+# - new functionset get/setPosFromList
+# - fixed bug in exec_local_stabilized that would not use exec_local.
+#
+# Revision 1.14  2010/02/05 12:43:50  marc
 # return_code: removed obsolete code
 # action: added
 # failure,warning,passed,success: no new line in the end
