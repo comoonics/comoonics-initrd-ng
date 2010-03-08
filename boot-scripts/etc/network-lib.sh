@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.19 2010-02-05 12:36:33 marc Exp $
+# $Id: network-lib.sh,v 1.20 2010-03-08 13:11:28 marc Exp $
 #
 # @(#)$File$
 #
@@ -282,9 +282,7 @@ function found_nics {
 #  SOURCE
 #
 function getPosFromIPString() {
-  local pos=$1
-  local str=$2
-  echo $str | awk -v pos=$pos 'BEGIN { FS=":"; }{ print $pos; }'
+  getPosFromList "$1" "$2" ":"
 }
 #************ getPosFromIPString
 
@@ -301,14 +299,16 @@ function setPosAtIPString() {
   local pos=$1
   local value=$2
   local str=$3
-  local oldval=$(getPosFromIPString $pos $str)
-  echo ${str/:$oldval:/:$value:}
+  setPosAtList "$1" "$2" "$3" ":"
 }
 #************ getPosFromIPString
 
 #############
 # $Log: network-lib.sh,v $
-# Revision 1.19  2010-02-05 12:36:33  marc
+# Revision 1.20  2010-03-08 13:11:28  marc
+# use new functions getPos/setPosFrom list for get/setPosFromIPString.
+#
+# Revision 1.19  2010/02/05 12:36:33  marc
 # - added -N to echo_local[_debug] where appropriate
 #
 # Revision 1.18  2010/01/04 13:13:29  marc
