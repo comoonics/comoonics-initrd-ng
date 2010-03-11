@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.113 2010-03-08 19:35:14 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.114 2010-03-11 10:31:23 marc Exp $
 #
 ##
 ##
@@ -430,7 +430,7 @@ Summary: Listfiles for Fencelibs
 Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
-%description listfiles-fencevirsh
+%description listfiles-fencelib
 Listfiles for the fencelibs to be imported in the bootimage.
 
 %package compat
@@ -868,7 +868,7 @@ fi
 %files listfiles-syslog-ng
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/syslog-ng.list
 
-%files listfiles-fencevirsh
+%files listfiles-fencelib
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fencevirsh.list
 
 %files fenceacksv
@@ -1520,7 +1520,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.113  2010-03-08 19:35:14  marc
+# Revision 1.114  2010-03-11 10:31:23  marc
+# comoonics-4.6-rc1
+#
+# Revision 1.113  2010/03/08 19:35:14  marc
 # comoonics-4.6-rc1
 #
 # Revision 1.112  2010/02/16 10:07:15  marc
