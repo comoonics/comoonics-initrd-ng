@@ -1,5 +1,5 @@
 #
-# $Id: stdfs-lib.sh,v 1.8 2010-01-04 13:15:26 marc Exp $
+# $Id: stdfs-lib.sh,v 1.9 2010-03-29 18:36:28 marc Exp $
 #
 # @(#)$File$
 #
@@ -20,6 +20,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+# Binaries
+STAT="$(which stat)"
+COPY="$(which cp)"
+MOVE="$(which mv)"
+MKDIR="$(which mkdir)"
 
 #
 #****h* comoonics-bootimage/stdfs-lib.sh
@@ -130,7 +135,7 @@ function copy_file() {
 #  if [ -d $dest ] && [ ! -d $filename ]; then
 #    dest="$dest/"$(basename $filename)
 #  fi
-#  if [ ! -e $dest ] || [ $(stat -c%Y $dest) -lt $(stat -c%Y $source) ]; then
+#  if is_modified $source $dest then
     cp -auf $filename ${dest}
 #  fi
 }
@@ -218,10 +223,14 @@ function copy_filelist() {
     		fi
   			# only copy file
   		else
-    		echo_local_debug "Copy file (std) $file => $destdir/$dirname"
     		dirname=`dirname $file`
-    		create_dir ${destdir}$dirname
-    		copy_file $file ${destdir}$dirname
+    		if is_modified $file $destdir/$file; then
+    		  echo_local_debug "Copy file (std) $file => $destdir/$dirname"
+    		  create_dir ${destdir}$dirname
+    		  copy_file $file ${destdir}$dirname
+    		else
+    		  echo_local_debug "Skip file (std) $file cause it exists or is not modified."
+    		fi
   		fi
   		i=$(( $i+1 ))
 	done
@@ -333,7 +342,10 @@ function umount_filesystem {
 #************ umount_filesystem
 ######################
 # $Log: stdfs-lib.sh,v $
-# Revision 1.8  2010-01-04 13:15:26  marc
+# Revision 1.9  2010-03-29 18:36:28  marc
+# - change copy_filelist to only copy if file is changed.
+#
+# Revision 1.8  2010/01/04 13:15:26  marc
 # get_dep_mountpoints and is_mounted may not point to /proc/mounts
 #
 # Revision 1.7  2009/12/09 09:26:57  marc
