@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.73 2010-02-17 09:48:06 marc Exp $
+# $Id: gfs-lib.sh,v 1.74 2010-03-29 19:48:12 marc Exp $
 #
 # @(#)$File$
 #
@@ -211,7 +211,7 @@ gfs_get() {
 #  SOURCE
 #
 gfs_get_clustername() {
-   gfs_get $1 query_value /cluster/@name	
+   gfs_get clustername_name $1	
 }
 # *********** gfs_get_clustername
 
@@ -1430,7 +1430,10 @@ function gfs_chroot_needed() {
 }
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.73  2010-02-17 09:48:06  marc
+# Revision 1.74  2010-03-29 19:48:12  marc
+# fixed gfs_get_clustername
+#
+# Revision 1.73  2010/02/17 09:48:06  marc
 # typos
 #
 # Revision 1.72  2010/02/16 10:05:15  marc
