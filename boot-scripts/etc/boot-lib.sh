@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.81 2010-03-08 13:07:38 marc Exp $
+# $Id: boot-lib.sh,v 1.82 2010-03-29 18:35:30 marc Exp $
 #
 # @(#)$File$
 #
@@ -36,12 +36,6 @@
 #LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/lib/i686:/usr/lib"
 PATH=/bin:/sbin:/usr/bin:/usr/sbin
 export PATH #LD_LIBRARY_PATH
-
-# Binaries
-STAT="/usr/bin/stat"
-COPY="/bin/cp"
-MOVE="/bin/mv"
-MKDIR="/bin/mkdir"
 
 step_timeout=10
 bootlog="/var/log/comoonics-boot.log"
@@ -1029,7 +1023,10 @@ function check_mtab {
 #************** check_mtab
 
 # $Log: boot-lib.sh,v $
-# Revision 1.81  2010-03-08 13:07:38  marc
+# Revision 1.82  2010-03-29 18:35:30  marc
+# - removed some binary definitions to std-lib.sh
+#
+# Revision 1.81  2010/03/08 13:07:38  marc
 # moved check_mtab to here.
 #
 # Revision 1.80  2010/02/05 12:44:43  marc
