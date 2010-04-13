@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.42 2010-03-08 13:09:40 marc Exp $
+# $Id: hardware-lib.sh,v 1.43 2010-04-13 14:07:22 marc Exp $
 #
 # @(#)$File$
 #
@@ -166,7 +166,9 @@ function scsi_get_drivers {
 #
 function scsi_start() {
   local scsifailover=$1
-  echo_local "Starting scsi-driver..."
+  shift
+  local scsidrivers=$*
+  echo_local "Starting scsi..."
 
   # SCSI should not be loaded with xen!!
   xen_domx_detect
@@ -189,16 +191,18 @@ function scsi_start() {
     fi
   fi
 
-  if [ -n "${FC_MODULES}" ]; then
-    echo_local -n "Loading $FC_MODULES"
-    exec_local modprobe ${FC_MODULES}
-    return_code
-  else
-    echo_local -n "Loading all detected SCSI modules"
-    for hostadapter in $(cat ${modules_conf} | awk '/scsi_hostadapter.*/ {print $3}'); do
+  if [ -z "${scsi_drivers}" ]; then
+    scsi_drivers=$(cat ${modules_conf} | awk '/scsi_hostadapter.*/ {print $3}')
+  fi
+  if [ -n "${scsi_drivers}" ]; then
+    echo_local -n "Loading all detected SCSI modules ($scsi_drivers)"
+    for hostadapter in $scsi_drivers; do
       exec_local modprobe ${hostadapter}
     done
     return_code
+    udev_start $($scsifailover)
+  else
+    udev_start $($scsifailover)
   fi
 
   if [ -n "$scsifailover" ] && [ "$scsifailover" = "rdac" ]; then
@@ -315,17 +319,11 @@ function usbLoad() {
 #  SOURCE
 #
 function dm_start {
-  local scsifailover=$1
-   if [ -n "$scsifailover" ] && [ "$scsifailover" = "rdac" ]; then
-      passed
-   else
-     echo_local -n "Loading device mapper modules"
-     for module in $(dm_get_drivers); do
-       exec_local modprobe $module >/dev/null 2>&1
-     done
-     return_code $?
-   fi
-   #/sbin/udevstart
+  echo_local -n "Loading device mapper modules"
+  for module in $(dm_get_drivers); do
+    exec_local modprobe $module >/dev/null 2>&1
+  done
+  return_code $?
 }
 #************ dm_start
 
@@ -750,7 +748,10 @@ stabilized() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.42  2010-03-08 13:09:40  marc
+# Revision 1.43  2010-04-13 14:07:22  marc
+# - fixed rdac implementation
+#
+# Revision 1.42  2010/03/08 13:09:40  marc
 # dm_start might take scsi_failover as param
 #
 # Revision 1.41  2010/02/05 12:35:58  marc
