@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.90 2010-03-08 13:06:28 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.91 2010-04-13 14:07:58 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.90 2010-03-08 13:06:28 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.91 2010-04-13 14:07:58 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -88,7 +88,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.90 $ $Date: 2010-03-08 13:06:28 $'
+echo_local 'Internal Version $Revision: 1.91 $ $Date: 2010-04-13 14:07:58 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -173,7 +173,7 @@ step "NIC modules loaded." "autonetconfig"
 
 echo_local -n "Scanning other parameters "
 _ccparameters="votes tmpfix quorumack ip rootvolume rootsource syslogserver syslogfilter"
-_fsparameters="sourceserver lockmethod root mountopts scsifailover rootfsck mounttimes mountwait"
+_fsparameters="sourceserver lockmethod root mountopts scsi_failover scsi_driver rootfsck mounttimes mountwait"
 echo_local_debug -N -n "cc: $_ccparameters fs: $_fsparameters "
 
 for _parameter in $_ccparameters; do
@@ -328,9 +328,8 @@ if [ $is_syslog -eq 0 ]; then
 fi
 
 if clusterfs_blkstorage_needed $(repository_get_value rootfs); then
-  udev_start $(repository_get_value scsi_failover)
   dm_start $(repository_get_value scsi_failover)
-  scsi_start $(repository_get_value scsi_failover)
+  scsi_start $(repository_get_value scsi_failover) $(repository_get_value scsi_driver)
 
   # start iscsi if apropriate
   typeset -f isISCSIRootsource >/dev/null 2>&1 && isISCSIRootsource $(repository_get_value rootsource)
@@ -339,7 +338,7 @@ if clusterfs_blkstorage_needed $(repository_get_value rootfs); then
 	startISCSI $(repository_get_value rootsource) $(repository_get_value nodename)
   fi
   [ -e /proc/scsi/scsi ]  && stabilized --type=hash --interval=600 /proc/scsi/scsi
-  if [ "$(repository_get_value scsifailover)" = "mapper" ] || [ "$(repository_get_value scsifailover)" = "devicemapper" ]; then
+  if [ "$(repository_get_value scsi_failover)" = "mapper" ] || [ "$(repository_get_value scsi_failover)" = "devicemapper" ]; then
     dm_mp_start
   fi
   
@@ -584,7 +583,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.90  2010-03-08 13:06:28  marc
+# Revision 1.91  2010-04-13 14:07:58  marc
+# support for scsi_failover and scsi_driver as bootparameter
+#
+# Revision 1.90  2010/03/08 13:06:28  marc
 # - added sematic to check if / is mounted ro and then do no rw action
 # - fixed bug with mountopts (ro/rw)
 # - fixed bug with scsi-failover and scsifailover as bootparameter
