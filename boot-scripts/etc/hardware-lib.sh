@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.43 2010-04-13 14:07:22 marc Exp $
+# $Id: hardware-lib.sh,v 1.44 2010-04-23 10:12:39 marc Exp $
 #
 # @(#)$File$
 #
@@ -200,9 +200,9 @@ function scsi_start() {
       exec_local modprobe ${hostadapter}
     done
     return_code
-    udev_start $($scsifailover)
+    exec_local udev_start $scsifailover
   else
-    udev_start $($scsifailover)
+    exec_local udev_start $scsifailover
   fi
 
   if [ -n "$scsifailover" ] && [ "$scsifailover" = "rdac" ]; then
@@ -748,7 +748,10 @@ stabilized() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.43  2010-04-13 14:07:22  marc
+# Revision 1.44  2010-04-23 10:12:39  marc
+# fixed bug with starting of udevd.
+#
+# Revision 1.43  2010/04/13 14:07:22  marc
 # - fixed rdac implementation
 #
 # Revision 1.42  2010/03/08 13:09:40  marc
