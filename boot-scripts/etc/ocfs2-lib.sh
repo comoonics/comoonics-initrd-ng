@@ -1,5 +1,5 @@
 #
-# $Id: ocfs2-lib.sh,v 1.6 2010-01-04 13:24:22 marc Exp $
+# $Id: ocfs2-lib.sh,v 1.7 2010-04-23 10:13:04 marc Exp $
 #
 # @(#)$File$
 #
@@ -249,6 +249,8 @@ function ocfs2_services_restart_newroot {
   echo_local -n "Moving dlmfs to $new_root/dlm"
   exec_local mount --move /dlm $new_root/dlm
   return_code
+
+  exec_local umount $chroot_path/proc
   
   return $return_c
 }
@@ -321,7 +323,10 @@ function ocfs2_fsck {
 #********* ocfs2_fsck
 
 # $Log: ocfs2-lib.sh,v $
-# Revision 1.6  2010-01-04 13:24:22  marc
+# Revision 1.7  2010-04-23 10:13:04  marc
+# umount proc in order to get udevd startet automatically.
+#
+# Revision 1.6  2010/01/04 13:24:22  marc
 # changed default mountops
 #
 # Revision 1.5  2009/09/28 13:04:01  marc
