@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.25 2010-03-08 19:35:14 marc Exp $
+# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.26 2010-04-23 10:23:53 marc Exp $
 #
 ##
 ##
@@ -52,7 +52,7 @@ Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-rhel
 Requires: comoonics-bootimage-listfiles-rhel5
 #Conflicts: 
-Release: 15.rhel5
+Release: 16.rhel5
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -80,6 +80,7 @@ install -m600 initscripts/rhel5/halt-xtab.patch $RPM_BUILD_ROOT/%{APPDIR}/patche
 #install -m600 initscripts/rhel5/halt-local.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/halt-local.patch
 install -m600 initscripts/rhel5/halt-killall.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/halt-killall.patch
 install -m600 initscripts/rhel5/halt-comoonics.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/halt-comoonics.patch
+install -m600 initscripts/rhel5/netfs-tabs.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/netfs-xtab.patch
 install -m600 initscripts/rhel5/netfs-xtab.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/netfs-xtab.patch
 install -m600 initscripts/rhel5/netfs-comoonics.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/netfs-comoonics.patch
 install -m600 initscripts/rhel5/network-xrootfs.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/network-xrootfs.patch
@@ -231,6 +232,9 @@ fi
 rm -rf %{buildroot}
 
 %changelog
+* Fri Apr 23 2010 Marc Grimme <grimme@atix.de> 1.4-16el5
+- netfs-tab.patch: initial revision
+- netfs-xtab.patch: removed old data
 * Tue Feb 23 2010 Marc Grimme <grimme@atix.de> 1.4-15el5
 - Fixes in check_mtab
 * Fri Oct 09 2009 Marc Grimme <grimme@atix.de> 1.4-13el5
@@ -271,7 +275,10 @@ rm -rf %{buildroot}
 - first revision
 # ------
 # $Log: comoonics-bootimage-initscripts-el5.spec,v $
-# Revision 1.25  2010-03-08 19:35:14  marc
+# Revision 1.26  2010-04-23 10:23:53  marc
+# new versions
+#
+# Revision 1.25  2010/03/08 19:35:14  marc
 # comoonics-4.6-rc1
 #
 # Revision 1.24  2010/02/07 20:35:13  marc

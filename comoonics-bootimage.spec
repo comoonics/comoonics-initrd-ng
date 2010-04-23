@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.114 2010-03-11 10:31:23 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.115 2010-04-23 10:23:53 marc Exp $
 #
 ##
 ##
@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 45
+Release: 48
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -916,6 +916,16 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Fri Apr 23 2010 Marc Grimme <grimme@atix.de> 1.4-48
+- boot-scripts/etc/ocfs2-lib.sh: Umounting ../proc in restart_newroot
+- boot-scripts/etc/hardware-lib.sh: Fixed bug with udevd not being started
+- boot-scripts/linuxrc.generic.sh: Fixed bug that xtab was not created.
+* Tue Apr 13 2010 Marc Grimme <grimme@atix.de> 1.4-47
+- fixed bug with rdac
+- added support for scsi_failover, scsi_driver bootparameter
+* Mon Mar 29 2010 Marc Grimme <grimme@atix.de> 1.4-46
+- gfs-lib.sh: fixed bug in gfs_get_clustername
+- stdfs-lib.sh: copy_filelist copies only changed files  
 * Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 1.4-45
 - first version for comoonics-4.6-rc1 
 * Tue Feb 23 2010 Marc Grimme <grimme@atix.de> 1.4-44
@@ -1520,7 +1530,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.114  2010-03-11 10:31:23  marc
+# Revision 1.115  2010-04-23 10:23:53  marc
+# new versions
+#
+# Revision 1.114  2010/03/11 10:31:23  marc
 # comoonics-4.6-rc1
 #
 # Revision 1.113  2010/03/08 19:35:14  marc
