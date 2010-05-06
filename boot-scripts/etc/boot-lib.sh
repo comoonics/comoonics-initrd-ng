@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.82 2010-03-29 18:35:30 marc Exp $
+# $Id: boot-lib.sh,v 1.83 2010-05-06 15:20:27 mark Exp $
 #
 # @(#)$File$
 #
@@ -832,7 +832,7 @@ function stop_service {
 #  SOURCE
 #
 function clean_initrd() {
-	local procs="udevd"
+	local procs="udevd dmeventd"
 	echo_local_debug -N -n "Sending unnecessary processes the TERM signal"
 	for p in $procs; do
 		killall -0 $p && killall $p &> /dev/null
@@ -1023,7 +1023,11 @@ function check_mtab {
 #************** check_mtab
 
 # $Log: boot-lib.sh,v $
-# Revision 1.82  2010-03-29 18:35:30  marc
+# Revision 1.83  2010-05-06 15:20:27  mark
+# added dmeventd for cleanup.
+# This patch is needed for lvm mirroring
+#
+# Revision 1.82  2010/03/29 18:35:30  marc
 # - removed some binary definitions to std-lib.sh
 #
 # Revision 1.81  2010/03/08 13:07:38  marc
