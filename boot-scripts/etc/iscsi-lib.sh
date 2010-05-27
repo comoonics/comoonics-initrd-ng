@@ -1,5 +1,5 @@
 #
-# $Id: iscsi-lib.sh,v 1.14 2009-08-11 09:57:48 marc Exp $
+# $Id: iscsi-lib.sh,v 1.15 2010-05-27 09:51:33 marc Exp $
 #
 # @(#)$File$
 #
@@ -115,20 +115,20 @@ function createCiscoISCSICfgString {
 #  SOURCE
 #
 function iscsi_get_drivers {
-	echo "iscsi_tcp scsi_transport_iscsi libiscsi"
+   echo "cxgb3i bnx2i iscsi_tcp ib_iser scsi_transport_iscsi"
 }
 #************ iscsi_get_drivers
 
-#****f* iscsi-lib.sh/loadISCSI
+#****f* iscsi-lib.sh/load_iscsi
 #  NAME
-#    loadISCSI
+#    load_iscsi
 #  SYNOPSIS
-#    function loadISCSI
+#    function load_iscsi
 #  MODIFICATION HISTORY
 #  IDEAS
 #  SOURCE
 #
-function loadISCSI {
+function load_iscsi {
 	local iscsimodules=$(iscsi_get_drivers)
 	echo_local -n "Loading iscsimodules"
 	for module in $iscsimodules; do
@@ -136,55 +136,115 @@ function loadISCSI {
 	done
 	return_code
 }
-#************ loadISCSI
+#************ load_iscsi
 
-#****f* iscsi-lib.sh/startISCSI
+#****f* iscsi-lib.sh/start_iscsi
 #  NAME
-#    startISCSI
+#    start_iscsi
 #  SYNOPSIS
-#    function startISCSI
+#    function start_iscsi(rootsource)
 #  MODIFICATION HISTORY
 #  IDEAS
 #  SOURCE
 #
-function startISCSI {
+function start_iscsi {
 	local rootsource=$1
-	local nodename=$2
+	local root=$2
+	local chroot="chroot"
+	if [ -z "$root" ]; then
+	   chroot=""
+	fi
+	
 	local iscsiserver=$(getISCSIServerFromParam $rootsource)
-	local iscsimodules="iscsi_tcp"
 	local iscsiinitiatorname=$(getISCSIInitiatorFromParam $rootsource)
-	echo_local -n "Starting iscsid"
+	echo_local -n "Starting iscsid in $root"
 	
 	if [ -n "$iscsiinitiatorname" ]; then
-		echo "InitiatorName=$iscsiinitiatorname" >/etc/iscsi/initiatorname.iscsi
+		echo "InitiatorName=$iscsiinitiatorname" >$chroot/etc/iscsi/initiatorname.iscsi
 		echo_local -n "Initiatorname is $iscsiinitiatorname"
 	fi
-    modprobe -q iscsi_tcp
-    modprobe -q ib_iser
-    exec_local iscsid
+    exec_local $chroot brcm_iscsiuio
+    exec_local $chroot iscsid
 	return_code $?
 	if [ -n "$iscsiserver" ]; then
+	   rm -rf $chroot/var/lib/iscsi
+
+       iscsi_add_nics $iscsiserver
 	   echo_local -n "Importing from node $iscsiserver"
-	   rm -rf /var/lib/iscsi
-	   iscsiadm --mode discovery --type sendtargets --portal $iscsiserver &&
-       iscsiadm -m node --loginall=automatic
+	   exec_local $chroot iscsiadm --mode discovery --type sendtargets --portal $iscsiserver &&
+       exec_local $chroot iscsiadm --mode node --loginall=automatic
+       return_code $?
 	else
 	   echo_local -n "Importing old nodes"
-       iscsiadm -m node --loginall=automatic
+       exec_local $chroot iscsiadm --mode node --loginall=automatic
+       return_code
 	fi
+    touch $root/var/lock/subsys/iscsi 2>/dev/null
+    touch $root/var/lock/subsys/iscsid 2>/dev/null
 }
-#************ startISCSI
+#************ start_iscsi
 
-#****f* iscsi-lib.sh/isISCSIRootsource
+function iscsi_add_nics() {
+  local iscsiserver=$1
+  local iscsinetwork=""
+  local ipaddr=""
+  for nic in $(ip addr show | grep "^[[:digit:]][[:digit:]]*: [[:alpha:]][[:alpha:]]*" | cut --delimiter=: --field=2); do
+         ipaddr=$(ip addr show dev $nic | grep "inet " | cut --fields=6 --delimiter=' ')
+         if [ -n "$ipaddr" ]; then
+           ipbits=$(echo $ipaddr | sed -e 's/^[^\/]*\///')
+           eval $(ipcalc --ipv4 --prefix="" --network ${iscsiserver}"/"${ipbits})
+           iscsinetwork=$NETWORK
+	       eval $(ipcalc --ipv4 --prefix="" --network $ipaddr)
+	       if [ "$iscsinetwork" = "$NETWORK" ]; then
+             echo_local -n "Adding nic $nic to iscsi configuration"
+	         # here we need to add the command to add a nic to the iscsi environment
+	         exec_local $chroot iscsiadm -m iface -I $nic -o new &&
+	         exec_local $chroot iscsiadm -m iface -I $nic -o update -n iface.net_ifacename -v $nic
+	         return_code $?
+	       fi
+	     fi
+  done
+  unset NETWORK
+}
+
+#****f* iscsi-lib.sh/restart_iscsi_newroot
 #  NAME
-#    isISCSIRootsource
+#    restart_iscsi_newroot
 #  SYNOPSIS
-#    function isISCSIRootsource
+#    function restart_iscsi_newroot(rootsource, newroot, chroot)
 #  MODIFICATION HISTORY
 #  IDEAS
 #  SOURCE
 #
-function isISCSIRootsource {
+function restart_iscsi_newroot {
+   local rootsource=$1
+   local newroot=$2
+   local chroot=$3
+   
+   echo_local -n "Stopping iscsid in oldroot"
+   for service in "iscsid brcm_iscsiuio"; do
+      killall $service
+      killall -0 $service 2>/dev/null && sleep 3
+      killall -0 $service 2>/dev/null && killall -9 $service
+      killall -0 $service
+   done
+   return_code
+   rm -f $newroot/var/lock/subsys/iscsi 2>/dev/null
+   rm -f $newroot/var/lock/subsys/iscsid 2>/dev/null
+   start_iscsi $rootsource $newroot
+}
+#*************** restart_iscsi_newroot
+
+#****f* iscsi-lib.sh/is_iscsi_rootsource
+#  NAME
+#    is_iscsi_rootsource
+#  SYNOPSIS
+#    function is_iscsi_rootsource
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function is_iscsi_rootsource {
 	local rootsource=$1
 	if [ -z "$rootsource" ]; then
 		return 1
@@ -200,10 +260,26 @@ function isISCSIRootsource {
     fi
     return 1
 }
-#************ isISCSIRootsource
+#************ is_iscsi_rootsource
 
 # $Log: iscsi-lib.sh,v $
-# Revision 1.14  2009-08-11 09:57:48  marc
+# Revision 1.15  2010-05-27 09:51:33  marc
+# iscsi_get_drivers:
+#    - added drivers: cxgb3i bnx2i ib_iser, removed: libiscsi
+# load_iscsi
+#    - changed name from load_ISCSI to load_iscsi
+# start_iscsi
+#    - changed name from startISCSI to start_iscsi
+#    - added support for multiple nics from the same network (bases for dm-multipath)
+#    - code more similar to initscript
+# iscsi_add_nics (new)
+#    - add found nics to iscsi environment
+# restart_iscsi_newroot (new)
+#    - restarts iscsid in newroot
+# is_iscsi_rootsource
+#    - changed name from isISCSIRootsource to is_iscsi_rootsource
+#
+# Revision 1.14  2009/08/11 09:57:48  marc
 # Here is a patch that uses an extended rootsource syntax for setting an
 # node-specific Initiatorname.
 # The syntax used is: <rootsource
