@@ -1,5 +1,5 @@
 #
-# $Id: ocfs2-lib.sh,v 1.7 2010-04-23 10:13:04 marc Exp $
+# $Id: ocfs2-lib.sh,v 1.8 2010-05-27 09:52:24 marc Exp $
 #
 # @(#)$File$
 #
@@ -250,7 +250,16 @@ function ocfs2_services_restart_newroot {
   exec_local mount --move /dlm $new_root/dlm
   return_code
 
-  exec_local umount $chroot_path/proc
+  if is_mounted $new_root/proc; then
+     for path in $(get_dep_filesystems $new_root/proc); do
+        echo_local -n "Umounting filesystem $path"
+        exec_local umount_filesystem $path
+        return_code
+     done
+  fi
+  echo_local -n "Umounting $new_root/proc"
+  exec_local umount_filesystem $new_root/proc
+  return_code $?
   
   return $return_c
 }
@@ -323,7 +332,10 @@ function ocfs2_fsck {
 #********* ocfs2_fsck
 
 # $Log: ocfs2-lib.sh,v $
-# Revision 1.7  2010-04-23 10:13:04  marc
+# Revision 1.8  2010-05-27 09:52:24  marc
+# umount proc
+#
+# Revision 1.7  2010/04/23 10:13:04  marc
 # umount proc in order to get udevd startet automatically.
 #
 # Revision 1.6  2010/01/04 13:24:22  marc
