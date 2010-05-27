@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.19 2009-03-16 19:23:54 marc Exp $
+# $Id: gfs-lib.sh,v 1.20 2010-05-27 09:42:43 marc Exp $
 #
 # @(#)$File$
 #
@@ -206,7 +206,16 @@ function gfs_services_restart_newroot {
     done
   fi
 
-  exec_local umount $chroot_path/proc
+  if is_mounted $chroot_path/proc; then
+     for path in $(get_dep_filesystems $chroot_path/proc); do
+        echo_local -n "Umounting filesystem $path"
+        exec_local umount_filesystem $path
+        return_code
+     done
+  fi
+  echo_local -n "Umounting $chroot_path/proc"
+  exec_local umount_filesystem $chroot_path/proc
+  return_code $?
 
   return $return_c
 }
@@ -329,7 +338,10 @@ function gfs_start_cman {
 
 ###############
 # $Log: gfs-lib.sh,v $
-# Revision 1.19  2009-03-16 19:23:54  marc
+# Revision 1.20  2010-05-27 09:42:43  marc
+# - reworked umount of proc.
+#
+# Revision 1.19  2009/03/16 19:23:54  marc
 # fix for bug #335 fence_tool -m
 #
 # Revision 1.18  2009/02/20 09:49:42  marc
