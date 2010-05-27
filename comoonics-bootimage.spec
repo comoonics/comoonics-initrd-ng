@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.115 2010-04-23 10:23:53 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.116 2010-05-27 09:57:35 marc Exp $
 #
 ##
 ##
@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 48
+Release: 50
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -204,7 +204,7 @@ listfiles for xen support in the OSR cluster
 
 %package extras-iscsi
 Version: 0.1
-Release: 5
+Release: 9
 Requires: comoonics-bootimage >= 1.3-33
 Summary: Listfiles for iscsi support in the open-sharedroot cluster
 Group:   System Environment/Base
@@ -916,6 +916,16 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Thu May 27 2010 Marc Grimme <grimme@atix.de> 1.4-50
+- create_initrd_generic.sh: fixed bug that mkinitrd will temporarily aquire much space where initrd should be created. Will now be in /tmp.
+- boot-scripts/etc/hardware-lib.sh: added hp_ilo to usb drivers to support Remote Console of HP ILO.
+* Tue May 18 2010 Marc Grimme <grimme@atix.de> 1.4-49
+- boot-scripts/etc/gfs-lib.sh: lvm activation only for the vg in question, +scsi_restart_newroot
+- boot-scripts/etc/hardware-lib.sh: iscsi setup moved here, introduced scsi_restart_newroot, lvm action only for the vg in question
+- boot-scripts/linux.generic.sh: removed iscsi setup
+- boot-scripts/etc/rhel5/gfs-lib.sh: reviewed restart of clvmd and umount of /proc
+- boot-scripts/etc/ocfs2-lib.sh: reviewed umount of /proc
+- boot-scripts/etc/nfs-lib.sh: reviewed umount of /proc
 * Fri Apr 23 2010 Marc Grimme <grimme@atix.de> 1.4-48
 - boot-scripts/etc/ocfs2-lib.sh: Umounting ../proc in restart_newroot
 - boot-scripts/etc/hardware-lib.sh: Fixed bug with udevd not being started
@@ -1210,6 +1220,8 @@ rm -rf %{buildroot}
 - first release
 
 %changelog extras-iscsi
+* Tue May 18 2010 Marc Grimme <grimme@atix.de> 0.1-8
+- boot-scripts/etc/iscsi-lib.sh: support for multiple nics in the same network (multipathing), iscsi_restart
 * Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-7
 - first version for comoonics-4.6-rc1 
 * Tue Aug 11 2009 Marc Grimme <grimme@atix.de> - 0.1-6
@@ -1530,7 +1542,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.115  2010-04-23 10:23:53  marc
+# Revision 1.116  2010-05-27 09:57:35  marc
+# new versions 1.4-49, 1.4-50
+#
+# Revision 1.115  2010/04/23 10:23:53  marc
 # new versions
 #
 # Revision 1.114  2010/03/11 10:31:23  marc
