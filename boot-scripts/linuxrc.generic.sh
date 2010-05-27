@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.92 2010-04-23 10:13:32 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.93 2010-05-27 09:54:09 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.92 2010-04-23 10:13:32 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.93 2010-05-27 09:54:09 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -88,7 +88,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.92 $ $Date: 2010-04-23 10:13:32 $'
+echo_local 'Internal Version $Revision: 1.93 $ $Date: 2010-05-27 09:54:09 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -329,14 +329,7 @@ fi
 
 if clusterfs_blkstorage_needed $(repository_get_value rootfs); then
   dm_start $(repository_get_value scsi_failover)
-  scsi_start $(repository_get_value scsi_failover) $(repository_get_value scsi_driver)
-
-  # start iscsi if apropriate
-  typeset -f isISCSIRootsource >/dev/null 2>&1 && isISCSIRootsource $(repository_get_value rootsource)
-  if [ $? -eq 0 ]; then
-	loadISCSI
-	startISCSI $(repository_get_value rootsource) $(repository_get_value nodename)
-  fi
+  scsi_start "$(repository_get_value scsi_failover)" "$(repository_get_value rootsource)" $(repository_get_value scsi_driver)
   [ -e /proc/scsi/scsi ]  && stabilized --type=hash --interval=600 /proc/scsi/scsi
   if [ "$(repository_get_value scsi_failover)" = "mapper" ] || [ "$(repository_get_value scsi_failover)" = "devicemapper" ]; then
     dm_mp_start
@@ -351,7 +344,7 @@ if clusterfs_blkstorage_needed $(repository_get_value rootfs); then
   lvm_sup=$?
   repository_store_value lvm_sup $lvm_sup
   if [ "$lvm_sup" -eq 0 ]; then
-	lvm_start || breakp $(errormsg err_storage_lvm)
+	lvm_start $(repository_get_value root) || breakp $(errormsg err_storage_lvm)
 	step "LVM subsystem started" "lvm"
   fi
 fi
@@ -571,8 +564,13 @@ step "Cleaned up initrd" "cleanup"
 #TODO umount $newroot/proc again
 
 echo_local "Restart services in newroot ..."
+
 exec_local prepare_newroot $(repository_get_value newroot)
+
+exec_local scsi_restart_newroot $(repository_get_value rootsource) "$(repository_get_value newroot)" "$(repository_get_value chroot_path)"
+
 exec_local clusterfs_services_restart_newroot $(repository_get_value newroot) "$(repository_get_value lockmethod)" "$(repository_get_value lvm_sup)" "$(repository_get_value chroot_path)" || breakp $(errormsg err_cc_restart_service)
+
 step "Initialization completed." "initcomplete"
 
 newroot=$(repository_get_value newroot)
@@ -583,7 +581,11 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.92  2010-04-23 10:13:32  marc
+# Revision 1.93  2010-05-27 09:54:09  marc
+# - removed iscsistart (now in hardware-lib.sh)
+# - added rootsource to lvm functions (only activate vg for rootfs)
+#
+# Revision 1.92  2010/04/23 10:13:32  marc
 # Fixed bug that no xtab would be created.
 #
 # Revision 1.91  2010/04/13 14:07:58  marc
