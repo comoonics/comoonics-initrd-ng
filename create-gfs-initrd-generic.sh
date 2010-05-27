@@ -6,7 +6,7 @@
 #  DESCRIPTION
 #*******
 #
-# $Id: create-gfs-initrd-generic.sh,v 1.28 2010-02-21 12:09:32 marc Exp $
+# $Id: create-gfs-initrd-generic.sh,v 1.29 2010-05-27 09:54:52 marc Exp $
 #
 # @(#)$File$
 #
@@ -122,7 +122,7 @@ function getoptions() {
     while getopts LUoRFVvhlpPm:fd:s:r:b:A:D:M: option ; do
 	case "$option" in
 	    v) # version
-		echo "$0 Version "'$Revision: 1.28 $'
+		echo "$0 Version "'$Revision: 1.29 $'
 		exit 0
 		;;
 	    h) # help
@@ -498,7 +498,7 @@ if [ -z "$initramfs" ] || [ $initramfs -eq 0 ]; then
    rm $lockfile) || (failure && rm $lockfile && exit $?)
 else
   echo_local -N -n "Cpio and compress.."
-  (cpio_and_zip_initrd $mountpoint $initrdname $force && \
+  (cpio_and_zip_initrd $mountpoint $initrdname "$force" "$TMPDIR" && \
    rm $lockfile) || (failure && rm $lockfile && exit $?)
 fi
 success
@@ -514,7 +514,10 @@ ls -lk $initrdname
 
 ##########################################
 # $Log: create-gfs-initrd-generic.sh,v $
-# Revision 1.28  2010-02-21 12:09:32  marc
+# Revision 1.29  2010-05-27 09:54:52  marc
+# add TMPDIR as parameter to cpio_and_zip_initrd
+#
+# Revision 1.28  2010/02/21 12:09:32  marc
 # fixed bug in copy of kernel modules were linked modules would not be copied.
 #
 # Revision 1.27  2010/02/05 12:52:52  marc
