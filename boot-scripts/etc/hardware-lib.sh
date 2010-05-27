@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.44 2010-04-23 10:12:39 marc Exp $
+# $Id: hardware-lib.sh,v 1.45 2010-05-27 09:47:37 marc Exp $
 #
 # @(#)$File$
 #
@@ -159,13 +159,15 @@ function scsi_get_drivers {
 #  NAME
 #    scsi_start
 #  SYNOPSIS
-#    function boot-lib.sh/scsi_start(scsifailover)
+#    function boot-lib.sh/scsi_start(scsifailover, rootsource)
 #  MODIFICATION HISTORY
 #  IDEAS
 #  SOURCE
 #
 function scsi_start() {
   local scsifailover=$1
+  shift
+  local rootsource=$1
   shift
   local scsidrivers=$*
   echo_local "Starting scsi..."
@@ -230,10 +232,41 @@ function scsi_start() {
         done
       done
     fi
+
+    # start iscsi if apropriate
+    typeset -f is_iscsi_rootsource >/dev/null 2>&1 && is_iscsi_rootsource $rootsource
+    if [ $? -eq 0 ]; then
+	  load_iscsi
+	  start_iscsi $rootsource
+    fi
+
     stabilized -g 5 -t hash /proc/scsi/scsi
     echo_local_debug "Configured SCSI-Devices:"
     exec_local_debug /bin/cat /proc/scsi/scsi
   fi
+}
+#************ scsi_start
+
+#****f* boot-lib.sh/scsi_restart_newroot
+#  NAME
+#    scsi_restart_newroot
+#  SYNOPSIS
+#    function boot-lib.sh/scsi_restart_newroot(scsifailover, rootsource, newroot, chroot)
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function scsi_restart_newroot() {
+    local failover=$1
+    local rootsource=$2
+    local newroot=$3
+    local chroot=$4
+    
+    echo_local "Restarting scsi services in newroot $newroot"
+    typeset -f is_iscsi_rootsource >/dev/null 2>&1 && is_iscsi_rootsource $rootsource
+    if [ $? -eq 0 ]; then
+	  restart_iscsi_newroot $rootsource $newroot $chroot
+    fi
 }
 #************ scsi_start
 
@@ -283,7 +316,7 @@ function dm_mp_start() {
 #  SOURCE
 #
 function usb_get_drivers {
-	echo "ehci_hcd ohci_hcd uhci_hcd hidp"
+	echo "ehci_hcd ohci_hcd uhci_hcd hidp hpilo"
 }
 #************ usb_get_drivers
 
@@ -389,32 +422,52 @@ function lvm_check {
 #  NAME
 #    lvm_start
 #  SYNOPSIS
-#    function lvm_start() {
+#    function lvm_start(rootdevice) {
 #  MODIFICATION HISTORY
 #  IDEAS
 #  SOURCE
 #
 function lvm_start {
-   echo_local -n "Scanning logical volumes"
-   exec_local lvm vgscan --ignorelockingfailure >/dev/null 2>&1
-   return_code 0
+   local rootdevice=$1
+   local volumegroup=$(lvm_get_vg $rootdevice)
 
-   echo_local -n "Activating logical volumes"
-   exec_local lvm vgchange -ay  --ignorelockingfailure >/dev/null 2>&1
+   echo_local -n "Scanning for volume groups"
+   exec_local lvm vgscan --ignorelockingfailure >/dev/null 2>&1
    return_code 0
 
    echo_local -n "Making device nodes"
    exec_local lvm vgmknodes --ignorelockingfailure >/dev/null 2>&1
    return_code 0
 
+   echo_local -n "Activating volume group $volumegroup"
+   exec_local lvm vgchange -ay  --ignorelockingfailure $volumegroup >/dev/null 2>&1
+   return_code 0
+
    echo_local_debug "Found lvm devices (/dev/mapper): "
    lvm_devices=$(ls -1 /dev/mapper)
    echo_local_debug $lvm_devices
-
-   #exec_local ${LVM_VG_SCAN}
-   #exec_local ${LVM_VG_CHANGE} -ay $pool_name
 }
 #******** lvm_start
+
+#****f* boot-lib.sh/lvm_get_vg
+#  NAME
+#    lvm_get_vg
+#  SYNOPSIS
+#    function lvm_get_vg(rootdevice) {
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function lvm_get_vg {
+   local rootdevice=$1
+   local volumegroup=""
+   if [ "${rootdevice:0:11}" = "/dev/mapper" ]; then
+     echo ${rootdevice:12} | sed -e 's/-\S\S*$//'
+   else
+     basename $(dirname $rootdevice)
+   fi
+}
+#******** lvm_get_vg
 
 #****f* boot-lib.sh/setHWClock
 #  NAME
@@ -748,7 +801,21 @@ stabilized() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.44  2010-04-23 10:12:39  marc
+# Revision 1.45  2010-05-27 09:47:37  marc
+# scsi_start:
+#    - added rootsource as second paramter for iscsi to be started here
+#    - added starting of iscsi
+# scsi_restart_newroot:
+#    - for services to be restarted in newroot (e.g. iscsid)
+# usb_get_drivers
+#    - added driver hp_ilo for ILO remote consoles not over serial
+# lvm_start
+#    - added parameter rootsource
+#    - only activate the volumegroup found in rootsource or activate all
+# lvm_get_vg (new)
+#    - returns the vg of the given device
+#
+# Revision 1.44  2010/04/23 10:12:39  marc
 # fixed bug with starting of udevd.
 #
 # Revision 1.43  2010/04/13 14:07:22  marc
