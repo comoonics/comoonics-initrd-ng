@@ -1,5 +1,5 @@
 #
-# $Id: std-lib.sh,v 1.15 2010-03-08 13:14:27 marc Exp $
+# $Id: std-lib.sh,v 1.16 2010-05-27 09:53:13 marc Exp $
 #
 # @(#)$File$
 #
@@ -836,10 +836,13 @@ function cpio_and_zip_initrd() {
   local filename=$2
   local force=$3
   local opts=""
+  local tmpdir=$4
+  [ -z "$tmpdir" ] && tmpdir=/tmp
+  local tmpfile=$(mktemp ${TMPDIR}/initrd.mnt.XXXXXX)
   [ -z "$compression_cmd" ] && compression_cmd="gzip"
   [ -z "$compression_opts" ] && compression_opts="-c -9"
   [ -n "$force" ] && [ $force -gt 0 ] && opts="-f"
-  ((cd $mountpoint; find . | cpio --quiet -c -o) >| ${filename}.tmp && $compression_cmd $compression_opts $opts ${filename}.tmp > $filename && rm ${filename}.tmp)|| (fuser -mv "$mountpoint" && exit 1)
+  ((cd $mountpoint; find . | cpio --quiet -c -o) >| ${tmpfile} && $compression_cmd $compression_opts $opts ${tmpfile} > $filename && rm ${tmpfile})|| (fuser -mv "$mountpoint" && exit 1)
 }
 #************ cpio_and_zip_initrd
 
@@ -1087,7 +1090,11 @@ exec_ordered_skripts_in() {
 
 #################
 # $Log: std-lib.sh,v $
-# Revision 1.15  2010-03-08 13:14:27  marc
+# Revision 1.16  2010-05-27 09:53:13  marc
+# cpio_and_zip_initrd:
+#   - create tmp file in TMPDIR(/tmp) and not where initrd should be created
+#
+# Revision 1.15  2010/03/08 13:14:27  marc
 # - new functionset get/setPosFromList
 # - fixed bug in exec_local_stabilized that would not use exec_local.
 #
