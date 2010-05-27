@@ -1,5 +1,5 @@
 #
-# $Id: nfs-lib.sh,v 1.15 2009-12-09 10:57:56 marc Exp $
+# $Id: nfs-lib.sh,v 1.16 2010-05-27 09:52:08 marc Exp $
 #
 # @(#)$File$
 #
@@ -107,6 +107,17 @@ function nfs4_services_restart_newroot {
     rm -rf $newroot/var/lib/nfs/rpc_pipefs 2>/dev/null
     ln -s $newroot/$chroot_path/var/lib/nfs/rpc_pipefs $newroot/var/lib/nfs/rpc_pipefs 2>/dev/null
   fi
+
+  if is_mounted $new_root/proc; then
+     for path in $(get_dep_filesystems $new_root/proc); do
+        echo_local -n "Umounting filesystem $path"
+        exec_local umount_filesystem $path
+        return_code
+     done
+  fi
+  echo_local -n "Umounting $new_root/proc"
+  exec_local umount_filesystem $new_root/proc
+  return_code $?
 
   return $return_c
 }
@@ -592,9 +603,16 @@ function nfs_services_restart_newroot {
   done
 #  nfs_stop_portmap $chroot_path
 
+  if is_mounted $new_root/proc; then
+     for path in $(get_dep_filesystems $new_root/proc); do
+        echo_local -n "Umounting filesystem $path"
+        exec_local umount_filesystem $path
+        return_code
+     done
+  fi
   echo_local -n "Umounting $new_root/proc"
-  exec_local umount $new_root/proc
-  return_code
+  exec_local umount_filesystem $new_root/proc
+  return_code $?
 }
 #************ nfs_services_restart_newroot
 
@@ -634,7 +652,10 @@ function nfs_get_userspace_procs {
 #******** nfs_get_userspace_procs
 
 # $Log: nfs-lib.sh,v $
-# Revision 1.15  2009-12-09 10:57:56  marc
+# Revision 1.16  2010-05-27 09:52:08  marc
+# umount /proc
+#
+# Revision 1.15  2009/12/09 10:57:56  marc
 # cosmetics
 #
 # Revision 1.14  2009/08/11 09:58:16  marc
