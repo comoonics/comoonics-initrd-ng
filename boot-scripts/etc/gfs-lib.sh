@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.74 2010-03-29 19:48:12 marc Exp $
+# $Id: gfs-lib.sh,v 1.75 2010-05-27 09:43:31 marc Exp $
 #
 # @(#)$File$
 #
@@ -1146,16 +1146,19 @@ function gfs_restart_ccsd() {
 #
 function gfs_start_clvmd() {
    local chroot_path=$1
+   local volumegroup=$(lvm_get_vg $(repository_get_value root))
 
    #echo_local -n "Starting clvmd ($chroot_path) "
    start_service_chroot $chroot_path /usr/sbin/clvmd
 #   return_code $?
    sleep 10
    echo_local -n "Activating VGs:"
-   exec_local_stabilized 5 10 chroot $chroot_path /sbin/lvm vgscan --mknodes >/dev/null 2>&1
-   exec_local_stabilized 5 10 chroot $chroot_path /sbin/lvm vgchange -ay >/dev/null 2>&1
-   exec_local_stabilized 5 10 /sbin/lvm vgscan --mknodes >/dev/null 2>&1
-   exec_local_stabilized 5 10 /sbin/lvm vgchange -ay >/dev/null 2>&1
+   exec_local_stabilized 3 5 chroot $chroot_path /sbin/lvm vgscan --mknodes >/dev/null 2>&1
+   exec_local_stabilized 3 5 chroot $chroot_path /sbin/lvm vgchange -ay $volumegroup >/dev/null 2>&1
+   if [ -e /dev/urandom ]; then 
+     exec_local_stabilized 3 5 /sbin/lvm vgscan --mknodes >/dev/null 2>&1
+     exec_local_stabilized 3 5 /sbin/lvm vgchange -ay $volumegroup >/dev/null 2>&1
+   fi
    return_code $?
    touch $chroot_path/var/lock/subsys/clvmd 2>/dev/null
    return $return_c
@@ -1200,6 +1203,7 @@ function gfs_stop_clvmd() {
 function gfs_restart_clvmd() {
    local old_root=$1
    local new_root=$2
+   local volumegroup=$(lvm_get_vg $(repository_get_value root))
 
 #   set -x
    echo_local -n "Starting clvmd ($new_root) "$(pwd)
@@ -1207,7 +1211,7 @@ function gfs_restart_clvmd() {
    return_code $?
    echo_local -n "ActivatinActivating VGs:"
    chroot $new_root /sbin/vgscan --mknodes >/dev/null 2>&1
-   chroot $new_root /sbin/vgchange -ayl >/dev/null 2>&1
+   chroot $new_root /sbin/vgchange -ayl $volumegroup >/dev/null 2>&1
    return_code $?
 }
 #******gfs_restart_clvmd
@@ -1430,7 +1434,11 @@ function gfs_chroot_needed() {
 }
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.74  2010-03-29 19:48:12  marc
+# Revision 1.75  2010-05-27 09:43:31  marc
+# - only active the volumegroup needed for rootfs
+# - fixed bug that vgchange fails after restart
+#
+# Revision 1.74  2010/03/29 19:48:12  marc
 # fixed gfs_get_clustername
 #
 # Revision 1.73  2010/02/17 09:48:06  marc
