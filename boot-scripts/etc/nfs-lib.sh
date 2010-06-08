@@ -1,5 +1,5 @@
 #
-# $Id: nfs-lib.sh,v 1.16 2010-05-27 09:52:08 marc Exp $
+# $Id: nfs-lib.sh,v 1.17 2010-06-08 13:35:43 marc Exp $
 #
 # @(#)$File$
 #
@@ -332,6 +332,30 @@ function nfs_get_drivers {
 }
 #*********** nfs_get_drivers
 
+#****f* nfs-lib.sh/nfs_get_mountopts
+#  NAME
+#    nfs_get_mountopts
+#  SYNOPSIS
+#    nfs_get_mountopts(cluster_conf, nodename)
+#  DESCRIPTION
+#    Gets the mountopts for this node
+#  IDEAS
+#  SOURCE
+#
+function nfs_get_mountopts() {
+   local xml_file=$1
+   local hostname=$2
+   [ -z "$hostname" ] && hostname=$(nfs_get_nodename $xml_file)
+   local xml_cmd="${ccs_xml_query} -f $xml_file"
+   _mount_opts=$($xml_cmd -q mountopts $hostname)
+   if [ -z "$_mount_opts" ]; then
+     echo $default_mountopts
+   else
+     echo $_mount_opts
+   fi
+}
+#************ nfs_get_mountopts
+
 #****f* nfs-lib.sh/nfs_load
 #  NAME
 #    nfs_load
@@ -584,7 +608,7 @@ function nfs_start_rpc_statd {
 #  SYNOPSIS
 #    function nfs_services_restart_newroot(lockmethod)
 #  DESCRIPTION
-#    This function loads all relevant gfs modules
+#    This function loads all relevant nfs modules
 #  IDEAS
 #  SOURCE
 #
@@ -619,7 +643,7 @@ function nfs_services_restart_newroot {
 function nfs_checkhosts_alive {
 	return 0
 }
-#********* gfs_checkhosts_alive
+#********* nfs_checkhosts_alive
 
 #****f* nfs-lib.sh/nfs_init
 #  NAME
@@ -652,7 +676,10 @@ function nfs_get_userspace_procs {
 #******** nfs_get_userspace_procs
 
 # $Log: nfs-lib.sh,v $
-# Revision 1.16  2010-05-27 09:52:08  marc
+# Revision 1.17  2010-06-08 13:35:43  marc
+# - fix of bug #378 unimplemented function $rootfs_get_mountopts
+#
+# Revision 1.16  2010/05/27 09:52:08  marc
 # umount /proc
 #
 # Revision 1.15  2009/12/09 10:57:56  marc

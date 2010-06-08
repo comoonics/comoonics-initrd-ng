@@ -1,5 +1,5 @@
 #
-# $Id: ocfs2-lib.sh,v 1.8 2010-05-27 09:52:24 marc Exp $
+# $Id: ocfs2-lib.sh,v 1.9 2010-06-08 13:35:43 marc Exp $
 #
 # @(#)$File$
 #
@@ -331,8 +331,35 @@ function ocfs2_fsck {
 }
 #********* ocfs2_fsck
 
+#****f* ocfs2-lib.sh/ocfs2_get_mountopts
+#  NAME
+#    ocfs2_get_mountopts
+#  SYNOPSIS
+#    ocfs2_get_mountopts(cluster_conf, nodename)
+#  DESCRIPTION
+#    Gets the mountopts for this node
+#  IDEAS
+#  SOURCE
+#
+function ocfs2_get_mountopts() {
+   local xml_file=$1
+   local hostname=$2
+   [ -z "$hostname" ] && hostname=$(ocfs2_get_nodename $xml_file)
+   local xml_cmd="${ccs_xml_query} -f $xml_file"
+   _mount_opts=$($xml_cmd -q mountopts $hostname)
+   if [ -z "$_mount_opts" ]; then
+     echo $default_mountopts
+   else
+     echo $_mount_opts
+   fi
+}
+#************ ocfs2_get_mountopts
+
 # $Log: ocfs2-lib.sh,v $
-# Revision 1.8  2010-05-27 09:52:24  marc
+# Revision 1.9  2010-06-08 13:35:43  marc
+# - fix of bug #378 unimplemented function $rootfs_get_mountopts
+#
+# Revision 1.8  2010/05/27 09:52:24  marc
 # umount proc
 #
 # Revision 1.7  2010/04/23 10:13:04  marc

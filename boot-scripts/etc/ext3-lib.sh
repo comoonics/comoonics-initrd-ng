@@ -1,5 +1,5 @@
 #
-# $Id: ext3-lib.sh,v 1.7 2009-03-25 13:51:00 marc Exp $
+# $Id: ext3-lib.sh,v 1.8 2010-06-08 13:35:43 marc Exp $
 #
 # @(#)$File$
 #
@@ -216,8 +216,35 @@ function ext3_fsck {
 }
 #********* ext3_fsck
 
+#****f* ext3-lib.sh/ext3_get_mountopts
+#  NAME
+#    ext3_get_mountopts
+#  SYNOPSIS
+#    ext3_get_mountopts(cluster_conf, nodename)
+#  DESCRIPTION
+#    Gets the mountopts for this node
+#  IDEAS
+#  SOURCE
+#
+function ext3_get_mountopts() {
+   local xml_file=$1
+   local hostname=$2
+   [ -z "$hostname" ] && hostname=$(ext3_get_nodename $xml_file)
+   local xml_cmd="${ccs_xml_query} -f $xml_file"
+   _mount_opts=$($xml_cmd -q mountopts $hostname)
+   if [ -z "$_mount_opts" ]; then
+     echo $default_mountopts
+   else
+     echo $_mount_opts
+   fi
+}
+#************ ext3_get_mountopts
+
 # $Log: ext3-lib.sh,v $
-# Revision 1.7  2009-03-25 13:51:00  marc
+# Revision 1.8  2010-06-08 13:35:43  marc
+# - fix of bug #378 unimplemented function $rootfs_get_mountopts
+#
+# Revision 1.7  2009/03/25 13:51:00  marc
 # - added get_drivers functions to return modules in more general
 #
 # Revision 1.6  2009/02/18 18:01:14  marc
