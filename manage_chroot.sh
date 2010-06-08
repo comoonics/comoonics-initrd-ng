@@ -7,7 +7,7 @@
 #  DESCRIPTION
 #*******
 #
-# $Id: manage_chroot.sh,v 1.17 2010-03-08 13:19:35 marc Exp $
+# $Id: manage_chroot.sh,v 1.18 2010-06-08 13:53:58 marc Exp $
 #
 # @(#)$File$
 #
@@ -60,6 +60,7 @@ repository_store_value cluster_conf /etc/cluster/cluster.conf
 repository_store_value rootfs $rootfs
 sourceRootfsLibs $(dirname $0)/boot-scripts
 distribution=$(repository_get_value distribution)
+[ -z $MKCDSLINFRASTRUCTURE ] && MKCDSLINFRASTRUCTURE=com-mkcdslinfrastructure
 
 if [ -z "$chrootneeded" ]; then
   clusterfs_chroot_needed init
@@ -98,7 +99,9 @@ function usage() {
      stop_service_cmd <command>  - kills all services with name <command> TODO: in chroot
      status_service_pid <pidfile>  - returns status of service with pidfile in chroot
      status_service_cmd <command>  - returns status of service with name <command> TODO: in chroot
-     mount_cdsl [<cdslpath>] [<cdsllocal>] - mounts the cdsl environment again
+     mount_cdsl mountpoint [root] [<cdslpath>] [<cdsllocal>] - mounts the cdsl environment [again]
+     umount_cdsl mountpoint [root] - umounts the cdsl environment for the given mountpoint
+     status_cdsl mountpoint [root] [<cdslpath>] [<cdsllocal>] - checks for status of cdsl environment of this mountpoint
      clean - clean all cached items
      
 EOF
@@ -220,22 +223,122 @@ function update_chroot() {
 
 function mount_cdsl {
     local mountpoint=$1
-	local cdsl_path=$2
-	local cdsl_local=$3
+    local root=$2
+	local cdsl_path=$3
+	local cdsl_local=$4
+	local filesystem=$5
 
 	local nodeid=$(getParameter nodeid $(cc_getdefaults nodeid))
 	
     [ -z "$mountpoint" ] && mountpoint="/"
-	[ -z "$cdsl_path" ] && cdsl_path=$(repository_get_value cdsl_prefix)
-	[ -z "$cdsl_local" ] && cdsl_local=$(repository_get_value cdsl_local_dir)
+    [ -z "$root" ] && root="/"
+	[ -z "$filesystem" ] && filesystem=$rootfs
+	
+    $MKCDSLINFRASTRUCTURE --mountpoint=$mountpoint --root=$root --list &>/dev/null
+    if [ $? -ne 0 ]; then
+       error_local -n "Could not find cdsl on mountpoint $mountpoint."
+       failure
+       return 1
+    fi
+	[ -z "$cdsl_path" ] && cdsl_path=$($MKCDSLINFRASTRUCTURE --mountpoint=$mountpoint --root=$root --get=tree)
+	[ -z "$cdsl_local" ] && cdsl_local=$($MKCDSLINFRASTRUCTURE --mountpoint=$mountpoint --root=$root --get=link)
 	
 	if [ -z "$nodeid" ]; then
 		echo_local "Could not detect nodeid. Therefore I couldn't mount $cdsl_path" >&2
 		exit 1
 	fi
-	clusterfs_mount_cdsl $mountpoint $cdsl_local $nodeid $cdsl_path	
+    
+    # cdsl environment is mounted but not in mtab then remount
+    if check_mtab "$filesystem" $mountpoint $cdsl_path $cdsl_local; then
+       clusterfs_mount_cdsl $mountpoint $cdsl_local $nodeid $cdsl_path
+    fi
+    if ! is_mounted $mountpoint/$cdsl_local; then
+       clusterfs_mount_cdsl $mountpoint $cdsl_local $nodeid $cdsl_path
+    else
+       echo_local -n "cdsl filesystem $mountpoint is already setup. skipping."
+       passed 
+    fi	
 }
 
+function status_cdsl() {
+    local mountpoint=$1
+    local root=$2
+	local cdsl_path=$3
+	local cdsl_local=$4
+	local filesystem=$5
+
+	local nodeid=$(getParameter nodeid $(cc_getdefaults nodeid))
+	
+    [ -z "$mountpoint" ] && mountpoint="/"
+    [ -z "$root" ] && root="/"
+	[ -z "$filesystem" ] && filesystem=$rootfs
+	
+    $MKCDSLINFRASTRUCTURE --mountpoint=$mountpoint --root=$root --list &>/dev/null
+    if [ $? -ne 0 ]; then
+       error_local -n "Could not find cdsl on mountpoint $mountpoint."
+       failure
+       return 1
+    fi
+	[ -z "$cdsl_path" ] && cdsl_path=$($MKCDSLINFRASTRUCTURE --mountpoint=$mountpoint --root=$root --get=tree)
+	[ -z "$cdsl_local" ] && cdsl_local=$($MKCDSLINFRASTRUCTURE --mountpoint=$mountpoint --root=$root --get=link)
+	
+	if [ -z "$nodeid" ]; then
+		echo_local "Could not detect nodeid. Therefore I couldn't mount $cdsl_path" >&2
+		exit 1
+	fi
+	
+	if is_mounted $mountpoint/$cdsl_local; then
+	   $MKCDSLINFRASTRUCTURE --mountpoint=$mountpoint --root=$root --list
+	   return 0
+	else
+	   error_local -n "Cdsl infrastructure not available or not mounted at $mountpoint."
+	   failure
+	   return 1
+	fi
+}
+
+
+function umount_cdsl() {
+    local mountpoint=$1
+    local root=$2
+	local cdsl_path=$3
+	local cdsl_local=$4
+	local filesystem=$5
+
+	local nodeid=$(getParameter nodeid $(cc_getdefaults nodeid))
+	
+    [ -z "$mountpoint" ] && mountpoint="/"
+    [ -z "$root" ] && root="/"
+	[ -z "$filesystem" ] && filesystem=$rootfs
+	
+    $MKCDSLINFRASTRUCTURE --mountpoint=$mountpoint --root=$root --list &>/dev/null
+    if [ $? -ne 0 ]; then
+       error_local -n "Could not find cdsl on mountpoint $mountpoint."
+       failure
+       return 1
+    fi
+	[ -z "$cdsl_path" ] && cdsl_path=$($MKCDSLINFRASTRUCTURE --mountpoint=$mountpoint --root=$root --get=tree)
+	[ -z "$cdsl_local" ] && cdsl_local=$($MKCDSLINFRASTRUCTURE --mountpoint=$mountpoint --root=$root --get=link)
+	
+	if [ -z "$nodeid" ]; then
+		echo_local "Could not detect nodeid. Therefore I couldn't mount $cdsl_path" >&2
+		exit 1
+	fi
+	
+	if is_mounted $mountpoint/$cdsl_local; then
+	   echo_local -n "Umounting cdsl infrastructure on $mountpoint."
+	   for filesystem in $(get_dep_filesystems $mountpoint/$cdsl_local); do
+	      umount_filesystem $filesystem "killsvc"
+	   done
+	   exec_local umount_filesystem $mountpoint/$cdsl_local
+	   return_code $?
+	   return 0
+	else
+	   error_local -n "Cdsl infrastructure not mounted under $mountpoint."
+	   failure 
+	   return 1
+	fi
+}
 function createxfiles {
 	repository_store_value xtabfile /etc/xtab
 	repository_store_value xrootfsfile /etc/xrootfs
@@ -450,7 +553,13 @@ case "$action" in
 		;;
 	"mount_cdsl")
 	    mount_cdsl $*
-	;;
+	    ;;
+	"umount_cdsl")
+	    umount_cdsl $*
+	    ;;
+	"status_cdsl")
+	    status_cdsl $*
+	    ;;
 	"clean")
 	    repository_clear
 	    ;;
