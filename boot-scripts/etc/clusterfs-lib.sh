@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.45 2010-03-08 13:08:36 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.46 2010-06-08 13:37:46 marc Exp $
 #
 # @(#)$File$
 #
@@ -50,7 +50,6 @@ repository_has_key cdsl_prefix || repository_store_value cdsl_prefix "/cluster/c
 #******** cdsl_prefix
 
 repository_has_key osrquerymap || repository_store_value osrquerymap /etc/comoonics/querymap.cfg 
-
 
 #****f* boot-scripts/etc/clusterfs-lib.sh/getClusterFSParameters
 #  NAME
@@ -1213,7 +1212,7 @@ function clusterfs_mount_cdsl {
   local bindtype="rbind"
   [ -n "$5" ] && local bindtype="$5"
 
-  echo_local -n "Mounting $cdsl_dir on ${prefix}/${nodeid}.."
+  echo_local -n "Mounting ${mountpoint}/$cdsl_dir on ${mountpoint}/${prefix}/${nodeid}.."
   if [ ! -d ${mountpoint}/${prefix} ]; then
     echo_local "no cdsldir found \"${mountpoint}/${prefix}\""
     warning
@@ -1221,7 +1220,7 @@ function clusterfs_mount_cdsl {
   exec_local mount --${bindtype} ${mountpoint}/${prefix}/${nodeid} ${mountpoint}/${cdsl_dir}
   return_code
 }
-#***** clusterfs__mount_cdsl
+#***** clusterfs_mount_cdsl
 
 #****f* clusterfs-lib.sh/clusterfs_chroot_needed
 #  NAME
@@ -1398,7 +1397,10 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.45  2010-03-08 13:08:36  marc
+# Revision 1.46  2010-06-08 13:37:46  marc
+# - clusterfs_mount_cdsl: fixed bug with mounting cdsls in not /
+#
+# Revision 1.45  2010/03/08 13:08:36  marc
 # bug in getClusterParameter that would not return in special cases.
 #
 # Revision 1.44  2010/02/21 12:00:23  marc
