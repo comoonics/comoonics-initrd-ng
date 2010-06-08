@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.83 2010-05-06 15:20:27 mark Exp $
+# $Id: boot-lib.sh,v 1.84 2010-06-08 13:39:25 marc Exp $
 #
 # @(#)$File$
 #
@@ -999,20 +999,26 @@ detectHalt() {
 #    function check_mtab rootfstype cdslpath cdsllink
 #  IDEAS
 #    Checks if the mtab is a file (not a link) and if so checks if all filesystems mounted within the initrd are also in the mtab
+#    Returns 0 on success 1 on failure
 function check_mtab {
-	local rootfs_type=$1
+	local fs_type=$1
 	local mountpoint=$2
 	local cdslpath=$3
 	local cdsllink=$4
+	local root=$5
+    [ -z $MKCDSLINFRASTRUCTURE ] && MKCDSLINFRASTRUCTURE=com-mkcdslinfrastructure
 	
+	[ -z "$root" ] && root="/"
 	[ -z "$mountpoint" ] && mountpoint="/"
-	[ -z "$cdslpath" ] && cdslpath=".cluster/cdsl"
-	[ -z "$cdsllink" ] && cdsllink=".cdsl.local"
+	[ -z "$cdslpath" ] && cdslpath=$($MKCDSLINFRASTRUCTURE --mountpoint=$mountpoint --root=$root --get=tree)
+	[ -z "$cdsllink" ] && cdsllink=$($MKCDSLINFRASTRUCTURE --mountpoint=$mountpoint --root=$root --get=link)
 	
-	if [ -f /etc/mtab ] && [ -n "${mountpoint}$cdsllink" ] && [ -e "${mountpoint}$cdsllink" ]; then
-		cat /proc/mounts | cut -d" " -f2 | grep ${mountpoint}$cdsllink >/dev/null &>/dev/null
+	cdsllink=${mountpoint}/$cdsllink
+	cdsllink=${cdsllink//\/\//\/}
+	if [ -f /etc/mtab ] && [ -n "$cdsllink" ] && [ -e "$cdsllink" ]; then
+		cat /proc/mounts | cut -d" " -f2 | grep $cdsllink >/dev/null &>/dev/null
 		if [ $? -eq 0 ]; then
-			cat /etc/mtab | cut -d" " -f2 | grep ${mountpoint}$cdsllink >/dev/null &>/dev/null
+			cat /etc/mtab | cut -d" " -f2 | grep $cdsllink >/dev/null &>/dev/null
 			if [ $? -ne 0 ]; then
 				return 0
 			fi
@@ -1023,7 +1029,10 @@ function check_mtab {
 #************** check_mtab
 
 # $Log: boot-lib.sh,v $
-# Revision 1.83  2010-05-06 15:20:27  mark
+# Revision 1.84  2010-06-08 13:39:25  marc
+# check_mtab: upstream porting to tools
+#
+# Revision 1.83  2010/05/06 15:20:27  mark
 # added dmeventd for cleanup.
 # This patch is needed for lvm mirroring
 #
