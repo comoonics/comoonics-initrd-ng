@@ -1,0 +1,96 @@
+#!/bin/sh
+
+#****h* initscripts/mountcdsls
+#  NAME
+#    mountcdsls start|stop|restart|status mountpoint*
+#    $Id:$
+#  DESCRIPTION
+#    Mounts other filesystems that have OSR cdsls enabled (Read from fstab).
+#  AUTHOR
+#    Mark Hlawatschek
+#
+#*******
+#
+### BEGIN INIT INFO
+# Provides: mountcdsls
+# Required-Start: bootsr
+# Required-Stop: 
+# Should-Start: 
+# Should-Stop: $null
+# Default-Start: 3 5
+# Default-Stop: 0 1 2 6
+# Short-Description: Mounts other filesystems that have OSR cdsls enabled (Read from fstab).
+# Description: Mounts other filesystems that have Open SharedRoot cdsls enabled (Read from fstab).
+#      Accepts start, stop, status, restart as first parameter. Then a mountpoint is an optional 
+#      parameter that skips the lookup into /etc/fstab 
+### END INIT INFO
+
+#
+# /etc/init.d/mountcdsls
+#
+
+if [ -e /etc/rc.status ]; then
+   # Looks like SuSE
+   . /etc/rc.status
+else
+   . /etc/rc.d/init.d/functions
+fi
+
+usage() {
+   echo "$0 start|stop|restart|status mountpoint*"
+}
+
+myaction() {
+  action $*
+}
+
+start() {
+    $MOUNT_CDSL $*
+}
+
+stop() {
+    $UMOUNT_CDSL $*
+}
+status() {
+    $STATUS_CDSL $*
+}
+logfile=/var/log/osr.log
+
+rootfs=$(repository_get_value rootfs)
+clutype=$(repository_get_value clutype)
+MOUNT_CDSL="${BOOTIMAGE_PATH}/manage_chroot.sh -a mount_cdsl"
+UMOUNT_CDSL="${BOOTIMAGE_PATH}/manage_chroot.sh -a umount_cdsl"
+STATUS_CDSL="${BOOTIMAGE_PATH}/manage_chroot.sh -a status_cdsl"
+
+# See how we were called.
+mode=$1
+shift
+if [ $# -eq 0 ] && [ -f /etc/cdsltab ]; then
+  mounts=$(cat /etc/cdsltab)
+else
+  mounts=$*
+fi
+
+case "$mode" in
+  start)
+    start $mounts
+    ;;
+  stop)
+    stop $mounts
+    ;;
+  restart)
+    start $mounts
+    stop $mounts
+    ;;
+  status)
+    status $mounts
+    ;;
+  *)
+    error_local "Wrong option given."
+    usage
+    exit 1
+    ;;
+esac
+
+##############
+# $Log$
