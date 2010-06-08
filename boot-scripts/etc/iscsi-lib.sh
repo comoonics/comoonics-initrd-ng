@@ -1,5 +1,5 @@
 #
-# $Id: iscsi-lib.sh,v 1.15 2010-05-27 09:51:33 marc Exp $
+# $Id: iscsi-lib.sh,v 1.16 2010-06-08 13:44:43 marc Exp $
 #
 # @(#)$File$
 #
@@ -150,7 +150,7 @@ function load_iscsi {
 function start_iscsi {
 	local rootsource=$1
 	local root=$2
-	local chroot="chroot"
+	local chroot="chroot $root"
 	if [ -z "$root" ]; then
 	   chroot=""
 	fi
@@ -221,17 +221,27 @@ function restart_iscsi_newroot {
    local newroot=$2
    local chroot=$3
    
-   echo_local -n "Stopping iscsid in oldroot"
-   for service in "iscsid brcm_iscsiuio"; do
+   local rservices="iscsid brcm_iscsiuio"
+   local services="brcm_iscsiuio iscsid"
+   for service in $rservices; do
+	  echo_local -n "Stopping $service"
       killall $service
       killall -0 $service 2>/dev/null && sleep 3
       killall -0 $service 2>/dev/null && killall -9 $service
-      killall -0 $service
+      killall -0 $service 2>/dev/null
+      return_code
    done
-   return_code
    rm -f $newroot/var/lock/subsys/iscsi 2>/dev/null
    rm -f $newroot/var/lock/subsys/iscsid 2>/dev/null
-   start_iscsi $rootsource $newroot
+   echo
+   for service in $services; do
+	  echo_local -n "Starting $service in $newroot"
+      exec_local chroot $newroot $service
+      return_code && touch 
+   done
+   touch $newroot/var/lock/subsys/iscsi 2>/dev/null
+   touch $newroot/var/lock/subsys/iscsid 2>/dev/null
+   unset services
 }
 #*************** restart_iscsi_newroot
 
@@ -263,7 +273,11 @@ function is_iscsi_rootsource {
 #************ is_iscsi_rootsource
 
 # $Log: iscsi-lib.sh,v $
-# Revision 1.15  2010-05-27 09:51:33  marc
+# Revision 1.16  2010-06-08 13:44:43  marc
+# - start_iscsi: fixed start in chroot
+# - restart_iscsi_newroot: don't reregistrate everything but just restart the daemons
+#
+# Revision 1.15  2010/05/27 09:51:33  marc
 # iscsi_get_drivers:
 #    - added drivers: cxgb3i bnx2i ib_iser, removed: libiscsi
 # load_iscsi
