@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.93 2010-05-27 09:54:09 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.94 2010-06-08 13:45:54 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.93 2010-05-27 09:54:09 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.94 2010-06-08 13:45:54 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -88,7 +88,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.93 $ $Date: 2010-05-27 09:54:09 $'
+echo_local 'Internal Version $Revision: 1.94 $ $Date: 2010-06-08 13:45:54 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -567,7 +567,7 @@ echo_local "Restart services in newroot ..."
 
 exec_local prepare_newroot $(repository_get_value newroot)
 
-exec_local scsi_restart_newroot $(repository_get_value rootsource) "$(repository_get_value newroot)" "$(repository_get_value chroot_path)"
+exec_local scsi_restart_newroot "$(repository_get_value scsi_failover)" "$(repository_get_value rootsource)" "$(repository_get_value newroot)" "$(repository_get_value chroot_path)"
 
 exec_local clusterfs_services_restart_newroot $(repository_get_value newroot) "$(repository_get_value lockmethod)" "$(repository_get_value lvm_sup)" "$(repository_get_value chroot_path)" || breakp $(errormsg err_cc_restart_service)
 
@@ -581,7 +581,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.93  2010-05-27 09:54:09  marc
+# Revision 1.94  2010-06-08 13:45:54  marc
+# add scsi_failover to restart_scsi_newroot
+#
+# Revision 1.93  2010/05/27 09:54:09  marc
 # - removed iscsistart (now in hardware-lib.sh)
 # - added rootsource to lvm functions (only activate vg for rootfs)
 #
