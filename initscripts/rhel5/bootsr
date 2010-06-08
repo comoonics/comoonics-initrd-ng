@@ -2,7 +2,7 @@
 #****h* comoonics-bootimage/bootsr
 #  NAME
 #    bootsr
-#    $Id: bootsr,v 1.25 2010-03-08 13:17:08 marc Exp $
+#    $Id: bootsr,v 1.26 2010-06-08 13:50:45 marc Exp $
 #  DESCRIPTION
 #    Comoonics Shared Root post boot settings
 #  AUTHOR
@@ -114,7 +114,7 @@ function umount_chroot {
 #  IDEAS
 #  SOURCE
 #
-logfile=/var/log/bootsr.log
+logfile=/var/log/osr.log
 
 #to be backward compatible
 exec 3>> $logfile
@@ -131,12 +131,7 @@ case "$1" in
   start)
   	# will do
   	# - update chroot environment for additional services (fence_ack_server)
-    
-  	# first clean old repos
-  	cdsllink=$(com-mkcdslinfrastructure --get link)
-  	cdsltree=$(com-mkcdslinfrastructure --get tree)
-    check_mtab $rootfs / $cdsltree $cdsllink && $MOUNT_CDSL / $cdsltree $cdsllink
-    
+        
     if  [ -n "$rootfs" ] && check_sharedroot $rootfs; then
       touch /var/lock/subsys/bootsr
       if [ -z "$chrootneeded" ]; then
@@ -197,7 +192,12 @@ exit $RETVAL
 #************ main
 ###############
 # $Log: bootsr,v $
-# Revision 1.25  2010-03-08 13:17:08  marc
+# Revision 1.26  2010-06-08 13:50:45  marc
+# - bootsr:
+#       - removed check_mtab
+#       - removed remount of cdsl in / and other fs to mountcdsl initscript
+#
+# Revision 1.25  2010/03/08 13:17:08  marc
 # - support for different cdsl environments
 # - moved check_mtab to std-lib.sh
 #

@@ -2,7 +2,7 @@
 #****h* comoonics-bootimage/bootsr
 #  NAME
 #    bootsr
-#    $Id: bootsr,v 1.8 2010-02-15 14:06:36 marc Exp $
+#    $Id: bootsr,v 1.9 2010-06-08 13:50:45 marc Exp $
 #  DESCRIPTION
 #    Comoonics Shared Root post boot settings
 #  AUTHOR
@@ -43,28 +43,6 @@ fi
 . ${BOOTIMAGE_PATH}/boot-scripts/etc/std-lib.sh
 sourceLibs ${BOOTIMAGE_PATH}/boot-scripts
 sourceRootfsLibs ${BOOTIMAGE_PATH}/boot-scripts
-
-
-#****f* bootsr/check_mtab
-#  NAME
-#    check_mtab
-#  SYNOPSIS
-#    function check_mtab rootfstype
-#  IDEAS
-#    Checks if the mtab is a file (not a link) and if so checks if all filesystems mounted within the initrd are also in the mtab
-function check_mtab {
-	local rootfs_type=$1
-	
-	if [ -f /etc/mtab ]; then
-		cat /proc/mounts | cut -d" " -f2 | grep /cdsl.local >/dev/null &>/dev/null
-		if [ $? -eq 0 ]; then
-			cat /etc/mtab | cut -d" " -f2 | grep /cdsl.local >/dev/null &>/dev/null
-			if [ $? -ne 0 ]; then
-				$MOUNT_CDSL
-			fi
-		fi
-	fi
-} 
 
 #****f* bootsr/clean_start
 #  NAME
@@ -136,7 +114,7 @@ function umount_chroot {
 #  IDEAS
 #  SOURCE
 #
-logfile=/var/log/bootsr.log
+logfile=/var/log/osr.log
 
 #to be backward compatible
 exec 3>> $logfile
@@ -153,10 +131,7 @@ case "$1" in
   start)
   	# will do
   	# - update chroot environment for additional services (fence_ack_server)
-    
-  	# first clean old repos
-    check_mtab $rootfs
-    
+        
     if  [ -n "$rootfs" ] && check_sharedroot $rootfs; then
       touch /var/lock/subsys/bootsr
       if [ -z "$chrootneeded" ]; then
@@ -217,7 +192,12 @@ exit $RETVAL
 #************ main
 ###############
 # $Log: bootsr,v $
-# Revision 1.8  2010-02-15 14:06:36  marc
+# Revision 1.9  2010-06-08 13:50:45  marc
+# - bootsr:
+#       - removed check_mtab
+#       - removed remount of cdsl in / and other fs to mountcdsl initscript
+#
+# Revision 1.8  2010/02/15 14:06:36  marc
 # fixed check_sharedroot
 #
 # Revision 1.7  2010/02/05 12:47:30  marc

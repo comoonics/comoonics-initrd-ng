@@ -119,7 +119,7 @@ function umount_chroot {
 #  IDEAS
 #  SOURCE
 #
-logfile=/var/log/bootsr.log
+logfile=/var/log/osr.log
 
 #to be backward compatible
 exec 3>> $logfile
@@ -136,12 +136,7 @@ case "$1" in
   start)
   	# will do
   	# - update chroot environment for additional services (fence_ack_server)
-    
-  	# first clean old repos
-  	cdsllink=$(com-mkcdslinfrastructure --get link)
-  	cdsltree=$(com-mkcdslinfrastructure --get tree)
-    check_mtab $rootfs / $cdsltree $cdsllink && $MOUNT_CDSL / $cdsltree $cdsllink
-    
+        
     if  [ -n "$rootfs" ] && check_sharedroot $rootfs; then
       touch /var/lock/subsys/bootsr
       if [ -z "$chrootneeded" ]; then
