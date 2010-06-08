@@ -1,5 +1,5 @@
 #
-# $Id: stdfs-lib.sh,v 1.9 2010-03-29 18:36:28 marc Exp $
+# $Id: stdfs-lib.sh,v 1.10 2010-06-08 13:45:15 marc Exp $
 #
 # @(#)$File$
 #
@@ -253,11 +253,12 @@ function is_mounted {
     local path=
     local rest=
 
+    local mountpoint=$(echo "$1" | sed -e 's/\/\/\/*/\//g' | sed -e 's/^\(..*\)\/\/*$/\1/')
 	[ -z "$MOUNTS" ] && MOUNTS=$(cat /proc/mounts)
 	[ -n "$MOUNTSFILE" ] && MOUNTS=$(cat $MOUNTSFILE)
 	
     echo "$MOUNTS" | while read dev path rest; do
-	   if [ "$path" = "$1" ]; then
+	   if [ "$path" = "$mountpoint" ]; then
           return 1
 	   fi
     done || return 0 
@@ -342,7 +343,10 @@ function umount_filesystem {
 #************ umount_filesystem
 ######################
 # $Log: stdfs-lib.sh,v $
-# Revision 1.9  2010-03-29 18:36:28  marc
+# Revision 1.10  2010-06-08 13:45:15  marc
+# - is_mounted: trimming of mountpoint given
+#
+# Revision 1.9  2010/03/29 18:36:28  marc
 # - change copy_filelist to only copy if file is changed.
 #
 # Revision 1.8  2010/01/04 13:15:26  marc
