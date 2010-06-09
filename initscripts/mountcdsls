@@ -45,19 +45,24 @@ myaction() {
 }
 
 start() {
-    $MOUNT_CDSL $*
+    for mount in $*; do
+       $MOUNT_CDSL $mount
+    done
 }
 
 stop() {
-    $UMOUNT_CDSL $*
+    for mount in $*; do
+       $UMOUNT_CDSL $mount
+    done
 }
 status() {
-    $STATUS_CDSL $*
+    for mount in $*; do
+       $STATUS_CDSL $mount
+    done
 }
 logfile=/var/log/osr.log
 
-rootfs=$(repository_get_value rootfs)
-clutype=$(repository_get_value clutype)
+[ -z "$BOOTIMAGE_PATH" ] && BOOTIMAGE_PATH=/opt/atix/comoonics-bootimage
 MOUNT_CDSL="${BOOTIMAGE_PATH}/manage_chroot.sh -a mount_cdsl"
 UMOUNT_CDSL="${BOOTIMAGE_PATH}/manage_chroot.sh -a umount_cdsl"
 STATUS_CDSL="${BOOTIMAGE_PATH}/manage_chroot.sh -a status_cdsl"
