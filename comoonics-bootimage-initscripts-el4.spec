@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage-initscripts-el4.spec,v 1.15 2010-02-21 12:08:14 marc Exp $
+# $Id: comoonics-bootimage-initscripts-el4.spec,v 1.16 2010-06-09 08:23:22 marc Exp $
 #
 ##
 ##
@@ -52,12 +52,12 @@ Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-rhel
 Requires: comoonics-bootimage-listfiles-rhel4
 #Conflicts:
-Release: 5.rhel4
+Release: 6.rhel4
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
 URL:     http://www.atix.de/
-Source:  http://www.atix.de/software/downloads/comoonics/comoonics-bootimage-%{version}.tar.gz
+Source:  http://www.atix.de/software/downloads/comoonics/comoonics-bootimage-initscripts-%{version}.tar.gz
 License: GPL
 Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
@@ -75,6 +75,7 @@ Initscripts used by the OSR cluster environment.
 install -d -m 755 $RPM_BUILD_ROOT/%{INITDIR}
 install -d -m 755 $RPM_BUILD_ROOT/%{SYSCONFIGDIR}
 install -m755 initscripts/rhel4/bootsr $RPM_BUILD_ROOT/%{INITDIR}/bootsr
+install -m755 initscripts/mountcdsls $RPM_BUILD_ROOT/%{INITDIR}/mountcdsls
 install -m755 initscripts/rhel4/ccsd-chroot $RPM_BUILD_ROOT/%{INITDIR}/ccsd-chroot
 install -m755 initscripts/rhel4/fenced-chroot $RPM_BUILD_ROOT/%{INITDIR}/fenced-chroot
 install -m644 initscripts/rhel4/halt-overwrite.sh $RPM_BUILD_ROOT/%{SYSCONFIGDIR}/halt-overwrite
@@ -104,7 +105,7 @@ fi
 %post
 
 echo "Starting postinstall.."
-services="bootsr ccsd-chroot fenced-chroot"
+services="bootsr ccsd-chroot fenced-chroot mountcdsls"
 echo "Resetting services ($services)"
 for service in $services; do
    /sbin/chkconfig --del $service &>/dev/null
@@ -136,22 +137,25 @@ grep "halt-overwrite" /etc/sysconfig/clock || echo ". /etc/sysconfig/halt-overwr
 
 %preun
 chkconfig --del bootsr
+chkconfig --del mountcdsls
 
 %files
-
 %attr(755, root, root) %{INITDIR}/bootsr
+%attr(755, root, root) %{INITDIR}/mountcdsls
 %attr(755, root, root) %{INITDIR}/fenced-chroot
 %attr(755, root, root) %{INITDIR}/ccsd-chroot
 %attr(644, root, root) %{SYSCONFIGDIR}/halt-overwrite
 
 %changelog
-* Tue Feb 16 2010 Marc Grimme <grimme@atix.de> 1.4-5
+* Thu Jun 08 2010 Marc Grimme <grimme@atix.de> 1.4-6rhel4
+- introducted initscript mountcdsls
+* Tue Feb 16 2010 Marc Grimme <grimme@atix.de> 1.4-5rhel4
 - introduced halt-overwrite to solve the halt_get_remaining problem and one patch less.
-* Mon Feb 15 2010 Marc Grimme <grimme@atix.de> 1.4-4
+* Mon Feb 15 2010 Marc Grimme <grimme@atix.de> 1.4-4rhel4
 - clean up check_sharedroot
-* Fri Feb 12 2010 Marc Grimme <grimme@atix.de> 1.4-3
+* Fri Feb 12 2010 Marc Grimme <grimme@atix.de> 1.4-3rhel4
 - fixed many bugs in bootsr and diet and upstream.
-* Wed Feb 25 2009 Marc Grimme <grimme@atix.de> 1.4-1
+* Wed Feb 25 2009 Marc Grimme <grimme@atix.de> 1.4-1rhel4
 - Backport of important features to rhel4
 * Fri Feb 29 2008 Mark Hlawatschek <hlawatschek@atix.de> 1.3.5
 - Fixed BZ 203, support FENCE_OPTS from /etc/sysconfig/cluster during boot
@@ -165,7 +169,10 @@ chkconfig --del bootsr
 - first revision
 # ------
 # $Log: comoonics-bootimage-initscripts-el4.spec,v $
-# Revision 1.15  2010-02-21 12:08:14  marc
+# Revision 1.16  2010-06-09 08:23:22  marc
+# new versions
+#
+# Revision 1.15  2010/02/21 12:08:14  marc
 # added halt-overwrite to /etc/sysconfig.
 #
 # Revision 1.14  2010/02/16 10:07:15  marc

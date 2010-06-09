@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.26 2010-04-23 10:23:53 marc Exp $
+# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.27 2010-06-09 08:23:22 marc Exp $
 #
 ##
 ##
@@ -52,12 +52,12 @@ Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-rhel
 Requires: comoonics-bootimage-listfiles-rhel5
 #Conflicts: 
-Release: 16.rhel5
+Release: 17.rhel5
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
 URL:     http://www.atix.de/
-Source:  http://www.atix.de/software/downloads/comoonics/comoonics-bootimage-%{version}.tar.gz
+Source:  http://www.atix.de/software/downloads/comoonics/comoonics-bootimage-initscripts-%{version}.tar.gz
 License: GPL
 Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
@@ -75,6 +75,7 @@ Initscripts used by the OSR cluster environment.
 # Files for compat
 install -d -m 755 $RPM_BUILD_ROOT/%{INITDIR}
 install -m755 initscripts/rhel5/bootsr $RPM_BUILD_ROOT/%{INITDIR}/bootsr
+install -m755 initscripts/mountcdsls $RPM_BUILD_ROOT/%{INITDIR}/mountcdsls
 install -d -m 755 $RPM_BUILD_ROOT/%{APPDIR}/patches
 install -m600 initscripts/rhel5/halt-xtab.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/halt-xtab.patch
 #install -m600 initscripts/rhel5/halt-local.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/halt-local.patch
@@ -185,7 +186,7 @@ fi
 %post
 
 echo "Starting postinstall.."
-services="bootsr"
+services="bootsr mountcdsls"
 echo "Resetting services ($services)"
 for service in $services; do
    /sbin/chkconfig --del $service &>/dev/null
@@ -215,6 +216,7 @@ fi
 %files
 
 %attr(755, root, root) %{INITDIR}/bootsr
+%attr(755, root, root) %{INITDIR}/mountcdsls
 %attr(644, root, root) %{APPDIR}/patches/halt-comoonics.patch
 %attr(644, root, root) %{APPDIR}/patches/halt-killall.patch
 #%attr(644, root, root) %{APPDIR}/patches/halt-local.patch
@@ -232,6 +234,8 @@ fi
 rm -rf %{buildroot}
 
 %changelog
+* Thu Jun 08 2010 Marc Grimme <grimme@atix.de> 1.4-17el5
+- introducted initscript mountcdsls
 * Fri Apr 23 2010 Marc Grimme <grimme@atix.de> 1.4-16el5
 - netfs-tab.patch: initial revision
 - netfs-xtab.patch: removed old data
@@ -275,7 +279,10 @@ rm -rf %{buildroot}
 - first revision
 # ------
 # $Log: comoonics-bootimage-initscripts-el5.spec,v $
-# Revision 1.26  2010-04-23 10:23:53  marc
+# Revision 1.27  2010-06-09 08:23:22  marc
+# new versions
+#
+# Revision 1.26  2010/04/23 10:23:53  marc
 # new versions
 #
 # Revision 1.25  2010/03/08 19:35:14  marc

@@ -50,12 +50,12 @@ Requires: comoonics-bootimage >= 1.4
 Requires: comoonics-bootimage-listfiles-sles11
 Requires: sysvinit-comoonics
 #Conflicts:
-Release: 6.sles11
+Release: 7.sles11
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
 URL:     http://www.atix.de/
-Source:  http://www.atix.de/software/downloads/comoonics/comoonics-bootimage-%{version}.tar.gz
+Source:  http://www.atix.de/software/downloads/comoonics/comoonics-bootimage-initscripts-%{version}.tar.gz
 License: GPL
 Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
@@ -72,6 +72,7 @@ Initscripts used by the OSR cluster environment. These are for Novell SLES11.
 %install
 install -d -m 755 $RPM_BUILD_ROOT/%{INITDIR}
 install -m755 initscripts/sles11/bootsr $RPM_BUILD_ROOT/%{INITDIR}/bootsr
+install -m755 initscripts/mountcdsls $RPM_BUILD_ROOT/%{INITDIR}/mountcdsls
 
 %clean
 rm -rf %{buildroot}
@@ -84,7 +85,7 @@ fi
 %post
 
 echo "Starting postinstall.."
-services="bootsr"
+services="bootsr mountcdsls"
 echo "Resetting services ($services)"
 for service in $services; do
    /sbin/chkconfig --del $service &>/dev/null
@@ -120,8 +121,11 @@ true
 
 %files
 %attr(755, root, root) %{INITDIR}/bootsr
+%attr(755, root, root) %{INITDIR}/mountcdsls
 
 %changelog
+* Thu Jun 08 2010 Marc Grimme <grimme@atix.de> 1.4-7.sles11
+- introduced mountcdsls
 * Tue Feb 23 2010 Marc Grimme <grimme@atix.de> 1.4-6.sles11
 - more backports with cdsl mounts and enable bootsr
 * Tue Feb 23 2010 Marc Grimme <grimme@atix.de> 1.4-5.sles11

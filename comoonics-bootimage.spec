@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.116 2010-05-27 09:57:35 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.117 2010-06-09 08:23:22 marc Exp $
 #
 ##
 ##
@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 50
+Release: 51
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -96,7 +96,7 @@ Extra listfiles for special network configurations
 
 %package extras-nfs
 Version: 0.1
-Release: 15
+Release: 16
 Requires: comoonics-bootimage >= 1.4
 Summary: Listfiles for nfs sharedroot configurations
 Group:   System Environment/Base
@@ -107,7 +107,7 @@ Extra listfiles for nfs sharedroot configurations
 
 %package extras-ocfs2
 Version: 0.1
-Release: 7
+Release: 8
 Requires: comoonics-bootimage >= 1.4
 Summary: Listfiles for ocfs2 sharedroot configurations
 Group:   System Environment/Base
@@ -204,7 +204,7 @@ listfiles for xen support in the OSR cluster
 
 %package extras-iscsi
 Version: 0.1
-Release: 9
+Release: 10
 Requires: comoonics-bootimage >= 1.3-33
 Summary: Listfiles for iscsi support in the open-sharedroot cluster
 Group:   System Environment/Base
@@ -916,6 +916,11 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Thu Jun 08 2010 Marc Grimme <grimme@atix.de> 1.4-51
+- linuxrc.generic.sh: add scsi_failover to restart_scsi_newroot
+- boot-lib.sh: check_mtab: upstream with tools
+- stdfs-lib.sh: is_mounted: fixed but in is_mounted with untrimmed mountpoints
+- manage_chroot.sh: added mount_cdsl, status_cdsl, umount_cdsl
 * Thu May 27 2010 Marc Grimme <grimme@atix.de> 1.4-50
 - create_initrd_generic.sh: fixed bug that mkinitrd will temporarily aquire much space where initrd should be created. Will now be in /tmp.
 - boot-scripts/etc/hardware-lib.sh: added hp_ilo to usb drivers to support Remote Console of HP ILO.
@@ -1220,6 +1225,12 @@ rm -rf %{buildroot}
 - first release
 
 %changelog extras-iscsi
+* Thu Jun 08 2010 Marc Grimme <grimme@atix.de> 0.1-10
+- iscsi-lib.sh: 
+     - start_iscsi: start being able in chroot
+     - restart_iscsi_newroot: just restart services. 
+* Thu Jun 08 2010 Marc Grimme <grimme@atix.de> 0.1-9
+- iscsi-lib.sh: bugfix and listfiles
 * Tue May 18 2010 Marc Grimme <grimme@atix.de> 0.1-8
 - boot-scripts/etc/iscsi-lib.sh: support for multiple nics in the same network (multipathing), iscsi_restart
 * Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-7
@@ -1253,6 +1264,8 @@ rm -rf %{buildroot}
 - first release
 
 %changelog extras-nfs
+* Thu Jun 08 2010 Marc Grimme <grimme@atix.de> 0.1-15
+- fixed bug #378 function nfs_get_mountopts
 * Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-15
 - first version for comoonics-4.6-rc1 
 * Tue Sep 29 2009 Marc Grimme <grimme@atix.de> - 0.1-14
@@ -1277,6 +1290,8 @@ rm -rf %{buildroot}
 - added nfs-lib.sh file
 
 %changelog extras-ocfs2
+* Thu Jun 08 2010 Marc Grimme <grimme@atix.de> 0.1-8
+- fixed bug #378 function iscsi_get_mountopts
 * Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-7
 - first version for comoonics-4.6-rc1 
 * Thu Sep 10 2009 Marc Grimme <grimme@atix.de> 0.1-6
@@ -1542,7 +1557,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.116  2010-05-27 09:57:35  marc
+# Revision 1.117  2010-06-09 08:23:22  marc
+# new versions
+#
+# Revision 1.116  2010/05/27 09:57:35  marc
 # new versions 1.4-49, 1.4-50
 #
 # Revision 1.115  2010/04/23 10:23:53  marc

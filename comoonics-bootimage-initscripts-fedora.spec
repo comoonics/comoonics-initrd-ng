@@ -51,12 +51,12 @@ Requires: comoonics-bootimage >= 1.4-16
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-fedora
 #Conflicts: 
-Release: 12.fedora
+Release: 13.fedora
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
 URL:     http://www.atix.de/
-Source:  http://www.atix.de/software/downloads/comoonics/comoonics-bootimage-%{version}.tar.gz
+Source:  http://www.atix.de/software/downloads/comoonics/comoonics-bootimage-initscripts-%{version}.tar.gz
 License: GPL
 Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
@@ -74,6 +74,7 @@ Initscripts used by the OSR cluster environment.
 # Files for compat
 install -d -m 755 $RPM_BUILD_ROOT/%{INITDIR}
 install -m755 initscripts/fedora/bootsr $RPM_BUILD_ROOT/%{INITDIR}/bootsr
+install -m755 initscripts/mountcdsls $RPM_BUILD_ROOT/%{INITDIR}/mountcdsls
 install -d -m 755 $RPM_BUILD_ROOT/%{APPDIR}/patches
 install -m600 initscripts/fedora/halt-xtab.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/halt-xtab.patch
 #install -m600 initscripts/fedora/halt-local.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/halt-local.patch
@@ -183,7 +184,7 @@ install -d $RPM_BUILD_ROOT/%{SBINDIR}
 %post
 
 echo "Starting postinstall.."
-services="bootsr"
+services="bootsr mountcdsls"
 echo "Resetting services ($services)"
 for service in $services; do
    /sbin/chkconfig --del $service &>/dev/null
@@ -213,6 +214,7 @@ fi
 %files
 
 %attr(755, root, root) %{INITDIR}/bootsr
+%attr(755, root, root) %{INITDIR}/mountcdsls
 %attr(644, root, root) %{APPDIR}/patches/halt-comoonics.patch
 %attr(644, root, root) %{APPDIR}/patches/halt-killall.patch
 #%attr(644, root, root) %{APPDIR}/patches/halt-local.patch
@@ -230,6 +232,8 @@ fi
 rm -rf %{buildroot}
 
 %changelog
+* Thu Jun 08 2010 Marc Grimme <grimme@atix.de> 1.4-13fedora
+- introduced mountcdsls
 * Fri Oct 09 2009 Marc Grimme <grimme@atix.de> 1.4-12fedora
 - removed halt patches as the are not needed with /sbin/halt.local
 * Tue Jul 07 2009 Marc Grimme <grimme@atix.de> 1.4-11fedora
