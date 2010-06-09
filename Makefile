@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.59 2010-02-21 12:10:13 marc Exp $
+# $Id: Makefile,v 1.60 2010-06-09 08:23:08 marc Exp $
 #
 # @(#)$file$
 #
@@ -360,6 +360,7 @@ INIT_FILES=
 #  SOURCE
 #
 ARCHIVE_FILE=./$(PACKAGE_NAME)-$(VERSION).tar.gz
+ARCHIVE_FILE_INITSCRIPTS=./$(PACKAGE_NAME)-initscripts-$(VERSION).tar.gz
 #************ ARCHIVE_FILE 
 #****d* Makefile/TAR_PATH
 #  NAME
@@ -369,6 +370,7 @@ ARCHIVE_FILE=./$(PACKAGE_NAME)-$(VERSION).tar.gz
 #  SOURCE
 #
 TAR_PATH=$(PACKAGE_NAME)-$(VERSION)/*
+TAR_PATH_INITSCRIPTS=$(PACKAGE_NAME)-$(VERSION)/initscripts*
 #************ TAR_PATH 
 
 RPM_PACKAGE_DIR=$(shell rpmbuild --showrc | grep ": _topdir" | awk '{print $$3}')
@@ -485,9 +487,10 @@ install:
 	fi
 
 archive:
-	@echo -n "Creating Archive .. $(ARCHIVE_FILE)..."
+	@echo -n "Creating Archives .. $(ARCHIVE_FILE)..."
 	@(cd .. && \
 	tar -c -z --exclude="*~" --exclude="*CVS*" -f $(ARCHIVE_FILE) $(TAR_PATH) && \
+	tar -c -z --exclude="*~" --exclude="*CVS*" -f $(ARCHIVE_FILE_INITSCRIPTS) $(TAR_PATH_INITSCRIPTS) && \
 	echo "(OK)") || echo "(FAILED)"
 	
 rpmpackagedir:
@@ -512,23 +515,23 @@ rpmbuild-listfiles-el5: archive
 	rpmbuild -ba  --target=noarch ./comoonics-bootimage-listfiles-el5.spec
 
 rpmbuild-initscripts-el4: archive
-	cp ../$(ARCHIVE_FILE) $(RPM_PACKAGE_SOURCE_DIR)/
+	cp ../$(ARCHIVE_FILE_INITSCRIPTS) $(RPM_PACKAGE_SOURCE_DIR)/
 	rpmbuild -ba  --target=noarch ./comoonics-bootimage-initscripts-el4.spec
 
 rpmbuild-initscripts-el5: archive
-	cp ../$(ARCHIVE_FILE) $(RPM_PACKAGE_SOURCE_DIR)/
+	cp ../$(ARCHIVE_FILE_INITSCRIPTS) $(RPM_PACKAGE_SOURCE_DIR)/
 	rpmbuild -ba  --target=noarch ./comoonics-bootimage-initscripts-el5.spec
 	
 rpmbuild-initscripts-sles10: archive
-	cp ../$(ARCHIVE_FILE) $(RPM_PACKAGE_SOURCE_DIR)/
+	cp ../$(ARCHIVE_FILE_INITSCRIPTS) $(RPM_PACKAGE_SOURCE_DIR)/
 	rpmbuild -ba  --target=noarch ./comoonics-bootimage-initscripts-sles10.spec
 	
 rpmbuild-initscripts-sles11: archive
-	cp ../$(ARCHIVE_FILE) $(RPM_PACKAGE_SOURCE_DIR)/
+	cp ../$(ARCHIVE_FILE_INITSCRIPTS) $(RPM_PACKAGE_SOURCE_DIR)/
 	rpmbuild -ba  --target=noarch ./comoonics-bootimage-initscripts-sles11.spec
 	
 rpmbuild-initscripts-fedora: archive
-	cp ../$(ARCHIVE_FILE) $(RPM_PACKAGE_SOURCE_DIR)/
+	cp ../$(ARCHIVE_FILE_INITSCRIPTS) $(RPM_PACKAGE_SOURCE_DIR)/
 	rpmbuild -ba  --target=noarch ./comoonics-bootimage-initscripts-fedora.spec
 	
 .PHONY:rpmsign
@@ -581,7 +584,10 @@ channel: rpm channelcopy channelbuild
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.59  2010-02-21 12:10:13  marc
+# Revision 1.60  2010-06-09 08:23:08  marc
+# - initscripts archive introduced
+#
+# Revision 1.59  2010/02/21 12:10:13  marc
 # moved a comment
 #
 # Revision 1.58  2010/02/16 10:07:15  marc
