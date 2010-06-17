@@ -6,5 +6,9 @@ pyOpenSSL
 comoonics-bootimage-fenceacksv
 comoonics-cluster-tools-py
 comoonics-tools-py
+# RPMs to get the fenceacksv running with ssh
+openssh
+openssh-server
+fipscheck-lib
 ###################
 # $Log$

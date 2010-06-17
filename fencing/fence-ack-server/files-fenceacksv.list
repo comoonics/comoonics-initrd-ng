@@ -3,5 +3,8 @@
 ####################
 # $Id$
 logger
+# for ssh having passwords
+/etc/shadow
+/etc/shadow-
 ###################
 # $Log$

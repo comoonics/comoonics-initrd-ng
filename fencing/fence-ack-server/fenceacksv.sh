@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: fenceacksv.sh,v 1.5 2010-02-15 14:07:07 marc Exp $
+# $Id: fenceacksv.sh,v 1.6 2010-06-17 08:19:22 marc Exp $
 #
 # chkconfig: 345 24 76
 # description: Starts and stops fenceacksv
@@ -12,22 +12,185 @@
 
 . /etc/init.d/functions
 
+
+RETVAL=0
+prog="sshd"
+
+# Some functions to make the below more readable
 FENCEACKDIR="/opt/atix/comoonics-fenceacksv"
 FENCEACKSV="fence_ack_server.py"
 FENCEACKSV_PARAMS="--xml --xml-clusterconf --debug"
 FENCEACKSV_LOG="/var/log/fenceacksv.log"
+FENCEACKSV_PORT=12242
+FENCEACKSV_SHELL=${FENCEACKDIR}/shell.py
 CHROOT_PATH=$(/opt/atix/comoonics-bootimage/manage_chroot.sh -p) 
 CHROOT_START="/opt/atix/comoonics-bootimage/manage_chroot.sh -a start_service" 
 CHROOT_STATUS_PID="/opt/atix/comoonics-bootimage/manage_chroot.sh -a status_service_pid" 
 CHROOT_STOP_PID="/opt/atix/comoonics-bootimage/manage_chroot.sh -a stop_service_pid" 
 LOCK_FILE="/var/lock/subsys/${FENCEACKSV}"
+KEYGEN=/usr/bin/ssh-keygen
+SSHD="chroot ${CHROOT_PATH} /usr/sbin/sshd -p $FENCEACKSV_PORT -e"
+RSA1_KEY=${FENCEACKDIR}/ssh_host_key
+RSA_KEY=${FENCEACKDIR}/etc/ssh/ssh_host_rsa_key
+DSA_KEY=${FENCEACKDIR}/etc/ssh/ssh_host_dsa_key
+RSA1_KEY_CHROOT=${CHROOT_PATH}/etc/ssh/ssh_host_key
+RSA_KEY_CHROOT=${CHROOT_PATH}/etc/ssh/ssh_host_rsa_key
+DSA_KEY_CHROOT=${CHROOT_PATH}/etc/ssh/ssh_host_dsa_key
+PID_FILE=${CHROOT_PATH}//var/run/sshd.pid
 
 [ -f /etc/sysconfig/cluster ] && . /etc/sysconfig/cluster
 [ -f /etc/sysconfig/fenceacksv ] && . /etc/sysconfig/fenceacksv
 
+runlevel=$(set -- $(runlevel); eval "echo \$$#" )
+
+do_rsa1_keygen() {
+	if [ ! -s $RSA1_KEY ]; then
+		echo -n $"Generating SSH1 RSA host key: "
+		rm -f $RSA1_KEY
+		if $KEYGEN -q -t rsa1 -f $RSA1_KEY -C '' -N '' >&/dev/null; then
+			chmod 600 $RSA1_KEY
+			chmod 644 $RSA1_KEY.pub
+			if [ -x /sbin/restorecon ]; then
+			    /sbin/restorecon $RSA1_KEY.pub
+			fi
+			success $"RSA1 key generation"
+			echo
+		else
+			failure $"RSA1 key generation"
+			echo
+			exit 1
+		fi
+	fi
+	if [ ! -s $RSA1_KEY_CHROOT ]; then
+	   cp -a $RSA1_KEY $RSA1_KEY_CHROOT
+	fi
+}
+
+do_rsa_keygen() {
+	if [ ! -s $RSA_KEY ]; then
+		echo -n $"Generating SSH2 RSA host key: "
+		rm -f $RSA_KEY
+		if $KEYGEN -q -t rsa -f $RSA_KEY -C '' -N '' >&/dev/null; then
+			chmod 600 $RSA_KEY
+			chmod 644 $RSA_KEY.pub
+			if [ -x /sbin/restorecon ]; then
+			    /sbin/restorecon $RSA_KEY.pub
+			fi
+			success $"RSA key generation"
+			echo
+		else
+			failure $"RSA key generation"
+			echo
+			exit 1
+		fi
+	fi
+	if [ ! -s $RSA_KEY_CHROOT ]; then
+	   cp -a $RSA_KEY $RSA_KEY_CHROOT
+	fi
+}
+
+do_dsa_keygen() {
+	if [ ! -s $DSA_KEY ]; then
+		echo -n $"Generating SSH2 DSA host key: "
+		rm -f $DSA_KEY
+		if $KEYGEN -q -t dsa -f $DSA_KEY -C '' -N '' >&/dev/null; then
+			chmod 600 $DSA_KEY
+			chmod 644 $DSA_KEY.pub
+			if [ -x /sbin/restorecon ]; then
+			    /sbin/restorecon $DSA_KEY.pub
+			fi
+			success $"DSA key generation"
+			echo
+		else
+			failure $"DSA key generation"
+			echo
+			exit 1
+		fi
+	fi
+	if [ ! -s $DSA_KEY_CHROOT ]; then
+	   cp -a $DSA_KEY $DSA_KEY_CHROOT
+	fi
+}
+
+do_passwd_file()
+{
+    if [ -d "${CHROOT_PATH}" ]; then
+      cp ${CHROOT_PATH}/etc/passwd ${CHROOT_PATH}/etc/passwd.old
+      sed -e 's!\(^root:.*:\)[^:]*$!\1'${FENCEACKSV_SHELL}'!' ${CHROOT_PATH}/etc/passwd.old > ${CHROOT_PATH}/etc/passwd
+      rm -f ${CHROOT_PATH}/etc/passwd.old
+    fi
+}
+
+do_fenceack_shell()
+{
+    if [ -d "${CHROOT_PATH}" ]; then
+        chmod a+x ${CHROOT_PATH}/${FENCEACKSV_SHELL}
+    fi
+}
+
+do_restart_sanity_check()
+{
+	$SSHD -t
+	RETVAL=$?
+	if [ ! "$RETVAL" = 0 ]; then
+		failure $"Configuration file or keys are invalid"
+		echo
+	fi
+}
+start_sshd()
+{
+	# Create keys if necessary
+	do_rsa1_keygen
+	do_rsa_keygen
+	do_dsa_keygen
+	do_passwd_file
+	
+	mkdir -p ${CHROOT_PATH}/var/empty/sshd/etc
+	cp -af ${CHROOT_PATH}/etc/localtime ${CHROOT_PATH}/var/empty/sshd/etc
+
+	echo -n $"Starting $prog: "
+	$SSHD $OPTIONS && success || failure
+	RETVAL=$?
+	[ "$RETVAL" = 0 ] && touch /var/lock/subsys/fenceacksv
+	echo
+}
+
+stop_sshd()
+{
+	echo -n $"Stopping $prog: "
+	if [ -e "$PID_FILE" ] ; then
+	    pid=$(cat $PID_FILE)
+	    kill $pid
+	else
+	    failure $"Stopping $prog"
+	fi
+	RETVAL=$?
+	# if we are in halt or reboot runlevel kill all running sessions
+	# so the TCP connections are closed cleanly
+	if [ "x$runlevel" = x0 -o "x$runlevel" = x6 ] ; then
+	    killall $prog 2>/dev/null
+	fi
+	[ "$RETVAL" = 0 ] && rm -f /var/lock/subsys/fenceacksv
+	echo
+}
+
+reload_sshd()
+{
+	echo -n $"Reloading $prog: "
+	if [ -n "`pidfileofproc $SSHD`" ] ; then
+	    killproc $SSHD -HUP
+	else
+	    failure $"Reloading $prog"
+	fi
+	RETVAL=$?
+	echo
+}
+
 start()
 {
-  if ! pidof fenceacksv > /dev/null; then
+  if [ -n "$USE_SSHD" ]; then
+    start_sshd
+  elif ! pidof fenceacksv > /dev/null; then
   	nodename=$(cman_tool status | awk '/Node name: /{ print $3; exit 0;}')
     echo -n "Starting fenceacksv: "
     mkdir -p ${CHROOT_PATH}/var/spool 2>/dev/null
@@ -41,12 +204,16 @@ start()
 
 stop()
 {
-  echo -n "Stopping fenceacksv:"
-  killall ${FENCEACKSV}
-  rtrn=$?
-  if [ $rtrn -eq 0 ]; then success; else failure; fi
-  echo
-  return $rtrn
+  if [ -n "$USE_SSHD" ]; then
+    stop_sshd
+  else
+    echo -n "Stopping fenceacksv:"
+    killall ${FENCEACKSV}
+    rtrn=$?
+    if [ $rtrn -eq 0 ]; then success; else failure; fi
+    echo
+    return $rtrn
+  fi
 }
 
 rtrn=1
@@ -85,7 +252,10 @@ esac
 exit $rtrn
 ######################
 # $Log: fenceacksv.sh,v $
-# Revision 1.5  2010-02-15 14:07:07  marc
+# Revision 1.6  2010-06-17 08:19:22  marc
+# - added ssh support
+#
+# Revision 1.5  2010/02/15 14:07:07  marc
 # - moved to latest version
 # - fixed bug in initscript
 #
