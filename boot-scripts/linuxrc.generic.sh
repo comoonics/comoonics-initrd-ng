@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.94 2010-06-08 13:45:54 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.95 2010-06-17 08:18:19 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.94 2010-06-08 13:45:54 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.95 2010-06-17 08:18:19 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -88,7 +88,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.94 $ $Date: 2010-06-08 13:45:54 $'
+echo_local 'Internal Version $Revision: 1.95 $ $Date: 2010-06-17 08:18:19 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -456,13 +456,6 @@ step "CDSL tree mounted" "cdsl"
 #copy_relevant_files $cdsl_local_dir $newroot $netdevs
 #if [ -n "$debug" ]; then set +x; fi
 
-echo_local -n "Mounting the device file system"
-#TODO
-# try an exec_local mount --move /dev $newroot/dev
-exec_local move_dev $(repository_get_value newroot)
-#exec_local mount --bind /dev $newroot/dev
-return_code
-
 # do something only on rw mounted filesystems
 if [ -z $(getPosFromList "ro" "$(repository_get_value mountopts)" ",") ]; then
   for logfile_name in bootlog syslog_logfile; do
@@ -506,6 +499,13 @@ if [ $? -eq 0 ] && [ -n "$filesystems" ]; then
     dest=$(repository_get_value newroot)/$(cc_get $(repository_get_value cluster_conf) filesystem_dest_dest $(repository_get_value nodeid) $dest)
     [ -z "$mountwait" ] && mountwait="$(repository_get_value mountwait)"
     [ -z "$mounttimes" ] && mountwait="$(repository_get_value mounttimes)"
+    if lvm_check $source; then
+       vg=$(lvm_get_vg $source)
+       echo_local -n "Activating vg $vg"
+       dm_start &>/dev/null
+       exec_local lvm vgchange -ay $vg
+       return_code
+    fi
     if repository_has_key fsck || clusterfs_fsck_needed $source $fstype; then
 	    clusterfs_fsck $source $fstype
 	    if [ $? -ne 0 ]; then
@@ -554,6 +554,13 @@ if [ -z $(getPosInList "ro" "$(repository_get_value mountopts)" ",") ]; then
   success
   step "Created xtab,xrootfs,xkillall_procs file" "xfiles"
 fi
+
+echo_local -n "Mounting the device file system"
+#TODO
+# try an exec_local mount --move /dev $newroot/dev
+exec_local move_dev $(repository_get_value newroot)
+#exec_local mount --bind /dev $newroot/dev
+return_code
 	 
 echo_local -n "Cleaning up initrd ..."
 exec_local clean_initrd
@@ -581,7 +588,11 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.94  2010-06-08 13:45:54  marc
+# Revision 1.95  2010-06-17 08:18:19  marc
+# - moved move_dev before services being restarted
+# - added vg activation for additional fs if being used.
+#
+# Revision 1.94  2010/06/08 13:45:54  marc
 # add scsi_failover to restart_scsi_newroot
 #
 # Revision 1.93  2010/05/27 09:54:09  marc
