@@ -16,7 +16,7 @@ for nodeid in $(cc_get nodeids); do
 	osr_generate_nodevalues $nodeid $querymap > ${DESTFILE}/$(osr_nodeid_file ${nodeid})
 	nodename=$(osr_get_nodename_by_id ${DESTFILE}/$(osr_nodeids_file) $nodeid ${DESTFILE}/$(osr_nodeid_file $nodeid))
 #	echo "nodename: $nodename"
-	[ -n "$nodename" ] && ln ${DESTFILE}/$(osr_nodeid_file ${nodeid}) ${DESTFILE}/$(osr_nodeid_file ${nodename})
+	[ -n "$nodename" ] && ln -f ${DESTFILE}/$(osr_nodeid_file ${nodeid}) ${DESTFILE}/$(osr_nodeid_file ${nodename})
 done
 
 unset DESTFILE nodeids nodename nodeid
