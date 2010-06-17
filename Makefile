@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.60 2010-06-09 08:23:08 marc Exp $
+# $Id: Makefile,v 1.61 2010-06-17 08:21:30 marc Exp $
 #
 # @(#)$file$
 #
@@ -264,7 +264,7 @@ CFG_FILES=basefiles.list \
     rpms.initrd.d/rsyslogd.list \
     rpms.initrd.d/syslog-ng.list \
     rpms.initrd.d/syslogd.list \
-    rpms.initrd.d/fencevirsh.list \
+    rpms.initrd.d/fencedeps.list \
     rpms.initrd.d/rhel/base.list \
     rpms.initrd.d/rhel/dm_multipath.list \
     rpms.initrd.d/rhel/comoonics.list \
@@ -584,7 +584,10 @@ channel: rpm channelcopy channelbuild
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.60  2010-06-09 08:23:08  marc
+# Revision 1.61  2010-06-17 08:21:30  marc
+# replaced fencevirsh with fencedeps
+#
+# Revision 1.60  2010/06/09 08:23:08  marc
 # - initscripts archive introduced
 #
 # Revision 1.59  2010/02/21 12:10:13  marc
