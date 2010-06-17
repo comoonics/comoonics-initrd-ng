@@ -84,8 +84,8 @@ case "$mode" in
     stop $mounts
     ;;
   restart)
-    start $mounts
     stop $mounts
+    start $mounts
     ;;
   status)
     status $mounts
