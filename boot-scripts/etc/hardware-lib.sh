@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.45 2010-05-27 09:47:37 marc Exp $
+# $Id: hardware-lib.sh,v 1.46 2010-06-17 08:17:28 marc Exp $
 #
 # @(#)$File$
 #
@@ -397,19 +397,34 @@ function md_start {
 #  NAME
 #    lvm_check
 #  SYNOPSIS
-#    function lvm_check $rootdevice
+#    function lvm_check $device
 #  DESCRIPTION
-#    checks if rootdevice is lvm compatible or not.
+#    checks if device is lvm compatible or not.
+#    Returns 0 on success 1 otherwise
 #
 function lvm_check {
-	local rootdevice=$1
-	local valid_majors="8 ca"
-	if ! [ -e "$rootdevice" ]; then
+	local device=$1
+	local invalid_majors="8 ca"
+	local valid_majors="fd"
+	local vg=$(lvm_get_vg $device)
+	# in this case no lvm devices exist. So we check if we can get a vg from this device
+	# and if the device does not exist.
+	if [ -n "$vg" ] && ! [ -e "$device" ]; then
 		return 0
-	else
-		major=$(stat --format="%t" $rootdevice)
+	# so but if the device does exist and has a major of 253/0xfd which is the dm device and a vg also
+	# we expect it to be lvm
+	elif [ -n "$vg" ] && [ -b "$device" ]; then
+		major=$(stat --dereference --format="%t" $device)
 		for _major in $valid_majors; do
-			if [ $major = $_major ]; then
+			if [ "$major" = "$_major" ]; then
+				return 0
+			fi
+		done
+	    return 1
+	else
+		major=$(stat --dereference --format="%t" $device)
+		for _major in $invalid_majors; do
+			if [ "$major" = "$_major" ]; then
 				return 1
 			fi
 		done
@@ -459,13 +474,18 @@ function lvm_start {
 #  SOURCE
 #
 function lvm_get_vg {
-   local rootdevice=$1
+   local device=$1
    local volumegroup=""
-   if [ "${rootdevice:0:11}" = "/dev/mapper" ]; then
-     echo ${rootdevice:12} | sed -e 's/-\S\S*$//'
-   else
-     basename $(dirname $rootdevice)
+   local lv=""
+   if [ "${device:0:11}" = "/dev/mapper" ]; then
+     echo ${device:12} | sed -e 's/-\S\S*$//'
+     return 0
+   elif [ "${device:0:4}" = "/dev" ]; then
+     vg=$(basename $(dirname $device))
+     [ $vg == "dev" ] || echo $vg
+     return 0
    fi
+   return 1
 }
 #******** lvm_get_vg
 
@@ -801,7 +821,11 @@ stabilized() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.45  2010-05-27 09:47:37  marc
+# Revision 1.46  2010-06-17 08:17:28  marc
+# - lvm_check: more stable
+# - lvm_get_vg: detection of vg more generic
+#
+# Revision 1.45  2010/05/27 09:47:37  marc
 # scsi_start:
 #    - added rootsource as second paramter for iscsi to be started here
 #    - added starting of iscsi
