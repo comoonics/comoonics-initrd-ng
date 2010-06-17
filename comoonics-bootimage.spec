@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.117 2010-06-09 08:23:22 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.118 2010-06-17 08:21:59 marc Exp $
 #
 ##
 ##
@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 51
+Release: 52
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -446,9 +446,9 @@ OSR files needed for the compatibility to 1.2 releases
 
 %package fenceacksv
 Version: 0.3
-Release: 8
+Release: 9
 Requires: comoonics-fenceacksv-py
-Requires: comoonics-bootimage >= 1.3-1
+Requires: comoonics-bootimage >= 1.4-51
 Requires: comoonics-tools-py
 Summary: The Fenceackserver is a service for last resort actions
 Group:   System Environment/Servers
@@ -869,7 +869,7 @@ fi
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/syslog-ng.list
 
 %files listfiles-fencelib
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fencevirsh.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fencedeps.list
 
 %files fenceacksv
 %attr(0755, root, root) %{FENCEACKSV_DIR}/fence_ack_server.py*
@@ -916,6 +916,10 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Thu Jun 17 2010 Marc Grimme <grimme@atix.de> 1.4-52
+- linuxrc.generic.sh: fixed a bug the a vg is not activated if a fs is 
+      additionally mounted.
+- hardware-lib.sh: fixed a bug in lvm_check
 * Thu Jun 08 2010 Marc Grimme <grimme@atix.de> 1.4-51
 - linuxrc.generic.sh: add scsi_failover to restart_scsi_newroot
 - boot-lib.sh: check_mtab: upstream with tools
@@ -1508,6 +1512,8 @@ rm -rf %{buildroot}
 - Removed comoonics-cs-py dep.
 
 %changelog fenceacksv
+* Wed Jun 16 2010 Marc Grimme <grimme@atix.de> - 0.3-9
+- added support for running fenceacksv over sshd
 * Mon Mar 08 2010 Marc Grimme <grimme@atix.de> - 0.3-8
 - first version for comoonics-4.6-rc1 
 * Mon Feb 15 2010 Marc Grimme <grimme@atix.de> - 0.3-7
@@ -1557,7 +1563,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.117  2010-06-09 08:23:22  marc
+# Revision 1.118  2010-06-17 08:21:59  marc
+# new versions
+#
+# Revision 1.117  2010/06/09 08:23:22  marc
 # new versions
 #
 # Revision 1.116  2010/05/27 09:57:35  marc
