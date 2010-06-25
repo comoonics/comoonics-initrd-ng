@@ -21,7 +21,7 @@ if ! runonce; then
   detecterror $? "Could not find default syslog.conf for syslogtype $syslogtype"
   
   repository_store_value doexec 0
-  out=$(${syslogtype}_start /tmp)
+  out=$(${syslogtype}_start)
   detecterror $? "Could not start syslog $syslogtype. Output: $out"
   repository_store_value doexec 1
   rm -f $tempfile 

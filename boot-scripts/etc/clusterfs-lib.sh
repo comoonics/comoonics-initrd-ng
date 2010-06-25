@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.46 2010-06-08 13:37:46 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.47 2010-06-25 12:34:19 marc Exp $
 #
 # @(#)$File$
 #
@@ -112,12 +112,12 @@ function getCluType {
    if [ -z "$conf" ]; then
    	  conf=$cluster_conf
    fi
-   clutype=$(com-queryclusterconf -f $conf clustertype 2>/dev/null)
-   if [ $? -eq 0 ]; then
+   clutype=$(com-queryclusterconf --querymapfile $(repository_get_value osrquerymap) --filename $conf clustertype 2>/dev/null)
+   if [ $? -eq 0 ] && [ -n "$clutype" ]; then
    	  echo "$clutype"
    	  return 0
    fi
-   clutype=$(com-queryclusterconf -f $conf query_value /cluster/@type 2>/dev/null)
+   clutype=$(com-queryclusterconf --filename $conf query_value /cluster/@type 2>/dev/null)
    if [ $? -eq 0 ] && [ -n "$clutype" ]; then
    	  echo "$clutype"
    	  return 0
@@ -218,15 +218,22 @@ function getClusterParameter() {
 	fi
 	# maybe we can find the value in the repository
 	if repository_has_key $name; then
-		repository_get_value $name
-	else
+		out=$(repository_get_value $name)
+	elif cc_is_valid_param $name; then
 		out=$(cc_get_$name $cluster_conf $nodeid 2>/dev/null)
 		[ $? -eq 0 ] && [ -n "$out" ] || out=$(cc_get $cluster_conf $name $nodeid 2>/dev/null)
 		[ $? -eq 0 ] && [ -n "$out" ] || out=$(cc_get_$name $cluster_conf $nodename 2>/dev/null)
 		[ $? -eq 0 ] && [ -n "$out" ] || out=$(cc_get $cluster_conf $name $nodename 2>/dev/null)
-		echo -n $out
-		test -n "$out"
+	elif clusterfs_is_valid_param $name; then
+		out=$(clusterfs_get_$name $cluster_conf $nodeid 2>/dev/null)
+		[ $? -eq 0 ] && [ -n "$out" ] || out=$(clusterfs_get $cluster_conf $name $nodeid 2>/dev/null)
+		[ $? -eq 0 ] && [ -n "$out" ] || out=$(clusterfs_get_$name $cluster_conf $nodename 2>/dev/null)
+		[ $? -eq 0 ] && [ -n "$out" ] || out=$(clusterfs_get $cluster_conf $name $nodename 2>/dev/null)
+	else
+	    return 1
 	fi
+	echo -n $out
+	test -n "$out"
 }
 
 #****f* boot-scripts/etc/clusterfs-lib.sh/cluster_ip_config
@@ -363,22 +370,26 @@ function cc_get_cluster_drivers {
 #  SOURCE
 function cc_find_nodeid {
 	local cluster_conf=$1
-	local hwids=$(repository_get_value hardwareids)
-	[ -z "$macs" ] && macs=$(ifconfig -a | grep -i hwaddr | awk '{print $5;};')
-	for hwid in $hwids; do
-		local mac=$(echo "$hwid" | cut -f2- -d:)
-    	local nodeid=$(cc_get_nodeid ${cluster_conf} $mac 2>/dev/null)
-    	if [ -n "$nodeid" ]; then
+	local nodeid=$(getBootParm nodeid)
+	if [ -z "$nodeid" ]; then
+	   local hwids=$(repository_get_value hardwareids)
+	   [ -z "$hwids" ] && hwids=$(hardware_ids)
+	   [ -z "$macs" ] && macs=$(ifconfig -a | grep -i hwaddr | awk '{print $5;};')
+	   for hwid in $hwids; do
+		 local mac=$(echo "$hwid" | cut -f2- -d:)
+    	 nodeid=$(cc_get_nodeid ${cluster_conf} $mac 2>/dev/null)
+    	 if [ -n "$nodeid" ]; then
     		break
-    	fi
-  	done
+    	 fi
+  	   done
+	fi
 	if [ -z "$nodeid" ]; then
 		return 1
 	fi
 	echo $nodeid
 	return 0  
 }
-#******* cc_get_nodeid
+#******* cc_find_nodeid
 
 #****f* boot-scripts/etc/clusterfs-lib.sh/cc_getdefaults
 #  NAME
@@ -393,6 +404,40 @@ function cc_getdefaults {
   ${clutype}_getdefaults $*
 }
 #********** cc_getdefaults
+
+#****f* clusterfs-lib.sh/cc_get_valid_params
+#  NAME
+#    cc_get_valid_params
+#  SYNOPSIS
+#    function cc_get_valid_params
+#  DESCRIPTION
+#    returns all valid params
+#  SOURCE
+function cc_get_valid_params {
+   echo "votes tmpfix quorumack ip rootvolume rootsource syslogserver syslogfilter bridgename bridgescript bridgenetdev bridgeantispoof scsifailover scsidriver "
+}
+#********** cc_get_valid_params
+
+#****f* clusterfs-lib.sh/cc_is_valid_param
+#  NAME
+#    cc_is_valid_param
+#  SYNOPSIS
+#    function cc_is_valid_param param
+#  DESCRIPTION
+#    Checks if this parameter is a valid clusterparam
+#  SOURCE
+function cc_is_valid_param {
+    local valid
+    if [ -n "$1" ]; then
+      for valid in $(cc_get_valid_params); do
+        if [ "$valid" = "$1" ]; then
+           return 0
+        fi
+      done
+    fi
+    return 1
+}
+#********** cc_is_valid_param
 
 #****f* clusterfs-lib.sh/cc_get
 #  NAME
@@ -982,6 +1027,55 @@ function cc_get_bridgeantispoof {
   ${clutype}_get_bridge_param $cluster_conf $nodename $bridgename antispoof
 }
 
+#****f* clusterfs-lib.sh/clusterfs_get_valid_params
+#  NAME
+#    clusterfs_get_valid_params
+#  SYNOPSIS
+#    function clusterfs_get_valid_params
+#  DESCRIPTION
+#    returns all valid params
+#  SOURCE
+function clusterfs_get_valid_params {
+   echo "sourceserver lockmethod root mountopts rootfsck mounttimes mountwait rootfs"
+}
+#********** clusterfs_get_valid_params
+
+#****f* clusterfs-lib.sh/clusterfs_is_valid_param
+#  NAME
+#    clusterfs_is_valid_param
+#  SYNOPSIS
+#    function clusterfs_is_valid_param param
+#  DESCRIPTION
+#    Checks if this parameter is a valid clusterparam
+#  SOURCE
+function clusterfs_is_valid_param {
+    local valid
+    if [ -n "$1" ]; then
+      for valid in $(clusterfs_get_valid_params); do
+        if [ "$valid" = "$1" ]; then
+           return 0
+        fi
+      done
+    fi
+    return 1
+}
+#********** clusterfs_is_valid_param
+
+#****f* clusterfs-lib.sh/clusterfs_get
+#  NAME
+#    clusterfs_get
+#  SYNOPSIS
+#    function clusterfs_get query
+#  DESCRIPTION
+#    gets a value generically
+#  SOURCE
+function clusterfs_get {
+  local rootfs=$(repository_get_value rootfs)
+
+  ${rootfs}_get $@
+}
+#******* clusterfs_get
+
 #****f* boot-scripts/etc/clusterfs-lib.sh/clusterfs_getdefaults
 #  NAME
 #    clusterfs_getdefaults
@@ -1397,7 +1491,10 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.46  2010-06-08 13:37:46  marc
+# Revision 1.47  2010-06-25 12:34:19  marc
+# *** empty log message ***
+#
+# Revision 1.46  2010/06/08 13:37:46  marc
 # - clusterfs_mount_cdsl: fixed bug with mounting cdsls in not /
 #
 # Revision 1.45  2010/03/08 13:08:36  marc

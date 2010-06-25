@@ -50,7 +50,7 @@ if [ -z "$lastclutype" ] && [ -z "$lastdistribution" ] && [ -z "$lastclutype" ] 
     done
     echo
   
-    _fsparameters="sourceserver lockmethod root mountopts scsifailover rootfsck mounttimes mountwait"
+    _fsparameters=$(clusterfs_get_valid_params)
     for _parameter in $_fsparameters; do
       echo -n "Testing clusterfs_getdefaults($_parameter)"
       expectedresult=$(cat $path/test/$rootfs/clusterfs_getdefaults_${_parameter} 2>/dev/null)
@@ -65,7 +65,7 @@ if [ -z "$lastclutype" ] && [ -z "$lastdistribution" ] && [ -z "$lastclutype" ] 
       expectedresult=$(cat $path/test/$rootfs/getClusterParameter_${_parameter} 2>/dev/null)
       result=$(getClusterParameter $_parameter $cluster_conf $nodeid $nodename)
       test "$result" = "$expectedresult"
-      detecterror $? "getClusterParameter $clutype, $rootfs, $_parameter failed. result: $result, expected: $expectedresult." || echo -n " Failed"
+      detecterror $? " $clutype, $rootfs: getClusterParameter($_parameter nodeid $nodeid, nodename $nodename) failed. result: $result, expected: $expectedresult." || echo -n " Failed"
       echo " $result"
       result=""
       expectedresult=""
