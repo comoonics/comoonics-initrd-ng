@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.118 2010-06-17 08:21:59 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.119 2010-06-25 12:54:09 marc Exp $
 #
 ##
 ##
@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 52
+Release: 53
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -96,7 +96,7 @@ Extra listfiles for special network configurations
 
 %package extras-nfs
 Version: 0.1
-Release: 16
+Release: 17
 Requires: comoonics-bootimage >= 1.4
 Summary: Listfiles for nfs sharedroot configurations
 Group:   System Environment/Base
@@ -107,7 +107,7 @@ Extra listfiles for nfs sharedroot configurations
 
 %package extras-ocfs2
 Version: 0.1
-Release: 8
+Release: 9
 Requires: comoonics-bootimage >= 1.4
 Summary: Listfiles for ocfs2 sharedroot configurations
 Group:   System Environment/Base
@@ -226,7 +226,7 @@ DRBD support in the OSR cluster
 
 %package extras-glusterfs
 Version: 0.1
-Release: 3
+Release: 4
 Requires: comoonics-bootimage >= 1.3-44
 Summary: Extras for glusterfs support in the open-sharedroot cluster
 Group:   System Environment/Base
@@ -446,7 +446,7 @@ OSR files needed for the compatibility to 1.2 releases
 
 %package fenceacksv
 Version: 0.3
-Release: 9
+Release: 10
 Requires: comoonics-fenceacksv-py
 Requires: comoonics-bootimage >= 1.4-51
 Requires: comoonics-tools-py
@@ -916,6 +916,17 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Fri Jun 25 2010 Marc Grimme <grimme@atix.de> 1.4-53
+- linuxrc.generic.sh: upstream move. Calling *_get_valid_params for either clusterparams and fsparams.
+- std-lib.sh.sourceLibs: taking predefined clutype in repository also into account.
+- clusterfs-lib.sh:
+  - getCluType: clutype will be requeried if either empty or query returns failure.
+  - getClusterParameter: made code better readable and more errors to be detected
+  - cc/clusterfs_get_valid_params: new function to return all valid cluster parameters
+  - cc/clusterfs_is_valid_param: checks if the given param is valid
+- ext3/ocfs2/nfs-lib.sh:
+  - added ext3/ocfs2/nfs_get
+- querymap.cfg: added clustertype query
 * Thu Jun 17 2010 Marc Grimme <grimme@atix.de> 1.4-52
 - linuxrc.generic.sh: fixed a bug the a vg is not activated if a fs is 
       additionally mounted.
@@ -1268,6 +1279,9 @@ rm -rf %{buildroot}
 - first release
 
 %changelog extras-nfs
+* Fri Jun 25 2010 Marc Grimme <grimme@atix.de> 0.1-16
+- ext3/ocfs2/nfs-lib.sh:
+  - added ext3/ocfs2/nfs_get
 * Thu Jun 08 2010 Marc Grimme <grimme@atix.de> 0.1-15
 - fixed bug #378 function nfs_get_mountopts
 * Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-15
@@ -1294,6 +1308,9 @@ rm -rf %{buildroot}
 - added nfs-lib.sh file
 
 %changelog extras-ocfs2
+* Fri Jun 25 2010 Marc Grimme <grimme@atix.de> 0.1-9
+- ext3/ocfs2/nfs-lib.sh:
+  - added ext3/ocfs2/nfs_get
 * Thu Jun 08 2010 Marc Grimme <grimme@atix.de> 0.1-8
 - fixed bug #378 function iscsi_get_mountopts
 * Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-7
@@ -1339,6 +1356,8 @@ rm -rf %{buildroot}
 - introduced the changelog
 
 %changelog extras-glusterfs
+* Fri Jun 25 2010 Marc Grimme <grimme@atix.de> 0.1-6
+- glusterfs-lib.sh: added glusterfs_get
 * Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-5
 - first version for comoonics-4.6-rc1 
 * Tue Aug 11 2009 Marc Grimme <grimme@atix.de> - 0.1-4
@@ -1355,6 +1374,8 @@ rm -rf %{buildroot}
 - initial revision
 
 %changelog extras-syslog
+* Fri Jun 25 2010 Marc Grimme <grimme@atix.de> 0.1-6
+- syslog-lib.sh.*_start: calling exec_local if no chroot given instead of nothing.
 * Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-5
 - first version for comoonics-4.6-rc1 
 * Thu Sep 24 2009 Marc Grimme <grimme@atix.de> - 0.1-4
@@ -1512,6 +1533,8 @@ rm -rf %{buildroot}
 - Removed comoonics-cs-py dep.
 
 %changelog fenceacksv
+* Fri Jun 25 2010 Marc Grimme <grimme@atix.de> 0.3-10
+- fenceacksv.sh: make the fenceackshell executable
 * Wed Jun 16 2010 Marc Grimme <grimme@atix.de> - 0.3-9
 - added support for running fenceacksv over sshd
 * Mon Mar 08 2010 Marc Grimme <grimme@atix.de> - 0.3-8
@@ -1563,7 +1586,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.118  2010-06-17 08:21:59  marc
+# Revision 1.119  2010-06-25 12:54:09  marc
+# new versions for comooncis-bootimage, -extras-nfs/ocfs2/glusterfs/syslog, -fenceacksv
+#
+# Revision 1.118  2010/06/17 08:21:59  marc
 # new versions
 #
 # Revision 1.117  2010/06/09 08:23:22  marc
