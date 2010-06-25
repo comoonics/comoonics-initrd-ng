@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.95 2010-06-17 08:18:19 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.96 2010-06-25 12:27:12 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.95 2010-06-17 08:18:19 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.96 2010-06-25 12:27:12 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -88,7 +88,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.95 $ $Date: 2010-06-17 08:18:19 $'
+echo_local 'Internal Version $Revision: 1.96 $ $Date: 2010-06-25 12:27:12 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -172,8 +172,8 @@ found_nics && breakp $(errormsg err_hw_nicdriver)
 step "NIC modules loaded." "autonetconfig"
 
 echo_local -n "Scanning other parameters "
-_ccparameters="votes tmpfix quorumack ip rootvolume rootsource syslogserver syslogfilter"
-_fsparameters="sourceserver lockmethod root mountopts scsi_failover scsi_driver rootfsck mounttimes mountwait"
+_ccparameters=$(cc_get_valid_params)
+_fsparameters=$(clusterfs_get_valid_params)
 echo_local_debug -N -n "cc: $_ccparameters fs: $_fsparameters "
 
 for _parameter in $_ccparameters; do
@@ -588,7 +588,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.95  2010-06-17 08:18:19  marc
+# Revision 1.96  2010-06-25 12:27:12  marc
+# upstream move. Calling *_get_valid_params for either clusterparams and fsparams.
+#
+# Revision 1.95  2010/06/17 08:18:19  marc
 # - moved move_dev before services being restarted
 # - added vg activation for additional fs if being used.
 #
