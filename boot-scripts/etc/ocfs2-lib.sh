@@ -1,5 +1,5 @@
 #
-# $Id: ocfs2-lib.sh,v 1.9 2010-06-08 13:35:43 marc Exp $
+# $Id: ocfs2-lib.sh,v 1.10 2010-06-25 12:36:37 marc Exp $
 #
 # @(#)$File$
 #
@@ -93,6 +93,20 @@ function ocfs2_getdefaults {
 	esac
 }
 #********** ocfs2_getdefaults
+
+#****f* boot-scripts/etc/clusterfs-lib.sh/ocfs2_get
+#  NAME
+#    ocfs2_get
+#  SYNOPSIS
+#    ocfs2_get [cluster_conf] [querymap] opts
+#  DESCRIPTTION
+#    returns the name of the cluster.
+#  SOURCE
+#
+ocfs2_get() {
+   cc_get $@
+}
+# *********** ocfs2_get
 
 #****f* ocfs2-lib.sh/ocfs2_get_drivers
 #  NAME
@@ -356,7 +370,11 @@ function ocfs2_get_mountopts() {
 #************ ocfs2_get_mountopts
 
 # $Log: ocfs2-lib.sh,v $
-# Revision 1.9  2010-06-08 13:35:43  marc
+# Revision 1.10  2010-06-25 12:36:37  marc
+# - ext3/ocfs2/nfs-lib.sh:
+#   - added ext3/ocfs2/nfs_get
+#
+# Revision 1.9  2010/06/08 13:35:43  marc
 # - fix of bug #378 unimplemented function $rootfs_get_mountopts
 #
 # Revision 1.8  2010/05/27 09:52:24  marc

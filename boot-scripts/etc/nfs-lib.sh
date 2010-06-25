@@ -1,5 +1,5 @@
 #
-# $Id: nfs-lib.sh,v 1.17 2010-06-08 13:35:43 marc Exp $
+# $Id: nfs-lib.sh,v 1.18 2010-06-25 12:36:37 marc Exp $
 #
 # @(#)$File$
 #
@@ -675,8 +675,26 @@ function nfs_get_userspace_procs {
 }
 #******** nfs_get_userspace_procs
 
+#****f* boot-scripts/etc/clusterfs-lib.sh/nfs_get
+#  NAME
+#    nfs_get
+#  SYNOPSIS
+#    nfs_get [cluster_conf] [querymap] opts
+#  DESCRIPTTION
+#    returns the name of the cluster.
+#  SOURCE
+#
+nfs_get() {
+   cc_get $@
+}
+# *********** nfs_get
+
 # $Log: nfs-lib.sh,v $
-# Revision 1.17  2010-06-08 13:35:43  marc
+# Revision 1.18  2010-06-25 12:36:37  marc
+# - ext3/ocfs2/nfs-lib.sh:
+#   - added ext3/ocfs2/nfs_get
+#
+# Revision 1.17  2010/06/08 13:35:43  marc
 # - fix of bug #378 unimplemented function $rootfs_get_mountopts
 #
 # Revision 1.16  2010/05/27 09:52:08  marc

@@ -1,5 +1,5 @@
 #
-# $Id: ext3-lib.sh,v 1.8 2010-06-08 13:35:43 marc Exp $
+# $Id: ext3-lib.sh,v 1.9 2010-06-25 12:36:37 marc Exp $
 #
 # @(#)$File$
 #
@@ -240,8 +240,26 @@ function ext3_get_mountopts() {
 }
 #************ ext3_get_mountopts
 
+#****f* boot-scripts/etc/clusterfs-lib.sh/ext3_get
+#  NAME
+#    ext3_get
+#  SYNOPSIS
+#    ext3_get [cluster_conf] [querymap] opts
+#  DESCRIPTTION
+#    returns the name of the cluster.
+#  SOURCE
+#
+ext3_get() {
+   cc_get $@
+}
+# *********** ext3_get
+
 # $Log: ext3-lib.sh,v $
-# Revision 1.8  2010-06-08 13:35:43  marc
+# Revision 1.9  2010-06-25 12:36:37  marc
+# - ext3/ocfs2/nfs-lib.sh:
+#   - added ext3/ocfs2/nfs_get
+#
+# Revision 1.8  2010/06/08 13:35:43  marc
 # - fix of bug #378 unimplemented function $rootfs_get_mountopts
 #
 # Revision 1.7  2009/03/25 13:51:00  marc
