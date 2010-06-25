@@ -1,5 +1,5 @@
 #
-# $Id: syslog-lib.sh,v 1.1 2009-09-28 13:08:10 marc Exp $
+# $Id: syslog-lib.sh,v 1.2 2010-06-25 12:28:04 marc Exp $
 #
 # @(#)$File$
 #
@@ -122,7 +122,7 @@ function syslogd_start {
 	local syslog_sysconfig=$(repository_get_value "syslogsysconfig" "/etc/sysconfig/syslog")
 	
     if [ -z "$chrootpath" ]; then
-    	start_service_f=""
+    	start_service_f="exec_local"
     fi
 
     if [ -f "$syslog_sysconfig" ] ; then
@@ -176,7 +176,7 @@ function rsyslogd_start {
 	local syslog_sysconfig=$(repository_get_value "syslogsysconfig" "/etc/sysconfig/rsyslog")
 	
     if [ -z "$chrootpath" ]; then
-    	start_service_f=""
+    	start_service_f="exec_local"
     fi
 
     if [ -f "$syslog_sysconfig" ] ; then
@@ -277,7 +277,7 @@ function syslog_ng_start {
 	local syslog_sysconfig=$(repository_get_value "syslogsysconfig" "/etc/sysconfig/syslog")
 	
     if [ -z "$chrootpath" ]; then
-    	start_service_f=""
+    	start_service_f="exec_local"
     fi
 
     if [ -f "$syslog_sysconfig" ] ; then
@@ -305,6 +305,9 @@ function syslog_ng_start {
 
 ######################
 # $Log: syslog-lib.sh,v $
-# Revision 1.1  2009-09-28 13:08:10  marc
+# Revision 1.2  2010-06-25 12:28:04  marc
+# - *_start: calling exec_local if no chroot given instead of nothing.
+#
+# Revision 1.1  2009/09/28 13:08:10  marc
 # initial revision
 #
