@@ -1,5 +1,5 @@
 #
-# $Id: std-lib.sh,v 1.17 2010-06-25 12:28:42 marc Exp $
+# $Id: std-lib.sh,v 1.18 2010-06-25 14:36:50 marc Exp $
 #
 # @(#)$File$
 #
@@ -108,7 +108,7 @@ function sourceLibs() {
 function sourceRootfsLibs {
 	local predir=$1
 	[ -n "$2" ] && local rootfs="$2"
-    [ -z "$rootfs" ] && local rootfs=$(getParameter rootfs $(cc_getdefaults rootfs))
+    [ -z "$rootfs" ] && local rootfs=$(getParameter rootfs $(clusterfs_getdefaults rootfs))
 	[ -n "$3" ] && local clutype="$3"
     [ -z "$clutype" ] && local clutype=$(repository_get_value clutype)
 	[ -n "$4" ] && local shortdistribution="$4"
@@ -1093,7 +1093,10 @@ exec_ordered_skripts_in() {
 
 #################
 # $Log: std-lib.sh,v $
-# Revision 1.17  2010-06-25 12:28:42  marc
+# Revision 1.18  2010-06-25 14:36:50  marc
+# fixed bug in getParameter
+#
+# Revision 1.17  2010/06/25 12:28:42  marc
 # - sourceLibs: taking predefined clutype in repository also into account.
 #
 # Revision 1.16  2010/05/27 09:53:13  marc
