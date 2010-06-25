@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.84 2010-06-08 13:39:25 marc Exp $
+# $Id: boot-lib.sh,v 1.85 2010-06-25 09:56:42 marc Exp $
 #
 # @(#)$File$
 #
@@ -250,44 +250,33 @@ function getDistributionList {
 function getParameter() {
 	local name=$1
 	local default=$2
-	local ret=""
+	local out=""
 	
 	# check if parameter is already in repository
 	if repository_has_key $name; then
-		repository_get_value $name
-		return 0
-	fi
+		out=$(repository_get_value $name)
 	# first check for a boot parameter
-	if ret=$(getBootParm $name); then
+	elif out=$(getBootParm $name); then
         # set __set__ for parameters given as 
-		[ -z "$ret" ] && ret="__set__"
-		repository_store_value $name "$ret"
-		echo $ret
-		return 0
-	fi
+		[ -z "$out" ] && out="__set__"
 	# if we cannot find this one, try with a "com-"
-	if ret=$(getBootParm com-$name); then
+	elif out=$(getBootParm com-$name); then
         # set __set__ for parameters given as 
-		[ -z "$ret" ] && ret="__set__"
-		repository_store_value $name "$ret"
-		echo $ret
-		return 0
-	fi
+		[ -z "$out" ] && out="__set__"
 	# then we try to find a method to query the cluster configuration
-	if ret=$(getClusterParameter $name); then
+	elif out=$(getClusterParameter $name $cluster_conf); then
         # set __set__ for parameters given as 
-		[ -z "$ret" ] && ret="__set__"
-		repository_store_value $name "$ret"
-		echo $ret
-		return 0
-	fi
-    if [ -n "$default" ]; then
-      repository_store_value $name "$default"
-	  echo $default
-	  return 0
+		[ -z "$out" ] && out="__set__"
+    elif [ -n "$default" ]; then
+        out=$default
     fi
-	return 1		
-		
+    if [ -n "$out" ]; then
+        repository_store_value $name "$out"
+        echo "$out"
+        return 0
+    else
+        return 1
+    fi
 }
 #************ getParameter
 
@@ -1029,7 +1018,10 @@ function check_mtab {
 #************** check_mtab
 
 # $Log: boot-lib.sh,v $
-# Revision 1.84  2010-06-08 13:39:25  marc
+# Revision 1.85  2010-06-25 09:56:42  marc
+# - rewrote the semantics of getParameter to make it better readable
+#
+# Revision 1.84  2010/06/08 13:39:25  marc
 # check_mtab: upstream porting to tools
 #
 # Revision 1.83  2010/05/06 15:20:27  mark
