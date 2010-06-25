@@ -1,5 +1,5 @@
 #
-# $Id: std-lib.sh,v 1.16 2010-05-27 09:53:13 marc Exp $
+# $Id: std-lib.sh,v 1.17 2010-06-25 12:28:42 marc Exp $
 #
 # @(#)$File$
 #
@@ -42,6 +42,7 @@
 #
 function sourceLibs() {
 	local predir=$1
+	local clutype=""
 	[ -e ${predir}/etc/sysconfig/comoonics ] && . ${predir}/etc/sysconfig/comoonics
 
     . ${predir}/etc/repository-lib.sh
@@ -60,8 +61,10 @@ function sourceLibs() {
     [ -e ${predir}/etc/drbd-lib.sh ] && source ${predir}/etc/drbd-lib.sh
     [ -e ${predir}/etc/syslog-lib.sh ] && source ${predir}/etc/syslog-lib.sh
 
-	[ -n "$2" ] && local clutype="$2"
-    [ -z "$clutype" ] && local clutype=$(getCluType)
+	
+	[ -n "$2" ] && clutype="$2"
+	repository_has_key clutype && clutype=$(repository_get_value clutype)
+    [ -z "$clutype" ] && clutype=$(getCluType)
     . ${predir}/etc/${clutype}-lib.sh
 
     # including all distribution dependent files
@@ -1090,7 +1093,10 @@ exec_ordered_skripts_in() {
 
 #################
 # $Log: std-lib.sh,v $
-# Revision 1.16  2010-05-27 09:53:13  marc
+# Revision 1.17  2010-06-25 12:28:42  marc
+# - sourceLibs: taking predefined clutype in repository also into account.
+#
+# Revision 1.16  2010/05/27 09:53:13  marc
 # cpio_and_zip_initrd:
 #   - create tmp file in TMPDIR(/tmp) and not where initrd should be created
 #
