@@ -1,5 +1,5 @@
 #
-# $Id: glusterfs-lib.sh,v 1.5 2009-09-28 13:00:55 marc Exp $
+# $Id: glusterfs-lib.sh,v 1.6 2010-06-25 12:52:28 marc Exp $
 #
 # @(#)$File$
 #
@@ -175,8 +175,26 @@ glusterfsd"
 }
 #******** glusterfs_get_userspace_procs
 
+#****f* boot-scripts/etc/clusterfs-lib.sh/glusterfs_get
+#  NAME
+#    glusterfs_get
+#  SYNOPSIS
+#    glusterfs_get [cluster_conf] [querymap] opts
+#  DESCRIPTTION
+#    returns the name of the cluster.
+#  SOURCE
+#
+glusterfs_get() {
+   cc_get $@
+}
+# *********** glusterfs_get
+
 # $Log: glusterfs-lib.sh,v $
-# Revision 1.5  2009-09-28 13:00:55  marc
+# Revision 1.6  2010-06-25 12:52:28  marc
+# - ext3/ocfs2/nfs/glusterfs-lib.sh:
+#   - added ext3/ocfs2/nfs/glusterfs_get
+#
+# Revision 1.5  2009/09/28 13:00:55  marc
 # - removed glusterfs_get_mountopts as this is called in the cluster library not in the fs library
 #
 # Revision 1.4  2009/08/11 09:54:08  marc
