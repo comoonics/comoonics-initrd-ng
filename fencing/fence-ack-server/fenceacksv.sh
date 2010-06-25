@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: fenceacksv.sh,v 1.6 2010-06-17 08:19:22 marc Exp $
+# $Id: fenceacksv.sh,v 1.7 2010-06-25 12:39:32 marc Exp $
 #
 # chkconfig: 345 24 76
 # description: Starts and stops fenceacksv
@@ -144,7 +144,8 @@ start_sshd()
 	do_rsa_keygen
 	do_dsa_keygen
 	do_passwd_file
-	
+    do_fenceack_shell
+    	
 	mkdir -p ${CHROOT_PATH}/var/empty/sshd/etc
 	cp -af ${CHROOT_PATH}/etc/localtime ${CHROOT_PATH}/var/empty/sshd/etc
 
@@ -252,7 +253,10 @@ esac
 exit $rtrn
 ######################
 # $Log: fenceacksv.sh,v $
-# Revision 1.6  2010-06-17 08:19:22  marc
+# Revision 1.7  2010-06-25 12:39:32  marc
+# - fenceacksv.sh: make the fenceackshell executable
+#
+# Revision 1.6  2010/06/17 08:19:22  marc
 # - added ssh support
 #
 # Revision 1.5  2010/02/15 14:07:07  marc
