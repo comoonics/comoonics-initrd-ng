@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.96 2010-06-25 12:27:12 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.97 2010-06-29 19:00:06 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.96 2010-06-25 12:27:12 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.97 2010-06-29 19:00:06 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -88,7 +88,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.96 $ $Date: 2010-06-25 12:27:12 $'
+echo_local 'Internal Version $Revision: 1.97 $ $Date: 2010-06-29 19:00:06 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -479,14 +479,6 @@ step "Logfiles copied" "logfiles"
 # FIXME: Remove line
 #bootlog="/var/log/comoonics-boot.log"
 
-if [ $is_syslog -eq 0 ]; then
-  #TODO: remove lines as syslog can will stay in /comoonics
-  echo_local -n "Stopping syslogd..."
-  exec_local killall "klogd"
-  exec_local stop_service $(repository_get_value syslogtype) /
-  return_code
-fi
-
 filesystems=$(cc_get $(repository_get_value cluster_conf) filesystem_dest $(repository_get_value nodeid))
 if [ $? -eq 0 ] && [ -n "$filesystems" ]; then
   for dest in $filesystems; do
@@ -555,6 +547,15 @@ if [ -z $(getPosInList "ro" "$(repository_get_value mountopts)" ",") ]; then
   step "Created xtab,xrootfs,xkillall_procs file" "xfiles"
 fi
 
+if [ $is_syslog -eq 0 ]; then
+  #TODO: remove lines as syslog can will stay in /comoonics
+  echo_local -n "Stopping "$(repository_get_value syslogtype)"..."
+  exec_local killall "klogd"
+  exec_local stop_service $(repository_get_value syslogtype) /
+  return_code
+  step "Stopped syslogd" "syslogstop"
+fi
+
 echo_local -n "Mounting the device file system"
 #TODO
 # try an exec_local mount --move /dev $newroot/dev
@@ -588,7 +589,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.96  2010-06-25 12:27:12  marc
+# Revision 1.97  2010-06-29 19:00:06  marc
+# moved killing of syslog down
+#
+# Revision 1.96  2010/06/25 12:27:12  marc
 # upstream move. Calling *_get_valid_params for either clusterparams and fsparams.
 #
 # Revision 1.95  2010/06/17 08:18:19  marc
