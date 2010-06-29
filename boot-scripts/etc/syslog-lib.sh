@@ -1,5 +1,5 @@
 #
-# $Id: syslog-lib.sh,v 1.2 2010-06-25 12:28:04 marc Exp $
+# $Id: syslog-lib.sh,v 1.3 2010-06-29 18:59:13 marc Exp $
 #
 # @(#)$File$
 #
@@ -57,7 +57,7 @@ default_syslogconf() {
     local syslogtype=$1
     local return_code=0
     case "$syslogtype" in
-       "rsyslogd") echo "/etc/rsyslogd.conf";;
+       "rsyslogd") echo "/etc/rsyslog.conf";;
        "syslog-ng") echo "/etc/syslog-ng/syslog-ng.conf";;
        "syslogd") echo "/etc/syslog.conf";;
        "*") 
@@ -305,7 +305,10 @@ function syslog_ng_start {
 
 ######################
 # $Log: syslog-lib.sh,v $
-# Revision 1.2  2010-06-25 12:28:04  marc
+# Revision 1.3  2010-06-29 18:59:13  marc
+# default_syslogconf: right name of rsyslog.conf
+#
+# Revision 1.2  2010/06/25 12:28:04  marc
 # - *_start: calling exec_local if no chroot given instead of nothing.
 #
 # Revision 1.1  2009/09/28 13:08:10  marc
