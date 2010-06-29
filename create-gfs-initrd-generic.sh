@@ -6,7 +6,7 @@
 #  DESCRIPTION
 #*******
 #
-# $Id: create-gfs-initrd-generic.sh,v 1.29 2010-05-27 09:54:52 marc Exp $
+# $Id: create-gfs-initrd-generic.sh,v 1.30 2010-06-29 19:01:25 marc Exp $
 #
 # @(#)$File$
 #
@@ -122,7 +122,7 @@ function getoptions() {
     while getopts LUoRFVvhlpPm:fd:s:r:b:A:D:M: option ; do
 	case "$option" in
 	    v) # version
-		echo "$0 Version "'$Revision: 1.29 $'
+		echo "$0 Version "'$Revision: 1.30 $'
 		exit 0
 		;;
 	    h) # help
@@ -447,7 +447,7 @@ if [ -z "$update" ] || [ -n "$kernel" ]; then
 		if [ -n "$verbose" ]; then
 			echo_local -N "Copying module $file"
 		fi
-	    tar -chf - $file 2>/dev/null | tar -xf - -C ${mountpoint};
+	    tar --create --dereference --file - $file 2>/dev/null | tar --extract --file - --directory ${mountpoint};
       done
       set +f
     fi
@@ -514,7 +514,10 @@ ls -lk $initrdname
 
 ##########################################
 # $Log: create-gfs-initrd-generic.sh,v $
-# Revision 1.29  2010-05-27 09:54:52  marc
+# Revision 1.30  2010-06-29 19:01:25  marc
+# long options to tar
+#
+# Revision 1.29  2010/05/27 09:54:52  marc
 # add TMPDIR as parameter to cpio_and_zip_initrd
 #
 # Revision 1.28  2010/02/21 12:09:32  marc
