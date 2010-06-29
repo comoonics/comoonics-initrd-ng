@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.47 2010-06-25 12:34:19 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.48 2010-06-29 18:55:40 marc Exp $
 #
 # @(#)$File$
 #
@@ -219,20 +219,18 @@ function getClusterParameter() {
 	# maybe we can find the value in the repository
 	if repository_has_key $name; then
 		out=$(repository_get_value $name)
-	elif cc_is_valid_param $name; then
-		out=$(cc_get_$name $cluster_conf $nodeid 2>/dev/null)
-		[ $? -eq 0 ] && [ -n "$out" ] || out=$(cc_get $cluster_conf $name $nodeid 2>/dev/null)
-		[ $? -eq 0 ] && [ -n "$out" ] || out=$(cc_get_$name $cluster_conf $nodename 2>/dev/null)
-		[ $? -eq 0 ] && [ -n "$out" ] || out=$(cc_get $cluster_conf $name $nodename 2>/dev/null)
 	elif clusterfs_is_valid_param $name; then
 		out=$(clusterfs_get_$name $cluster_conf $nodeid 2>/dev/null)
 		[ $? -eq 0 ] && [ -n "$out" ] || out=$(clusterfs_get $cluster_conf $name $nodeid 2>/dev/null)
 		[ $? -eq 0 ] && [ -n "$out" ] || out=$(clusterfs_get_$name $cluster_conf $nodename 2>/dev/null)
 		[ $? -eq 0 ] && [ -n "$out" ] || out=$(clusterfs_get $cluster_conf $name $nodename 2>/dev/null)
 	else
-	    return 1
+		out=$(cc_get_$name $cluster_conf $nodeid 2>/dev/null)
+		[ $? -eq 0 ] && [ -n "$out" ] || out=$(cc_get $cluster_conf $name $nodeid 2>/dev/null)
+		[ $? -eq 0 ] && [ -n "$out" ] || out=$(cc_get_$name $cluster_conf $nodename 2>/dev/null)
+		[ $? -eq 0 ] && [ -n "$out" ] || out=$(cc_get $cluster_conf $name $nodename 2>/dev/null)
 	fi
-	echo -n $out
+	[ -n "$out" ] && echo -n $out
 	test -n "$out"
 }
 
@@ -414,7 +412,7 @@ function cc_getdefaults {
 #    returns all valid params
 #  SOURCE
 function cc_get_valid_params {
-   echo "votes tmpfix quorumack ip rootvolume rootsource syslogserver syslogfilter bridgename bridgescript bridgenetdev bridgeantispoof scsifailover scsidriver "
+   echo "votes tmpfix quorumack ip rootvolume rootsource syslogserver syslogfilter bridgename bridgescript bridgenetdev bridgeantispoof scsifailover scsidriver rootfs"
 }
 #********** cc_get_valid_params
 
@@ -1036,7 +1034,7 @@ function cc_get_bridgeantispoof {
 #    returns all valid params
 #  SOURCE
 function clusterfs_get_valid_params {
-   echo "sourceserver lockmethod root mountopts rootfsck mounttimes mountwait rootfs"
+   echo "sourceserver lockmethod root mountopts rootfsck mounttimes mountwait"
 }
 #********** clusterfs_get_valid_params
 
@@ -1491,7 +1489,12 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.47  2010-06-25 12:34:19  marc
+# Revision 1.48  2010-06-29 18:55:40  marc
+#   - getClusterParam: moved the "clutype" query as last without parameter validation so that
+#     all parameters are at least queried by the cluster
+#   - cc_get_valid_params, clusterfs_get_valid_params moved rootfs to cc_get_valid_params
+#
+# Revision 1.47  2010/06/25 12:34:19  marc
 # *** empty log message ***
 #
 # Revision 1.46  2010/06/08 13:37:46  marc
