@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.119 2010-06-25 12:54:09 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.120 2010-06-30 07:04:04 marc Exp $
 #
 ##
 ##
@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 53
+Release: 54
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -248,7 +248,7 @@ Sysctl support in the OSR cluster
 
 %package extras-syslog
 Version: 0.1
-Release: 5
+Release: 7
 Requires: comoonics-bootimage >= 1.4-27
 Summary: Syslog implementation for osr
 Group:   System Environment/Base
@@ -391,7 +391,7 @@ OSR extrafiles for plugins in fenceacksv.
 
 %package listfiles-syslogd
 Version: 0.1
-Release: 2
+Release: 3
 Requires: comoonics-bootimage-extras-syslog
 Summary: Syslog listfiles for syslog classic
 Group:   System Environment/Base
@@ -402,7 +402,7 @@ Syslog listfiles for syslog classic
 
 %package listfiles-rsyslogd
 Version: 0.1
-Release: 2
+Release: 3
 Requires: comoonics-bootimage-extras-syslog
 Summary: Syslog listfiles for the rsyslog daemon
 Group:   System Environment/Base
@@ -755,7 +755,7 @@ fi
 %files extras-syslog
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/syslog-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/templates/syslog.conf
-%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/templates/rsyslog.conf
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/templates/rsyslogd.conf
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/templates/syslog-ng.conf
 
 %files listfiles-all
@@ -916,6 +916,15 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Tue Jun 29 2010 Marc Grimme <grimme@atix.de> 1.4-54
+- etc/clusterfs-lib.sh
+  - getClusterParam: moved the "clutype" query as last without parameter validation so that 
+    all parameters are at least queried by the cluster
+  - cc_get_valid_params, clusterfs_get_valid_params moved rootfs to cc_get_valid_params
+ - etc/std-lib.sh
+  - getParameters: changed default from rootfs to cluster query
+- linuxrc.generic.sh: moved killing of syslog down
+- create-gfs-initrd-generic.sh: long options to tar
 * Fri Jun 25 2010 Marc Grimme <grimme@atix.de> 1.4-53
 - linuxrc.generic.sh: upstream move. Calling *_get_valid_params for either clusterparams and fsparams.
 - std-lib.sh.sourceLibs: taking predefined clutype in repository also into account.
@@ -1374,6 +1383,9 @@ rm -rf %{buildroot}
 - initial revision
 
 %changelog extras-syslog
+* Tue Jun 29 2010 Marc Grimme <grimme@atix.de> 0.1-7
+- etc/syslog-lib.sh default_syslogconf: right name of rsyslog.conf
+- etc/templates/rsyslogd.conf: moved rsyslog.conf to rsyslogd.conf
 * Fri Jun 25 2010 Marc Grimme <grimme@atix.de> 0.1-6
 - syslog-lib.sh.*_start: calling exec_local if no chroot given instead of nothing.
 * Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-5
@@ -1509,12 +1521,17 @@ rm -rf %{buildroot}
 - introduced the changelog
 
 %changelog listfiles-syslogd
+* Tue Jun 29 2010 Marc Grimme <grimme@atix.de> 0.1-3
+- added a newline in the end to listfile
 * Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-2
 - first version for comoonics-4.6-rc1 
 * Wed Sep 09 2009 Marc Grimme <grimme@atix.de> - 0.1-1
 - initial revision
 
 %changelog listfiles-rsyslogd
+* Tue Jun 29 2010 Marc Grimme <grimme@atix.de> 0.1-3
+- added a newline in the end to listfile
+- right rpm rsyslog.
 * Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-2
 - first version for comoonics-4.6-rc1 
 * Wed Sep 09 2009 Marc Grimme <grimme@atix.de> - 0.1-1
@@ -1586,7 +1603,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.119  2010-06-25 12:54:09  marc
+# Revision 1.120  2010-06-30 07:04:04  marc
+# new version
+#
+# Revision 1.119  2010/06/25 12:54:09  marc
 # new versions for comooncis-bootimage, -extras-nfs/ocfs2/glusterfs/syslog, -fenceacksv
 #
 # Revision 1.118  2010/06/17 08:21:59  marc

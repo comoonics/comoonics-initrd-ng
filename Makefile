@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.61 2010-06-17 08:21:30 marc Exp $
+# $Id: Makefile,v 1.62 2010-06-30 07:04:04 marc Exp $
 #
 # @(#)$file$
 #
@@ -169,7 +169,7 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/fedora/network-lib.sh \
   boot-scripts/etc/fedora/nfs-lib.sh \
   boot-scripts/etc/stdlib.py \
-  boot-scripts/etc/templates/rsyslog.conf \
+  boot-scripts/etc/templates/rsyslogd.conf \
   boot-scripts/etc/templates/syslog-ng.conf \
   boot-scripts/etc/templates/syslog.conf
 #************ LIB_FILES 
@@ -584,7 +584,10 @@ channel: rpm channelcopy channelbuild
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.61  2010-06-17 08:21:30  marc
+# Revision 1.62  2010-06-30 07:04:04  marc
+# new version
+#
+# Revision 1.61  2010/06/17 08:21:30  marc
 # replaced fencevirsh with fencedeps
 #
 # Revision 1.60  2010/06/09 08:23:08  marc
