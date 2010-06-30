@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.48 2010-06-29 18:55:40 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.49 2010-06-30 07:03:51 marc Exp $
 #
 # @(#)$File$
 #
@@ -412,7 +412,7 @@ function cc_getdefaults {
 #    returns all valid params
 #  SOURCE
 function cc_get_valid_params {
-   echo "votes tmpfix quorumack ip rootvolume rootsource syslogserver syslogfilter bridgename bridgescript bridgenetdev bridgeantispoof scsifailover scsidriver rootfs"
+   echo "votes tmpfix quorumack ip rootvolume rootsource syslogserver syslogfilter bridgename bridgescript bridgenetdev bridgeantispoof scsi_failover scsidriver rootfs"
 }
 #********** cc_get_valid_params
 
@@ -1489,7 +1489,10 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.48  2010-06-29 18:55:40  marc
+# Revision 1.49  2010-06-30 07:03:51  marc
+# *** empty log message ***
+#
+# Revision 1.48  2010/06/29 18:55:40  marc
 #   - getClusterParam: moved the "clutype" query as last without parameter validation so that
 #     all parameters are at least queried by the cluster
 #   - cc_get_valid_params, clusterfs_get_valid_params moved rootfs to cc_get_valid_params
