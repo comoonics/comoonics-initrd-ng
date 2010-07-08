@@ -1,5 +1,5 @@
 #
-# $Id: std-lib.sh,v 1.19 2010-06-29 18:58:14 marc Exp $
+# $Id: std-lib.sh,v 1.20 2010-07-08 08:12:57 marc Exp $
 #
 # @(#)$File$
 #
@@ -538,6 +538,14 @@ function error_local_debug() {
 function exec_local() {
   local debug=$(repository_get_value debug)
   local do_exec=$(repository_get_value doexec 1)
+  local TMPDIR=/tmp
+  local tmpfile_err="$TMPDIR/temp-stdlib-err-$$"
+  local tmpfile_out="$TMPDIR/temp-stdlib-out-$$"
+  if which mktemp &>/dev/null; then
+  	tmpfile_err=$(mktemp)
+  	tmpfile_out=$(mktemp)
+  fi
+  local error=""
   if [ -n "$(repository_get_value dstep)" ]; then
   	echo -n "$* (Y|n|c)? " >&2
   	read dstep_ans
@@ -545,10 +553,22 @@ function exec_local() {
   	[ "$dstep_ans" == "c" ] && dstepmode=""
   fi
   if [ $do_exec -eq 1 ]; then
-  	$*
-    return_c=$?
-  	if [ $return_c -ne 0 ]; then
+  	$* 2> >(tee $tmpfile_err) 1> >(tee $tmpfile_out)
+	return_c=$?
+  	sync
+    [ -f $tmpfile_err ] && errormsg=$(cat $tmpfile_err) && rm -f $tmpfile_err
+    [ -f $tmpfile_out ] && outmsg=$(cat $tmpfile_out) && rm -f $tmpfile_out
+    if [ $return_c -ne 0 ]; then
+        repository_append_value exec_local_errors "Command: $*
+Output: $outmsg
+Errors: $errormsg
+"
+        repository_store_value exec_local_lastcmd "$*"
+        repository_store_value exec_local_lasterror "$errormsg"
+        repository_store_value exec_local_lastout "$outmsg"
   		echo_local_debug "Error in cmd: $*"
+		echo_local_debug "Output: $outmsg"
+  		echo_local_debug "Errors: $errormsg"
   	fi
   else
   	echo_local_debug "Cmd: $*"
@@ -1093,7 +1113,10 @@ exec_ordered_skripts_in() {
 
 #################
 # $Log: std-lib.sh,v $
-# Revision 1.19  2010-06-29 18:58:14  marc
+# Revision 1.20  2010-07-08 08:12:57  marc
+# - exec_local: better output redirection and storage of command outputs to be used later by user
+#
+# Revision 1.19  2010/06/29 18:58:14  marc
 # - getParameters: changed default from rootfs to cluster query
 #
 # Revision 1.18  2010/06/25 14:36:50  marc
