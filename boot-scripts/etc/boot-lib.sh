@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.85 2010-06-25 09:56:42 marc Exp $
+# $Id: boot-lib.sh,v 1.86 2010-07-08 08:00:50 marc Exp $
 #
 # @(#)$File$
 #
@@ -580,71 +580,6 @@ function prepare_newroot() {
 }
 #************** prepare_newroot
 
-#****f* boot-lib.sh/build_chroot
-#  NAME
-#    move chroot environment
-#  SYNOPSIS
-#    function build_chroot(clusterconf, nodename) {
-#  MODIFICATION HISTORY
-#  USAGE
-#
-#  IDEAS
-#
-#  SOURCE
-#
-function build_chroot () {
-	local cluster_conf=$1
-	local nodename=$2
-	local chroot_fstype
-	local chroot_dev
-	local chroot_mount
-	local chroot_path
-	local chroot_options
-
-	# method1: read file /etc/sysconfig/comoonics-chroot
-	if [ -e  /etc/sysconfig/comoonics-chroot ]; then
-		. /etc/sysconfig/comoonics-chroot
-	# method2: read all information from cluster.conf
-	# --if not given: uses default values
-	else
-		# Filesystem type for the chroot device
-		chroot_fstype=$(cc_get_chroot_fstype $cluster_conf $nodename)
-		# chroot device name
-		chroot_dev=$(cc_get_chroot_device $cluster_conf $nodename)
-		# Mountpoint for the chroot device
-		chroot_mount=$(cc_get_chroot_mountpoint $cluster_conf $nodename)
-		# Path where the chroot environment should be build
-		chroot_path=$(cc_get_chroot_dir $cluster_conf $nodename)
-		# Mount options for the chroot device
-		chroot_options=$(cc_get_chroot_mountopts $cluster_conf $nodename)
-	fi
-
-	echo_out -n "Creating chroot environment"
-	exec_local mkdir -p $chroot_mount
-	exec_local /bin/mount -t $chroot_fstype -o $chroot_options $chroot_dev $chroot_mount
-	return_code $? >/dev/null
-	# method3 fallback to tmpfs
-	if [ $? -ne 0 ]; then
-		echo_out -n "Mounting chroot failed. Using default values"
-		#Fallback values
-		# Filesystem type for the chroot device
-		chroot_fstype="tmpfs"
-		# chroot device name
-		chroot_dev="none"
-		# Mountpoint for the chroot device
-		chroot_mount=$DFLT_CHROOT_MOUNT
-		# Path where the chroot environment should be build
-		chroot_path=$DFLT_CHROOT_PATH
-		# Mount options for the chroot device
-		chroot_options="defaults"
-		exec_local mkdir -p $chroot_mount
-		exec_local /bin/mount -t $chroot_fstype -o $chroot_options $chroot_dev $chroot_mount
-		return_code >/dev/null
-	fi
-	create_chroot "/" $chroot_path
-	echo "$chroot_mount $chroot_path"
-}
-
 #****f* boot-lib.sh/switchRoot
 #  NAME
 #    switchRoot has to be called from linuxrc at the end of the initrd instructions
@@ -1018,7 +953,10 @@ function check_mtab {
 #************** check_mtab
 
 # $Log: boot-lib.sh,v $
-# Revision 1.85  2010-06-25 09:56:42  marc
+# Revision 1.86  2010-07-08 08:00:50  marc
+# moved build_chroot to chroot-lib.sh
+#
+# Revision 1.85  2010/06/25 09:56:42  marc
 # - rewrote the semantics of getParameter to make it better readable
 #
 # Revision 1.84  2010/06/08 13:39:25  marc
