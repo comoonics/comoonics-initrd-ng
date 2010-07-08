@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.49 2010-06-30 07:03:51 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.50 2010-07-08 08:04:44 marc Exp $
 #
 # @(#)$File$
 #
@@ -1187,20 +1187,20 @@ function clusterfs_mount {
   #TODO: skip device check at least for nfs services
   echo_local -n "Mounting $dev on $mountpoint.."
   if [ ! -e $dev ] && [ "${fstype:0:3}" != "nfs" ] && [ "${fstype}" != "bind" ]  && [ "${fstype}" != "rbind" ]; then
-     breakp $(errormsg err_rootfs_device)
+     breakp "$(errormsg err_rootfs_device)"
   fi
   if [ ! -d $mountpoint ]; then
     mkdir -p $mountpoint
   fi
+  [ -n "$mountopts" ] && mountopts="-o $mountopts"
+  [ -n "$fstype" ] && ! [ "$fstype" = "bind" ] && fstype="-t $fstype"
+  [ "$fstype" = "bind" ] && fstype="--$fstype"
   echo_local_debug -N -n "tries: $tries, waittime: $waittime "
   while [ $i -lt $tries ]; do
   	echo_local -N -n "."
   	let i=$i+1
   	sleep $waittime
   	return_c=0
-  	[ -n "$mountopts" ] && mountopts="-o $mountopts"
-  	[ -n "$fstype" ] && ! [ "$fstype" = "bind" ] && fstype="-t $fstype"
-  	[ "$fstype" = "bind" ] && fstype="--$fstype"
   	exec_local mount $fstype $mountopts $dev $mountpoint && break
   	return_c=$?
   done
@@ -1489,7 +1489,10 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.49  2010-06-30 07:03:51  marc
+# Revision 1.50  2010-07-08 08:04:44  marc
+# fixed bug in clusterfs_mount where options where added to the mountcmd after each run through mounttimes
+#
+# Revision 1.49  2010/06/30 07:03:51  marc
 # *** empty log message ***
 #
 # Revision 1.48  2010/06/29 18:55:40  marc
