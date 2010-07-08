@@ -73,6 +73,19 @@ function messages {
 	  cat $bootlog
 	fi
 }
+
+function errors {
+	repository_get_value exec_local_errors
+}
+
+function lastcommand {
+	$(repository_get_value exec_local_lastcmd)
+}
+function lasterror {
+	echo "Command: "$(repository_get_value exec_local_lastcmd)
+	echo "Output: "$(repository_get_value exec_local_lastout)
+	echo "Error: "$(repository_get_value exec_local_lasterror)
+}
 	
 function logo() {
   local logo=$1
