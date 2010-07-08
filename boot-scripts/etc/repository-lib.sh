@@ -1,5 +1,5 @@
 #
-# $Id: repository-lib.sh,v 1.8 2010-02-09 21:44:25 marc Exp $
+# $Id: repository-lib.sh,v 1.9 2010-07-08 08:11:39 marc Exp $
 #
 # @(#)$File$
 #
@@ -94,7 +94,7 @@ repository_store_value() {
 	fi
 	local repository="$3"
 	[ -z "$repository" ] && repository=${REPOSITORY_DEFAULT}
-	eval "${REPOSITORY_PREFIX}${repository}${REPOSITORY_FS}${key}=\"$value\""
+	#eval "${REPOSITORY_PREFIX}${repository}${REPOSITORY_FS}${key}=\"$value\""
 	echo -n "$value" > ${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}.$key
 	[ -f ${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}.$key ]
 }
@@ -116,7 +116,7 @@ repository_append_value() {
 	local repository="$3"
 	[ -z "$repository" ] && repository=${REPOSITORY_DEFAULT}
 	local value=$(repository_get_value $key "" $repository)
-	eval "${REPOSITORY_PREFIX}${repository}${REPOSITORY_FS}${key}=${value}\"$2\""
+	#eval "${REPOSITORY_PREFIX}${repository}${REPOSITORY_FS}${key}=${value}\"$2\""
 	echo -n "$2" >> ${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}.$key
 }
 #******* repository_append_value
@@ -222,7 +222,7 @@ repository_get_value() {
 	local value=
 	if [ -f ${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}.$key ]; then
 		value=$(cat ${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}.$key)
-		eval "${REPOSITORY_PREFIX}${repository}${REPOSITORY_FS}${key}=\"$value\""
+		#eval "${REPOSITORY_PREFIX}${repository}${REPOSITORY_FS}${key}=\"$value\""
 		echo "$value"
 		return 0
     elif [ -n "$default" ]; then
@@ -269,7 +269,7 @@ repository_del_value() {
 	[ -z "$repository" ] && repository=${REPOSITORY_DEFAULT}
 	val=$(repository_get_value $key "" $repository)
 	if [ $? -eq 0 ]; then
-		eval "unset ${repository}${REPOSITORY_FS}${key}"
+		#eval "unset ${repository}${REPOSITORY_FS}${key}"
 		rm -f ${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}.$key
 	fi
 }
@@ -295,9 +295,55 @@ repository_clear() {
 }
 #******** repository_clear
 
+#*****f* repository-lib.sh/repository_store_parameters
+#  NAME
+#    repository_store_parameters
+#  SYNOPSIS
+#    function repository_store_parameters(prefix, parameters*)
+#  DESCRIPTION
+#    Stores all given parameters in the repository as ${prefix}"param"{index}.
+#  IDEAS
+#  SOURCE
+#
+repository_store_parameters() {
+	local prefix=$1
+	shift
+	local paramname="param"
+	for i in $(seq 1 $#); do
+		repository_store_value ${prefix}${paramname}${i} $1
+		shift
+    done
+}
+#******** repository_store_parameters
+
+#*****f* repository-lib.sh/repository_del_parameters
+#  NAME
+#    repository_del_parameters
+#  SYNOPSIS
+#    function repository_del_parameters(prefix, parameters*)
+#  DESCRIPTION
+#    Deletes all given parameters in the repository as ${prefix}"param"{index}.
+#  IDEAS
+#  SOURCE
+#
+repository_del_parameters() {
+	local prefix=$1
+	shift
+	local paramname="param"
+	for i in $(seq 1 $#); do
+		repository_del_value ${prefix}${paramname}${i}
+		shift
+    done
+}
+#******** repository_del_parameters
+
 #############
 # $Log: repository-lib.sh,v $
-# Revision 1.8  2010-02-09 21:44:25  marc
+# Revision 1.9  2010-07-08 08:11:39  marc
+# - added function repository_store_parameters and repository_del_parameters being used by exec_local
+# - removed that the repository_values are stored in the environment (obsolete and not used)
+#
+# Revision 1.8  2010/02/09 21:44:25  marc
 # typo
 #
 # Revision 1.7  2010/02/05 12:40:40  marc
