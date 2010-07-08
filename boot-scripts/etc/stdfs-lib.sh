@@ -1,5 +1,5 @@
 #
-# $Id: stdfs-lib.sh,v 1.10 2010-06-08 13:45:15 marc Exp $
+# $Id: stdfs-lib.sh,v 1.11 2010-07-08 08:12:37 marc Exp $
 #
 # @(#)$File$
 #
@@ -85,7 +85,7 @@ function is_same_inode {
   else
   	lsopt=""
   fi
-  local dinode=$(/bin/ls $lsopt -i $dest | awk '{print $1}')
+  local dinode=$(/bin/ls $lsopt -i $dest 2>/dev/null | awk '{print $1}')
   if [ $dinode -eq $sinode ]; then
   	return 0
   else
@@ -343,7 +343,10 @@ function umount_filesystem {
 #************ umount_filesystem
 ######################
 # $Log: stdfs-lib.sh,v $
-# Revision 1.10  2010-06-08 13:45:15  marc
+# Revision 1.11  2010-07-08 08:12:37  marc
+# - is_same_inode: dropping error messages
+#
+# Revision 1.10  2010/06/08 13:45:15  marc
 # - is_mounted: trimming of mountpoint given
 #
 # Revision 1.9  2010/03/29 18:36:28  marc
