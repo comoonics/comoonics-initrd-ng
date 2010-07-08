@@ -1,8 +1,8 @@
-#! /bin/sh
+#! /bin/bash
 #****h* comoonics-bootimage/bootsr
 #  NAME
 #    bootsr
-#    $Id: bootsr,v 1.26 2010-06-08 13:50:45 marc Exp $
+#    $Id: bootsr,v 1.27 2010-07-08 08:35:25 marc Exp $
 #  DESCRIPTION
 #    Comoonics Shared Root post boot settings
 #  AUTHOR
@@ -192,7 +192,10 @@ exit $RETVAL
 #************ main
 ###############
 # $Log: bootsr,v $
-# Revision 1.26  2010-06-08 13:50:45  marc
+# Revision 1.27  2010-07-08 08:35:25  marc
+# using bash as shell for bootsr initscript
+#
+# Revision 1.26  2010/06/08 13:50:45  marc
 # - bootsr:
 #       - removed check_mtab
 #       - removed remount of cdsl in / and other fs to mountcdsl initscript
