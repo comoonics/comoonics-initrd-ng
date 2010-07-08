@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.62 2010-06-30 07:04:04 marc Exp $
+# $Id: Makefile,v 1.63 2010-07-08 08:39:37 marc Exp $
 #
 # @(#)$file$
 #
@@ -257,6 +257,8 @@ CFG_FILES=basefiles.list \
     rpms.initrd.d/comoonics.list \
     rpms.initrd.d/comoonics-compat.list \
     rpms.initrd.d/ext2.list \
+    rpms.initrd.d/fencexvm.list \
+    rpms.initrd.d/fencedeps.list \
     rpms.initrd.d/xen.list \
     rpms.initrd.d/ocfs2.list \
     rpms.initrd.d/mdadm.list \
@@ -264,7 +266,6 @@ CFG_FILES=basefiles.list \
     rpms.initrd.d/rsyslogd.list \
     rpms.initrd.d/syslog-ng.list \
     rpms.initrd.d/syslogd.list \
-    rpms.initrd.d/fencedeps.list \
     rpms.initrd.d/rhel/base.list \
     rpms.initrd.d/rhel/dm_multipath.list \
     rpms.initrd.d/rhel/comoonics.list \
@@ -297,6 +298,7 @@ CFG_FILES=basefiles.list \
     rpms.initrd.d/fedora/nfs.list \
     filters.list \
     filters.initrd.d/empty.list \
+    filters.initrd.d/kernel.list \
     post.mkinitrd.d/01-create-mapfiles.sh \
     post.mkinitrd.d/02-create-cdsl-repository.sh
 	
@@ -584,7 +586,10 @@ channel: rpm channelcopy channelbuild
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.62  2010-06-30 07:04:04  marc
+# Revision 1.63  2010-07-08 08:39:37  marc
+# new versions
+#
+# Revision 1.62  2010/06/30 07:04:04  marc
 # new version
 #
 # Revision 1.61  2010/06/17 08:21:30  marc

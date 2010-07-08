@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.120 2010-06-30 07:04:04 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.121 2010-07-08 08:39:37 marc Exp $
 #
 ##
 ##
@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 54
+Release: 55
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -74,7 +74,7 @@ Scripts for creating an initrd in a OSR cluster environment
 
 %package extras-osr
 Version: 0.1
-Release: 3
+Release: 4
 Requires: comoonics-bootimage >= 1.3-1
 Summary: Extra for cluster configuration via osr
 Group:   System Environment/Base
@@ -204,8 +204,8 @@ listfiles for xen support in the OSR cluster
 
 %package extras-iscsi
 Version: 0.1
-Release: 10
-Requires: comoonics-bootimage >= 1.3-33
+Release: 11
+Requires: comoonics-bootimage >= 1.4-55
 Summary: Listfiles for iscsi support in the open-sharedroot cluster
 Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
@@ -258,8 +258,8 @@ Syslog implementation for osr. Supports syslog classic, syslog-ng, rsyslog (See 
 
 %package listfiles-all
 Version: 0.1
-Release: 13
-Requires: comoonics-bootimage >= 1.3-36
+Release: 14
+Requires: comoonics-bootimage >= 1.4-55
 Group:   System Environment/Base
 Summary: OSR listfilesfiles for all distributions 
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
@@ -321,8 +321,8 @@ OSR extra files that are only relevant for RHEL4
 
 %package listfiles-rhel5
 Version: 0.1
-Release: 5
-Requires: comoonics-bootimage >= 1.3-36
+Release: 6
+Requires: comoonics-bootimage >= 1.4-55
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-rhel
 Group: System Environment/Base
@@ -433,6 +433,18 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 %description listfiles-fencelib
 Listfiles for the fencelibs to be imported in the bootimage.
 
+
+%package listfiles-fencexvm
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage
+Summary: Listfiles for fence_xvm
+Group:   System Environment/Base
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description listfiles-fencexvm
+Listfiles for the fence_xvm agent to be imported in the bootimage.
+
 %package compat
 Version: 0.1
 Release: 3
@@ -446,7 +458,7 @@ OSR files needed for the compatibility to 1.2 releases
 
 %package fenceacksv
 Version: 0.3
-Release: 10
+Release: 11
 Requires: comoonics-fenceacksv-py
 Requires: comoonics-bootimage >= 1.4-51
 Requires: comoonics-tools-py
@@ -782,9 +794,9 @@ fi
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/hardware.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/lvm.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/python.list
-%config %attr(0644, root, root)  %{CONFIGDIR}/bootimage/filters.initrd.d/empty.list
-%config %attr(0644, root, root)  %{CONFIGDIR}/bootimage/post.mkinitrd.d/02-create-cdsl-repository.sh
-
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/filters.initrd.d/empty.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/filters.initrd.d/kernel.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/02-create-cdsl-repository.sh
 %config(noreplace) %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/user_edit.list
 
 %files listfiles-rhel
@@ -871,6 +883,9 @@ fi
 %files listfiles-fencelib
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fencedeps.list
 
+%files listfiles-fencexvm
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fencexvm.list
+
 %files fenceacksv
 %attr(0755, root, root) %{FENCEACKSV_DIR}/fence_ack_server.py*
 #%attr(0755, root, root) %{FENCEACKSV_DIR}/fence_ack_server.pyc
@@ -916,6 +931,36 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Wed Jul 07 2010 Marc Grimme <grimme@atix.de> 1.4-55
+- boot-scripts
+  - etc/bashrc/issue
+    - Added command lasterror, lastcommand, errors
+  - etc/boot-lib.sh,chroot-lib.sh
+    - moved build_chroot to chroot-lib.sh
+  - etc/clusterfs-lib.sh
+    - fixed bug in clusterfs_mount where options where added to the mountcmd after each run through 
+      mounttimes
+  - etc/errors
+    - reworked the errors to make use of errors, output and command being stored by exec_local
+    - rewrote errors
+  - etc/hardware-lib.sh
+    - dev_start: moved the creation of fd devices up
+  - etc/repository-lib.sh
+    - added function repository_store_parameters and repository_del_parameters being used by exec_local
+    - removed that the repository_values are stored in the environment (obsolete and not used)
+  - etc/stdfs-lib.sh
+    - is_same_inode: dropping error messages
+  - etc/std-lib.sh
+    - exec_local: better output redirection and storage of command outputs to be used later by user
+  - linuxrc
+    - removed obsolete redirection
+    - create /dev/fd in the first place to remove a typo
+  - linuxrc.generic.sh
+    - errormsg reworked
+    - reset nodeid/name if set in breakp shell
+    - moved stopping of syslog down
+- create-gfs-initrd-generic.sh
+  - speed up copy of kernel modules in one run using cpio --pass-through instead of tar and for clause
 * Tue Jun 29 2010 Marc Grimme <grimme@atix.de> 1.4-54
 - etc/clusterfs-lib.sh
   - getClusterParam: moved the "clutype" query as last without parameter validation so that 
@@ -1219,6 +1264,8 @@ rm -rf %{buildroot}
 - first offical rpm version
 
 %changelog extras-osr
+* Wed Jul 07 2010 Marc Grimme <grimme@atix.de> 0.1-4
+- added GPL License
 * Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-3
 - first version for comoonics-4.6-rc1 
 * Sun Feb 21 2010 Marc Grimme <grimme@atix.de> - 0.1-2
@@ -1249,6 +1296,9 @@ rm -rf %{buildroot}
 - first release
 
 %changelog extras-iscsi
+* Wed Jul 07 2010 Marc Grimme <grimme@atix.de> 0.1-11
+- iscsi-lib.sh:
+  - removed an obsolete touch
 * Thu Jun 08 2010 Marc Grimme <grimme@atix.de> 0.1-10
 - iscsi-lib.sh: 
      - start_iscsi: start being able in chroot
@@ -1400,6 +1450,8 @@ rm -rf %{buildroot}
 - initial revision
 
 %changelog listfiles-all
+* Wed Jul 07 2010 Marc Grimme <grimme@atix.de> 0.1-14
+- filters.initrd.d/kernel.list: filter out /lib/modules/*/source and build
 * Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-13
 - first version for comoonics-4.6-rc1 
 * Sun Feb 21 2010 Marc Grimme <grimme@atix.de> - 0.1-12
@@ -1445,6 +1497,8 @@ rm -rf %{buildroot}
   - initial revision 
 
 %changelog listfiles-rhel5
+* Wed Jul 07 2010 Marc Grimme <grimme@atix.de> 0.1-7
+- added MAKEDEV to base.list
 * Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-6
 - first version for comoonics-4.6-rc1 
 * Mon Sep 28 2009 Marc Grimme <grimme@atix.de> - 0.1-5
@@ -1549,7 +1603,17 @@ rm -rf %{buildroot}
 * Fri Feb 12 2010 Marc Grimme <grimme@atix.de> - 0.1-4
 - Removed comoonics-cs-py dep.
 
+%changelog listfiles-fencelib
+* Wed Jul 07 2010 Marc Grimme <grimme@atix.de> 0.1-1
+- initial version 
+
+%changelog listfiles-fencexvm
+* Wed Jul 07 2010 Marc Grimme <grimme@atix.de> 0.1-1
+- initial version 
+
 %changelog fenceacksv
+* Wed Jul 07 2010 Marc Grimme <grimme@atix.de> 0.3-11
+- for ssh mode: using ssh keys found in /etc/ssh not its own ones
 * Fri Jun 25 2010 Marc Grimme <grimme@atix.de> 0.3-10
 - fenceacksv.sh: make the fenceackshell executable
 * Wed Jun 16 2010 Marc Grimme <grimme@atix.de> - 0.3-9
@@ -1603,7 +1667,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.120  2010-06-30 07:04:04  marc
+# Revision 1.121  2010-07-08 08:39:37  marc
+# new versions
+#
+# Revision 1.120  2010/06/30 07:04:04  marc
 # new version
 #
 # Revision 1.119  2010/06/25 12:54:09  marc

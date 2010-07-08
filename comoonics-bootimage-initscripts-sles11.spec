@@ -46,11 +46,11 @@ Name: comoonics-bootimage-initscripts
 Summary: Initscripts used by the OSR cluster environment for Novell SLES10.
 Version: 1.4
 BuildArch: noarch
-Requires: comoonics-bootimage >= 1.4
+Requires: comoonics-bootimage >= 1.4-55
 Requires: comoonics-bootimage-listfiles-sles11
 Requires: sysvinit-comoonics
 #Conflicts:
-Release: 7.sles11
+Release: 8.sles11
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -124,6 +124,8 @@ true
 %attr(755, root, root) %{INITDIR}/mountcdsls
 
 %changelog
+* Thu Jul 08 2010 Marc Grimme <grimme@atix.de> 1.4-8.sles11
+- bootsr uses bash as shell
 * Thu Jun 08 2010 Marc Grimme <grimme@atix.de> 1.4-7.sles11
 - introduced mountcdsls
 * Tue Feb 23 2010 Marc Grimme <grimme@atix.de> 1.4-6.sles11

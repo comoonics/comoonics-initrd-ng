@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage-initscripts-el4.spec,v 1.16 2010-06-09 08:23:22 marc Exp $
+# $Id: comoonics-bootimage-initscripts-el4.spec,v 1.17 2010-07-08 08:39:37 marc Exp $
 #
 ##
 ##
@@ -46,13 +46,13 @@ Name: comoonics-bootimage-initscripts
 Summary: Initscripts used by the OSR cluster environment.
 Version: 1.4
 BuildArch: noarch
-Requires: comoonics-bootimage >= 1.4-36
+Requires: comoonics-bootimage >= 1.4-55
 Requires: SysVinit-comoonics
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-rhel
 Requires: comoonics-bootimage-listfiles-rhel4
 #Conflicts:
-Release: 6.rhel4
+Release: 7.rhel4
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -147,6 +147,8 @@ chkconfig --del mountcdsls
 %attr(644, root, root) %{SYSCONFIGDIR}/halt-overwrite
 
 %changelog
+* Thu Jul 08 2010 Marc Grimme <grimme@atix.de> 1.4-7rhel4
+- bootsr uses bash as shell
 * Thu Jun 08 2010 Marc Grimme <grimme@atix.de> 1.4-6rhel4
 - introducted initscript mountcdsls
 * Tue Feb 16 2010 Marc Grimme <grimme@atix.de> 1.4-5rhel4
@@ -169,7 +171,10 @@ chkconfig --del mountcdsls
 - first revision
 # ------
 # $Log: comoonics-bootimage-initscripts-el4.spec,v $
-# Revision 1.16  2010-06-09 08:23:22  marc
+# Revision 1.17  2010-07-08 08:39:37  marc
+# new versions
+#
+# Revision 1.16  2010/06/09 08:23:22  marc
 # new versions
 #
 # Revision 1.15  2010/02/21 12:08:14  marc
