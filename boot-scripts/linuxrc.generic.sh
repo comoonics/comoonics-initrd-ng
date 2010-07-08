@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.97 2010-06-29 19:00:06 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.98 2010-07-08 08:15:48 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.97 2010-06-29 19:00:06 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.98 2010-07-08 08:15:48 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -88,7 +88,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.97 $ $Date: 2010-06-29 19:00:06 $'
+echo_local 'Internal Version $Revision: 1.98 $ $Date: 2010-07-08 08:15:48 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -134,7 +134,7 @@ wait
 
 echo_local -n "Validating cluster configuration."
 exec_local cc_validate
-return_code || breakp $(errormsg err_cc_validate)
+return_code || breakp $(errormsg err_cc_validate $cluster_conf)
 step "Successfully validated cluster configuration" "ccvalidate"
 
 if [ -z "$simulation" ] || [ "$simulation" -ne 1 ]; then
@@ -157,9 +157,11 @@ echo_local -n "Detecting nodeid & nodename "
 
 #nodeid must be first
 nodeid=$(getParameter nodeid $(cc_getdefaults nodeid))
-[ -z "$nodeid" ] && breakp $(errormsg err_cc_nodeid)
+[ -z "$nodeid" ] && breakp "$(errormsg err_cc_nodeid)"
 nodename=$(getParameter nodename $(cc_getdefaults nodename))
-[ -z "$nodename" ] && breakp $(errormsg err_cc_nodename)
+[ -z "$nodename" ] && breakp "$(errormsg err_cc_nodename)"
+[ -z "$nodeid" ] && nodeid=$(repository_get_value nodeid)
+[ -z "$nodename" ] && nodeid=$(repository_get_value nodename)
 echo_local -N -n "nodeid: $nodeid, nodename: $nodename "
 
 sourceRootfsLibs ${predir}
@@ -168,7 +170,7 @@ success
 # Just load nic drivers
 auto_netconfig $(cc_get_nic_drivers $(repository_get_value nodeid) $(repository_get_value nodename) "" $(repository_get_value cluster_conf))
 found_nics && udev_start # now we should be able to trigger this.
-found_nics && breakp $(errormsg err_hw_nicdriver)
+found_nics && breakp "$(errormsg err_hw_nicdriver)"
 step "NIC modules loaded." "autonetconfig"
 
 echo_local -n "Scanning other parameters "
@@ -223,7 +225,7 @@ echo_local_debug "*****<REPOSITORY>**********"
 step "Parameter loaded" "parameter"
 
 if [ -z "$(repository_get_value ipConfig)" ]; then
-  breakp $(errormsg err_nic_config)
+  breakp "$(errormsg err_nic_config)"
 fi
 
 xen_domx_detect
@@ -303,7 +305,7 @@ for ipconfig in $networkipconfig $vlanipconfig $bridgeipconfig $restartipconfig;
   		return_code $?
   	fi
     echo_local -n "Powering up $dev.."
-    exec_local nicUp $dev boot >/dev/null 2>&1 || breakp $(errormsg err_nic_ifup)
+    exec_local nicUp $dev boot >/dev/null 2>&1 || breakp "$(errormsg err_nic_ifup $dev)"
     return_code $?
   fi
   netdevs="$netdevs $dev"
@@ -337,14 +339,14 @@ if clusterfs_blkstorage_needed $(repository_get_value rootfs); then
   
   md_start
   
-  validate_storage || breakp $(errormsg err_storage_config)
+  validate_storage || breakp "$(errormsg err_storage_config)"
   step "Storage environment started" "storage"
 
   lvm_check $(repository_get_value root)
   lvm_sup=$?
   repository_store_value lvm_sup $lvm_sup
   if [ "$lvm_sup" -eq 0 ]; then
-	lvm_start $(repository_get_value root) || breakp $(errormsg err_storage_lvm)
+	lvm_start $(repository_get_value root) || breakp "$(errormsg err_storage_lvm)"
 	step "LVM subsystem started" "lvm"
   fi
 fi
@@ -425,7 +427,7 @@ fi
 # If need be they should be started in the chroot_path.
 clusterfs_services_start $(repository_get_value chroot_path) "$(repository_get_value lockmethod)" "$(repository_get_value lvm_sup)"
 if [ $return_c -ne 0 ]; then
-  breakp $(errormsg err_cc_setup)
+  breakp "$(errormsg err_cc_setup)"
 fi
 step "Cluster services started" "clusterstart"
 # sleep 5
@@ -433,21 +435,21 @@ step "Cluster services started" "clusterstart"
 if repository_has_key rootfsck || clusterfs_fsck_needed $(repository_get_value root) $(repository_get_value rootfs); then
 	clusterfs_fsck $(repository_get_value root) $(repository_get_value rootfs)
 	if [ $? -ne 0 ]; then
-		errormsgissue err_clusterfs_fsck
+		errormsgissue err_clusterfs_fsck $(repository_get_value root) $(repository_get_value rootfs)
 		breakp "Please try to check the rootfilesystem on $(repository_get_value root) manually." 
 	fi
 fi 
 
 clusterfs_mount "$(repository_get_value rootfs)" "$(repository_get_value root)" "$(repository_get_value newroot)" "$(repository_get_value mountopts)" "$(repository_get_value mounttimes)" "$(repository_get_value mountwait)"
 if [ $return_c -ne 0 ]; then
-   breakp $(errormsg err_rootfs_mount)
+   breakp "$(errormsg err_rootfs_mount)"
 fi
 step "RootFS mounted return_c ${return_c}" "rootfsmount"
 
 #FIXME: should somehow detect if we are a cluster if not don't mount cdsl
 clusterfs_mount_cdsl "$(repository_get_value newroot)" "$(repository_get_value cdsl_local_dir)" "$(repository_get_value nodeid)" "$(repository_get_value cdsl_prefix)"
 if [ $return_c -ne 0 ]; then
-	breakp $(errormsg err_rootfs_mount_cdsl)
+	breakp "$(errormsg err_rootfs_mount_cdsl $(repository_get_value root))"
 fi
 step "CDSL tree mounted" "cdsl"
 
@@ -501,7 +503,7 @@ if [ $? -eq 0 ] && [ -n "$filesystems" ]; then
     if repository_has_key fsck || clusterfs_fsck_needed $source $fstype; then
 	    clusterfs_fsck $source $fstype
 	    if [ $? -ne 0 ]; then
-		  errormsgissue err_clusterfs_fsck
+		  errormsgissue err_clusterfs_fsck $source $fstype
 		  breakp "Please try to check the filesystem on $source manually." 
 	    fi
     fi 
@@ -547,15 +549,6 @@ if [ -z $(getPosInList "ro" "$(repository_get_value mountopts)" ",") ]; then
   step "Created xtab,xrootfs,xkillall_procs file" "xfiles"
 fi
 
-if [ $is_syslog -eq 0 ]; then
-  #TODO: remove lines as syslog can will stay in /comoonics
-  echo_local -n "Stopping "$(repository_get_value syslogtype)"..."
-  exec_local killall "klogd"
-  exec_local stop_service $(repository_get_value syslogtype) /
-  return_code
-  step "Stopped syslogd" "syslogstop"
-fi
-
 echo_local -n "Mounting the device file system"
 #TODO
 # try an exec_local mount --move /dev $newroot/dev
@@ -574,10 +567,31 @@ step "Cleaned up initrd" "cleanup"
 echo_local "Restart services in newroot ..."
 
 exec_local prepare_newroot $(repository_get_value newroot)
+step "Prepare newroot" "preparenewroot"
 
 exec_local scsi_restart_newroot "$(repository_get_value scsi_failover)" "$(repository_get_value rootsource)" "$(repository_get_value newroot)" "$(repository_get_value chroot_path)"
+step "Scsi restarted in newroot" "scsirestart"
 
-exec_local clusterfs_services_restart_newroot $(repository_get_value newroot) "$(repository_get_value lockmethod)" "$(repository_get_value lvm_sup)" "$(repository_get_value chroot_path)" || breakp $(errormsg err_cc_restart_service)
+exec_local clusterfs_services_restart_newroot $(repository_get_value newroot) "$(repository_get_value lockmethod)" "$(repository_get_value lvm_sup)" "$(repository_get_value chroot_path)" || breakp "$(errormsg err_cc_restart_service $(repository_get_value clutype))"
+step "Cluster services restarted in newroot" "clusterrestart"
+
+if [ $is_syslog -eq 0 ]; then
+  #TODO: remove lines as syslog can will stay in /comoonics
+  if killall -0 klogd 2>/dev/null; then
+    echo_local -n "Stopping klogd..."
+    exec_local killall "klogd"
+    return_code
+  fi
+  echo_local -n "Stopping "$(repository_get_value syslogtype)"..."
+  exec_local stop_service $(repository_get_value syslogtype) /
+  return_code
+  if [ $is_syslog -eq 0 ] && ! is_same_inode "/dev" "$(repository_get_value newroot)/$(repository_get_value chroot_path)/dev"; then
+  	echo_local -n "Stopping "$(repository_get_value syslogtype)" in "$(repository_get_value newroot)"/"$(repository_get_value chroot_path)"..."
+  	exec_local stop_service $(repository_get_value syslogtype) $(repository_get_value newroot)"/"$(repository_get_value chroot_path) 
+	return_code
+  fi
+  step "Stopped syslogd" "syslogstop"
+fi
 
 step "Initialization completed." "initcomplete"
 
@@ -589,7 +603,12 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.97  2010-06-29 19:00:06  marc
+# Revision 1.98  2010-07-08 08:15:48  marc
+# - errormsg reworked
+# - reset nodeid/name if set in breakp shell
+# - moved stopping of syslog down
+#
+# Revision 1.97  2010/06/29 19:00:06  marc
 # moved killing of syslog down
 #
 # Revision 1.96  2010/06/25 12:27:12  marc
