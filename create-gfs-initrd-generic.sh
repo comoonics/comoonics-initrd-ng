@@ -6,7 +6,7 @@
 #  DESCRIPTION
 #*******
 #
-# $Id: create-gfs-initrd-generic.sh,v 1.30 2010-06-29 19:01:25 marc Exp $
+# $Id: create-gfs-initrd-generic.sh,v 1.31 2010-07-08 08:39:24 marc Exp $
 #
 # @(#)$File$
 #
@@ -122,7 +122,7 @@ function getoptions() {
     while getopts LUoRFVvhlpPm:fd:s:r:b:A:D:M: option ; do
 	case "$option" in
 	    v) # version
-		echo "$0 Version "'$Revision: 1.30 $'
+		echo "$0 Version "'$Revision: 1.31 $'
 		exit 0
 		;;
 	    h) # help
@@ -428,30 +428,29 @@ if [ -z "$update" ] || [ -n "$kernel" ]; then
 
     if [ -n "$light" ] && [ $light -eq 1 ]; then
 	  # Only copy modules that are currently used or are specified in /etc/modprobe.conf
+	  modules="true"
 	  for module in $(get_min_modules $default_modules $modules | sort -u); do
-		for file in `find /lib/modules/$_kernel -name "$module.ko"`; do
-			if [ -n "$verbose" ]; then
-				echo_local -N "Copying module $file"
-			fi
-			tar -chf - $file 2>/dev/null | tar -xf - -C ${mountpoint};
-		done
-	  done || (failure && rm $lockfile && exit $?)
+	     modules="-name ${module}.ko -or $modules"
+	  done
+      findcmd="find /lib/modules/$_kernel $modules"
     else
       args=$(get_global_filters $filters_filename | awk '{printf(" -regex %s -or", $0);} END { print " -false"; }')
-      if [ -n "$verbose" ]; then
-      	echo_local -N "Calling find with find /lib/modules/$_kernel -type f -or -type l -not \( $args \)"
-	  fi
 	  # no globbing
-	  set -f
-      for file in $(find /lib/modules/$_kernel -type f -or -type l -not \( $args \) ); do
-		if [ -n "$verbose" ]; then
-			echo_local -N "Copying module $file"
-		fi
-	    tar --create --dereference --file - $file 2>/dev/null | tar --extract --file - --directory ${mountpoint};
-      done
-      set +f
+      findcmd="find /lib/modules/$_kernel -type f -or -type l -not \( $args \)"
     fi
-    success
+    cpioopts="--pass-through --make-directories"
+    if [ -n "$verbose" ]; then
+      echo_local -N "Calling find with $findcmd"
+      cpioopts="$cpioopts --verbose"
+    fi
+    set -f
+    eval $findcmd | cpio $cpioopts $mountpoint
+    set +f
+    if [ $? -eq 0 ]; then
+      success
+    else
+      failure && rm $lockfile && exit $?
+    fi
   done
 fi
 
@@ -514,7 +513,10 @@ ls -lk $initrdname
 
 ##########################################
 # $Log: create-gfs-initrd-generic.sh,v $
-# Revision 1.30  2010-06-29 19:01:25  marc
+# Revision 1.31  2010-07-08 08:39:24  marc
+# speed up copy of kernel modules in one run using cpio --pass-through instead of tar and for clause
+#
+# Revision 1.30  2010/06/29 19:01:25  marc
 # long options to tar
 #
 # Revision 1.29  2010/05/27 09:54:52  marc
