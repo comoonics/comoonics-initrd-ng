@@ -1,5 +1,5 @@
 #
-# $Id: iscsi-lib.sh,v 1.16 2010-06-08 13:44:43 marc Exp $
+# $Id: iscsi-lib.sh,v 1.17 2010-07-08 08:16:28 marc Exp $
 #
 # @(#)$File$
 #
@@ -237,7 +237,7 @@ function restart_iscsi_newroot {
    for service in $services; do
 	  echo_local -n "Starting $service in $newroot"
       exec_local chroot $newroot $service
-      return_code && touch 
+      return_code
    done
    touch $newroot/var/lock/subsys/iscsi 2>/dev/null
    touch $newroot/var/lock/subsys/iscsid 2>/dev/null
@@ -273,7 +273,10 @@ function is_iscsi_rootsource {
 #************ is_iscsi_rootsource
 
 # $Log: iscsi-lib.sh,v $
-# Revision 1.16  2010-06-08 13:44:43  marc
+# Revision 1.17  2010-07-08 08:16:28  marc
+# removed an obsolete touch
+#
+# Revision 1.16  2010/06/08 13:44:43  marc
 # - start_iscsi: fixed start in chroot
 # - restart_iscsi_newroot: don't reregistrate everything but just restart the daemons
 #
