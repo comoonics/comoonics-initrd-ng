@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc,v 1.27 2010-02-15 14:05:10 marc Exp $
+# $Id: linuxrc,v 1.28 2010-07-08 08:13:48 marc Exp $
 #
 # @(#)$File$
 #
@@ -34,7 +34,7 @@
 #****h* comoonics-bootimage/linuxrc
 #  NAME
 #    linuxrc
-#    $Id: linuxrc,v 1.27 2010-02-15 14:05:10 marc Exp $
+#    $Id: linuxrc,v 1.28 2010-07-08 08:13:48 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -60,9 +60,6 @@ source /etc/chroot-lib.sh
 source /etc/repository-lib.sh
 source /etc/hardware-lib.sh
 source /etc/stdfs-lib.sh
-
-#exec 3>/dev/console
-#exec 4>/dev/console
 
 mkdir -p /proc
 mount -t proc proc /proc 2>/dev/null
@@ -97,11 +94,6 @@ distribution=$(getDistribution)
 
 initEnv
 
-# boot parameters
-#bootparms=$(getBootParameters)
-#debug=$(getParm ${bootparms} 1)
-#stepmode=$(getParm ${bootparms} 2)
-
 welcome $distribution $(repository_get_value logo)
 
 # Print a text banner.
@@ -112,22 +104,7 @@ fi
 TERM=linux
 export TERM
 mkdir -p $(dirname $bootlog)
-#if [ -n "$logger" ]; then
-#  exec 3>>$bootlog 4>>$bootlog 5>/dev/null
-#  exec 3>/dev/console 4>/dev/console
-#  exec 5> $bootlog
-#  exec 2> >(tee -a $bootlog | tee /dev/console | $logger)
-#  ./linuxrc.generic.sh | tee -a $bootlog | tee /dev/console | $logger
-#else
-  #exec 3>/dev/null 4>>$bootlog
-  #exec 3>>$bootlog
-exec 10>&2
-exec 2> >(tee -a $bootlog | tee /dev/console)
-#exec 2>> $bootlog
-./linuxrc.generic.sh | tee -a $bootlog
-#fi
-exec 2>&10
-exec 10>&-
+./linuxrc.generic.sh &> >(tee -a $bootlog)
 echo "Returned from linuxrc.generic.sh."
 
 error_code=0
@@ -161,7 +138,10 @@ fi
 
 ################
 # $Log: linuxrc,v $
-# Revision 1.27  2010-02-15 14:05:10  marc
+# Revision 1.28  2010-07-08 08:13:48  marc
+# - cleanup of output redirection and some obsolete comments
+#
+# Revision 1.27  2010/02/15 14:05:10  marc
 # removed repository_clean
 #
 # Revision 1.26  2010/01/04 13:26:18  marc
