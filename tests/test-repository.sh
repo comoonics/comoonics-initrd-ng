@@ -52,6 +52,28 @@ if ! runonce; then
   done
   echo
   
+  echo -n "Testing repository_store_parameters "
+  params=( "a" "b" "c" )
+  repository_store_parameters "test" ${params[@]}
+  for i in $(seq 0 $((${#params[@]} -1))); do
+    param=${params[$i]}
+    echo -n "..$i: $param"
+    test "$param" = $(repository_get_value testparam$((i+1)))
+    detecterror $? "repository_store_parameters: for param $((i+1)) returns "$(repository_get_value testparam$(($i +1)))" expected $param!"
+  done
+  echo
+  
+  echo -n "Testing repository_del_parameters "
+  params=( "a" "b" "c" )
+  repository_del_parameters "test" ${params[@]}
+  for i in $(seq 0 $((${#params[@]} -1))); do
+    param=${params[$i]}
+    echo -n "..$i: $param"
+    repository_has_key testparam$((i+1))
+    invdetecterror $? "repository_del_parameters: for param $((i+1)) returns "$(repository_get_value testparam$(($i +1)))" expected empty!"
+  done
+  echo
+  
 #  items=$(repository_list_values)
 #  for key in $keys; do
 #  	test "$key" = "test1" -o "$key" = "test2"
