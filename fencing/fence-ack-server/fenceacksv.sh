@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: fenceacksv.sh,v 1.7 2010-06-25 12:39:32 marc Exp $
+# $Id: fenceacksv.sh,v 1.8 2010-07-08 08:17:44 marc Exp $
 #
 # chkconfig: 345 24 76
 # description: Starts and stops fenceacksv
@@ -18,6 +18,7 @@ prog="sshd"
 
 # Some functions to make the below more readable
 FENCEACKDIR="/opt/atix/comoonics-fenceacksv"
+SSHDIR="/etc/ssh"
 FENCEACKSV="fence_ack_server.py"
 FENCEACKSV_PARAMS="--xml --xml-clusterconf --debug"
 FENCEACKSV_LOG="/var/log/fenceacksv.log"
@@ -30,9 +31,9 @@ CHROOT_STOP_PID="/opt/atix/comoonics-bootimage/manage_chroot.sh -a stop_service_
 LOCK_FILE="/var/lock/subsys/${FENCEACKSV}"
 KEYGEN=/usr/bin/ssh-keygen
 SSHD="chroot ${CHROOT_PATH} /usr/sbin/sshd -p $FENCEACKSV_PORT -e"
-RSA1_KEY=${FENCEACKDIR}/ssh_host_key
-RSA_KEY=${FENCEACKDIR}/etc/ssh/ssh_host_rsa_key
-DSA_KEY=${FENCEACKDIR}/etc/ssh/ssh_host_dsa_key
+RSA1_KEY=${SSHDIR}/ssh_host_key
+RSA_KEY=${SSHDIR}/ssh_host_rsa_key
+DSA_KEY=${SSHDIR}/ssh_host_dsa_key
 RSA1_KEY_CHROOT=${CHROOT_PATH}/etc/ssh/ssh_host_key
 RSA_KEY_CHROOT=${CHROOT_PATH}/etc/ssh/ssh_host_rsa_key
 DSA_KEY_CHROOT=${CHROOT_PATH}/etc/ssh/ssh_host_dsa_key
@@ -149,7 +150,7 @@ start_sshd()
 	mkdir -p ${CHROOT_PATH}/var/empty/sshd/etc
 	cp -af ${CHROOT_PATH}/etc/localtime ${CHROOT_PATH}/var/empty/sshd/etc
 
-	echo -n $"Starting $prog: "
+	echo -n $"Starting fenceacksv via $prog: "
 	$SSHD $OPTIONS && success || failure
 	RETVAL=$?
 	[ "$RETVAL" = 0 ] && touch /var/lock/subsys/fenceacksv
@@ -158,7 +159,7 @@ start_sshd()
 
 stop_sshd()
 {
-	echo -n $"Stopping $prog: "
+	echo -n $"Stopping fenceacksv via $prog: "
 	if [ -e "$PID_FILE" ] ; then
 	    pid=$(cat $PID_FILE)
 	    kill $pid
@@ -253,7 +254,10 @@ esac
 exit $rtrn
 ######################
 # $Log: fenceacksv.sh,v $
-# Revision 1.7  2010-06-25 12:39:32  marc
+# Revision 1.8  2010-07-08 08:17:44  marc
+# - don't create new sshd keys but use the already existant ones
+#
+# Revision 1.7  2010/06/25 12:39:32  marc
 # - fenceacksv.sh: make the fenceackshell executable
 #
 # Revision 1.6  2010/06/17 08:19:22  marc
