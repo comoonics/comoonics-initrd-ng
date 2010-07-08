@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.47 2010-07-08 08:10:08 marc Exp $
+# $Id: hardware-lib.sh,v 1.48 2010-07-08 13:16:46 marc Exp $
 #
 # @(#)$File$
 #
@@ -649,7 +649,7 @@ function listmodules {
 #  SOURCE
 #
 modprobe() {
-	if [ -n "$1" ] && [ "$1" != "ignore" ] && [ "$(basename $1)" != "true" ]; then
+	if [ -n "$1" ] && [ "$1" != "ignore" ] && [ "x$(basename $1)x" != "xtruex" ]; then
 	  /sbin/modprobe $*
 	fi
 }
@@ -827,7 +827,10 @@ stabilized() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.47  2010-07-08 08:10:08  marc
+# Revision 1.48  2010-07-08 13:16:46  marc
+# typo
+#
+# Revision 1.47  2010/07/08 08:10:08  marc
 # - dev_start: moved the creation of fd devices up
 #
 # Revision 1.46  2010/06/17 08:17:28  marc

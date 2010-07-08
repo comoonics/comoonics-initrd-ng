@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: fenceacksv.sh,v 1.8 2010-07-08 08:17:44 marc Exp $
+# $Id: fenceacksv.sh,v 1.9 2010-07-08 13:17:10 marc Exp $
 #
 # chkconfig: 345 24 76
 # description: Starts and stops fenceacksv
@@ -162,7 +162,7 @@ stop_sshd()
 	echo -n $"Stopping fenceacksv via $prog: "
 	if [ -e "$PID_FILE" ] ; then
 	    pid=$(cat $PID_FILE)
-	    kill $pid
+	    kill $pid && success
 	else
 	    failure $"Stopping $prog"
 	fi
@@ -254,7 +254,10 @@ esac
 exit $rtrn
 ######################
 # $Log: fenceacksv.sh,v $
-# Revision 1.8  2010-07-08 08:17:44  marc
+# Revision 1.9  2010-07-08 13:17:10  marc
+# typo
+#
+# Revision 1.8  2010/07/08 08:17:44  marc
 # - don't create new sshd keys but use the already existant ones
 #
 # Revision 1.7  2010/06/25 12:39:32  marc
