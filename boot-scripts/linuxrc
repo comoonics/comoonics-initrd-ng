@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc,v 1.28 2010-07-08 08:13:48 marc Exp $
+# $Id: linuxrc,v 1.29 2010-07-09 13:33:12 marc Exp $
 #
 # @(#)$File$
 #
@@ -34,7 +34,7 @@
 #****h* comoonics-bootimage/linuxrc
 #  NAME
 #    linuxrc
-#    $Id: linuxrc,v 1.28 2010-07-08 08:13:48 marc Exp $
+#    $Id: linuxrc,v 1.29 2010-07-09 13:33:12 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -104,7 +104,11 @@ fi
 TERM=linux
 export TERM
 mkdir -p $(dirname $bootlog)
-./linuxrc.generic.sh &> >(tee -a $bootlog)
+exec 1> >(tee -a $bootlog)
+exec 2> >(tee -a $bootlog)
+./linuxrc.generic.sh
+exec 1> /dev/console
+exec 2> /dev/console
 echo "Returned from linuxrc.generic.sh."
 
 error_code=0
@@ -138,7 +142,10 @@ fi
 
 ################
 # $Log: linuxrc,v $
-# Revision 1.28  2010-07-08 08:13:48  marc
+# Revision 1.29  2010-07-09 13:33:12  marc
+# - reverted redirection back to using exec
+#
+# Revision 1.28  2010/07/08 08:13:48  marc
 # - cleanup of output redirection and some obsolete comments
 #
 # Revision 1.27  2010/02/15 14:05:10  marc

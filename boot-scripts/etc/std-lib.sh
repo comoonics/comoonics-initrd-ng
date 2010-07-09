@@ -1,5 +1,5 @@
 #
-# $Id: std-lib.sh,v 1.20 2010-07-08 08:12:57 marc Exp $
+# $Id: std-lib.sh,v 1.21 2010-07-09 13:33:01 marc Exp $
 #
 # @(#)$File$
 #
@@ -553,7 +553,15 @@ function exec_local() {
   	[ "$dstep_ans" == "c" ] && dstepmode=""
   fi
   if [ $do_exec -eq 1 ]; then
-  	$* 2> >(tee $tmpfile_err) 1> >(tee $tmpfile_out)
+  	exec 5>&1
+  	exec 6>&2
+  	exec 1> >(tee $tmpfile_out)
+  	exec 2> >(tee $tmpfile_err)
+  	$*
+  	exec 1>&-
+  	exec 2>&-
+  	exec 1>&5
+  	exec 2>&6
 	return_c=$?
   	sync
     [ -f $tmpfile_err ] && errormsg=$(cat $tmpfile_err) && rm -f $tmpfile_err
@@ -1113,7 +1121,10 @@ exec_ordered_skripts_in() {
 
 #################
 # $Log: std-lib.sh,v $
-# Revision 1.20  2010-07-08 08:12:57  marc
+# Revision 1.21  2010-07-09 13:33:01  marc
+# - reverted redirection back to using exec
+#
+# Revision 1.20  2010/07/08 08:12:57  marc
 # - exec_local: better output redirection and storage of command outputs to be used later by user
 #
 # Revision 1.19  2010/06/29 18:58:14  marc

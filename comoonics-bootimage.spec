@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.121 2010-07-08 08:39:37 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.122 2010-07-09 13:34:42 marc Exp $
 #
 ##
 ##
@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 55
+Release: 56
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -931,6 +931,8 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Fri Jul 09 2010 Marc Grimme <grimme@atix.de> 1.4-56
+- reverted console redirection back to using exec
 * Wed Jul 07 2010 Marc Grimme <grimme@atix.de> 1.4-55
 - boot-scripts
   - etc/bashrc/issue
@@ -1667,7 +1669,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.121  2010-07-08 08:39:37  marc
+# Revision 1.122  2010-07-09 13:34:42  marc
+# - reverted redirection back to using exec
+#
+# Revision 1.121  2010/07/08 08:39:37  marc
 # new versions
 #
 # Revision 1.120  2010/06/30 07:04:04  marc
