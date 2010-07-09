@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: fenceacksv.sh,v 1.9 2010-07-08 13:17:10 marc Exp $
+# $Id: fenceacksv.sh,v 1.10 2010-07-09 13:33:39 marc Exp $
 #
 # chkconfig: 345 24 76
 # description: Starts and stops fenceacksv
@@ -37,7 +37,7 @@ DSA_KEY=${SSHDIR}/ssh_host_dsa_key
 RSA1_KEY_CHROOT=${CHROOT_PATH}/etc/ssh/ssh_host_key
 RSA_KEY_CHROOT=${CHROOT_PATH}/etc/ssh/ssh_host_rsa_key
 DSA_KEY_CHROOT=${CHROOT_PATH}/etc/ssh/ssh_host_dsa_key
-PID_FILE=${CHROOT_PATH}//var/run/sshd.pid
+PID_FILE=${CHROOT_PATH}/var/run/sshd.pid
 
 [ -f /etc/sysconfig/cluster ] && . /etc/sysconfig/cluster
 [ -f /etc/sysconfig/fenceacksv ] && . /etc/sysconfig/fenceacksv
@@ -254,7 +254,10 @@ esac
 exit $rtrn
 ######################
 # $Log: fenceacksv.sh,v $
-# Revision 1.9  2010-07-08 13:17:10  marc
+# Revision 1.10  2010-07-09 13:33:39  marc
+# typo
+#
+# Revision 1.9  2010/07/08 13:17:10  marc
 # typo
 #
 # Revision 1.8  2010/07/08 08:17:44  marc
