@@ -1,5 +1,5 @@
 #
-# $Id: std-lib.sh,v 1.21 2010-07-09 13:33:01 marc Exp $
+# $Id: std-lib.sh,v 1.22 2010-07-12 14:20:10 marc Exp $
 #
 # @(#)$File$
 #
@@ -539,12 +539,12 @@ function exec_local() {
   local debug=$(repository_get_value debug)
   local do_exec=$(repository_get_value doexec 1)
   local TMPDIR=/tmp
-  local tmpfile_err="$TMPDIR/temp-stdlib-err-$$"
-  local tmpfile_out="$TMPDIR/temp-stdlib-out-$$"
-  if which mktemp &>/dev/null; then
-  	tmpfile_err=$(mktemp)
-  	tmpfile_out=$(mktemp)
-  fi
+  local tmpfile_err=
+  local tmpfile_out=
+#  if which mktemp &>/dev/null; then
+#  	tmpfile_err=$(mktemp)
+#  	tmpfile_out=$(mktemp)
+#  fi
   local error=""
   if [ -n "$(repository_get_value dstep)" ]; then
   	echo -n "$* (Y|n|c)? " >&2
@@ -553,19 +553,31 @@ function exec_local() {
   	[ "$dstep_ans" == "c" ] && dstepmode=""
   fi
   if [ $do_exec -eq 1 ]; then
-  	exec 5>&1
-  	exec 6>&2
-  	exec 1> >(tee $tmpfile_out)
-  	exec 2> >(tee $tmpfile_err)
-  	$*
-  	exec 1>&-
-  	exec 2>&-
-  	exec 1>&5
-  	exec 2>&6
+  	if [ -n "$tmpfile_out" ] && [ -n "$tmpfile_err" ]; then
+  		$* > >(tee $tmpfile_out) 2> >(tee $tmpfile_err)
+  	else
+  		$*
+  	fi
 	return_c=$?
-  	sync
-    [ -f $tmpfile_err ] && errormsg=$(cat $tmpfile_err) && rm -f $tmpfile_err
-    [ -f $tmpfile_out ] && outmsg=$(cat $tmpfile_out) && rm -f $tmpfile_out
+    [ -n "$tmpfile_err" ] && [ -f $tmpfile_err ] && errormsg=$(cat $tmpfile_err) 
+    [ -n "$tmpfile_out" ] && [ -f $tmpfile_out ] && outmsg=$(cat $tmpfile_out)
+    sync
+    if [ -n "$tmpfile_err" ] && [ -f "$tmpfile_err" ]; then
+    	for pid in $(fuser $tmpfile_err); do
+    		if [ "$pid" -ne "$$" ]; then
+    			kill $pid &>/dev/null
+    		fi
+    	done 
+    	rm -f $tmpfile_err
+    fi
+    if [ -n "$tmpfile_out" ] && [ -f "$tmpfile_out" ]; then 
+        for pid in $(fuser $tmpfile_out); do
+    		if [ "$pid" -ne "$$" ]; then
+    			kill $pid &>/dev/null
+    		fi
+    	done 
+    	rm -f $tmpfile_out
+    fi
     if [ $return_c -ne 0 ]; then
         repository_append_value exec_local_errors "Command: $*
 Output: $outmsg
@@ -1121,7 +1133,10 @@ exec_ordered_skripts_in() {
 
 #################
 # $Log: std-lib.sh,v $
-# Revision 1.21  2010-07-09 13:33:01  marc
+# Revision 1.22  2010-07-12 14:20:10  marc
+# removed error and outlog for exec_local
+#
+# Revision 1.21  2010/07/09 13:33:01  marc
 # - reverted redirection back to using exec
 #
 # Revision 1.20  2010/07/08 08:12:57  marc
