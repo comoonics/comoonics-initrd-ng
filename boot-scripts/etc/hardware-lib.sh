@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.48 2010-07-08 13:16:46 marc Exp $
+# $Id: hardware-lib.sh,v 1.49 2010-07-12 14:19:53 marc Exp $
 #
 # @(#)$File$
 #
@@ -649,7 +649,7 @@ function listmodules {
 #  SOURCE
 #
 modprobe() {
-	if [ -n "$1" ] && [ "$1" != "ignore" ] && [ "x$(basename $1)x" != "xtruex" ]; then
+	if [ -n "$1" ] && [ "$1" != "ignore" ] && [ "x$(basename $1 2>/dev/null)x" != "xtruex" ]; then
 	  /sbin/modprobe $*
 	fi
 }
@@ -827,7 +827,10 @@ stabilized() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.48  2010-07-08 13:16:46  marc
+# Revision 1.49  2010-07-12 14:19:53  marc
+# typo in modprobe
+#
+# Revision 1.48  2010/07/08 13:16:46  marc
 # typo
 #
 # Revision 1.47  2010/07/08 08:10:08  marc
