@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.20 2010-05-27 09:42:43 marc Exp $
+# $Id: gfs-lib.sh,v 1.21 2010-08-06 13:31:51 marc Exp $
 #
 # @(#)$File$
 #
@@ -199,9 +199,11 @@ function gfs_services_restart_newroot {
     done
 
     for service in $services; do
-      gfs_start_$service $chroot_path
-      if [ $? -ne 0 ]; then
-        return $?
+      if [ "$service" != "clvmd" ]; then
+        gfs_start_$service $chroot_path
+        if [ $? -ne 0 ]; then
+          return $?
+        fi
       fi
     done
   fi
@@ -338,7 +340,10 @@ function gfs_start_cman {
 
 ###############
 # $Log: gfs-lib.sh,v $
-# Revision 1.20  2010-05-27 09:42:43  marc
+# Revision 1.21  2010-08-06 13:31:51  marc
+#   - stop clvmd and let it be started during init process
+#
+# Revision 1.20  2010/05/27 09:42:43  marc
 # - reworked umount of proc.
 #
 # Revision 1.19  2009/03/16 19:23:54  marc
