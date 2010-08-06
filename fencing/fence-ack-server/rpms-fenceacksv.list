@@ -10,5 +10,8 @@ comoonics-tools-py
 openssh
 openssh-server
 fipscheck-lib
+# For rhel4 (should be seperated later)
+tcp_wrappers
+pam
 ###################
 # $Log$
