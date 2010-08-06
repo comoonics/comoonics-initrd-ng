@@ -1,5 +1,5 @@
 #
-# $Id: std-lib.sh,v 1.22 2010-07-12 14:20:10 marc Exp $
+# $Id: std-lib.sh,v 1.23 2010-08-06 13:32:27 marc Exp $
 #
 # @(#)$File$
 #
@@ -538,14 +538,21 @@ function error_local_debug() {
 function exec_local() {
   local debug=$(repository_get_value debug)
   local do_exec=$(repository_get_value doexec 1)
+  local do_log=$(repository_get_value exec_local_log)
   local TMPDIR=/tmp
   local tmpfile_err=
   local tmpfile_out=
-#  if which mktemp &>/dev/null; then
-#  	tmpfile_err=$(mktemp)
-#  	tmpfile_out=$(mktemp)
-#  fi
+  local fifofile_out=
+  local fifofile_err=
   local error=""
+  local outmsg=""
+  local errormsg=""
+  local stdin1=""
+  local stderr1=""
+  if [ -n "$do_log" ] && which mktemp &>/dev/null; then
+  	tmpfile_err=$(mktemp)
+  	tmpfile_out=$(mktemp)
+  fi
   if [ -n "$(repository_get_value dstep)" ]; then
   	echo -n "$* (Y|n|c)? " >&2
   	read dstep_ans
@@ -554,28 +561,30 @@ function exec_local() {
   fi
   if [ $do_exec -eq 1 ]; then
   	if [ -n "$tmpfile_out" ] && [ -n "$tmpfile_err" ]; then
-  		$* > >(tee $tmpfile_out) 2> >(tee $tmpfile_err)
+  		$* 1> >(tee $tmpfile_out) 2> >(tee $tmpfile_err)
+  		return_c=$?
+  		wait
   	else
   		$*
+  		return_c=$?
   	fi
-	return_c=$?
     [ -n "$tmpfile_err" ] && [ -f $tmpfile_err ] && errormsg=$(cat $tmpfile_err) 
     [ -n "$tmpfile_out" ] && [ -f $tmpfile_out ] && outmsg=$(cat $tmpfile_out)
     sync
     if [ -n "$tmpfile_err" ] && [ -f "$tmpfile_err" ]; then
-    	for pid in $(fuser $tmpfile_err); do
-    		if [ "$pid" -ne "$$" ]; then
-    			kill $pid &>/dev/null
-    		fi
-    	done 
+#    	for pid in $(fuser $tmpfile_err); do
+#    		if [ "$pid" -ne "$$" ]; then
+#    			kill $pid &>/dev/null
+#    		fi
+#    	done 
     	rm -f $tmpfile_err
     fi
     if [ -n "$tmpfile_out" ] && [ -f "$tmpfile_out" ]; then 
-        for pid in $(fuser $tmpfile_out); do
-    		if [ "$pid" -ne "$$" ]; then
-    			kill $pid &>/dev/null
-    		fi
-    	done 
+#        for pid in $(fuser $tmpfile_out); do
+#    		if [ "$pid" -ne "$$" ]; then
+#    			kill $pid &>/dev/null
+#    		fi
+#    	done 
     	rm -f $tmpfile_out
     fi
     if [ $return_c -ne 0 ]; then
@@ -1133,7 +1142,10 @@ exec_ordered_skripts_in() {
 
 #################
 # $Log: std-lib.sh,v $
-# Revision 1.22  2010-07-12 14:20:10  marc
+# Revision 1.23  2010-08-06 13:32:27  marc
+# - removed some unsuccessful experiments in exec_local
+#
+# Revision 1.22  2010/07/12 14:20:10  marc
 # removed error and outlog for exec_local
 #
 # Revision 1.21  2010/07/09 13:33:01  marc
