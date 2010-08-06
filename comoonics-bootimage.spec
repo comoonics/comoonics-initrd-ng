@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.123 2010-08-06 13:29:13 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.124 2010-08-06 13:33:14 marc Exp $
 #
 ##
 ##
@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 56
+Release: 57
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -458,7 +458,7 @@ OSR files needed for the compatibility to 1.2 releases
 
 %package fenceacksv
 Version: 0.3
-Release: 11
+Release: 12
 Requires: comoonics-fenceacksv-py
 Requires: comoonics-bootimage >= 1.4-51
 Requires: comoonics-tools-py
@@ -931,6 +931,17 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Fri Aug 06 2010 Marc Grimme <grimme@atix.de> 1.4-57
+- boot-scripts/etc/gfs-lib.sh
+  - force the creation of /var/run/lvm needed since RHEL5.5
+- boot-scripts/etc/std-lib.sh
+  - removed some unsuccessful experiments in exec_local
+- boot-scripts/etc/{distribution}/network-lib.sh
+  - fixed bug when detecting network interface properties consisting of "
+- boot-scripts/etc/rhel5/gfs-lib.sh
+  - stop clvmd and let it be started during init process
+- boot-scripts/linuxrc
+  - create /dev/fd so in order to remove some warnings
 * Fri Jul 09 2010 Marc Grimme <grimme@atix.de> 1.4-56
 - reverted console redirection back to using exec
 * Wed Jul 07 2010 Marc Grimme <grimme@atix.de> 1.4-55
@@ -1614,6 +1625,11 @@ rm -rf %{buildroot}
 - initial version 
 
 %changelog fenceacksv
+* Fri Aug 06 2010 Marc Grimme <grimme@atix.de> 0.3-12
+- fenceacksv.sh:
+  - status works also with ssh
+- rpms-fenceacksv.list:
+  - added RHEL4 deps for ssh
 * Wed Jul 07 2010 Marc Grimme <grimme@atix.de> 0.3-11
 - for ssh mode: using ssh keys found in /etc/ssh not its own ones
 * Fri Jun 25 2010 Marc Grimme <grimme@atix.de> 0.3-10
@@ -1669,7 +1685,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.123  2010-08-06 13:29:13  marc
+# Revision 1.124  2010-08-06 13:33:14  marc
+# new versions
+#
+# Revision 1.123  2010/08/06 13:29:13  marc
 # - don't touch service clvmd
 #
 # Revision 1.122  2010/07/09 13:34:42  marc
