@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.10 2010-01-04 12:57:31 marc Exp $
+# $Id: network-lib.sh,v 1.11 2010-08-06 13:32:47 marc Exp $
 #
 # @(#)$File$
 #
@@ -108,7 +108,7 @@ function rhel4_ip2Config() {
      [ -n "$bridge" ] && echo "BRIDGE=${bridge}" >> ${networkpath}/ifcfg-$ipDevice
   fi
 
-  local propertynames=$(echo "$properties" | sed -e 's/=\".*\"//g' -e "s/=\'.*\'//g" -e 's/=\S*//g')
+  local propertynames=$(echo "$properties" | sed -e 's/=\"[^"]*\"//g' -e "s/=\'[^']*\'//g" -e 's/=\S*//g')
   eval "$properties"
   
   for property in $propertynames; do
@@ -120,7 +120,10 @@ function rhel4_ip2Config() {
 
 #################
 # $Log: network-lib.sh,v $
-# Revision 1.10  2010-01-04 12:57:31  marc
+# Revision 1.11  2010-08-06 13:32:47  marc
+# - fixed bug when detecting network interface properties consisting of "
+#
+# Revision 1.10  2010/01/04 12:57:31  marc
 # added generic network config properties
 #
 # Revision 1.9  2009/02/27 08:38:22  marc
