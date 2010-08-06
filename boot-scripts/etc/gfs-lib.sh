@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.75 2010-05-27 09:43:31 marc Exp $
+# $Id: gfs-lib.sh,v 1.76 2010-08-06 13:32:13 marc Exp $
 #
 # @(#)$File$
 #
@@ -1148,6 +1148,7 @@ function gfs_start_clvmd() {
    local chroot_path=$1
    local volumegroup=$(lvm_get_vg $(repository_get_value root))
 
+   [ -d "${chroot_path}/var/run/lvm" ] || mkdir -p ${chroot_path}/var/run/lvm 
    #echo_local -n "Starting clvmd ($chroot_path) "
    start_service_chroot $chroot_path /usr/sbin/clvmd
 #   return_code $?
@@ -1434,7 +1435,10 @@ function gfs_chroot_needed() {
 }
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.75  2010-05-27 09:43:31  marc
+# Revision 1.76  2010-08-06 13:32:13  marc
+# - force the creation of /var/run/lvm needed since RHEL5.5
+#
+# Revision 1.75  2010/05/27 09:43:31  marc
 # - only active the volumegroup needed for rootfs
 # - fixed bug that vgchange fails after restart
 #
