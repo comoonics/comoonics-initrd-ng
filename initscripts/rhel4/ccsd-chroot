@@ -2,7 +2,7 @@
 #****h* comoonics-bootimage/ccsd-chroot
 #  NAME
 #    ccsd-chroot
-#    $Id: ccsd-chroot,v 1.2 2010-02-16 10:06:33 marc Exp $
+#    $Id: ccsd-chroot,v 1.3 2010-08-06 13:35:06 marc Exp $
 #  DESCRIPTION
 #    Initscript for stoping and starting ccsd in chroot for
 #    sharedroots
@@ -51,7 +51,7 @@ function check_sharedroot {
 
 start()
 {
-  echo -N -n "Starting ccsd (chroot):"
+  echo_local -N -n "Starting ccsd (chroot):"
   if $CHROOT_STATUS_PID /var/run/cluster/ccsd.pid ; then
   	success
   	return 0
@@ -61,7 +61,7 @@ start()
 
 stop()
 {
-  echo -N -n "Stopping ccsd (chroot):"
+  echo_local -N -n "Stopping ccsd (chroot):"
   for sec in $(seq 1 10)
     do
      if pidof ccsd > /dev/null

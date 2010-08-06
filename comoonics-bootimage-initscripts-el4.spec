@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage-initscripts-el4.spec,v 1.17 2010-07-08 08:39:37 marc Exp $
+# $Id: comoonics-bootimage-initscripts-el4.spec,v 1.18 2010-08-06 13:35:21 marc Exp $
 #
 ##
 ##
@@ -52,7 +52,7 @@ Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-rhel
 Requires: comoonics-bootimage-listfiles-rhel4
 #Conflicts:
-Release: 7.rhel4
+Release: 8.rhel4
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -147,6 +147,8 @@ chkconfig --del mountcdsls
 %attr(644, root, root) %{SYSCONFIGDIR}/halt-overwrite
 
 %changelog
+* Fri Aug 06 2010 Marc Grimme <grimme@atix.de> 1.4-8rhel4
+- moved echo to echo_local in initscripts
 * Thu Jul 08 2010 Marc Grimme <grimme@atix.de> 1.4-7rhel4
 - bootsr uses bash as shell
 * Thu Jun 08 2010 Marc Grimme <grimme@atix.de> 1.4-6rhel4
@@ -171,7 +173,10 @@ chkconfig --del mountcdsls
 - first revision
 # ------
 # $Log: comoonics-bootimage-initscripts-el4.spec,v $
-# Revision 1.17  2010-07-08 08:39:37  marc
+# Revision 1.18  2010-08-06 13:35:21  marc
+# - moved echo to echo_local in initscripts
+#
+# Revision 1.17  2010/07/08 08:39:37  marc
 # new versions
 #
 # Revision 1.16  2010/06/09 08:23:22  marc

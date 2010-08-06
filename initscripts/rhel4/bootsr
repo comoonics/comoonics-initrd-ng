@@ -2,7 +2,7 @@
 #****h* comoonics-bootimage/bootsr
 #  NAME
 #    bootsr
-#    $Id: bootsr,v 1.10 2010-07-08 08:35:25 marc Exp $
+#    $Id: bootsr,v 1.11 2010-08-06 13:35:06 marc Exp $
 #  DESCRIPTION
 #    Comoonics Shared Root post boot settings
 #  AUTHOR
@@ -185,14 +185,17 @@ case "$1" in
       $UNPATCH_FILES
       ;;
   *)
-        echo "Usage: bootsr {start|stop|status|restart|reload}"
+        echo_local "Usage: bootsr {start|stop|status|restart|reload}"
         exit 1
 esac
 exit $RETVAL
 #************ main
 ###############
 # $Log: bootsr,v $
-# Revision 1.10  2010-07-08 08:35:25  marc
+# Revision 1.11  2010-08-06 13:35:06  marc
+# - moved echo to echo_local in initscripts
+#
+# Revision 1.10  2010/07/08 08:35:25  marc
 # using bash as shell for bootsr initscript
 #
 # Revision 1.9  2010/06/08 13:50:45  marc
