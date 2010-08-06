@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc,v 1.29 2010-07-09 13:33:12 marc Exp $
+# $Id: linuxrc,v 1.30 2010-08-06 13:33:02 marc Exp $
 #
 # @(#)$File$
 #
@@ -34,7 +34,7 @@
 #****h* comoonics-bootimage/linuxrc
 #  NAME
 #    linuxrc
-#    $Id: linuxrc,v 1.29 2010-07-09 13:33:12 marc Exp $
+#    $Id: linuxrc,v 1.30 2010-08-06 13:33:02 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -63,6 +63,7 @@ source /etc/stdfs-lib.sh
 
 mkdir -p /proc
 mount -t proc proc /proc 2>/dev/null
+test -e /dev/fd || ln -s /proc/self/fd /dev/fd
 
 # default make output to KMSG
 [ -z "$KMSG" ] && [ -z "$NOKMSG" ] && KMSG=1
@@ -104,11 +105,9 @@ fi
 TERM=linux
 export TERM
 mkdir -p $(dirname $bootlog)
-exec 1> >(tee -a $bootlog)
-exec 2> >(tee -a $bootlog)
+exec 3>&1 4>&2 1> >(tee -a $bootlog) 2> >(tee -a $bootlog)
 ./linuxrc.generic.sh
-exec 1> /dev/console
-exec 2> /dev/console
+exec 1>&- 2>&- 1>&3 2>&4 3>&- 4>&- 
 echo "Returned from linuxrc.generic.sh."
 
 error_code=0
@@ -142,7 +141,10 @@ fi
 
 ################
 # $Log: linuxrc,v $
-# Revision 1.29  2010-07-09 13:33:12  marc
+# Revision 1.30  2010-08-06 13:33:02  marc
+# - create /dev/fd so in order to remove some warnings
+#
+# Revision 1.29  2010/07/09 13:33:12  marc
 # - reverted redirection back to using exec
 #
 # Revision 1.28  2010/07/08 08:13:48  marc
