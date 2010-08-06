@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.122 2010-07-09 13:34:42 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.123 2010-08-06 13:29:13 marc Exp $
 #
 ##
 ##
@@ -589,9 +589,9 @@ echo "Creating mkinitrd link..."
 ln -sf %{APPDIR}/create-gfs-initrd-generic.sh %{APPDIR}/mkinitrd
 
 if cat /etc/redhat-release | grep -i "release 5" &> /dev/null; then
-	services="cman gfs clvmd qdiskd"
+	services="cman gfs qdiskd"
 else
-	services="cman gfs clvmd qdiskd"
+	services="cman gfs qdiskd"
 fi
 
 echo "Disabling services ($services)"
@@ -1669,7 +1669,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.122  2010-07-09 13:34:42  marc
+# Revision 1.123  2010-08-06 13:29:13  marc
+# - don't touch service clvmd
+#
+# Revision 1.122  2010/07/09 13:34:42  marc
 # - reverted redirection back to using exec
 #
 # Revision 1.121  2010/07/08 08:39:37  marc
