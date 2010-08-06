@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: fenceacksv.sh,v 1.10 2010-07-09 13:33:39 marc Exp $
+# $Id: fenceacksv.sh,v 1.11 2010-08-06 13:33:33 marc Exp $
 #
 # chkconfig: 345 24 76
 # description: Starts and stops fenceacksv
@@ -242,8 +242,12 @@ case "$1" in
     ;;
 
   status)
-    status fenceacksv
-    rtrn=0
+    if [ -n "$USE_SSHD" ]; then
+      status -p $PID_FILE fenceacksv
+    else
+      status fenceacksv
+    fi
+    rtrn=$?
     ;;
 
   *)
@@ -254,7 +258,10 @@ esac
 exit $rtrn
 ######################
 # $Log: fenceacksv.sh,v $
-# Revision 1.10  2010-07-09 13:33:39  marc
+# Revision 1.11  2010-08-06 13:33:33  marc
+# - status works also with ssh
+#
+# Revision 1.10  2010/07/09 13:33:39  marc
 # typo
 #
 # Revision 1.9  2010/07/08 13:17:10  marc
