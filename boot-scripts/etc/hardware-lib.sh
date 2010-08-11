@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.49 2010-07-12 14:19:53 marc Exp $
+# $Id: hardware-lib.sh,v 1.50 2010-08-11 09:41:44 marc Exp $
 #
 # @(#)$File$
 #
@@ -122,8 +122,8 @@ function dev_start() {
     test -e ${basedir}/dev/ttyS1   || exec_local mknod ${basedir}/dev/ttyS1 c 4 65
     test -e ${basedir}/dev/ttyS2   || exec_local mknod ${basedir}/dev/ttyS2 c 4 66
     test -e ${basedir}/dev/ttyS3   || exec_local mknod ${basedir}/dev/ttyS3 c 4 67
-    test -e ${basedir}/dev/kmsg ||    exec_local mknod ${basedir}/dev/kmsg c 1 11
-    test -e ${basedir}/dev/log ||     exec_local mksock ${basedir}/dev/log && exec_local chmod 666 ${basedir}/dev/log
+    test -e ${basedir}/dev/kmsg    || exec_local mknod ${basedir}/dev/kmsg c 1 11
+    test -e ${basedir}/dev/log     || which mksock >/dev/null 2>&1 && exec_local mksock ${basedir}/dev/log && exec_local chmod 666 ${basedir}/dev/log
     
     return_code
 }
@@ -338,7 +338,7 @@ function usb_get_drivers {
 function usbLoad() {
 	local modules=$(usb_get_drivers)
 	for module in $modules; do
-		grep $module /proc/modules >/dev/null 2>/dev/null || modprobe $module
+		grep $module /proc/modules >/dev/null 2>/dev/null || modprobe -q $module &>/dev/null
 	done
 	is_mounted /proc/bus/usb
 	if [ $? -eq 1 ]; then
@@ -827,7 +827,10 @@ stabilized() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.49  2010-07-12 14:19:53  marc
+# Revision 1.50  2010-08-11 09:41:44  marc
+# be quite when loading usb modules
+#
+# Revision 1.49  2010/07/12 14:19:53  marc
 # typo in modprobe
 #
 # Revision 1.48  2010/07/08 13:16:46  marc
