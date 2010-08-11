@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.63 2010-07-08 08:39:37 marc Exp $
+# $Id: Makefile,v 1.64 2010-08-11 09:46:58 marc Exp $
 #
 # @(#)$file$
 #
@@ -160,6 +160,7 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/sles10/boot-lib.sh \
   boot-scripts/etc/sles10/hardware-lib.sh \
   boot-scripts/etc/sles10/network-lib.sh \
+  boot-scripts/etc/sles10/nfs-lib.sh \
   boot-scripts/etc/sles11/boot-lib.sh \
   boot-scripts/etc/sles11/hardware-lib.sh \
   boot-scripts/etc/sles11/network-lib.sh \
@@ -299,6 +300,7 @@ CFG_FILES=basefiles.list \
     filters.list \
     filters.initrd.d/empty.list \
     filters.initrd.d/kernel.list \
+    pre.mkinitrd.d/00-cdsl-check.sh \
     post.mkinitrd.d/01-create-mapfiles.sh \
     post.mkinitrd.d/02-create-cdsl-repository.sh
 	
@@ -586,7 +588,10 @@ channel: rpm channelcopy channelbuild
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.63  2010-07-08 08:39:37  marc
+# Revision 1.64  2010-08-11 09:46:58  marc
+# - added files
+#
+# Revision 1.63  2010/07/08 08:39:37  marc
 # new versions
 #
 # Revision 1.62  2010/06/30 07:04:04  marc
