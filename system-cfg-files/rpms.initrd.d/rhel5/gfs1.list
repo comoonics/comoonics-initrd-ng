@@ -1,3 +1,4 @@
 #rpm list for gfs1
 kmod-gfs
 gfs-utils
+comoonics-cluster-tools-py ^/usr/bin/cl_checknodes

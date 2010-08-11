@@ -4,7 +4,6 @@ expat
 comoonics-base-py
 comoonics-cluster-py
 comoonics-tools-py
-comoonics-cluster-tools-py ^/usr/bin/cl_checknodes
 #comoonics-cs-xml
 #######
 # $Log$
