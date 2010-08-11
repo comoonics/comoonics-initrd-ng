@@ -6,7 +6,7 @@
 #  DESCRIPTION
 #*******
 #
-# $Id: create-gfs-initrd-generic.sh,v 1.31 2010-07-08 08:39:24 marc Exp $
+# $Id: create-gfs-initrd-generic.sh,v 1.32 2010-08-11 09:44:50 marc Exp $
 #
 # @(#)$File$
 #
@@ -122,7 +122,7 @@ function getoptions() {
     while getopts LUoRFVvhlpPm:fd:s:r:b:A:D:M: option ; do
 	case "$option" in
 	    v) # version
-		echo "$0 Version "'$Revision: 1.31 $'
+		echo "$0 Version "'$Revision: 1.32 $'
 		exit 0
 		;;
 	    h) # help
@@ -319,6 +319,10 @@ pushd $mountpoint >/dev/null 2>&1
 if [ -d "$pre_mkinitrd_path" ] && [ -n "$pre_do" ] && [ $pre_do -eq 1 ]; then
   echo_local -N "Executing files before mkinitrd."
   exec_ordered_skripts_in $pre_mkinitrd_path $mountpoint
+  if [ $? -ne 0 ]; then
+  	rm $lockfile
+  	exit $return_C
+  fi
 fi
 
 if [ -z "$update" ]; then
@@ -482,6 +486,10 @@ fi
 if [ -d "$post_mkinitrd_path" ] && [ -n "$post_do" ] && [ $post_do -eq 1 ]; then
   echo_local -N "Executing files after mkinitrd."
   exec_ordered_skripts_in $post_mkinitrd_path $mountpoint
+  if [ $? -ne 0 ]; then
+  	rm $lockfile
+  	exit $return_c
+  fi
 fi
 
 create_builddate_file $build_file # && success || failure
@@ -513,7 +521,10 @@ ls -lk $initrdname
 
 ##########################################
 # $Log: create-gfs-initrd-generic.sh,v $
-# Revision 1.31  2010-07-08 08:39:24  marc
+# Revision 1.32  2010-08-11 09:44:50  marc
+# honor errors caused by exec_orderered_skripts in pre and post execution
+#
+# Revision 1.31  2010/07/08 08:39:24  marc
 # speed up copy of kernel modules in one run using cpio --pass-through instead of tar and for clause
 #
 # Revision 1.30  2010/06/29 19:01:25  marc
