@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.124 2010-08-06 13:33:14 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.125 2010-08-11 09:47:13 marc Exp $
 #
 ##
 ##
@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 57
+Release: 58
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -96,7 +96,7 @@ Extra listfiles for special network configurations
 
 %package extras-nfs
 Version: 0.1
-Release: 17
+Release: 18
 Requires: comoonics-bootimage >= 1.4
 Summary: Listfiles for nfs sharedroot configurations
 Group:   System Environment/Base
@@ -258,7 +258,7 @@ Syslog implementation for osr. Supports syslog classic, syslog-ng, rsyslog (See 
 
 %package listfiles-all
 Version: 0.1
-Release: 14
+Release: 15
 Requires: comoonics-bootimage >= 1.4-55
 Group:   System Environment/Base
 Summary: OSR listfilesfiles for all distributions 
@@ -335,7 +335,7 @@ OSR extra files that are only relevant for RHEL4
 
 %package listfiles-sles
 Version: 0.1
-Release: 6
+Release: 7
 Requires: comoonics-bootimage >= 1.3-37
 Requires: /etc/SuSE-release
 Requires: comoonics-bootimage-listfiles-all
@@ -709,6 +709,7 @@ fi
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/nfs-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel5/nfs-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/fedora/nfs-lib.sh
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/sles10/nfs-lib.sh
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/nfs.list
 
 %files extras-ocfs2
@@ -796,6 +797,7 @@ fi
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/python.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/filters.initrd.d/empty.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/filters.initrd.d/kernel.list
+%config %attr(0755, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/00-cdsl-check.sh
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/02-create-cdsl-repository.sh
 %config(noreplace) %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/user_edit.list
 
@@ -842,7 +844,6 @@ fi
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/comoonics.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/hardware.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/empty.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/dm_multipath.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/network.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/python.list
 
@@ -931,6 +932,15 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Wed Aug 10 2010 Marc Grimme <grimme@atix.de> 1.4-58
+- boot-scripts/etc/std-lib.sh
+  - exec_ordered_list: added exitonerror. So that this funktion will return with an error if errors occure
+- boot-scripts/etc/hardware-lib.sh
+  - usb_drivers will be loaded silently
+- manage_chroot
+  - no errormessage if no patches are available
+- create-gfs-initrd-generic.sh
+  - honor error caused from exec_ordered_list
 * Fri Aug 06 2010 Marc Grimme <grimme@atix.de> 1.4-57
 - boot-scripts/etc/gfs-lib.sh
   - force the creation of /var/run/lvm needed since RHEL5.5
@@ -1351,6 +1361,11 @@ rm -rf %{buildroot}
 - first release
 
 %changelog extras-nfs
+* Wed Aug 11 2010 Marc Grimme <grimme@atix.de> 0.1-17
+- boot-image/etc/sles10/nfs-lib.sh
+  - initial revision (not start portmap)
+- boot-image/etc/nfs-lib.sh
+  - mount rpc_pipefs with chroot so that cdsl environment can be resolved.
 * Fri Jun 25 2010 Marc Grimme <grimme@atix.de> 0.1-16
 - ext3/ocfs2/nfs-lib.sh:
   - added ext3/ocfs2/nfs_get
@@ -1463,6 +1478,9 @@ rm -rf %{buildroot}
 - initial revision
 
 %changelog listfiles-all
+* Wed Aug 10 2010 Marc Grimme <grimme@atix.de> 0.1-15
+- pre.mkinitrd.d/00-cdsl-check.sh
+  - checks if cdsl environment is working
 * Wed Jul 07 2010 Marc Grimme <grimme@atix.de> 0.1-14
 - filters.initrd.d/kernel.list: filter out /lib/modules/*/source and build
 * Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-13
@@ -1526,6 +1544,8 @@ rm -rf %{buildroot}
   - initial revision 
 
 %changelog listfiles-sles
+* Wed Aug 11 2010 Marc Grimme <grimme@atix.de> 0.1-8
+- removed bootimage/rpms.initrd.d/sles/dm_multipath.list
 * Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-7
 - first version for comoonics-4.6-rc1 
 * Mon Sep 28 2009 Marc Grimme <grimme@atix.de> - 0.1-6
@@ -1685,7 +1705,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.124  2010-08-06 13:33:14  marc
+# Revision 1.125  2010-08-11 09:47:13  marc
+# - new versions
+#
+# Revision 1.124  2010/08/06 13:33:14  marc
 # new versions
 #
 # Revision 1.123  2010/08/06 13:29:13  marc
