@@ -1,5 +1,5 @@
 #
-# $Id: nfs-lib.sh,v 1.18 2010-06-25 12:36:37 marc Exp $
+# $Id: nfs-lib.sh,v 1.19 2010-08-11 09:44:05 marc Exp $
 #
 # @(#)$File$
 #
@@ -434,6 +434,7 @@ function nfs_services_stop {
 function nfs_start_rpcpipefs {
   local newrootpath=$1
   local chroot_path=$4
+  local precmd=""
   echo_local "nfs_start_rpcpipefs($newrootpath, $chroot_path)"
   local pipefspath="/var/lib/nfs/rpc_pipefs"
   if [ -n "$newrootpath" ] && [ ! -d $(dirname ${newrootpath}${pipefspath}) ]; then
@@ -452,7 +453,8 @@ function nfs_start_rpcpipefs {
   		mkdir -p ${newrootpath}${pipefspath} 2>/dev/null
 	fi
   fi
-  exec_local mount -t rpc_pipefs sunrpc ${newrootpath}/${chroot_path}/${pipefspath}
+  [ -n "$newrootpath" ] && [ -d "$newrootpath" ] && precmd="chroot $newrootpath "
+  exec_local $precmd mount -t rpc_pipefs sunrpc ${chroot_path}/${pipefspath}
   if [ -n "$newrootpath" ] && [ -e ${pipefspath} ]; then
   	mv ${pipefspath} ${pipefspath}.old 2>/dev/null
   fi
@@ -690,7 +692,10 @@ nfs_get() {
 # *********** nfs_get
 
 # $Log: nfs-lib.sh,v $
-# Revision 1.18  2010-06-25 12:36:37  marc
+# Revision 1.19  2010-08-11 09:44:05  marc
+# nfs_start_rpcpipefs: mount pipefs in chroot
+#
+# Revision 1.18  2010/06/25 12:36:37  marc
 # - ext3/ocfs2/nfs-lib.sh:
 #   - added ext3/ocfs2/nfs_get
 #
