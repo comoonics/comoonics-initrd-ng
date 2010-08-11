@@ -7,7 +7,7 @@
 #  DESCRIPTION
 #*******
 #
-# $Id: manage_chroot.sh,v 1.18 2010-06-08 13:53:58 marc Exp $
+# $Id: manage_chroot.sh,v 1.19 2010-08-11 09:46:46 marc Exp $
 #
 # @(#)$File$
 #
@@ -387,7 +387,7 @@ function patch_files {
   for initscript in $files; do
 	if ! grep "comoonics patch " /etc/init.d/$initscript > /dev/null; then
 		echo -n "Patching $initscript ("
-		for patchfile in $(ls -1 /opt/atix/comoonics-bootimage/patches/${initscript}-*.patch | sort); do
+		for patchfile in $(ls -1 /opt/atix/comoonics-bootimage/patches/${initscript}-*.patch 2>/dev/null | sort); do
 			echo -n $(basename $patchfile)", "
 			cd /etc/init.d/ && patch -f -r /tmp/$(basename ${patchfile}).patch.rej > /dev/null < $patchfile
 	        if [ $? -ne 0 ]; then
@@ -425,7 +425,7 @@ function unpatch_files {
   for initscript in $files; do
 	if grep "comoonics patch " /etc/init.d/$initscript > /dev/null; then
 		echo -n "Unpatching $initscript ("
-		for patchfile in $(ls -1 /opt/atix/comoonics-bootimage/patches/${initscript}-*.patch | sort -r); do
+		for patchfile in $(ls -1 /opt/atix/comoonics-bootimage/patches/${initscript}-*.patch 2>/dev/null | sort -r); do
 			echo -n $(basename $patchfile)", "
 			cd /etc/init.d/ && patch -R -f -r /tmp/$(basename ${patchfile}).patch.rej > /dev/null < $patchfile
 	        if [ $? -ne 0 ]; then
