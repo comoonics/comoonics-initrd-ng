@@ -1,5 +1,5 @@
 #
-# $Id: std-lib.sh,v 1.23 2010-08-06 13:32:27 marc Exp $
+# $Id: std-lib.sh,v 1.24 2010-08-11 09:43:32 marc Exp $
 #
 # @(#)$File$
 #
@@ -1111,6 +1111,8 @@ exec_ordered_skripts_in() {
    local skriptpath=$1
    local destpath=$2
    local sourceit=$3
+   # defaults to set
+   local exitonerror=${4:-1}
    local skript
    local return_C
    
@@ -1127,13 +1129,14 @@ exec_ordered_skripts_in() {
    	 elif [ -x "$skript" ]; then
    	 	echo_local -n -N "Executing skript \"$skript\"."
    	 	$skript $destpath
-   	 	return_code
-   	 	[ "$return_c" -eq 0 ] || return_C=$return_c
+   	 	return_code $?
+   	 	[ "$return_c" -eq 0 ] || return_C=$return_c && [ $exitonerror -eq 1 ] && return $return_C
      elif [  "$extension" = ".sh" ]; then
         echo_local -n -N "Sourcing skript \"$skript\"."
         return_c=0
         . $skript $destpath
         return_code
+   	 	[ "$return_c" -eq 0 ] || return_C=$return_c && [ $exitonerror -eq 1 ] && return $return_C
    	 fi
    done
    return $return_C
@@ -1142,7 +1145,10 @@ exec_ordered_skripts_in() {
 
 #################
 # $Log: std-lib.sh,v $
-# Revision 1.23  2010-08-06 13:32:27  marc
+# Revision 1.24  2010-08-11 09:43:32  marc
+# exec_ordered_skripts: return with error if error occures during execution of skript
+#
+# Revision 1.23  2010/08/06 13:32:27  marc
 # - removed some unsuccessful experiments in exec_local
 #
 # Revision 1.22  2010/07/12 14:20:10  marc
