@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.50 2010-08-11 09:41:44 marc Exp $
+# $Id: hardware-lib.sh,v 1.51 2010-08-12 07:35:33 marc Exp $
 #
 # @(#)$File$
 #
@@ -427,7 +427,7 @@ function lvm_check {
 			fi
 		done
 	    return 1
-	else
+	elif [ -e "$device" ]; then
 		major=$(stat --dereference --format="%t" $device)
 		for _major in $invalid_majors; do
 			if [ "$major" = "$_major" ]; then
@@ -827,7 +827,11 @@ stabilized() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.50  2010-08-11 09:41:44  marc
+# Revision 1.51  2010-08-12 07:35:33  marc
+# lvm_check():
+#   fixed bug with error message when there is no lvm device
+#
+# Revision 1.50  2010/08/11 09:41:44  marc
 # be quite when loading usb modules
 #
 # Revision 1.49  2010/07/12 14:19:53  marc
