@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.125 2010-08-11 09:47:13 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.126 2010-08-12 07:42:04 marc Exp $
 #
 ##
 ##
@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 58
+Release: 59
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -932,7 +932,15 @@ rm -rf %{buildroot}
 
 
 %changelog
-* Wed Aug 10 2010 Marc Grimme <grimme@atix.de> 1.4-58
+* Thu Aug 12 2010 Marc Grimme <grimme@atix.de> 1.4-59
+- boot-scripts/etc/hardware-lib.sh lvm_check():
+  - fixed bug with error message when there is no lvm device
+- boot-scripts/com-realhalt.sh
+  - check for the existence of /dev/initctl being what ever it is not a file as before.
+- manage_chroot.sh
+  - (un)patch_files()
+    - removed errormessage when there is either not the initscript searched for or no patches are existent
+* Wed Aug 11 2010 Marc Grimme <grimme@atix.de> 1.4-58
 - boot-scripts/etc/std-lib.sh
   - exec_ordered_list: added exitonerror. So that this funktion will return with an error if errors occure
 - boot-scripts/etc/hardware-lib.sh
@@ -1705,7 +1713,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.125  2010-08-11 09:47:13  marc
+# Revision 1.126  2010-08-12 07:42:04  marc
+# new version of comoonics-bootimage
+#
+# Revision 1.125  2010/08/11 09:47:13  marc
 # - new versions
 #
 # Revision 1.124  2010/08/06 13:33:14  marc
