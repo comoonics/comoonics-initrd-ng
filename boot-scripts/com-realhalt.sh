@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: com-realhalt.sh,v 1.14 2010-02-16 10:04:27 marc Exp $
+# $Id: com-realhalt.sh,v 1.15 2010-08-12 07:37:56 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/com-halt.sh
 #  NAME
 #    com-halt.sh
-#    $Id: com-realhalt.sh,v 1.14 2010-02-16 10:04:27 marc Exp $
+#    $Id: com-realhalt.sh,v 1.15 2010-08-12 07:37:56 marc Exp $
 #  DESCRIPTION
 #    script called from <chrootpath>/com-halt.sh
 #  USAGE
@@ -115,7 +115,7 @@ echo_local "Starting ATIX exitrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.14 $ $Date: 2010-02-16 10:04:27 $'
+echo_local 'Internal Version $Revision: 1.15 $ $Date: 2010-08-12 07:37:56 $'
 echo_local_debug "Calling cmd "$(repository_get_value haltcmd)
 #echo_local "Builddate: "$(date)
 
@@ -128,7 +128,7 @@ echo_local -n "Preparing chroot"
 /bin/mount -t sysfs none /sys &> /dev/null
 /bin/mount -t configfs none /sys/kernel/config &> /dev/null
 /bin/ln -sf /proc/mounts /etc/mtab
-[ -f $(repository_get_value oldroot)/dev/initctl ] && [ -f /dev/initctl ] || cp -a $(repository_get_value oldroot)/dev/initctl /dev/initctl
+[ -e $(repository_get_value oldroot)/dev/initctl ] && [ -e /dev/initctl ] || cp -a $(repository_get_value oldroot)/dev/initctl /dev/initctl
 success
 
 step "halt: Chroot prepared" "halt_chrootprepared"
@@ -197,7 +197,10 @@ $cmd
 
 #####################
 # $Log: com-realhalt.sh,v $
-# Revision 1.14  2010-02-16 10:04:27  marc
+# Revision 1.15  2010-08-12 07:37:56  marc
+# check for the existence of /dev/initctl being what ever it is not a file as before.
+#
+# Revision 1.14  2010/02/16 10:04:27  marc
 # removed fenced -c and fence_tool lines as they belong to gfs relevant libs if need be.
 #
 # Revision 1.13  2009/12/09 09:28:45  marc
