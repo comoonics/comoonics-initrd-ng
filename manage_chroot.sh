@@ -7,7 +7,7 @@
 #  DESCRIPTION
 #*******
 #
-# $Id: manage_chroot.sh,v 1.19 2010-08-11 09:46:46 marc Exp $
+# $Id: manage_chroot.sh,v 1.20 2010-08-12 07:39:47 marc Exp $
 #
 # @(#)$File$
 #
@@ -380,14 +380,16 @@ function createxfiles {
 #
 function patch_files {
   local files="halt network netfs"
+  local patchfiles=
   if [ -n "$1" ]; then
     files=$*
   fi
   # we patch all versions here
   for initscript in $files; do
-	if ! grep "comoonics patch " /etc/init.d/$initscript > /dev/null; then
-		echo -n "Patching $initscript ("
-		for patchfile in $(ls -1 /opt/atix/comoonics-bootimage/patches/${initscript}-*.patch 2>/dev/null | sort); do
+    patchfiles=$(ls -1 /opt/atix/comoonics-bootimage/patches/${initscript}-*.patch 2>/dev/null | sort -r)
+	if [ -n "$patchfiles" ] && [ -f "/etc/init.d/$initscript" ] && grep "comoonics patch " /etc/init.d/$initscript > /dev/null; then
+		echo -n "Unpatching $initscript ("
+		for patchfile in $patchfiles; do
 			echo -n $(basename $patchfile)", "
 			cd /etc/init.d/ && patch -f -r /tmp/$(basename ${patchfile}).patch.rej > /dev/null < $patchfile
 	        if [ $? -ne 0 ]; then
@@ -418,14 +420,16 @@ function patch_files {
 #
 function unpatch_files {
   local files="halt network netfs"
+  local patchfiles=
   if [ -n "$1" ]; then
     files=$*
   fi
   # we patch all versions here
   for initscript in $files; do
-	if grep "comoonics patch " /etc/init.d/$initscript > /dev/null; then
+    patchfiles=$(ls -1 /opt/atix/comoonics-bootimage/patches/${initscript}-*.patch 2>/dev/null | sort -r)
+	if [ -n "$patchfiles" ] && [ -f "/etc/init.d/$initscript" ] && grep "comoonics patch " /etc/init.d/$initscript > /dev/null; then
 		echo -n "Unpatching $initscript ("
-		for patchfile in $(ls -1 /opt/atix/comoonics-bootimage/patches/${initscript}-*.patch 2>/dev/null | sort -r); do
+		for patchfile in $patchfiles; do
 			echo -n $(basename $patchfile)", "
 			cd /etc/init.d/ && patch -R -f -r /tmp/$(basename ${patchfile}).patch.rej > /dev/null < $patchfile
 	        if [ $? -ne 0 ]; then
