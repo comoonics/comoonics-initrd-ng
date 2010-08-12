@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.64 2010-08-11 09:46:58 marc Exp $
+# $Id: Makefile,v 1.65 2010-08-12 13:04:05 marc Exp $
 #
 # @(#)$file$
 #
@@ -290,6 +290,7 @@ CFG_FILES=basefiles.list \
     rpms.initrd.d/sles/network.list \
     rpms.initrd.d/sles10/base.list \
     rpms.initrd.d/sles10/python.list \
+    rpms.initrd.d/sles11/base.list \
     rpms.initrd.d/sles11/python.list \
     rpms.initrd.d/fedora/base.list \
     rpms.initrd.d/fedora/dm_multipath.list \
@@ -588,7 +589,10 @@ channel: rpm channelcopy channelbuild
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.64  2010-08-11 09:46:58  marc
+# Revision 1.65  2010-08-12 13:04:05  marc
+# added base.list.
+#
+# Revision 1.64  2010/08/11 09:46:58  marc
 # - added files
 #
 # Revision 1.63  2010/07/08 08:39:37  marc

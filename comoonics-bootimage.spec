@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.126 2010-08-12 07:42:04 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.127 2010-08-12 13:04:17 marc Exp $
 #
 ##
 ##
@@ -363,7 +363,7 @@ OSR extra files that are only relevant for Novell SLES 10
 
 %package listfiles-sles11
 Version: 0.1
-Release: 4
+Release: 6
 Requires: comoonics-bootimage >= 1.4-27
 Requires: /etc/SuSE-release
 Requires: comoonics-bootimage-listfiles-sles
@@ -852,6 +852,7 @@ fi
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles10/python.list
 
 %files listfiles-sles11
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles11/base.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles11/python.list
 
 %files listfiles-fedora
@@ -1580,6 +1581,10 @@ rm -rf %{buildroot}
 - initial revision
 
 %changelog listfiles-sles11
+* Thu Aug 12 2010 Marc Grimme <grimme@atix.de> 0.1-6
+- added libblkid1
+* Thu Aug 12 2010 Marc Grimme <grimme@atix.de> 0.1-5
+- added rpms.initrd.d/base.list
 * Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-4
 - first version for comoonics-4.6-rc1 
 * Mon Feb 22 2010 Marc Grimme <grimme@atix.de> - 0.1-3
@@ -1713,7 +1718,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.126  2010-08-12 07:42:04  marc
+# Revision 1.127  2010-08-12 13:04:17  marc
+# added base.list.
+#
+# Revision 1.126  2010/08/12 07:42:04  marc
 # new version of comoonics-bootimage
 #
 # Revision 1.125  2010/08/11 09:47:13  marc
