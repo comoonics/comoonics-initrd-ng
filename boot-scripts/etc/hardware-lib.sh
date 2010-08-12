@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.51 2010-08-12 07:35:33 marc Exp $
+# $Id: hardware-lib.sh,v 1.52 2010-08-12 09:54:51 marc Exp $
 #
 # @(#)$File$
 #
@@ -123,7 +123,7 @@ function dev_start() {
     test -e ${basedir}/dev/ttyS2   || exec_local mknod ${basedir}/dev/ttyS2 c 4 66
     test -e ${basedir}/dev/ttyS3   || exec_local mknod ${basedir}/dev/ttyS3 c 4 67
     test -e ${basedir}/dev/kmsg    || exec_local mknod ${basedir}/dev/kmsg c 1 11
-    test -e ${basedir}/dev/log     || which mksock >/dev/null 2>&1 && exec_local mksock ${basedir}/dev/log && exec_local chmod 666 ${basedir}/dev/log
+    test -e ${basedir}/dev/log     || ( which mksock >/dev/null 2>&1 && exec_local mksock ${basedir}/dev/log && exec_local chmod 666 ${basedir}/dev/log )
     
     return_code
 }
@@ -827,7 +827,10 @@ stabilized() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.51  2010-08-12 07:35:33  marc
+# Revision 1.52  2010-08-12 09:54:51  marc
+# fixed bug with mksock query
+#
+# Revision 1.51  2010/08/12 07:35:33  marc
 # lvm_check():
 #   fixed bug with error message when there is no lvm device
 #
