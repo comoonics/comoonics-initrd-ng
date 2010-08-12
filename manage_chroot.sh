@@ -7,7 +7,7 @@
 #  DESCRIPTION
 #*******
 #
-# $Id: manage_chroot.sh,v 1.20 2010-08-12 07:39:47 marc Exp $
+# $Id: manage_chroot.sh,v 1.21 2010-08-12 09:55:09 marc Exp $
 #
 # @(#)$File$
 #
@@ -387,8 +387,8 @@ function patch_files {
   # we patch all versions here
   for initscript in $files; do
     patchfiles=$(ls -1 /opt/atix/comoonics-bootimage/patches/${initscript}-*.patch 2>/dev/null | sort -r)
-	if [ -n "$patchfiles" ] && [ -f "/etc/init.d/$initscript" ] && grep "comoonics patch " /etc/init.d/$initscript > /dev/null; then
-		echo -n "Unpatching $initscript ("
+	if [ -n "$patchfiles" ] && [ -f "/etc/init.d/$initscript" ] && ! grep "comoonics patch " /etc/init.d/$initscript > /dev/null; then
+		echo -n "Patching $initscript ("
 		for patchfile in $patchfiles; do
 			echo -n $(basename $patchfile)", "
 			cd /etc/init.d/ && patch -f -r /tmp/$(basename ${patchfile}).patch.rej > /dev/null < $patchfile
@@ -398,8 +398,8 @@ function patch_files {
 		      echo "FAILURE!!!!" >&2
 		      echo "Patching $initscript with patch $patchfile" >&2
 		      echo "You might want to consider restoring the original initscript and the patch again by:" >&2
-		      echo "cp %{APPDIR}/patches/${initscript}.orig /etc/init.d/${initscript}"
-		      echo "%{APPDIR}/manage_chroot.sh -a patch_files ${initscript}"
+		      echo "cp /opt/atix/comoonics-bootimage/patches/${initscript}.orig /etc/init.d/${initscript}"
+		      echo "/opt/atix/comoonics-bootimage/manage_chroot.sh -a unpatch_files ${initscript}"
 		      echo >&2
 		    fi
 		done
@@ -438,8 +438,8 @@ function unpatch_files {
 		      echo "FAILURE!!!!" >&2
 		      echo "Patching $initscript with patch $patchfile" >&2
 		      echo "You might want to consider restoring the original initscript and the patch again by:" >&2
-		      echo "cp %{APPDIR}/patches/${initscript}.orig /etc/init.d/${initscript}"
-		      echo "%{APPDIR}/manage_chroot.sh -a patch_files ${initscript}"
+		      echo "cp /opt/atix/comoonics-bootimage/patches/${initscript}.orig /etc/init.d/${initscript}"
+		      echo "/opt/atix/comoonics-bootimage/manage_chroot.sh -a patch_files ${initscript}"
 		      echo >&2
 		    fi
 		done
