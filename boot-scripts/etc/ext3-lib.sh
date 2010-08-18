@@ -1,5 +1,5 @@
 #
-# $Id: ext3-lib.sh,v 1.9 2010-06-25 12:36:37 marc Exp $
+# $Id: ext3-lib.sh,v 1.10 2010-08-18 11:49:27 marc Exp $
 #
 # @(#)$File$
 #
@@ -193,7 +193,9 @@ function ext3_services_restart_newroot {
 #
 function ext3_fsck_needed {
 	local device=$1
-	fsck -t noopts -T $device
+	local fsck="fsck"
+	local options="-t noopts -T"
+	$fsck $options $device 2>/dev/null
 }
 #********* ext3_fsck_needed
 
@@ -255,7 +257,10 @@ ext3_get() {
 # *********** ext3_get
 
 # $Log: ext3-lib.sh,v $
-# Revision 1.9  2010-06-25 12:36:37  marc
+# Revision 1.10  2010-08-18 11:49:27  marc
+# ext3_fsck_needed bug fixed
+#
+# Revision 1.9  2010/06/25 12:36:37  marc
 # - ext3/ocfs2/nfs-lib.sh:
 #   - added ext3/ocfs2/nfs_get
 #
