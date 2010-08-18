@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.28 2010-07-08 08:39:37 marc Exp $
+# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.29 2010-08-18 11:53:28 marc Exp $
 #
 ##
 ##
@@ -52,7 +52,7 @@ Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-rhel
 Requires: comoonics-bootimage-listfiles-rhel5
 #Conflicts: 
-Release: 18.rhel5
+Release: 19.rhel5
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -234,6 +234,9 @@ fi
 rm -rf %{buildroot}
 
 %changelog
+* Wed Aug 18 2010 Marc Grimme <grimme@atix.de> 1.4-19el5
+- initscripts/rhel4,rhel5,fedora,sles10,sles11/bootsr
+  - fixed bug #382 where the cdsl.local was not remounted in /etc/mtab on locally installed systems
 * Thu Jul 08 2010 Marc Grimme <grimme@atix.de> 1.4-18el5
 - bootsr uses bash as shell
 * Thu Jun 08 2010 Marc Grimme <grimme@atix.de> 1.4-17el5
@@ -281,7 +284,10 @@ rm -rf %{buildroot}
 - first revision
 # ------
 # $Log: comoonics-bootimage-initscripts-el5.spec,v $
-# Revision 1.28  2010-07-08 08:39:37  marc
+# Revision 1.29  2010-08-18 11:53:28  marc
+# new versions
+#
+# Revision 1.28  2010/07/08 08:39:37  marc
 # new versions
 #
 # Revision 1.27  2010/06/09 08:23:22  marc
