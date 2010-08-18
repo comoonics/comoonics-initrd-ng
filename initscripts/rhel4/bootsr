@@ -2,7 +2,7 @@
 #****h* comoonics-bootimage/bootsr
 #  NAME
 #    bootsr
-#    $Id: bootsr,v 1.11 2010-08-06 13:35:06 marc Exp $
+#    $Id: bootsr,v 1.12 2010-08-18 11:46:32 marc Exp $
 #  DESCRIPTION
 #    Comoonics Shared Root post boot settings
 #  AUTHOR
@@ -131,7 +131,15 @@ case "$1" in
   start)
   	# will do
   	# - update chroot environment for additional services (fence_ack_server)
-        
+
+    # if /etc/mtab is not a link to /proc/mounts we need to update the mtab for the cdsl environment if it is mounted
+	# check for the existence of the cdsl environment on /
+	com-mkcdslinfrastructure --get config_version &> /dev/null
+	# now check if /etc/mtab is a symlink to /proc/mounts and if not remount cdsl environment
+    if ! ( [ $? -eq 0 ] && [ -L /etc/mtab ] && [ "$(ls -l /etc/mtab | sed -e 's/^.*-> //')" = "/proc/mounts" ] ); then
+    	mount -f "/"$(com-mkcdslinfrastructure --get tree)"/"$(repository_get_value nodeid) "/"$(com-mkcdslinfrastructure --get link)
+    	action "Remounting cdsl environment." mount -o remount,rw "/"$(com-mkcdslinfrastructure --get link)
+    fi
     if  [ -n "$rootfs" ] && check_sharedroot $rootfs; then
       touch /var/lock/subsys/bootsr
       if [ -z "$chrootneeded" ]; then
@@ -192,7 +200,10 @@ exit $RETVAL
 #************ main
 ###############
 # $Log: bootsr,v $
-# Revision 1.11  2010-08-06 13:35:06  marc
+# Revision 1.12  2010-08-18 11:46:32  marc
+# - fixed bug #382 where the cdsl.local was not remounted in /etc/mtab on locally installed systems
+#
+# Revision 1.11  2010/08/06 13:35:06  marc
 # - moved echo to echo_local in initscripts
 #
 # Revision 1.10  2010/07/08 08:35:25  marc
