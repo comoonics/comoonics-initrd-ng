@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.127 2010-08-12 13:04:17 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.128 2010-08-18 11:51:07 marc Exp $
 #
 ##
 ##
@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 59
+Release: 60
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -933,6 +933,13 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Wed Aug 18 2010 Marc Grimme <grimme@atix.de> 1.4-60
+- boot-scripts/linuxrc.generic.sh
+  - setHWClock will only be called when chroot is mounted
+- boot-scripts/etc/ext3-lib.sh
+  - ext3_fsck_needed bug fixed
+- boot-scripts/etc/errors.sh
+  - added an errormessage when filesystem cannot be mounted.
 * Thu Aug 12 2010 Marc Grimme <grimme@atix.de> 1.4-59
 - boot-scripts/etc/hardware-lib.sh lvm_check():
   - fixed bug with error message when there is no lvm device
@@ -1718,7 +1725,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.127  2010-08-12 13:04:17  marc
+# Revision 1.128  2010-08-18 11:51:07  marc
+# new version
+#
+# Revision 1.127  2010/08/12 13:04:17  marc
 # added base.list.
 #
 # Revision 1.126  2010/08/12 07:42:04  marc
