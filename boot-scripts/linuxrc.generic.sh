@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.98 2010-07-08 08:15:48 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.99 2010-08-18 11:48:04 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.98 2010-07-08 08:15:48 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.99 2010-08-18 11:48:04 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -88,7 +88,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.98 $ $Date: 2010-07-08 08:15:48 $'
+echo_local 'Internal Version $Revision: 1.99 $ $Date: 2010-08-18 11:48:04 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -418,8 +418,8 @@ if [ -z "$(repository_get_value quorumack)" ]; then
   fi
 fi
 
-xen_domx_detect
-if  [ $? -ne 0 ]; then
+# We only set the time when a chroot filesystem is needed or not xen
+if xen_domx_detect && [ "$(repository_get_value chrootneeded)" -eq 0 ]; then
   setHWClock
 fi
 
@@ -508,6 +508,9 @@ if [ $? -eq 0 ] && [ -n "$filesystems" ]; then
 	    fi
     fi 
     clusterfs_mount "$fstype" "$source" "$dest" "$mountopts" "$mounttimes" "$mountwait" 
+    if [ $return_c -ne 0 ]; then
+      breakp "$(errormsg err_clusterfs_mount)"
+    fi
   done
   step "Additional filesystems $filesystems mounted." "fsmount"
 fi
@@ -523,7 +526,7 @@ if [ $(repository_get_value chrootneeded) -eq 0 ]; then
   return_code
   step "Moving chroot successfully done." "movechroot"
 else
-  if [ -f $(repository_get_value newroot)/var/comoonics/chrootpath ] && [ -z $(getPosFromList "ro" "$(repository_get_value mountopts)" ",") ]; then
+  if [ -f $(repository_get_value newroot)/var/comoonics/chrootpath ] && [ -z "$(getPosFromList ro $(repository_get_value mountopts) ,)" ]; then
     echo_local -n "Removing reference to chrootpath."
     exec_local rm -f $(repository_get_value newroot)/var/comoonics/chrootpath 2>/dev/null
     return_code
@@ -603,7 +606,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.98  2010-07-08 08:15:48  marc
+# Revision 1.99  2010-08-18 11:48:04  marc
+#  setHWClock will only be called when chroot is mounted
+#
+# Revision 1.98  2010/07/08 08:15:48  marc
 # - errormsg reworked
 # - reset nodeid/name if set in breakp shell
 # - moved stopping of syslog down
