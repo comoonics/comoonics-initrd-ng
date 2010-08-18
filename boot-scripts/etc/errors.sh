@@ -1,5 +1,5 @@
 #
-# $Id: errors.sh,v 1.3 2010-07-08 08:07:21 marc Exp $
+# $Id: errors.sh,v 1.4 2010-08-18 11:49:39 marc Exp $
 #
 # @(#)$File$
 #
@@ -70,6 +70,14 @@ or this filesystem does not support autofsck. This means you have to do it manua
 This should be done if you end up here.\\n
 \\n
 CAUTION: If you are using a clusterfilesystem never ever fsck with other cluster nodes being online!\\n
+'
+err_clusterfs_mount='The filesystem on "$(repository_get_value root)" could not be mountet.\\n 
+You should check the errormessage and fix the problem.\\n
+\\n
+Usually you do not need to rebuild a new initrd but just fix something in the filesystem.\\n
+Command: $(repository_get_value exec_local_lastcmd)\\n
+Output: $(repository_get_value exec_local_lastout)\\n
+Errors: $(repository_get_value exec_local_lasterror)\\n
 '
 err_cc_nodeid='The nodeid for this node could not be detected. This usually means the\\n
 MAC-Addresses specified in the cluster configuration could not be matched to any\\n
@@ -189,7 +197,10 @@ Errors: $(repository_get_value exec_local_lasterror)\\n
 '
 ##################
 # $Log: errors.sh,v $
-# Revision 1.3  2010-07-08 08:07:21  marc
+# Revision 1.4  2010-08-18 11:49:39  marc
+# added an errormessage when filesystem cannot be mounted.
+#
+# Revision 1.3  2010/07/08 08:07:21  marc
 # - reworked the errors to make use of errors, output and command being stored by exec_local
 # - rewrote errors
 #
