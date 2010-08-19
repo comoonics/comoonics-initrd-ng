@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.129 2010-08-19 07:42:46 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.130 2010-08-19 09:24:34 marc Exp $
 #
 ##
 ##
@@ -363,7 +363,7 @@ OSR extra files that are only relevant for Novell SLES 10
 
 %package listfiles-sles11
 Version: 0.1
-Release: 6
+Release: 7
 Requires: comoonics-bootimage >= 1.4-27
 Requires: /etc/SuSE-release
 Requires: comoonics-bootimage-listfiles-sles
@@ -1590,6 +1590,8 @@ rm -rf %{buildroot}
 - initial revision
 
 %changelog listfiles-sles11
+* Thu Aug 13 2010 Marc Grimme <grimme@atix.de> 0.1-7
+- added libuuid1
 * Thu Aug 12 2010 Marc Grimme <grimme@atix.de> 0.1-6
 - added libblkid1
 * Thu Aug 12 2010 Marc Grimme <grimme@atix.de> 0.1-5
@@ -1727,7 +1729,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.129  2010-08-19 07:42:46  marc
+# Revision 1.130  2010-08-19 09:24:34  marc
+# new version for comoonics-bootimage-sles11-0.1-7
+#
+# Revision 1.129  2010/08/19 07:42:46  marc
 # new versions
 #
 # Revision 1.128  2010/08/18 11:51:07  marc
