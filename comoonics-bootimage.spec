@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.128 2010-08-18 11:51:07 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.129 2010-08-19 07:42:46 marc Exp $
 #
 ##
 ##
@@ -935,7 +935,9 @@ rm -rf %{buildroot}
 %changelog
 * Wed Aug 18 2010 Marc Grimme <grimme@atix.de> 1.4-60
 - boot-scripts/linuxrc.generic.sh
-  - setHWClock will only be called when chroot is mounted
+  - remvoed setHWClock
+- boot-scripts/etc/gfs-lib.sh  boot-scripts/etc/rhel5/gfs-lib.sh
+  - gfs_services_start added setHWClock
 - boot-scripts/etc/ext3-lib.sh
   - ext3_fsck_needed bug fixed
 - boot-scripts/etc/errors.sh
@@ -1725,7 +1727,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.128  2010-08-18 11:51:07  marc
+# Revision 1.129  2010-08-19 07:42:46  marc
+# new versions
+#
+# Revision 1.128  2010/08/18 11:51:07  marc
 # new version
 #
 # Revision 1.127  2010/08/12 13:04:17  marc
