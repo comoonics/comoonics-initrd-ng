@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.99 2010-08-18 11:48:04 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.100 2010-08-19 07:41:11 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.99 2010-08-18 11:48:04 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.100 2010-08-19 07:41:11 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -88,7 +88,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.99 $ $Date: 2010-08-18 11:48:04 $'
+echo_local 'Internal Version $Revision: 1.100 $ $Date: 2010-08-19 07:41:11 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -418,11 +418,6 @@ if [ -z "$(repository_get_value quorumack)" ]; then
   fi
 fi
 
-# We only set the time when a chroot filesystem is needed or not xen
-if xen_domx_detect && [ "$(repository_get_value chrootneeded)" -eq 0 ]; then
-  setHWClock
-fi
-
 # This function starts all services that have to be started prior to mounting the rootfs
 # If need be they should be started in the chroot_path.
 clusterfs_services_start $(repository_get_value chroot_path) "$(repository_get_value lockmethod)" "$(repository_get_value lvm_sup)"
@@ -606,7 +601,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.99  2010-08-18 11:48:04  marc
+# Revision 1.100  2010-08-19 07:41:11  marc
+# moved setHWClock to gfs_services_start in gfs-lib.sh
+#
+# Revision 1.99  2010/08/18 11:48:04  marc
 #  setHWClock will only be called when chroot is mounted
 #
 # Revision 1.98  2010/07/08 08:15:48  marc

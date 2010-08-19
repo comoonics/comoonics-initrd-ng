@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.76 2010-08-06 13:32:13 marc Exp $
+# $Id: gfs-lib.sh,v 1.77 2010-08-19 07:41:11 marc Exp $
 #
 # @(#)$File$
 #
@@ -887,6 +887,8 @@ function gfs_services_start() {
   local lock_method=$2
   local lvm_sup=$3
 
+  setHWClock
+
   services="ccsd $lock_method cman qdiskd fenced"
   if [ -n "$lvm_sup" ] && [ $lvm_sup -eq 0 ]; then
   	services="$services clvmd"
@@ -1435,7 +1437,10 @@ function gfs_chroot_needed() {
 }
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.76  2010-08-06 13:32:13  marc
+# Revision 1.77  2010-08-19 07:41:11  marc
+# moved setHWClock to gfs_services_start in gfs-lib.sh
+#
+# Revision 1.76  2010/08/06 13:32:13  marc
 # - force the creation of /var/run/lvm needed since RHEL5.5
 #
 # Revision 1.75  2010/05/27 09:43:31  marc

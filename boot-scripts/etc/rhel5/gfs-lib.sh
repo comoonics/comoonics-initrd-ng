@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.21 2010-08-06 13:31:51 marc Exp $
+# $Id: gfs-lib.sh,v 1.22 2010-08-19 07:41:11 marc Exp $
 #
 # @(#)$File$
 #
@@ -110,6 +110,8 @@ function gfs_services_start {
   local chroot_path=$1
   local lock_method=$2
   local lvm_sup=$3
+
+  setHWClock
 
   echo_local -n "Mounting configfs"
   exec_local mount -t configfs none $chroot_path/sys/kernel/config
@@ -340,7 +342,10 @@ function gfs_start_cman {
 
 ###############
 # $Log: gfs-lib.sh,v $
-# Revision 1.21  2010-08-06 13:31:51  marc
+# Revision 1.22  2010-08-19 07:41:11  marc
+# moved setHWClock to gfs_services_start in gfs-lib.sh
+#
+# Revision 1.21  2010/08/06 13:31:51  marc
 #   - stop clvmd and let it be started during init process
 #
 # Revision 1.20  2010/05/27 09:42:43  marc
