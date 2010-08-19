@@ -2,4 +2,5 @@
 libreadline5
 libncurses5
 libblkid1
+libuuid1
 # $Log:$
