@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.100 2010-08-19 07:41:11 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.101 2010-08-19 09:24:01 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.100 2010-08-19 07:41:11 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.101 2010-08-19 09:24:01 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -88,7 +88,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.100 $ $Date: 2010-08-19 07:41:11 $'
+echo_local 'Internal Version $Revision: 1.101 $ $Date: 2010-08-19 09:24:01 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -528,7 +528,7 @@ else
   fi
 fi
 
-if [ -z $(getPosInList "ro" "$(repository_get_value mountopts)" ",") ]; then
+if [ -z "$(getPosInList ro $(repository_get_value mountopts) ,)" ]; then
   echo_local -n "Writing xtab.. "
   if [ $(repository_get_value chrootneeded) -eq 0 ]; then
     create_xtab "$(repository_get_value newroot)/$(repository_get_value xtabfile)" "$(repository_get_value cdsl_local_dir)" "$(repository_get_value chroot_mount)" 
@@ -601,7 +601,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.100  2010-08-19 07:41:11  marc
+# Revision 1.101  2010-08-19 09:24:01  marc
+# - fixed typo
+#
+# Revision 1.100  2010/08/19 07:41:11  marc
 # moved setHWClock to gfs_services_start in gfs-lib.sh
 #
 # Revision 1.99  2010/08/18 11:48:04  marc
