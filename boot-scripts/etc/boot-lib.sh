@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.86 2010-07-08 08:00:50 marc Exp $
+# $Id: boot-lib.sh,v 1.87 2010-08-26 12:17:18 marc Exp $
 #
 # @(#)$File$
 #
@@ -724,7 +724,7 @@ function createTemp {
 #  SOURCE
 #
 function restart_init {
-	exec_local init u
+	exec_local telinit u
 }
 #************ restart_init
 
@@ -953,7 +953,10 @@ function check_mtab {
 #************** check_mtab
 
 # $Log: boot-lib.sh,v $
-# Revision 1.86  2010-07-08 08:00:50  marc
+# Revision 1.87  2010-08-26 12:17:18  marc
+# init => telinit
+#
+# Revision 1.86  2010/07/08 08:00:50  marc
 # moved build_chroot to chroot-lib.sh
 #
 # Revision 1.85  2010/06/25 09:56:42  marc
