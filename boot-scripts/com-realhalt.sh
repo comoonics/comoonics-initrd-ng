@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: com-realhalt.sh,v 1.15 2010-08-12 07:37:56 marc Exp $
+# $Id: com-realhalt.sh,v 1.16 2010-08-26 12:18:36 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/com-halt.sh
 #  NAME
 #    com-halt.sh
-#    $Id: com-realhalt.sh,v 1.15 2010-08-12 07:37:56 marc Exp $
+#    $Id: com-realhalt.sh,v 1.16 2010-08-26 12:18:36 marc Exp $
 #  DESCRIPTION
 #    script called from <chrootpath>/com-halt.sh
 #  USAGE
@@ -115,7 +115,7 @@ echo_local "Starting ATIX exitrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.15 $ $Date: 2010-08-12 07:37:56 $'
+echo_local 'Internal Version $Revision: 1.16 $ $Date: 2010-08-26 12:18:36 $'
 echo_local_debug "Calling cmd "$(repository_get_value haltcmd)
 #echo_local "Builddate: "$(date)
 
@@ -129,6 +129,7 @@ echo_local -n "Preparing chroot"
 /bin/mount -t configfs none /sys/kernel/config &> /dev/null
 /bin/ln -sf /proc/mounts /etc/mtab
 [ -e $(repository_get_value oldroot)/dev/initctl ] && [ -e /dev/initctl ] || cp -a $(repository_get_value oldroot)/dev/initctl /dev/initctl
+[ -e $(repository_get_value oldroot)/dev/console ] && [ -e /dev/console ] || cp -a $(repository_get_value oldroot)/dev/console /dev/console
 success
 
 step "halt: Chroot prepared" "halt_chrootprepared"
@@ -160,23 +161,38 @@ if is_mounted $(repository_get_value oldroot)/dev/pts; then
    exec_local umount_filesystem $(repository_get_value oldroot)/dev/pts 1
 fi
 is_mounted $(repository_get_value oldroot)/dev && exec_local "mount --move $(repository_get_value oldroot)/dev /dev2" &&
+[ -d /dev/pts ] || mkdir /dev/pts
 is_mounted /dev/pts || exec_local "mount -t devpts none /dev/pts" &&
 return_code
 step "Moved /dev filesystem" "movedevfs"
 
-rc=0
-echo_local -n "Umounting filesystems in oldroot ("$(get_dep_filesystems $(repository_get_value oldroot))")"
-for _filesystem in $(get_dep_filesystems $(repository_get_value oldroot)/sys) $(get_dep_filesystems $(repository_get_value oldroot)/proc) $(repository_get_value oldroot)/sys $(repository_get_value oldroot)/proc; do
-   echo_local "Umounting $_filesystem"
-   exec_local umount_filesystem $_filesystem
-   [ $return_c -ne 1 ] && rc=$return_c
-done	
-for _filesystem in $(get_dep_filesystems $(repository_get_value oldroot)); do
-   echo_local "Umounting $_filesystem"
-   exec_local umount_filesystem $_filesystem 1
-   [ $return_c -ne 1 ] && rc=$return_c
-done
-return_code $rc
+filesystems="$(get_dep_filesystems $(repository_get_value oldroot)/sys) $(get_dep_filesystems $(repository_get_value oldroot)/proc) $(repository_get_value oldroot)/sys $(repository_get_value oldroot)/proc"
+if [ -n "$filesystems" ]; then
+  rc=0
+  echo_local "Umounting filesystems in oldroot ("$filesystems")"
+  for _filesystem in $filesystems; do
+    if is_mounted $_filesystem; then 
+      echo_local "Umounting $_filesystem"
+      exec_local umount_filesystem $_filesystem
+      return_code $rc
+      [ $return_c -ne 1 ] && rc=$return_c
+    fi
+  done
+fi
+filesystems=$(get_dep_filesystems $(repository_get_value oldroot))	
+if [ -n "$filesystems" ]; then
+  rc=0
+  echo_local "Umounting filesystems in oldroot ("$filesystems")"
+  for _filesystem in $filesystems; do
+    if is_mounted $_filesystem; then 
+      echo_local -n "Umounting $_filesystem"
+      exec_local umount_filesystem $_filesystem 1
+      return_code $rc
+      [ $return_c -ne 1 ] && rc=$return_c
+    fi
+  done
+fi
+unset filesystems rc
 
 step "halt: Successfully umounted filesystem in oldroot" "halt_umountoldroot"
 
@@ -187,17 +203,19 @@ return_code
 step "halt: Umounting oldroot" "halt_umountoldroot"
 
 clusterfs_services_stop
+step "halt: Stopped clusterfs services" "halt_stopclusterfs"
 
 sleep 2
-
-step "halt: Stopped clusterfs services" "halt_stopclusterfs"
 
 echo_local "Finally calling "$(repository_get_value haltcmd) 
 $cmd
 
 #####################
 # $Log: com-realhalt.sh,v $
-# Revision 1.15  2010-08-12 07:37:56  marc
+# Revision 1.16  2010-08-26 12:18:36  marc
+# also copy /dev/console
+#
+# Revision 1.15  2010/08/12 07:37:56  marc
 # check for the existence of /dev/initctl being what ever it is not a file as before.
 #
 # Revision 1.14  2010/02/16 10:04:27  marc
