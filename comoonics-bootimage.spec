@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.130 2010-08-19 09:24:34 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.131 2010-08-26 12:26:48 marc Exp $
 #
 ##
 ##
@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 60
+Release: 61
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -107,7 +107,7 @@ Extra listfiles for nfs sharedroot configurations
 
 %package extras-ocfs2
 Version: 0.1
-Release: 9
+Release: 10
 Requires: comoonics-bootimage >= 1.4
 Summary: Listfiles for ocfs2 sharedroot configurations
 Group:   System Environment/Base
@@ -933,6 +933,11 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Thu Aug 26 2010 Marc Grimme <grimme@atix.de> 1.4-61
+- boot-scripts/com-halt.sh
+  - be sure that /proc and /sys are mounted
+- boot-scripts/com-realhalt.sh
+  - also copy /dev/console to chroot
 * Wed Aug 18 2010 Marc Grimme <grimme@atix.de> 1.4-60
 - boot-scripts/linuxrc.generic.sh
   - remvoed setHWClock
@@ -1413,6 +1418,9 @@ rm -rf %{buildroot}
 - added nfs-lib.sh file
 
 %changelog extras-ocfs2
+* Thu Aug 26 2010 Marc Grimme <grimme@atix.de> 0.1-10
+- boot-scripts/etc/ocfs2-lib.sh ocfs2_init be sure to 
+     mount /sys/kernel/config only if it is not already mounted.
 * Fri Jun 25 2010 Marc Grimme <grimme@atix.de> 0.1-9
 - ext3/ocfs2/nfs-lib.sh:
   - added ext3/ocfs2/nfs_get
@@ -1729,7 +1737,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.130  2010-08-19 09:24:34  marc
+# Revision 1.131  2010-08-26 12:26:48  marc
+# new version
+#
+# Revision 1.130  2010/08/19 09:24:34  marc
 # new version for comoonics-bootimage-sles11-0.1-7
 #
 # Revision 1.129  2010/08/19 07:42:46  marc
