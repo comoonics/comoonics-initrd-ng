@@ -1,5 +1,5 @@
 #
-# $Id: ocfs2-lib.sh,v 1.10 2010-06-25 12:36:37 marc Exp $
+# $Id: ocfs2-lib.sh,v 1.11 2010-08-26 12:19:27 marc Exp $
 #
 # @(#)$File$
 #
@@ -296,14 +296,18 @@ function ocfs2_checkhosts_alive {
 function ocfs2_init {
 	case "$1" in
 		start)
-		mount -t configfs configfs /sys/kernel/config
+		  if ! is_mounted /sys/kernel/config; then
+		    mount -t configfs configfs /sys/kernel/config
+		  fi
 		;;
 		stop)
-		umount /sys/kernel/config
+		  if is_mounted /sys/kernel/config; then
+  		    umount /sys/kernel/config
+		  fi
 		;;
 		restart)
-		ocfs2_init start
-		ocfs2_init stop
+		  ocfs2_init start
+		  ocfs2_init stop
 		;;
 		*)
 		;;
@@ -370,7 +374,10 @@ function ocfs2_get_mountopts() {
 #************ ocfs2_get_mountopts
 
 # $Log: ocfs2-lib.sh,v $
-# Revision 1.10  2010-06-25 12:36:37  marc
+# Revision 1.11  2010-08-26 12:19:27  marc
+# only mount /proc and /sys/kernel/config if it is not already mounted
+#
+# Revision 1.10  2010/06/25 12:36:37  marc
 # - ext3/ocfs2/nfs-lib.sh:
 #   - added ext3/ocfs2/nfs_get
 #
