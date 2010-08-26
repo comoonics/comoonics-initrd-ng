@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: com-halt.sh,v 1.8 2010-02-21 12:05:19 marc Exp $
+# $Id: com-halt.sh,v 1.9 2010-08-26 12:18:02 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/com-halt.sh
 #  NAME
 #    com-halt.sh
-#    $Id: com-halt.sh,v 1.8 2010-02-21 12:05:19 marc Exp $
+#    $Id: com-halt.sh,v 1.9 2010-08-26 12:18:02 marc Exp $
 #  DESCRIPTION
 #    script called from /etc/init.d/halt
 #  USAGE
@@ -36,6 +36,16 @@
 CHROOT_PATH=$(/opt/atix/comoonics-bootimage/manage_chroot.sh -p 2>/dev/null)
 
 if [ -n "$CHROOT_PATH" ] && [ -d $CHROOT_PATH/mnt/newroot ]; then
+  # With SLES at this stage there might be /proc and /sys already umounted so we'll remount it
+  mount 2>/dev/null | grep '[[:space:]]/proc[[:space:]]' > /dev/null
+  if [ $? -ne 0 ]; then
+  	mount -t proc none /proc 2>/dev/null
+  fi
+  mount 2>/dev/null | grep '[[:space:]]/sys[[:space:]]' > /dev/null
+  if [ $? -ne 0 ]; then
+  	mount -t sysfs none /sys 2>/dev/null
+  fi
+  # First check for the chroot environment being mounted as ro
   mount -o remount,rw $CHROOT_PATH &>/dev/null
   mount -o remount,rw / &>/dev/null
   
@@ -46,7 +56,6 @@ if [ -n "$CHROOT_PATH" ] && [ -d $CHROOT_PATH/mnt/newroot ]; then
   initEnv
   actlevel=$(runlevel | awk '{ print $2;}')
   	
-  # First check for the chroot environment being mounted as ro
   cd $CHROOT_PATH
   /sbin/pivot_root . ./mnt/newroot
 
@@ -74,7 +83,10 @@ if [ -n "$CHROOT_PATH" ] && [ -d $CHROOT_PATH/mnt/newroot ]; then
 fi
 ####################
 # $Log: com-halt.sh,v $
-# Revision 1.8  2010-02-21 12:05:19  marc
+# Revision 1.9  2010-08-26 12:18:02  marc
+# - always secure that /proc and /sys are mounted
+#
+# Revision 1.8  2010/02/21 12:05:19  marc
 # kicked an old bash
 #
 # Revision 1.7  2010/02/16 10:04:49  marc
