@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.50 2010-07-08 08:04:44 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.51 2010-09-01 15:18:23 marc Exp $
 #
 # @(#)$File$
 #
@@ -922,7 +922,7 @@ function cc_auto_syslogconfig {
     syslog_server=$(getParameter syslogserver 2>/dev/null)
     syslog_filter=$(getParameter syslogfilter 2>/dev/null)
   fi
-  [ -z "$syslog_filter" ] && syslog_filter="kern.*"
+  [ -z "$syslog_filter" ] && syslog_filter="kern,daemon.info:$syslog_logfile"
   repository_store_value syslogfilter "$syslog_filter"
 
   if [ -n "$syslog_type" ]; then
@@ -1489,7 +1489,11 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.50  2010-07-08 08:04:44  marc
+# Revision 1.51  2010-09-01 15:18:23  marc
+#   - clusterfs_auto_syslog
+#     - changed the default syslogfilter to be clean
+#
+# Revision 1.50  2010/07/08 08:04:44  marc
 # fixed bug in clusterfs_mount where options where added to the mountcmd after each run through mounttimes
 #
 # Revision 1.49  2010/06/30 07:03:51  marc
