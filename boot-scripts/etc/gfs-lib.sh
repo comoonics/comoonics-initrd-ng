@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.77 2010-08-19 07:41:11 marc Exp $
+# $Id: gfs-lib.sh,v 1.78 2010-09-01 09:48:44 marc Exp $
 #
 # @(#)$File$
 #
@@ -113,7 +113,7 @@ function gfs_getdefaults() {
 		    echo "lock_dlm"
 		    ;;
 		mount_opts|mountopts)
-		    echo "noatime"
+		    echo "noatime,localflocks"
 		    ;;
 		root_source|rootsource)
 		    echo "scsi"
@@ -1437,7 +1437,11 @@ function gfs_chroot_needed() {
 }
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.77  2010-08-19 07:41:11  marc
+# Revision 1.78  2010-09-01 09:48:44  marc
+#   - gfs_getdefaults
+#     - added localflocks to standard gfs mountoptions
+#
+# Revision 1.77  2010/08/19 07:41:11  marc
 # moved setHWClock to gfs_services_start in gfs-lib.sh
 #
 # Revision 1.76  2010/08/06 13:32:13  marc
