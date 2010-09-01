@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.133 2010-09-01 15:24:19 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.134 2010-09-01 15:33:34 marc Exp $
 #
 ##
 ##
@@ -1523,7 +1523,7 @@ syslog
 - initial revision
 
 %changelog extras-syslog
-* Wed 01 Sep 2010 Marc Grimme <grimme@atix.de> 0.1-8
+* Wed Sep 01 2010 Marc Grimme <grimme@atix.de> 0.1-8
 - boot-scripts/boot-lib/etc/syslog-lib.sh
   - syslogd_config
     - no explicit debug filter
@@ -1784,7 +1784,10 @@ syslog
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.133  2010-09-01 15:24:19  marc
+# Revision 1.134  2010-09-01 15:33:34  marc
+# - new version
+#
+# Revision 1.133  2010/09/01 15:24:19  marc
 # new version
 #
 # Revision 1.132  2010/09/01 09:50:32  marc
