@@ -1,5 +1,5 @@
 #
-# $Id: syslog-lib.sh,v 1.3 2010-06-29 18:59:13 marc Exp $
+# $Id: syslog-lib.sh,v 1.4 2010-09-01 15:18:58 marc Exp $
 #
 # @(#)$File$
 #
@@ -88,9 +88,10 @@ syslogd_config() {
   [ -f "$syslog_conf_template" ] && cat $syslog_conf_template
   
   # Checking for normal syslog all others should be checked before so that this is the last resort syslog
-  if [ -n "$debug" ]; then
-    filters="$filters kern,daemon.*:/dev/console"
-  fi
+  # this is obsolete we are writing to /dev/kmsg so we don't need this.
+  #if [ -n "$debug" ]; then
+  #  filters="$filters kern,daemon.*:/dev/console"
+  #fi
   
   for dest in $dests; do
   	filter=$(echo $dest | cut -d: -f1)
@@ -112,12 +113,13 @@ syslogd_config() {
 #  NAME
 #    syslogd_start
 #  SYNOPSIS
-#    function syslogd_start(chroot_path)
+#    function syslogd_start(chroot_path, no_klog)
 #  DESCRIPTION
 #    Starts the syslogd as required
 #  SOURCE
 function syslogd_start {
 	local chrootpath=$1
+	local no_klog=$2
 	local start_service_f="start_service_chroot $chrootpath"
 	local syslog_sysconfig=$(repository_get_value "syslogsysconfig" "/etc/sysconfig/syslog")
 	
@@ -142,7 +144,7 @@ function syslogd_start {
     	$start_service_f syslogd $SYSLOGD_OPTIONS
     fi
     which klogd > /dev/null 2>/dev/null
-    if [ $? -eq 0 ]; then
+    if [ $? -eq 0 ] && [ "$no_klog" != "no_klog" ]; then
     	$start_service_f klogd $KLOGD_OPTIONS
     fi
 }
@@ -172,6 +174,7 @@ rsyslogd_config() {
 #  SOURCE
 function rsyslogd_start {
 	local chrootpath=$1
+	local no_klog=$2
 	local start_service_f="start_service_chroot $chrootpath"
 	local syslog_sysconfig=$(repository_get_value "syslogsysconfig" "/etc/sysconfig/rsyslog")
 	
@@ -189,6 +192,13 @@ function rsyslogd_start {
        SYSLOG_UMASK=077;
     fi
     umask $SYSLOG_UMASK
+   
+    if [ "$no_klog" = "no_klog" ]; then
+      syslogconf=$(default_syslogconf rsyslogd)
+      cp $syslogconf ${syslogconf}.bak 2>/dev/null
+      grep -v '^$ModLoad[[:space:]]*imklog.so' ${syslogconf}.bak 2>/dev/null > $syslogconf
+      rm ${syslogconf}.bak 2>/dev/null
+    fi
    
 	$start_service_f /sbin/rsyslogd $RSYSLOGD_OPTIONS
 }
@@ -305,7 +315,15 @@ function syslog_ng_start {
 
 ######################
 # $Log: syslog-lib.sh,v $
-# Revision 1.3  2010-06-29 18:59:13  marc
+# Revision 1.4  2010-09-01 15:18:58  marc
+#   - syslogd_config
+#     - no explicit debug filter
+#   - syslogd_start
+#     - add parameter no_klog
+#   - rsyslogd_start
+#     - add parameter no_klog
+#
+# Revision 1.3  2010/06/29 18:59:13  marc
 # default_syslogconf: right name of rsyslog.conf
 #
 # Revision 1.2  2010/06/25 12:28:04  marc
