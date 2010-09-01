@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.5 2010-02-16 10:06:01 marc Exp $
+# $Id: gfs-lib.sh,v 1.6 2010-09-01 09:48:00 marc Exp $
 #
 # @(#)$File$
 #
@@ -143,9 +143,59 @@ function gfs_services_stop {
 }
 #************ gfs_services_stop
 
+#****f* boot-scripts/etc/clusterfs-lib.sh/gfs_getdefaults
+#  NAME
+#    gfs_getdefaults
+#  SYNOPSIS
+#    gfs_getdefaults(parameter)
+#  DESCRIPTION
+#    returns defaults for the specified filesystem. Parameter must be given to return the apropriate default
+#  SOURCE
+function gfs_getdefaults() {
+	local param=$1
+	local distribution=$(repository_get_value distribution)
+	
+	case "$param" in
+		lock_method|lockmethod)
+		    echo "lock_dlm"
+		    ;;
+		mount_opts|mountopts)
+		    echo "noatime"
+		    ;;
+		root_source|rootsource)
+		    echo "scsi"
+		    ;;
+		rootfs|root_fs)
+			if [ -n "$distribution" ]; then
+	          if [ ${distribution:0:4} = "sles" ]; then
+	            echo "ocfs2"
+			  else
+			    echo "gfs"
+	          fi
+            else 
+		      echo "gfs"
+            fi
+		    ;;
+	    scsi_failover|scsifailover)
+	        echo "driver"
+	        ;;
+	    ip)
+	        echo "cluster"
+	        ;;
+	    *)
+	        return 0
+	        ;;
+	esac
+}
+#********** clusterfs_getdefaults
+
 ###############
 # $Log: gfs-lib.sh,v $
-# Revision 1.5  2010-02-16 10:06:01  marc
+# Revision 1.6  2010-09-01 09:48:00  marc
+# - gfs_getdefaults:
+#     - moved cluster_getdefaults here because for RHEL5 we need localflocks
+#
+# Revision 1.5  2010/02/16 10:06:01  marc
 # - added gfs_services_stop
 #
 # Revision 1.4  2010/02/05 12:26:52  marc
