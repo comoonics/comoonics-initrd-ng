@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.87 2010-08-26 12:17:18 marc Exp $
+# $Id: boot-lib.sh,v 1.88 2010-09-01 09:48:30 marc Exp $
 #
 # @(#)$File$
 #
@@ -358,6 +358,24 @@ function welcome() {
 }
 #****** welcome
 
+#****f* boot-lib.sh/initHaltProcess
+#  NAME
+#    initBootProcess
+#  SYNOPSIS
+#    function initBootProcess() {
+#  MODIFICATION HISTORY
+#  IDEAS
+#     function to integrate setup of halt environment before we start with it.
+#  SOURCE
+#
+function initHaltProcess() {
+   local distribution=$(repository_get_value distribution)
+   
+   typeset -f ${distribution}_PrepareHalt >/dev/null 2>&1 && ${distribution}_PrepareHalt
+   initEnv
+}
+#********* initHaltProcess
+
 #****f* boot-lib.sh/initBootProcess
 #  NAME
 #    initBootProcess
@@ -370,7 +388,6 @@ function welcome() {
 function initBootProcess() {
   initEnv
   date=`/bin/date`
-
 
   echo "***********************************"
   # Print a text banner.
@@ -606,12 +623,12 @@ function switchRoot() {
   #get init_cmd from /proc
   if [ -e "$newroot/$cominit" ]; then
   	init_cmd="$cominit $(cat /proc/cmdline)"
-  	echo_local_debug "found init in $cominit"
+  	echo_local_debug "found init in $init_cmd"
   else
   	init_cmd="/sbin/init $(cat /proc/cmdline)"
   fi
   # clean up
-  echo "Cleaning up..."
+  echo_local "Cleaning up..."
   #umount /dev
   [ -e /proc/bus/usb ] && umount /proc/bus/usb
   umount /proc
@@ -641,6 +658,7 @@ function switchRoot() {
   cd ${newroot}
   # TODO
   /bin/mount --move . /
+  echo_local_debug "Calling init as $init_cmd"
   exec chroot . $init_cmd </dev/console >/dev/console 2>&1
 }
 #************ switchRoot
@@ -953,7 +971,11 @@ function check_mtab {
 #************** check_mtab
 
 # $Log: boot-lib.sh,v $
-# Revision 1.87  2010-08-26 12:17:18  marc
+# Revision 1.88  2010-09-01 09:48:30  marc
+#   - initHaltProcess
+#     - new function to integrate setup of halt environment before we start with it.
+#
+# Revision 1.87  2010/08/26 12:17:18  marc
 # init => telinit
 #
 # Revision 1.86  2010/07/08 08:00:50  marc
