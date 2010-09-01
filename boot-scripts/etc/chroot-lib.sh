@@ -1,5 +1,5 @@
 #
-# $Id: chroot-lib.sh,v 1.10 2010-07-08 08:00:50 marc Exp $
+# $Id: chroot-lib.sh,v 1.11 2010-09-01 15:18:13 marc Exp $
 #
 # @(#)$File$
 #
@@ -65,8 +65,8 @@ function extract_rpm() {
 function extract_installed_rpm() {
   local rpm=$1
   local dest=$2
-  local filter1=$3
-  local filter2=$4
+  local filter1="$3"
+  local filter2="$4"
   local qopt=""
   rpm -q $rpm >/dev/null 2>&1
   if [ $? -ne 0 ]; then
@@ -93,7 +93,7 @@ function extract_installed_rpm() {
     if [ -d $file ]; then
       mkdir ${dest}$file 2>/dev/null
     else
-      cp -a $file ${dest}$(dirname $file)
+      [ -e ${dest}/$file ] || cp -af $file ${dest}$(dirname $file)
     fi
   done
   popd >/dev/null
@@ -114,8 +114,8 @@ function extract_installed_rpm() {
 #
 function get_filelist_from_installed_rpm() {
   local rpm=$1
-  local filter1=$2
-  local filter2=$3
+  local filter1="$2"
+  local filter2="$3"
   local qopt=""
   rpm -q $rpm >/dev/null 2>&1
   if [ $? -ne 0 ]; then
@@ -168,17 +168,17 @@ function extract_all_rpms() {
     return 1
   fi
 
-  resolve_file $rpm_listfile $verbose | while read line; do
+  resolve_file $rpm_listfile $verbose | while read -r line; do
   	rpmdef=( $line )
-  	rpm=${rpmdef[0]}
-	filter1=${rpmdef[1]}
-	filter2=${rpmdef[2]}
+  	rpm="${rpmdef[0]}"
+	filter1="${rpmdef[1]}"
+	filter2="${rpmdef[2]}"
     if [ ${rpm:0:1} != '#' ]; then
       if [ -f $rpm ]; then
         extract_rpm $rpm $root
       else
       	[ -n "$verbose" ] && echo "$rpm with filter $filter1 and ! $filter2"
-        extract_installed_rpm $rpm $root $filter1 $filter2
+        extract_installed_rpm $rpm $root "$filter1" "$filter2"
       fi
     fi
   done
@@ -209,14 +209,14 @@ function get_filelist_from_rpms() {
 
   globalfilters=$(get_global_filters $globalfilters_file $verbose) 
 
-  resolve_file $rpm_listfile $verbose | while read line; do
+  resolve_file $rpm_listfile $verbose | while read -r line; do
   	rpmdef=( $line )
-  	rpm=${rpmdef[0]}
-	filter1=${rpmdef[1]}
-	filter2=${rpmdef[2]}
+  	rpm="${rpmdef[0]}"
+	filter1="${rpmdef[1]}"
+	filter2="${rpmdef[2]}"
     if [ ${rpm:0:1} != '#' ]; then
       [ -n "$verbose" ] && echo "$rpm with filter $filter1 and ! $filter2" >&2
-      get_filelist_from_installed_rpm $rpm $filter1 $filter2
+      get_filelist_from_installed_rpm $rpm "$filter1" "$filter2"
     fi
    done
 }
@@ -292,7 +292,7 @@ function apply_global_filters {
 function resolve_file {
   local filename=$1
   local verbose=$2
-  while read line; do
+  while read -r line; do
     if [ -n "$line" ] && [ ${line:0:1} != '#' ]; then
       if [ ! -e "$line" ] && [ "${line:0:8}" = '@include' ]; then
         declare -a aline
@@ -599,7 +599,22 @@ function build_chroot () {
 #****** build_chroot
 #####################
 # $Log: chroot-lib.sh,v $
-# Revision 1.10  2010-07-08 08:00:50  marc
+# Revision 1.11  2010-09-01 15:18:13  marc
+#   - extract_installed_rpm
+#     - pass filters raw unquoted
+#     - copy file only if it does not already exist
+#   - get_filelist_from_installed_rpm
+#     - pass filters raw unquoted
+#   - extract_all_rpms
+#     - read from file unquoted as raw
+#     - pass filters raw unquoted
+#   - get_filelist_from_rpms
+#     - read from file unquoted as raw
+#     - pass filters raw unquoted
+#   - resolve_file
+#     - read from file unquoted as raw
+#
+# Revision 1.10  2010/07/08 08:00:50  marc
 # moved build_chroot to chroot-lib.sh
 #
 # Revision 1.9  2009/04/14 14:52:13  marc
