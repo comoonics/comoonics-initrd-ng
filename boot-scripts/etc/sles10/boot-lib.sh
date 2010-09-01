@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.5 2009-10-07 12:06:13 marc Exp $
+# $Id: boot-lib.sh,v 1.6 2010-09-01 09:48:16 marc Exp $
 #
 # @(#)$File$
 #
@@ -48,6 +48,24 @@ function create_chroot () {
   is_mounted $chroot_path/sys || exec_local mount -t sysfs sysfs $chroot_path/sys
 }
 #************ create_chroot
+
+#****f* boot-lib.sh/sles10_PrepareHalt
+#  NAME
+#    sles10_PrepareHalt
+#  SYNOPSIS
+#    function sles10_PrepareHalt
+#  MODIFICATION HISTORY
+#  USAGE
+#    sles11_PrepareHalt
+#  IDEAS
+#    sets distribution dependent preparations for the exitrd environment
+#  SOURCE
+#
+sles10_PrepareHalt() {
+	# there is no logging on the console when calling the exitrd. So we don't log on dmesg.
+	unset KMSG
+}
+#****** boot-lib.sh/sles10_PrepareHalt
 
 #****f* boot-lib.sh/sles10_detectHalt
 #  NAME
