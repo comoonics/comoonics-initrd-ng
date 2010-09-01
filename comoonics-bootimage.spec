@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.132 2010-09-01 09:50:32 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.133 2010-09-01 15:24:19 marc Exp $
 #
 ##
 ##
@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 62
+Release: 63
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -248,7 +248,7 @@ Sysctl support in the OSR cluster
 
 %package extras-syslog
 Version: 0.1
-Release: 7
+Release: 8
 Requires: comoonics-bootimage >= 1.4-27
 Summary: Syslog implementation for osr
 Group:   System Environment/Base
@@ -402,7 +402,7 @@ Syslog listfiles for syslog classic
 
 %package listfiles-rsyslogd
 Version: 0.1
-Release: 3
+Release: 4
 Requires: comoonics-bootimage-extras-syslog
 Summary: Syslog listfiles for the rsyslog daemon
 Group:   System Environment/Base
@@ -933,6 +933,27 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Wed Sep 01 2010 Marc Grimme <grimme@atix.de> 1.4-63
+- boot-scripts/boot-lib/etc/chroot-lib.sh
+  - extract_installed_rpm
+    - pass filters raw unquoted
+    - copy file only if it does not already exist
+  - get_filelist_from_installed_rpm
+    - pass filters raw unquoted
+  - extract_all_rpms
+    - read from file unquoted as raw
+    - pass filters raw unquoted
+  - get_filelist_from_rpms
+    - read from file unquoted as raw
+    - pass filters raw unquoted
+  - resolve_file
+    - read from file unquoted as raw
+- boot-scripts/boot-lib/etc/clusterfs-lib.sh
+  - clusterfs_auto_syslog
+    - changed the default syslogfilter to be clean
+- boot-scripts/boot-lib/linuxrc.generic.sh
+  - added no_klog option
+  - spread copying of logs to two steps
 * Wed Sep 01 2010 Marc Grimme <grimme@atix.de> 1.4-62
 - boot-scripts/etc/rhel4/gfs-lib.sh:
   -gfs_getdefaults:
@@ -1431,7 +1452,7 @@ rm -rf %{buildroot}
 - bugfixes upstream
 * Tue Jun 10 2008 Marc Grimme <grimme@atix.de> - 0.1-2
 - added nfs-lib.sh file
-
+syslog
 %changelog extras-ocfs2
 * Thu Aug 26 2010 Marc Grimme <grimme@atix.de> 0.1-10
 - boot-scripts/etc/ocfs2-lib.sh ocfs2_init be sure to 
@@ -1502,6 +1523,14 @@ rm -rf %{buildroot}
 - initial revision
 
 %changelog extras-syslog
+* Wed 01 Sep 2010 Marc Grimme <grimme@atix.de> 0.1-8
+- boot-scripts/boot-lib/etc/syslog-lib.sh
+  - syslogd_config
+    - no explicit debug filter
+  - syslogd_start
+    - add parameter no_klog
+  - rsyslogd_start
+    - add parameter no_klog
 * Tue Jun 29 2010 Marc Grimme <grimme@atix.de> 0.1-7
 - etc/syslog-lib.sh default_syslogconf: right name of rsyslog.conf
 - etc/templates/rsyslogd.conf: moved rsyslog.conf to rsyslogd.conf
@@ -1663,6 +1692,9 @@ rm -rf %{buildroot}
 - initial revision
 
 %changelog listfiles-rsyslogd
+* Wed Sep 01 2010 Marc Grimme <grimme@atix.de> 0.1-4
+- system-cfs-files/rpms.initrd.d/rsyslog.list
+  - only add binaries and libs nothing else
 * Tue Jun 29 2010 Marc Grimme <grimme@atix.de> 0.1-3
 - added a newline in the end to listfile
 - right rpm rsyslog.
@@ -1752,7 +1784,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.132  2010-09-01 09:50:32  marc
+# Revision 1.133  2010-09-01 15:24:19  marc
+# new version
+#
+# Revision 1.132  2010/09/01 09:50:32  marc
 # - new version
 #
 # Revision 1.131  2010/08/26 12:26:48  marc
