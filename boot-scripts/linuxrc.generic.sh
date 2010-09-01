@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.101 2010-08-19 09:24:01 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.102 2010-09-01 15:19:12 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.101 2010-08-19 09:24:01 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.102 2010-09-01 15:19:12 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -88,7 +88,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.101 $ $Date: 2010-08-19 09:24:01 $'
+echo_local 'Internal Version $Revision: 1.102 $ $Date: 2010-09-01 15:19:12 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -375,7 +375,7 @@ fi
 # but only if /dev is not the same inode as $chroot_path /dev
 if [ $is_syslog -eq 0 ] && ! is_same_inode /dev $(repository_get_value chroot_path)/dev; then
   cc_auto_syslogconfig $(repository_get_value cluster_conf) $(repository_get_value nodename) $(repository_get_value chroot_path) "no" $(repository_get_value syslog_logfile)
-  cc_syslog_start $(repository_get_value chroot_path)
+  cc_syslog_start $(repository_get_value chroot_path) no_klog
   step "Syslog services started in chroot $(repository_get_value chroot_path)" "syslogchroot"
 fi
 
@@ -452,26 +452,6 @@ step "CDSL tree mounted" "cdsl"
 #TODO clean up method
 #copy_relevant_files $cdsl_local_dir $newroot $netdevs
 #if [ -n "$debug" ]; then set +x; fi
-
-# do something only on rw mounted filesystems
-if [ -z $(getPosFromList "ro" "$(repository_get_value mountopts)" ",") ]; then
-  for logfile_name in bootlog syslog_logfile; do
-    logfile=$(repository_get_value $logfile_name)
-    if [ -n "$logfile" ] && [ -e "$logfile" ]; then
-      echo_local -n "Copying logfile to \"$logfile\"..."
-      exec_local cp -f ${logfile} $(repository_get_value newroot)/${logfile} || cp -f ${logfile} $(repository_get_value newroot)/$(basename $logfile)
-      if [ -f $(repository_get_value newroot)/$logfile ]; then
-        repository_store_value logfile_name $(repository_get_value newroot)/$logfile
-      else
-        repository_store_value logfile_name $(repository_get_value newroot)/$(basename $logfile)
-      fi
-    fi
-  done
-  return_code_warning
-fi
-#exec 3>> $bootlog
-#exec 4>> $bootlog
-step "Logfiles copied" "logfiles"
 
 # FIXME: Remove line
 #bootlog="/var/log/comoonics-boot.log"
@@ -553,6 +533,19 @@ echo_local -n "Mounting the device file system"
 exec_local move_dev $(repository_get_value newroot)
 #exec_local mount --bind /dev $newroot/dev
 return_code
+
+# do something only on rw mounted filesystems
+if [ -z $(getPosInList "ro" "$(repository_get_value mountopts)" ",") ]; then
+  for logfile_name in bootlog syslog_logfile; do
+    logfile=$(repository_get_value $logfile_name)
+    if [ -n "$logfile" ] && [ -e "$logfile" ]; then
+      echo_local -n "Copying logfile to \"$logfile\"..."
+      exec_local cp -f ${logfile} $(repository_get_value newroot)/${logfile} || cp -f ${logfile} $(repository_get_value newroot)/$(basename $logfile)
+      return_code
+    fi
+  done
+fi
+step "Logfiles copied" "logfiles"
 	 
 echo_local -n "Cleaning up initrd ..."
 exec_local clean_initrd
@@ -591,6 +584,20 @@ if [ $is_syslog -eq 0 ]; then
   step "Stopped syslogd" "syslogstop"
 fi
 
+chrootpath=$(repository_get_value newroot)/$(repository_get_value chroot_path)
+if [ -z $(getPosInList "ro" "$(repository_get_value mountopts)" ",") ]; then
+  for logfile_name in bootlog syslog_logfile; do
+    if [ -n "$chrootpath/$logfile" ] && [ -e "$chrootpath/$logfile" ]; then
+      echo_local -n "Copying logfile to \"$chrootpath/$logfile\"..."
+      exec_local cp -f $chrootpath/${logfile} $(repository_get_value newroot)/${logfile}-chroot || cp -f $chrootpath/${logfile} $(repository_get_value newroot)/$(basename $logfile)-chroot
+      return_code
+    fi
+  done
+fi
+unset chrootpath
+step "Logfiles chroot copied" "logfiles"
+
+
 step "Initialization completed." "initcomplete"
 
 newroot=$(repository_get_value newroot)
@@ -601,7 +608,11 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.101  2010-08-19 09:24:01  marc
+# Revision 1.102  2010-09-01 15:19:12  marc
+#   - added no_klog option
+#   - spread copying of logs to two steps
+#
+# Revision 1.101  2010/08/19 09:24:01  marc
 # - fixed typo
 #
 # Revision 1.100  2010/08/19 07:41:11  marc
