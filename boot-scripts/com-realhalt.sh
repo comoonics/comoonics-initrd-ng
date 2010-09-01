@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: com-realhalt.sh,v 1.16 2010-08-26 12:18:36 marc Exp $
+# $Id: com-realhalt.sh,v 1.17 2010-09-01 09:49:01 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/com-halt.sh
 #  NAME
 #    com-halt.sh
-#    $Id: com-realhalt.sh,v 1.16 2010-08-26 12:18:36 marc Exp $
+#    $Id: com-realhalt.sh,v 1.17 2010-09-01 09:49:01 marc Exp $
 #  DESCRIPTION
 #    script called from <chrootpath>/com-halt.sh
 #  USAGE
@@ -62,7 +62,7 @@ sourceLibs ${predir}
 lvm_check $root
 lvm_sup=$?
 
-initEnv
+initHaltProcess
 
 version='$Revision $'
 
@@ -115,7 +115,7 @@ echo_local "Starting ATIX exitrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.16 $ $Date: 2010-08-26 12:18:36 $'
+echo_local 'Internal Version $Revision: 1.17 $ $Date: 2010-09-01 09:49:01 $'
 echo_local_debug "Calling cmd "$(repository_get_value haltcmd)
 #echo_local "Builddate: "$(date)
 
@@ -172,7 +172,7 @@ if [ -n "$filesystems" ]; then
   echo_local "Umounting filesystems in oldroot ("$filesystems")"
   for _filesystem in $filesystems; do
     if is_mounted $_filesystem; then 
-      echo_local "Umounting $_filesystem"
+      echo_local -n "Umounting $_filesystem"
       exec_local umount_filesystem $_filesystem
       return_code $rc
       [ $return_c -ne 1 ] && rc=$return_c
@@ -212,7 +212,10 @@ $cmd
 
 #####################
 # $Log: com-realhalt.sh,v $
-# Revision 1.16  2010-08-26 12:18:36  marc
+# Revision 1.17  2010-09-01 09:49:01  marc
+# - added initHaltProcess instead of initEnv
+#
+# Revision 1.16  2010/08/26 12:18:36  marc
 # also copy /dev/console
 #
 # Revision 1.15  2010/08/12 07:37:56  marc
