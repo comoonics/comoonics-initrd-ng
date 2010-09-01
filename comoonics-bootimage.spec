@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.131 2010-08-26 12:26:48 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.132 2010-09-01 09:50:32 marc Exp $
 #
 ##
 ##
@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 61
+Release: 62
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -933,6 +933,21 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Wed Sep 01 2010 Marc Grimme <grimme@atix.de> 1.4-62
+- boot-scripts/etc/rhel4/gfs-lib.sh:
+  -gfs_getdefaults:
+    - moved cluster_getdefaults here because for RHEL5 we need localflocks
+- boot-scripts/etc/sles10|11/boot-lib.sh
+  - sles10|11_PrepareHalt:
+    - unset KMSG to get messages on console
+- boot-scripts/etc/boot-lib.sh
+  - initHaltProcess
+    - new function to integrate setup of halt environment before we start with it.
+- boot-scripts/etc/gfs-lib.sh
+  - gfs_getdefaults
+    - added localflocks to standard gfs mountoptions
+- boot-scripts/com-realhalt.sh
+  - added initHaltProcess instead of initEnv
 * Thu Aug 26 2010 Marc Grimme <grimme@atix.de> 1.4-61
 - boot-scripts/com-halt.sh
   - be sure that /proc and /sys are mounted
@@ -1737,7 +1752,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.131  2010-08-26 12:26:48  marc
+# Revision 1.132  2010-09-01 09:50:32  marc
+# - new version
+#
+# Revision 1.131  2010/08/26 12:26:48  marc
 # new version
 #
 # Revision 1.130  2010/08/19 09:24:34  marc
