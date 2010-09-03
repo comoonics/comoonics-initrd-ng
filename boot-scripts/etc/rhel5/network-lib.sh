@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.4.4.1 2010-01-05 13:59:05 marc Exp $
+# $Id: network-lib.sh,v 1.4.4.2 2010-09-03 14:08:37 marc Exp $
 #
 # @(#)$File$
 #
@@ -53,6 +53,13 @@ function rhel5_ip2Config() {
 
   # reformating MAC from - to :
   MAC=${MAC//-/:}
+
+  # set back /etc/sysconfig/network to defaults
+  cat > ${__prefix}/etc/sysconfig/network <<EOF
+NETWORKING=yes
+NETWORKING_IPV6=no
+HOSTNAME=localhost.localdomain
+EOF
 
   if [ -z "$type" ]; then type="Ethernet"; fi
   if [ -z "$ipHostname" ]; then ipHostname="localhost.localdomain"; fi
@@ -108,7 +115,10 @@ function rhel5_ip2Config() {
 
 #################
 # $Log: network-lib.sh,v $
-# Revision 1.4.4.1  2010-01-05 13:59:05  marc
+# Revision 1.4.4.2  2010-09-03 14:08:37  marc
+# create default /etc/sysconfig/network
+#
+# Revision 1.4.4.1  2010/01/05 13:59:05  marc
 # Implemented Feature Bug#367. Attributes for NICs.
 #
 # Revision 1.4  2008/10/14 10:57:07  marc
