@@ -1,5 +1,5 @@
 #
-# $Id: hardware-lib.sh,v 1.34.4.1 2009-08-11 09:42:50 marc Exp $
+# $Id: hardware-lib.sh,v 1.34.4.2 2010-09-03 13:45:03 marc Exp $
 #
 # @(#)$File$
 #
@@ -60,7 +60,12 @@ function hardware_start_services() {
 #
 function udev_start() {
   local distribution=$(repository_get_value distribution)
-  ${distribution}_udev_start
+  local scsifailover=$1
+  if [ -n "$scsifailover" ] && [ "$scsifailover" = "rdac" ]; then
+    true
+  else
+    ${distribution}_udev_start
+  fi
 }
 #************udev_start
 
@@ -103,7 +108,7 @@ function dev_start() {
 #  SOURCE
 #
 function scsi_get_drivers {
-	echo "sd_mod sg libata scsi_transport_fc sata_svw sata_mv scsi_mod"
+	echo "sd_mod sg libata scsi_transport_fc sata_svw sata_mv scsi_mod scsi_dh scsi_dh_rdac"
 }
 #************ scsi_get_drivers
 
@@ -133,6 +138,7 @@ function scsi_start() {
     return_code
 
     if [ -n "$scsifailover" ] && [ "$scsifailover" = "rdac" ]; then
+      rmmod scsi_transport_fc &>/dev/null
       mkdir /tmp &>/dev/null
       echo_local "RDAC Detected ($scsifailover)"
       echo_local -n "Loading mppUpper module"
@@ -157,9 +163,11 @@ function scsi_start() {
     echo_local "Loading mppVhba module"
     exec_local modprobe mppVhba
     return_code
+    modprobe scsi_transport_fc &>/dev/null
     echo_local -n "Starting mpp hotadd script"
     exec_local /usr/sbin/hot_add
     return_code
+    udev_start
   fi
 
   if [ $_xen -ne 0 ]; then
@@ -231,7 +239,7 @@ function dm_mp_start() {
 #  SOURCE
 #
 function usb_get_drivers {
-	echo "ehci_hcd ohci_hcd uhci_hcd hidp"
+	echo "ehci_hcd ohci_hcd uhci_hcd hidp hpilo"
 }
 #************ usb_get_drivers
 
@@ -267,21 +275,12 @@ function usbLoad() {
 #  SOURCE
 #
 function dm_start {
-   # Test because fencing is not working properly
-   #mount -o mode=0755 -t tmpfs none /dev
-   #mknod /dev/console c 5 1
-   #mknod /dev/null c 1 3
-   #mknod /dev/zero c 1 5
-   #mkdir /dev/pts
-   #mkdir /dev/shm
-
+  local scsifailover=$1
    echo_local -n "Loading device mapper modules"
    for module in $(dm_get_drivers); do
-      exec_local modprobe $module >/dev/null 2>&1
+     exec_local modprobe $module >/dev/null 2>&1
    done
    return_code $?
-
-   #/sbin/udevstart
 }
 #************ dm_start
 
@@ -295,7 +294,7 @@ function dm_start {
 #  SOURCE
 #
 function dm_get_drivers {
-	echo "dm_round_robin dm_multipath dm_snapshot dm_mirror dm_mod scsi_dh scsi_dh_rdac"
+	echo "dm_round_robin dm_multipath dm_snapshot dm_mirror dm_mod"
 }
 #************ dm_get_drivers
 
@@ -657,7 +656,10 @@ function sysctl_load() {
 
 #############
 # $Log: hardware-lib.sh,v $
-# Revision 1.34.4.1  2009-08-11 09:42:50  marc
+# Revision 1.34.4.2  2010-09-03 13:45:03  marc
+# - scsi_start
+#
+# Revision 1.34.4.1  2009/08/11 09:42:50  marc
 # Fixed bug with usb modules
 #
 # Revision 1.34  2009/04/22 11:37:33  marc
