@@ -2,7 +2,7 @@
 #****h* comoonics-bootimage/bootsr
 #  NAME
 #    bootsr
-#    $Id: bootsr,v 1.6 2009-02-25 14:24:59 marc Exp $
+#    $Id: bootsr,v 1.6.4.1 2010-09-03 13:46:36 marc Exp $
 #  DESCRIPTION
 #    Comoonics Shared Root post boot settings
 #  AUTHOR
@@ -36,6 +36,11 @@ CLEAN_START="${BOOTIMAGE_PATH}/manage_chroot.sh -a clean"
 BUILD_FILE="/etc/comoonics-build.txt"
 
 RETVAL=0
+
+if [ -f /etc/sysconfig/comoonics-chroot ]; then
+	source /etc/sysconfig/comoonics-chroot
+fi
+
 . ${BOOTIMAGE_PATH}/boot-scripts/etc/std-lib.sh
 sourceLibs ${BOOTIMAGE_PATH}/boot-scripts
 sourceRootfsLibs ${BOOTIMAGE_PATH}/boot-scripts
@@ -86,8 +91,8 @@ function clean_start {
 #  SOURCE
 #
 function check_sharedroot {
-  root_fstype=$(mount | grep "/ " | awk 'BEGIN { exit_c=1; } { if ($5) { print $5; exit_c=0; } } END{ exit exit_c}')
-  if [ "$root_fstype" = "gfs" ]; then
+  local root_fstype=$1
+  if [ "$root_fstype" = "gfs" ] || [ "$root_fstype" = "ocfs2" ] || [ "$root_fstype" = "nfs" ] || [ "$root_fstype" = "glusterfs" ]; then
     return 1
   else
     return 0
@@ -235,7 +240,10 @@ exit $RETVAL
 #************ main
 ###############
 # $Log: bootsr,v $
-# Revision 1.6  2009-02-25 14:24:59  marc
+# Revision 1.6.4.1  2010-09-03 13:46:36  marc
+# add sourcing of /etc/sysconfig/comoonics-chroot
+#
+# Revision 1.6  2009/02/25 14:24:59  marc
 # backport of new features to rhel4
 #
 # Revision 1.5  2008/10/29 14:45:33  mark
