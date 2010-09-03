@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.78.4.2 2009-08-19 16:06:42 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.78.4.3 2010-09-03 13:45:48 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.78.4.2 2009-08-19 16:06:42 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.78.4.3 2010-09-03 13:45:48 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -82,7 +82,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.78.4.2 $ $Date: 2009-08-19 16:06:42 $'
+echo_local 'Internal Version $Revision: 1.78.4.3 $ $Date: 2010-09-03 13:45:48 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -309,9 +309,9 @@ if [ -n $bridges ]; then
 fi
 
 if clusterfs_blkstorage_needed $(repository_get_value rootfs); then
-  udev_start
-  dm_start
-  scsi_start $(repository_get_value scsi_failover)
+  udev_start $(repository_get_value scsifailover)
+  dm_start $(repository_get_value scsifailover)
+  scsi_start $(repository_get_value scsifailover)
 
   # start iscsi if apropriate
   typeset -f isISCSIRootsource >/dev/null 2>&1 && isISCSIRootsource $(repository_get_value rootsource)
@@ -537,7 +537,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.78.4.2  2009-08-19 16:06:42  marc
+# Revision 1.78.4.3  2010-09-03 13:45:48  marc
+# pass scsifailover to udev_start dm_start and scsi_start
+#
+# Revision 1.78.4.2  2009/08/19 16:06:42  marc
 # another fix for bug358
 #
 # Revision 1.78.4.1  2009/08/11 09:43:40  marc
