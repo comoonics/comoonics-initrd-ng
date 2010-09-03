@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.100.4.4 2010-01-05 14:44:52 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.100.4.5 2010-09-03 14:10:23 marc Exp $
 #
 ##
 ##
@@ -58,7 +58,7 @@ Requires: comoonics-cluster-py >= 0.1-2
 Requires: comoonics-bootimage-initscripts >= 1.4 
 Requires: comoonics-bootimage-listfiles-all
 #Conflicts:
-Release: 22_3
+Release: 22_4
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -416,6 +416,9 @@ install -m640 %{FENCEACKSV_SOURCE}/CA.cert $RPM_BUILD_ROOT/%{FENCEACKSV_DIR}/
 install -d -m 755 $RPM_BUILD_ROOT/%{INITDIR}
 install -m755 %{FENCEACKSV_SOURCE}/fenceacksv.sh $RPM_BUILD_ROOT/%{INITDIR}/fenceacksv
 install -d -m 755 $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage-chroot
+install -d -m 755 $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage-chroot/files.initrd.d
+install -d -m 755 $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage-chroot/rpms.initrd.d
+
 install -m644 %{FENCEACKSV_SOURCE}/files-fenceacksv.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage-chroot/files.initrd.d/fenceacksv.list
 install -m644 %{FENCEACKSV_SOURCE}/rpms-fenceacksv.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage-chroot/rpms.initrd.d/fenceacksv.list
 # install -m640 %{FENCEACKSV_SOURCE}/fenceacksv-config.sh $RPM_BUILD_ROOT/%{SYSCONFIGDIR}/fenceacksv
@@ -758,7 +761,9 @@ rm -rf %{buildroot}
 
 
 %changelog
-* Tue Jan 05 2009 Marc Grimme <grimme@atix.de> 1.4-22_3
+* Fri Sep 03 2010 Marc Grimme <grimme@atix.de> 1.4-22_4
+- Implemented default /etc/sysconfig/network and scsifailover for rdac changes.
+* Tue Jan 05 2010 Marc Grimme <grimme@atix.de> 1.4-22_3
 - Implemented Feature Bug#367, attributes for NICs 
 * Wed Aug 19 2009 Marc Grimme <grimme@atix.de> 1.4-22_2
 - Fixed second occurance of cc_auto_syslog to not write to localdisk.
@@ -1124,7 +1129,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.100.4.4  2010-01-05 14:44:52  marc
+# Revision 1.100.4.5  2010-09-03 14:10:23  marc
+# new version
+#
+# Revision 1.100.4.4  2010/01/05 14:44:52  marc
 # Implemented Feature Bug#367. Attributes for NICs.
 #
 # Revision 1.100.4.3  2009/08/19 16:06:42  marc
