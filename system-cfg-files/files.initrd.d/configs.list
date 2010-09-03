@@ -1,5 +1,4 @@
 /etc/sysconfig/network
-/etc/sysconfig/clock
 /etc/filesystems
 /etc/host.conf
 /etc/hosts.allow
