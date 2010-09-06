@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.134 2010-09-01 15:33:34 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.135 2010-09-06 12:59:19 marc Exp $
 #
 ##
 ##
@@ -933,6 +933,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Wed Sep 06 2010 Marc Grimme <grimme@atix.de> 1.4-64
+- boot-scripts/boot-lib/etc/rhel5/network-lib.sh:rhel5_ip2Config
+  - fixed bug with wrong hostname in /etc/sysconfig/network
 * Wed Sep 01 2010 Marc Grimme <grimme@atix.de> 1.4-63
 - boot-scripts/boot-lib/etc/chroot-lib.sh
   - extract_installed_rpm
@@ -1784,7 +1787,10 @@ syslog
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.134  2010-09-01 15:33:34  marc
+# Revision 1.135  2010-09-06 12:59:19  marc
+# - new version
+#
+# Revision 1.134  2010/09/01 15:33:34  marc
 # - new version
 #
 # Revision 1.133  2010/09/01 15:24:19  marc
