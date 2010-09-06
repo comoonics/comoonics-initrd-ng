@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.135 2010-09-06 12:59:19 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.136 2010-09-06 13:45:16 marc Exp $
 #
 ##
 ##
@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 63
+Release: 64
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -1787,7 +1787,10 @@ syslog
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.135  2010-09-06 12:59:19  marc
+# Revision 1.136  2010-09-06 13:45:16  marc
+# new version
+#
+# Revision 1.135  2010/09/06 12:59:19  marc
 # - new version
 #
 # Revision 1.134  2010/09/01 15:33:34  marc
