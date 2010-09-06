@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.6 2010-08-06 13:32:48 marc Exp $
+# $Id: network-lib.sh,v 1.7 2010-09-06 12:57:47 marc Exp $
 #
 # @(#)$File$
 #
@@ -55,6 +55,13 @@ function rhel5_ip2Config() {
   # reformating MAC from - to :
   MAC=${MAC//-/:}
 
+  # set back /etc/sysconfig/network to defaults
+  cat > ${__prefix}/etc/sysconfig/network <<EOF
+NETWORKING=yes
+NETWORKING_IPV6=no
+HOSTNAME=localhost.localdomain
+EOF
+
   if [ -z "$type" ]; then type="Ethernet"; fi
   if [ -z "$ipHostname" ]; then ipHostname="localhost.localdomain"; fi
   if [ -z "$ipDevice" ]; then ipDevice="eth0"; fi
@@ -109,7 +116,11 @@ function rhel5_ip2Config() {
 
 #################
 # $Log: network-lib.sh,v $
-# Revision 1.6  2010-08-06 13:32:48  marc
+# Revision 1.7  2010-09-06 12:57:47  marc
+# - rhel5_ip2Config:
+#   - fixed bug with wrong hostname in /etc/sysconfig/network
+#
+# Revision 1.6  2010/08/06 13:32:48  marc
 # - fixed bug when detecting network interface properties consisting of "
 #
 # Revision 1.5  2010/01/04 12:57:31  marc
