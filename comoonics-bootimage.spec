@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.100.4.5 2010-09-03 14:10:23 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.100.4.6 2010-10-22 09:03:03 marc Exp $
 #
 ##
 ##
@@ -58,7 +58,7 @@ Requires: comoonics-cluster-py >= 0.1-2
 Requires: comoonics-bootimage-initscripts >= 1.4 
 Requires: comoonics-bootimage-listfiles-all
 #Conflicts:
-Release: 22_4
+Release: 22_5
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -761,6 +761,8 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Fri Oct 22 2010 Marc Grimme <grimme@atix.de> 1.4-22_5
+- Fixed bug with lvm the requires /var/run/lvm as directory.
 * Fri Sep 03 2010 Marc Grimme <grimme@atix.de> 1.4-22_4
 - Implemented default /etc/sysconfig/network and scsifailover for rdac changes.
 * Tue Jan 05 2010 Marc Grimme <grimme@atix.de> 1.4-22_3
@@ -1129,7 +1131,10 @@ rm -rf %{buildroot}
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.100.4.5  2010-09-03 14:10:23  marc
+# Revision 1.100.4.6  2010-10-22 09:03:03  marc
+# new version 1.4-22_6
+#
+# Revision 1.100.4.5  2010/09/03 14:10:23  marc
 # new version
 #
 # Revision 1.100.4.4  2010/01/05 14:44:52  marc
