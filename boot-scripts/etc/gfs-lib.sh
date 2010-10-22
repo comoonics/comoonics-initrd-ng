@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.66.4.1 2010-01-05 13:59:05 marc Exp $
+# $Id: gfs-lib.sh,v 1.66.4.2 2010-10-22 09:02:18 marc Exp $
 #
 # @(#)$File$
 #
@@ -1080,6 +1080,7 @@ function gfs_restart_ccsd {
 function gfs_start_clvmd {
    local chroot_path=$1
 
+   [ -d "${chroot_path}/var/run/lvm" ] || mkdir -p ${chroot_path}/var/run/lvm 
    #echo_local -n "Starting clvmd ($chroot_path) "
    start_service_chroot $chroot_path /usr/sbin/clvmd
 #   return_code $?
@@ -1340,7 +1341,10 @@ function gfs_fsck {
 #********* gfs_fsck
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.66.4.1  2010-01-05 13:59:05  marc
+# Revision 1.66.4.2  2010-10-22 09:02:18  marc
+# fixed bug with not existand /var/run/lvm for the socket
+#
+# Revision 1.66.4.1  2010/01/05 13:59:05  marc
 # Implemented Feature Bug#367. Attributes for NICs.
 #
 # Revision 1.66  2009/04/20 20:18:56  marc
