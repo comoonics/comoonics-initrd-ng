@@ -1,0 +1,2 @@
+# Get all firmwares to be found under /lib/firmware
+@map /lib/firmware /lib/firmware
