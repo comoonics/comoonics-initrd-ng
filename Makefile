@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.65 2010-08-12 13:04:05 marc Exp $
+# $Id: Makefile,v 1.66 2010-12-07 13:30:47 marc Exp $
 #
 # @(#)$file$
 #
@@ -161,9 +161,11 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/sles10/hardware-lib.sh \
   boot-scripts/etc/sles10/network-lib.sh \
   boot-scripts/etc/sles10/nfs-lib.sh \
+  boot-scripts/etc/sles10/ext3-lib.sh \
   boot-scripts/etc/sles11/boot-lib.sh \
   boot-scripts/etc/sles11/hardware-lib.sh \
   boot-scripts/etc/sles11/network-lib.sh \
+  boot-scripts/etc/sles11/ext3-lib.sh \
   boot-scripts/etc/fedora/boot-lib.sh \
   boot-scripts/etc/fedora/gfs-lib.sh \
   boot-scripts/etc/fedora/hardware-lib.sh \
@@ -223,6 +225,7 @@ CFG_FILES=basefiles.list \
     files.initrd.d/grub.list \
     files.initrd.d/mdadm.list \
     files.initrd.d/comoonics.list \
+    files.initrd.d/firmware.list \
     files.initrd.d/vlan.list \
     files.initrd.d/ext2.list \
     files.initrd.d/xen.list \
@@ -244,6 +247,7 @@ CFG_FILES=basefiles.list \
     files.initrd.d/sles/base.list \
     files.initrd.d/sles/empty.list \
     files.initrd.d/sles/network.list \
+    files.initrd.d/sles/dm_multipath.list \
     files.initrd.d/fedora/base.list \
     files.initrd.d/fedora/configs.list \
     files.initrd.d/fedora/network.list \
@@ -288,6 +292,7 @@ CFG_FILES=basefiles.list \
     rpms.initrd.d/sles/empty.list \
     rpms.initrd.d/sles/dm_multipath.list \
     rpms.initrd.d/sles/network.list \
+    rpms.initrd.d/sles/vim.list \
     rpms.initrd.d/sles10/base.list \
     rpms.initrd.d/sles10/python.list \
     rpms.initrd.d/sles11/base.list \
@@ -589,7 +594,10 @@ channel: rpm channelcopy channelbuild
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.65  2010-08-12 13:04:05  marc
+# Revision 1.66  2010-12-07 13:30:47  marc
+# added new files
+#
+# Revision 1.65  2010/08/12 13:04:05  marc
 # added base.list.
 #
 # Revision 1.64  2010/08/11 09:46:58  marc
