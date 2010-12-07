@@ -6,7 +6,7 @@
 #  DESCRIPTION
 #*******
 #
-# $Id: create-gfs-initrd-generic.sh,v 1.32 2010-08-11 09:44:50 marc Exp $
+# $Id: create-gfs-initrd-generic.sh,v 1.33 2010-12-07 13:30:28 marc Exp $
 #
 # @(#)$File$
 #
@@ -122,7 +122,7 @@ function getoptions() {
     while getopts LUoRFVvhlpPm:fd:s:r:b:A:D:M: option ; do
 	case "$option" in
 	    v) # version
-		echo "$0 Version "'$Revision: 1.32 $'
+		echo "$0 Version "'$Revision: 1.33 $'
 		exit 0
 		;;
 	    h) # help
@@ -193,12 +193,12 @@ function getoptions() {
     shift $(($OPTIND - 1))
     initrdname=$1
     shift
-#    [ -z "${kernel[$i]}" ] && kernel[$i]="$(uname -r)"
     while [ -n "$1" ]; do
       kernel[$i]=$1
       shift
       i=$(( $i + 1 ))
     done
+#    [ -z "${kernel[$i]}" ] && kernel[$i]="$(uname -r)"
 }
 #************ getoptions
 
@@ -521,7 +521,10 @@ ls -lk $initrdname
 
 ##########################################
 # $Log: create-gfs-initrd-generic.sh,v $
-# Revision 1.32  2010-08-11 09:44:50  marc
+# Revision 1.33  2010-12-07 13:30:28  marc
+# moved a line
+#
+# Revision 1.32  2010/08/11 09:44:50  marc
 # honor errors caused by exec_orderered_skripts in pre and post execution
 #
 # Revision 1.31  2010/07/08 08:39:24  marc
