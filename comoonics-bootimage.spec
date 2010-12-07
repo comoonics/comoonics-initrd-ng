@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.136 2010-09-06 13:45:16 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.137 2010-12-07 13:31:13 marc Exp $
 #
 ##
 ##
@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 64
+Release: 66
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -170,7 +170,7 @@ Extra listfiles for device mapper multipath OSR configurations for fedora
 
 %package extras-dm-multipath-sles
 Version: 0.1
-Release: 2
+Release: 3
 Requires: comoonics-bootimage >= 1.4
 Requires: multipath-tools
 Summary: Listfiles for device mapper multipath OSR configurations for SLES
@@ -255,6 +255,16 @@ Group:   System Environment/Base
 
 %description extras-syslog
 Syslog implementation for osr. Supports syslog classic, syslog-ng, rsyslog (See listfiles-syslog)
+
+%package listfiles-vi-sles
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage >= 1.4
+Summary: Vim includes for comoonics-bootimage
+Group:   System Environment/Base
+
+%description listfiles-vi-sles
+Vi includes for comoonics-bootimage (takes vim)
 
 %package listfiles-all
 Version: 0.1
@@ -445,6 +455,17 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 %description listfiles-fencexvm
 Listfiles for the fence_xvm agent to be imported in the bootimage.
 
+%package listfiles-firmware
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage >= 1.4
+Summary: Files needed for firmware in the kernel
+Group:   System Environment/Base
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description listfiles-firmware
+Files needed for firmware in the kernel
+
 %package compat
 Version: 0.1
 Release: 3
@@ -588,17 +609,20 @@ fi
 echo "Creating mkinitrd link..."
 ln -sf %{APPDIR}/create-gfs-initrd-generic.sh %{APPDIR}/mkinitrd
 
-if cat /etc/redhat-release | grep -i "release 5" &> /dev/null; then
+if [ -f /etc/redhat-release ] && cat /etc/redhat-release | grep -i "release 5" &> /dev/null; then
 	services="cman gfs qdiskd"
-else
+elif [ -f /etc/redhat-release ]; then
 	services="cman gfs qdiskd"
 fi
 
-echo "Disabling services ($services)"
-for service in $services; do
-   chkconfig --list $service &>/dev/null && chkconfig --del $service &> /dev/null
-done
-/bin/true
+if [ -n "$services" ]; then
+  echo "Disabling services ($services)"
+  for service in $services; do
+     chkconfig --list $service &>/dev/null && chkconfig --del $service &> /dev/null
+  done
+  echo "You might want to reenable these services if need be (nfs/ext3 root usage)!"
+  /bin/true
+fi
 
 echo 'Information:
 Cluster services will be started in a chroot environment. Check out latest documentation
@@ -676,9 +700,11 @@ fi
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/sles10/boot-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/sles10/hardware-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/sles10/network-lib.sh
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/sles10/ext3-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/sles11/boot-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/sles11/hardware-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/sles11/network-lib.sh
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/sles11/ext3-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/fedora/boot-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/fedora/gfs-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/fedora/hardware-lib.sh
@@ -727,6 +753,7 @@ fi
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/dm_multipath.list
 
 %files extras-dm-multipath-sles
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/sles/dm_multipath.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/dm_multipath.list
 
 %files extras-dm-multipath-fedora
@@ -888,6 +915,12 @@ fi
 %files listfiles-fencexvm
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fencexvm.list
 
+%files listfiles-vi-sles
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/vim.list
+
+%files listfiles-firmware
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/firmware.list
+
 %files fenceacksv
 %attr(0755, root, root) %{FENCEACKSV_DIR}/fence_ack_server.py*
 #%attr(0755, root, root) %{FENCEACKSV_DIR}/fence_ack_server.pyc
@@ -933,6 +966,16 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Mon Dec 07 2010 Marc Grimme <grimme@atix.de> 1.4-66
+- comoonics-bootimage
+  - added function [sles10/sles11]_initrd_exit_postsettings (just for sles first) to set the environment variable ROOTFS_BLKDEV
+* Mon Dec 06 2010 Marc Grimme <grimme@atix.de> 1.4-65
+- comoonics-bootimage-listfiles-firmware:
+  - added /lib/firmware to default listfiles
+- comoonics-bootimage-listfiles-vi-sles
+  - added vim support to sles
+- comoonics-bootimage-listfiles-dm-multipath-sles
+  - added /etc/multipath.conf which is not included by default
 * Wed Sep 06 2010 Marc Grimme <grimme@atix.de> 1.4-64
 - boot-scripts/boot-lib/etc/rhel5/network-lib.sh:rhel5_ip2Config
   - fixed bug with wrong hostname in /etc/sysconfig/network
@@ -1787,7 +1830,10 @@ syslog
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.136  2010-09-06 13:45:16  marc
+# Revision 1.137  2010-12-07 13:31:13  marc
+# new versions
+#
+# Revision 1.136  2010/09/06 13:45:16  marc
 # new version
 #
 # Revision 1.135  2010/09/06 12:59:19  marc
