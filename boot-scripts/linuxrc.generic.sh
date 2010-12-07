@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.102 2010-09-01 15:19:12 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.103 2010-12-07 13:28:55 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.102 2010-09-01 15:19:12 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.103 2010-12-07 13:28:55 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -88,7 +88,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.102 $ $Date: 2010-09-01 15:19:12 $'
+echo_local 'Internal Version $Revision: 1.103 $ $Date: 2010-12-07 13:28:55 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -566,6 +566,10 @@ step "Scsi restarted in newroot" "scsirestart"
 exec_local clusterfs_services_restart_newroot $(repository_get_value newroot) "$(repository_get_value lockmethod)" "$(repository_get_value lvm_sup)" "$(repository_get_value chroot_path)" || breakp "$(errormsg err_cc_restart_service $(repository_get_value clutype))"
 step "Cluster services restarted in newroot" "clusterrestart"
 
+echo_local "Setting postsettings in initrd.."
+exec_local initrd_exit_postsettings
+step "Exit initrd postsettings done" "postsettings"
+
 if [ $is_syslog -eq 0 ]; then
   #TODO: remove lines as syslog can will stay in /comoonics
   if killall -0 klogd 2>/dev/null; then
@@ -608,7 +612,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.102  2010-09-01 15:19:12  marc
+# Revision 1.103  2010-12-07 13:28:55  marc
+# added Setting postsettings in initrd
+#
+# Revision 1.102  2010/09/01 15:19:12  marc
 #   - added no_klog option
 #   - spread copying of logs to two steps
 #
