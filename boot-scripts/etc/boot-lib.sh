@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.88 2010-09-01 09:48:30 marc Exp $
+# $Id: boot-lib.sh,v 1.89 2010-12-07 13:27:13 marc Exp $
 #
 # @(#)$File$
 #
@@ -628,12 +628,16 @@ function switchRoot() {
   	init_cmd="/sbin/init $(cat /proc/cmdline)"
   fi
   # clean up
+  if [ -f /etc/boot-environment ]; then
+    echo_local_debug "Sourcing environment"
+  	source /etc/boot-environment
+  fi
+
   echo_local "Cleaning up..."
   #umount /dev
   [ -e /proc/bus/usb ] && umount /proc/bus/usb
   umount /proc
   umount /sys
-
 
   #if type -t ${distribution}_switchRoot > /dev/null; then
   #	echo_local_debug "calling ${distribution}_switchRoot ${new_root}"
@@ -970,8 +974,28 @@ function check_mtab {
 } 
 #************** check_mtab
 
+#****f* bootsr/initrd_exit_postsettings
+#  NAME
+#    initrd_exit_postsettings
+#  SYNOPSIS
+#    function initrd_exit_postsettings
+#  IDEAS
+#    Calls the dependent postsettings functions
+function initrd_exit_postsettings {
+	local distribution=${1:-$(repository_get_value distribution)}
+
+	if typeset -f ${distribution}_initrd_exit_postsettings &>/dev/null; then
+		 ${distribution}_initrd_exit_postsettings $*
+	fi
+} 
+#************** initrd_exit_postsettings
+
+
 # $Log: boot-lib.sh,v $
-# Revision 1.88  2010-09-01 09:48:30  marc
+# Revision 1.89  2010-12-07 13:27:13  marc
+# fixed typo in getInList
+#
+# Revision 1.88  2010/09/01 09:48:30  marc
 #   - initHaltProcess
 #     - new function to integrate setup of halt environment before we start with it.
 #

@@ -1,5 +1,5 @@
 #
-# $Id: std-lib.sh,v 1.24 2010-08-11 09:43:32 marc Exp $
+# $Id: std-lib.sh,v 1.25 2010-12-07 13:27:29 marc Exp $
 #
 # @(#)$File$
 #
@@ -950,7 +950,7 @@ function getPosInList() {
   local val=$1
   local str=$2
   local delim=$3
-  echo $str | awk -v FS="$delim" -v val="$val" '{ for (i=0; i<=NF; i++) if ($i == val) print i; }'
+  echo $str | awk -v FS="$delim" -v val="$val" '{ for (i=0; i<NF; i++) if ($i == val) print i; }'
 }
 #************ getPosInList
 
@@ -1145,7 +1145,10 @@ exec_ordered_skripts_in() {
 
 #################
 # $Log: std-lib.sh,v $
-# Revision 1.24  2010-08-11 09:43:32  marc
+# Revision 1.25  2010-12-07 13:27:29  marc
+# fixed typo in getInList
+#
+# Revision 1.24  2010/08/11 09:43:32  marc
 # exec_ordered_skripts: return with error if error occures during execution of skript
 #
 # Revision 1.23  2010/08/06 13:32:27  marc
