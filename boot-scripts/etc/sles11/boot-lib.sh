@@ -1,5 +1,5 @@
 #
-# $Id: boot-lib.sh,v 1.3 2010-09-01 09:48:16 marc Exp $
+# $Id: boot-lib.sh,v 1.4 2010-12-07 13:26:36 marc Exp $
 #
 # @(#)$File$
 #
@@ -153,4 +153,30 @@ sles11_detectHalt() {
     echo $command -d -f -n $opts
 }
 #************** sles11_detectHalt
+
+#****f* bootsr/sles11_initrd_exit_postsettings
+#  NAME
+#    sles11_initrd_exit_postsettings
+#  SYNOPSIS
+#    function sles11_initrd_exit_postsettings
+#  IDEAS
+#    Calls the dependent postsettings functions
+function sles11_initrd_exit_postsettings {
+	local distribution=${1:-$(repository_get_value distribution)}
+	local rootfsdevice=$(repository_get_value root)
+	local rootfstype=$(repository_get_value rootfs)
+	local rootfsck="0"
+	
+    echo "ROOTFS_BLKDEV=$rootfsdevice" >> /etc/boot-environment
+    echo "ROOTFS_FSTYPE=$rootfstype" >> /etc/boot-environment
+    echo "ROOTFS_FSCK=$rootfsck" >> /etc/boot-environment
+    echo "export ROOTFS_BLKDEV ROOTFS_FSTYPE ROOTFS_FSCK" >> /etc/boot-environment
+} 
+#************** sles11_initrd_exit_postsettings
+
+##################
+# $Log: boot-lib.sh,v $
+# Revision 1.4  2010-12-07 13:26:36  marc
+# added sles11_initrd_exit_postsettings
+#
 
