@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.137 2010-12-07 13:31:13 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.138 2011-01-11 15:01:29 marc Exp $
 #
 ##
 ##
@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 66
+Release: 67
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -248,7 +248,7 @@ Sysctl support in the OSR cluster
 
 %package extras-syslog
 Version: 0.1
-Release: 8
+Release: 9
 Requires: comoonics-bootimage >= 1.4-27
 Summary: Syslog implementation for osr
 Group:   System Environment/Base
@@ -966,6 +966,11 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Tue Jan 11 2011 Marc Grimme <grimme@atix.de> 1.4-67
+- comoonics-bootimage
+  - etc/clusterfs-lib.sh: 
+    - Fixed bug in calling of ${syslogtype}_config so that external destination would work
+    - typo in errorhandling for filesystems that could not be mounted
 * Mon Dec 07 2010 Marc Grimme <grimme@atix.de> 1.4-66
 - comoonics-bootimage
   - added function [sles10/sles11]_initrd_exit_postsettings (just for sles first) to set the environment variable ROOTFS_BLKDEV
@@ -1569,6 +1574,9 @@ syslog
 - initial revision
 
 %changelog extras-syslog
+* Tue Jan 11 2011 Marc Grimme <grimme@atix.de> 0.1-9
+- boot-scripts/boot-lib/etc/syslog-lib.sh
+  - fixed bug in syslogd_config/rsyslogd_config because with only syslogserver the resulting syslogconfiguration would be wrong.
 * Wed Sep 01 2010 Marc Grimme <grimme@atix.de> 0.1-8
 - boot-scripts/boot-lib/etc/syslog-lib.sh
   - syslogd_config
@@ -1830,7 +1838,10 @@ syslog
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.137  2010-12-07 13:31:13  marc
+# Revision 1.138  2011-01-11 15:01:29  marc
+# - new version for bootimage 1.4-67 and extras-syslog 0.1-9
+#
+# Revision 1.137  2010/12/07 13:31:13  marc
 # new versions
 #
 # Revision 1.136  2010/09/06 13:45:16  marc
