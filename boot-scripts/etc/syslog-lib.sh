@@ -1,5 +1,5 @@
 #
-# $Id: syslog-lib.sh,v 1.4 2010-09-01 15:18:58 marc Exp $
+# $Id: syslog-lib.sh,v 1.5 2011-01-11 14:58:37 marc Exp $
 #
 # @(#)$File$
 #
@@ -83,7 +83,6 @@ syslogd_config() {
   local dests=$@
   local dest
   local filter
-  local dest
   
   [ -f "$syslog_conf_template" ] && cat $syslog_conf_template
   
@@ -95,9 +94,9 @@ syslogd_config() {
   
   for dest in $dests; do
   	filter=$(echo $dest | cut -d: -f1)
-  	# default is all
-  	[ -z "$filter" ] && filter="*.*"
   	dest=$(echo $dest | cut -d: -f2)
+  	# default is all
+  	[ "$dest" = "$filter" ] && filter="*.*"
   	if [ -n "$filter" ] && [ -n "$dest" ]; then
       if [ "${dest:0:1}" = "/" ]; then
       	echo "$filter $dest"
@@ -315,7 +314,10 @@ function syslog_ng_start {
 
 ######################
 # $Log: syslog-lib.sh,v $
-# Revision 1.4  2010-09-01 15:18:58  marc
+# Revision 1.5  2011-01-11 14:58:37  marc
+# - fixed bug in syslogd_config/rsyslogd_config because with only syslogserver the resulting syslogconfiguration would be wrong.
+#
+# Revision 1.4  2010/09/01 15:18:58  marc
 #   - syslogd_config
 #     - no explicit debug filter
 #   - syslogd_start
