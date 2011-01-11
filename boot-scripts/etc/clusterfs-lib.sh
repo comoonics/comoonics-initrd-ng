@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.51 2010-09-01 15:18:23 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.52 2011-01-11 14:57:51 marc Exp $
 #
 # @(#)$File$
 #
@@ -932,9 +932,9 @@ function cc_auto_syslogconfig {
 	fi
 	repository_store_value syslogtemplate $syslog_template
     
-    echo_local -n "Creating syslog config for syslog destinations: $syslog_filter:$syslog_server"
+    echo_local -n "Creating syslog config for syslog destinations: $syslog_filter server: $syslog_server"
     mkdir -p $(dirname $(repository_get_value syslogconf $(default_syslogconf $syslog_type)))
-    exec_local $(echo ${syslog_type} | tr '-' '_')_config $syslog_template "$syslog_filter:$syslog_server" > $(repository_get_value syslogconf $(default_syslogconf $syslog_type))
+    exec_local $(echo ${syslog_type} | tr '-' '_')_config $syslog_template $syslog_filter $syslog_server > $(repository_get_value syslogconf $(default_syslogconf $syslog_type))
     return_code
 
     local services=$(repository_get_value servicesfile "/etc/services")
@@ -1187,7 +1187,7 @@ function clusterfs_mount {
   #TODO: skip device check at least for nfs services
   echo_local -n "Mounting $dev on $mountpoint.."
   if [ ! -e $dev ] && [ "${fstype:0:3}" != "nfs" ] && [ "${fstype}" != "bind" ]  && [ "${fstype}" != "rbind" ]; then
-     breakp "$(errormsg err_rootfs_device)"
+     breakp "$(errormsg err_fs_device $dev)"
   fi
   if [ ! -d $mountpoint ]; then
     mkdir -p $mountpoint
@@ -1489,7 +1489,11 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.51  2010-09-01 15:18:23  marc
+# Revision 1.52  2011-01-11 14:57:51  marc
+# - Fixed bug in calling of ${syslogtype}_config so that external destination would work
+# - typo in errorhandling for filesystems that could not be mounted
+#
+# Revision 1.51  2010/09/01 15:18:23  marc
 #   - clusterfs_auto_syslog
 #     - changed the default syslogfilter to be clean
 #
