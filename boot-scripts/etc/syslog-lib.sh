@@ -1,5 +1,5 @@
 #
-# $Id: syslog-lib.sh,v 1.5 2011-01-11 14:58:37 marc Exp $
+# $Id: syslog-lib.sh,v 1.6 2011-01-12 09:05:06 marc Exp $
 #
 # @(#)$File$
 #
@@ -31,11 +31,11 @@
 #  SOURCE
 detect_syslog() {
     local syslogtype=""
-    if [ -e /sbin/rsyslogd ]; then
+    if [ -e /sbin/rsyslogd ] || [ -e /usr/sbin/rsyslogd ]; then
 	   syslogtype="rsyslogd"
-    elif [ -e /sbin/syslogd ]; then
+    elif [ -e /sbin/syslogd ] || [ -e /usr/sbin/syslogd ]; then
        syslogtype="syslogd"
-    elif [ -e /sbin/syslog-ng ]; then
+    elif [ -e /sbin/syslog-ng ] || [ -e /usr/sbin/syslog-ng ]; then
        syslogtype="syslog-ng"
     else
        warn "Could not find any syslog binary although the syslogmodule is selected to be installed. Please check."
@@ -314,7 +314,10 @@ function syslog_ng_start {
 
 ######################
 # $Log: syslog-lib.sh,v $
-# Revision 1.5  2011-01-11 14:58:37  marc
+# Revision 1.6  2011-01-12 09:05:06  marc
+# - also autodetect syslog servers in /usr/sbin
+#
+# Revision 1.5  2011/01/11 14:58:37  marc
 # - fixed bug in syslogd_config/rsyslogd_config because with only syslogserver the resulting syslogconfiguration would be wrong.
 #
 # Revision 1.4  2010/09/01 15:18:58  marc
