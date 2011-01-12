@@ -5,7 +5,8 @@ if ! ( runoncerootfs || runonceclutype ); then
   resultfile=${path}/test/${distribution}/ifcfg-eth0
   if [ -e "$resultfile" ]; then
     echo -n "Testing function ip2Config for distribution: $distribution, clutype: $clutype, rootfs: $rootfs"
-    networkpath="/tmp"
+    networkpath=$(mktemp -d)
+    __prefix="$networkpath"
     ip2Config "$ipconfig"
     out=$(diff ${networkpath}/ifcfg-eth0 ${path}/test/${distribution}/ifcfg-eth0)
     detecterror $? "Generating ipcfg file for distribution $distribution failed. Diff: $out" || echo -n " Failed"

@@ -1,6 +1,7 @@
 if ! runonce; then
   tempfile=$(tempfile)
   path=$(dirname $0)
+  unset KMSG
 
   echo_local_debug "Tempfile $tempfile"
 
