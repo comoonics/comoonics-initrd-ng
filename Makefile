@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.66 2010-12-07 13:30:47 marc Exp $
+# $Id: Makefile,v 1.67 2011-01-12 09:34:51 marc Exp $
 #
 # @(#)$file$
 #
@@ -585,7 +585,7 @@ channelbuild:
 	done 
 
 .PHONY:rpm	
-rpm: rpmbuild rpmbuild-initscripts-el4 rpmbuild-initscripts-el5 rpmbuild-initscripts-sles10 rpmbuild-initscripts-sles11 rpmbuild-initscripts-fedora \
+rpm: test rpmbuild rpmbuild-initscripts-el4 rpmbuild-initscripts-el5 rpmbuild-initscripts-sles10 rpmbuild-initscripts-sles11 rpmbuild-initscripts-fedora \
 rpmsign
 
 .PHONY: channel
@@ -594,7 +594,10 @@ channel: rpm channelcopy channelbuild
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.66  2010-12-07 13:30:47  marc
+# Revision 1.67  2011-01-12 09:34:51  marc
+# added to execute tests
+#
+# Revision 1.66  2010/12/07 13:30:47  marc
 # added new files
 #
 # Revision 1.65  2010/08/12 13:04:05  marc
