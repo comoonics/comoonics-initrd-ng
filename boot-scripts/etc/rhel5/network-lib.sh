@@ -1,5 +1,5 @@
 #
-# $Id: network-lib.sh,v 1.7 2010-09-06 12:57:47 marc Exp $
+# $Id: network-lib.sh,v 1.8 2011-01-12 09:04:28 marc Exp $
 #
 # @(#)$File$
 #
@@ -56,6 +56,7 @@ function rhel5_ip2Config() {
   MAC=${MAC//-/:}
 
   # set back /etc/sysconfig/network to defaults
+  [ -d ${__prefix}/etc/sysconfig ] || mkdir -p ${__prefix}/etc/sysconfig  
   cat > ${__prefix}/etc/sysconfig/network <<EOF
 NETWORKING=yes
 NETWORKING_IPV6=no
@@ -116,7 +117,10 @@ EOF
 
 #################
 # $Log: network-lib.sh,v $
-# Revision 1.7  2010-09-06 12:57:47  marc
+# Revision 1.8  2011-01-12 09:04:28  marc
+# autocreate directory if it does not already exist.
+#
+# Revision 1.7  2010/09/06 12:57:47  marc
 # - rhel5_ip2Config:
 #   - fixed bug with wrong hostname in /etc/sysconfig/network
 #
