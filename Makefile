@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.67 2011-01-12 09:34:51 marc Exp $
+# $Id: Makefile,v 1.68 2011-01-18 09:23:41 marc Exp $
 #
 # @(#)$file$
 #
@@ -284,6 +284,7 @@ CFG_FILES=basefiles.list \
     rpms.initrd.d/rhel5/base.list \
 	rpms.initrd.d/rhel5/empty.list \
     rpms.initrd.d/rhel5/gfs1.list \
+    rpms.initrd.d/rhel5/python.list \
     rpms.initrd.d/rhel5/rhcs.list \
     rpms.initrd.d/sles/python.list \
     rpms.initrd.d/sles/base.list \
@@ -594,7 +595,10 @@ channel: rpm channelcopy channelbuild
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.67  2011-01-12 09:34:51  marc
+# Revision 1.68  2011-01-18 09:23:41  marc
+# new versions for comoonics-bootimage-listfiles-rhel5
+#
+# Revision 1.67  2011/01/12 09:34:51  marc
 # added to execute tests
 #
 # Revision 1.66  2010/12/07 13:30:47  marc

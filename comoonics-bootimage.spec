@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.139 2011-01-12 09:36:10 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.140 2011-01-18 09:23:41 marc Exp $
 #
 ##
 ##
@@ -331,7 +331,7 @@ OSR extra files that are only relevant for RHEL4
 
 %package listfiles-rhel5
 Version: 0.1
-Release: 6
+Release: 7
 Requires: comoonics-bootimage >= 1.4-55
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-rhel
@@ -859,6 +859,7 @@ fi
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/empty.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/base.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/gfs1.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/python.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/rhcs.list
 
 %files listfiles-sles
@@ -1659,6 +1660,8 @@ syslog
   - initial revision 
 
 %changelog listfiles-rhel5
+* Fri Jan 14 2011 Marc Grimme <grimme@atix.de> 0.1-8
+- added python-list in rpms.initrd.d/rhel5/python.list to be RHEL5.6 compatible
 * Wed Jul 07 2010 Marc Grimme <grimme@atix.de> 0.1-7
 - added MAKEDEV to base.list
 * Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-6
@@ -1845,7 +1848,10 @@ syslog
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.139  2011-01-12 09:36:10  marc
+# Revision 1.140  2011-01-18 09:23:41  marc
+# new versions for comoonics-bootimage-listfiles-rhel5
+#
+# Revision 1.139  2011/01/12 09:36:10  marc
 # new version for comoonics-bootimage (1.4-68) and comoonics-bootimage-extras-syslog (0.1-10)
 #
 # Revision 1.138  2011/01/11 15:01:29  marc
