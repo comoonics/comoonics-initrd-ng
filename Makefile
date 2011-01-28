@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.68 2011-01-18 09:23:41 marc Exp $
+# $Id: Makefile,v 1.69 2011-01-28 13:01:51 marc Exp $
 #
 # @(#)$file$
 #
@@ -137,6 +137,7 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/glusterfs-lib.sh \
   boot-scripts/etc/hardware-lib.sh \
   boot-scripts/etc/iscsi-lib.sh \
+  boot-scripts/etc/lock-lib.sh \
   boot-scripts/etc/network-lib.sh \
   boot-scripts/etc/nfs-lib.sh \
   boot-scripts/etc/ocfs2-lib.sh \
@@ -595,7 +596,10 @@ channel: rpm channelcopy channelbuild
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.68  2011-01-18 09:23:41  marc
+# Revision 1.69  2011-01-28 13:01:51  marc
+# added lock-lib.sh
+#
+# Revision 1.68  2011/01/18 09:23:41  marc
 # new versions for comoonics-bootimage-listfiles-rhel5
 #
 # Revision 1.67  2011/01/12 09:34:51  marc
