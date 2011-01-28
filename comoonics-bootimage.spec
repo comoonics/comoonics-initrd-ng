@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.140 2011-01-18 09:23:41 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.141 2011-01-28 13:01:28 marc Exp $
 #
 ##
 ##
@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 68
+Release: 69
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -679,6 +679,7 @@ fi
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/hardware-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/inittab
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/issue
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/lock-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/network-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/repository-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/xen-lib.sh
@@ -967,6 +968,15 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Thu Jan 27 2011 Marc Grimme <grimme@atix.de> 1.4-69
+- bootimage/boot-scripts/etc/lock-lib.sh
+  - implemented a simple global lock implementation based on lockfile
+- bootimage/boot-scripts/chroot-lib.sh (Bug#396) Parallel booting of two nodes would not work.
+  - protected each rpm call with a global lock (lock_rpm and unlock_rpm).
+- bootimage/boot-scripts/etc/chroot-lib.sh
+- bootimage/boot-scripts/linuxrc.generic.sh (Bug#399):
+  - adding /var/run to /etc/xtab to exclude it from being umounted before com-halt is started. 
+    So the reboot command can be detected as expected (only for RHEL5).
 * Tue Jan 11 2011 Marc Grimme <grimme@atix.de> 1.4-68
 - bootimage/boot-scripts/etc/rhel5/network-lib.sh:
   - autocreate /etc/sysconfig if it does not exist
@@ -1848,7 +1858,10 @@ syslog
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.140  2011-01-18 09:23:41  marc
+# Revision 1.141  2011-01-28 13:01:28  marc
+# new version for comoonics-bootimage-1.4-69
+#
+# Revision 1.140  2011/01/18 09:23:41  marc
 # new versions for comoonics-bootimage-listfiles-rhel5
 #
 # Revision 1.139  2011/01/12 09:36:10  marc
