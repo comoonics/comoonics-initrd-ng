@@ -1,5 +1,5 @@
 #
-# $Id: std-lib.sh,v 1.25 2010-12-07 13:27:29 marc Exp $
+# $Id: std-lib.sh,v 1.26 2011-01-28 12:59:20 marc Exp $
 #
 # @(#)$File$
 #
@@ -50,6 +50,7 @@ function sourceLibs() {
     . ${predir}/etc/chroot-lib.sh
     . ${predir}/etc/boot-lib.sh
     [ -e ${predir}/etc/osr-lib.sh ] && . ${predir}/etc/osr-lib.sh
+    [ -e ${predir}/etc/lock-lib.sh ] && . ${predir}/etc/lock-lib.sh
     . ${predir}/etc/hardware-lib.sh
     . ${predir}/etc/network-lib.sh
     . ${predir}/etc/clusterfs-lib.sh
@@ -1145,7 +1146,10 @@ exec_ordered_skripts_in() {
 
 #################
 # $Log: std-lib.sh,v $
-# Revision 1.25  2010-12-07 13:27:29  marc
+# Revision 1.26  2011-01-28 12:59:20  marc
+# Bug #396 added lock-lib.sh to be autoincluded.
+#
+# Revision 1.25  2010/12/07 13:27:29  marc
 # fixed typo in getInList
 #
 # Revision 1.24  2010/08/11 09:43:32  marc
