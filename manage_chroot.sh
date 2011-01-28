@@ -7,7 +7,7 @@
 #  DESCRIPTION
 #*******
 #
-# $Id: manage_chroot.sh,v 1.21 2010-08-12 09:55:09 marc Exp $
+# $Id: manage_chroot.sh,v 1.22 2011-01-28 13:02:21 marc Exp $
 #
 # @(#)$File$
 #
@@ -92,7 +92,7 @@ function usage() {
   -a action - action to perform
      update - updates the chroot environment with files defined in 
               /etc/comoonics/bootimage-chroot/files.list
-              /etc/comoonics/bootimage-chroot/files.list
+              /etc/comoonics/bootimage-chroot/rpms.list
      umount - umounts pts (needed for reboot
      start_service <commannd>    - starts a service in chroot
      stop_service_pid <pidfile>  - kills a service with pidfile in chroot
