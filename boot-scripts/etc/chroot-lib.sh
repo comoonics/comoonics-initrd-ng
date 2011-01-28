@@ -1,5 +1,5 @@
 #
-# $Id: chroot-lib.sh,v 1.11 2010-09-01 15:18:13 marc Exp $
+# $Id: chroot-lib.sh,v 1.12 2011-01-28 12:58:31 marc Exp $
 #
 # @(#)$File$
 #
@@ -31,6 +31,14 @@
 #    This library is also used to create initrd environments
 #*******
 
+function lock_rpm() {
+  typeset -f lock   >/dev/null 2>/dev/null && [ -n "$SHAREDLOCKDIR" ] && lock -10 -r12 ${SHAREDLOCKDIR}/rpm
+}
+
+function unlock_rpm() {
+  typeset -f unlock >/dev/null 2>/dev/null && [ -n "$SHAREDLOCKDIR" ] && unlock ${SHAREDLOCKDIR}/rpm
+}
+
 #****f* create-gfs-initrd-lib.sh/extract_rpm
 #  NAME
 #    extract_rpm
@@ -44,8 +52,10 @@
 function extract_rpm() {
 	 local rpm=$1
 	 local dest=$2
+     lock_rpm
 	 (cd $dest &&
 	  rpm2cpio $rpm | cpio -ivdum)
+	 unlock_rpm
 }
 #************ extract_rpm
 
@@ -68,11 +78,14 @@ function extract_installed_rpm() {
   local filter1="$3"
   local filter2="$4"
   local qopt=""
+  lock_rpm
   rpm -q $rpm >/dev/null 2>&1
   if [ $? -ne 0 ]; then
     echo "Cannot find rpm \"$rpm\". Skipping." >&2
+    unlock_rpm
     return 1
   fi
+  unlock_rpm
 
   if [ "$filter1" = "." ]; then
 	filter1=""
@@ -87,6 +100,7 @@ function extract_installed_rpm() {
   fi
 
   pushd $dest >/dev/null
+  lock_rpm
   for file in $(rpm -ql $qopt $rpm | grep -e "$filter1" | grep -v "$filter2"); do
   	#echo "rpm : $rpm, $file" >&2
     [ ! -e ${dest}$(dirname $file) ] && mkdir -p ${dest}$(dirname $file)
@@ -96,6 +110,7 @@ function extract_installed_rpm() {
       [ -e ${dest}/$file ] || cp -af $file ${dest}$(dirname $file)
     fi
   done
+  unlock_rpm
   popd >/dev/null
 }
 #************ extract_installed_rpm
@@ -117,9 +132,11 @@ function get_filelist_from_installed_rpm() {
   local filter1="$2"
   local filter2="$3"
   local qopt=""
+  lock_rpm
   rpm -q $rpm >/dev/null 2>&1
   if [ $? -ne 0 ]; then
     echo "Cannot find rpm \"$rpm\". Skipping." >&2
+    unlock_rpm
     return 1
   fi
 
@@ -142,6 +159,7 @@ function get_filelist_from_installed_rpm() {
   	   get_dependent_files $filename
   	fi
   done
+  unlock_rpm
 }
 #************ get_filelist_from_installed_rpm
 
@@ -599,7 +617,10 @@ function build_chroot () {
 #****** build_chroot
 #####################
 # $Log: chroot-lib.sh,v $
-# Revision 1.11  2010-09-01 15:18:13  marc
+# Revision 1.12  2011-01-28 12:58:31  marc
+# Bug #396 added lockfile protection for each rpm operation. Result is that nodes can now boot in parallel.
+#
+# Revision 1.11  2010/09/01 15:18:13  marc
 #   - extract_installed_rpm
 #     - pass filters raw unquoted
 #     - copy file only if it does not already exist
