@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.141 2011-01-28 13:01:28 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.142 2011-01-31 18:05:01 marc Exp $
 #
 ##
 ##
@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 69
+Release: 70
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -479,7 +479,7 @@ OSR files needed for the compatibility to 1.2 releases
 
 %package fenceacksv
 Version: 0.3
-Release: 12
+Release: 13
 Requires: comoonics-fenceacksv-py
 Requires: comoonics-bootimage >= 1.4-51
 Requires: comoonics-tools-py
@@ -968,6 +968,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Mon Jan 31 2011 Marc Grimme <grimme@atix.de> 1.4-70
+- fencing/fence-ack-sv/fenceacksv.sh
+  - fixed a bug in the initscript the fenceacksv will fail to stop during shutdown.
 * Thu Jan 27 2011 Marc Grimme <grimme@atix.de> 1.4-69
 - bootimage/boot-scripts/etc/lock-lib.sh
   - implemented a simple global lock implementation based on lockfile
@@ -1798,6 +1801,9 @@ syslog
 - initial version 
 
 %changelog fenceacksv
+* Mon Jan 31 2011 Marc Grimme <grimme@atix.de> 0.3-14
+- fenceacksv.sh
+  - fixed a bug in the initscript the fenceacksv will fail to stop during shutdown (for ssh).
 * Fri Aug 06 2010 Marc Grimme <grimme@atix.de> 0.3-12
 - fenceacksv.sh:
   - status works also with ssh
@@ -1858,7 +1864,10 @@ syslog
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.141  2011-01-28 13:01:28  marc
+# Revision 1.142  2011-01-31 18:05:01  marc
+# - new version for comoonics-bootimage-fenceacksv 0.3-13
+#
+# Revision 1.141  2011/01/28 13:01:28  marc
 # new version for comoonics-bootimage-1.4-69
 #
 # Revision 1.140  2011/01/18 09:23:41  marc
