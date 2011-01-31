@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: fenceacksv.sh,v 1.11 2010-08-06 13:33:33 marc Exp $
+# $Id: fenceacksv.sh,v 1.12 2011-01-31 17:55:59 marc Exp $
 #
 # chkconfig: 345 24 76
 # description: Starts and stops fenceacksv
@@ -30,7 +30,8 @@ CHROOT_STATUS_PID="/opt/atix/comoonics-bootimage/manage_chroot.sh -a status_serv
 CHROOT_STOP_PID="/opt/atix/comoonics-bootimage/manage_chroot.sh -a stop_service_pid" 
 LOCK_FILE="/var/lock/subsys/${FENCEACKSV}"
 KEYGEN=/usr/bin/ssh-keygen
-SSHD="chroot ${CHROOT_PATH} /usr/sbin/sshd -p $FENCEACKSV_PORT -e"
+SSHD_BIN="/usr/sbin/sshd"
+SSHD="chroot ${CHROOT_PATH} ${SSHD_BIN} -p $FENCEACKSV_PORT -e"
 RSA1_KEY=${SSHDIR}/ssh_host_key
 RSA_KEY=${SSHDIR}/ssh_host_rsa_key
 DSA_KEY=${SSHDIR}/ssh_host_dsa_key
@@ -163,6 +164,9 @@ stop_sshd()
 	if [ -e "$PID_FILE" ] ; then
 	    pid=$(cat $PID_FILE)
 	    kill $pid && success
+	elif [ "x$runlevel" = x0 -o "x$runlevel" = x6 ] && ! killall -0 ${CHROOT_PATH}/$SSHD_BIN &>/dev/null; then
+	    # no sshd running any more
+        success
 	else
 	    failure $"Stopping $prog"
 	fi
@@ -258,7 +262,10 @@ esac
 exit $rtrn
 ######################
 # $Log: fenceacksv.sh,v $
-# Revision 1.11  2010-08-06 13:33:33  marc
+# Revision 1.12  2011-01-31 17:55:59  marc
+# fixed a bug in the initscript the fenceacksv will fail to stop during shutdown.
+#
+# Revision 1.11  2010/08/06 13:33:33  marc
 # - status works also with ssh
 #
 # Revision 1.10  2010/07/09 13:33:39  marc
