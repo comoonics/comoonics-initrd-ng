@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.104 2011-01-28 12:57:42 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.105 2011-02-02 09:18:28 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.104 2011-01-28 12:57:42 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.105 2011-02-02 09:18:28 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -88,7 +88,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.104 $ $Date: 2011-01-28 12:57:42 $'
+echo_local 'Internal Version $Revision: 1.105 $ $Date: 2011-02-02 09:18:28 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -582,10 +582,15 @@ if [ $is_syslog -eq 0 ]; then
   return_code
   if [ $is_syslog -eq 0 ] && ! is_same_inode "/dev" "$(repository_get_value newroot)/$(repository_get_value chroot_path)/dev"; then
   	echo_local -n "Stopping "$(repository_get_value syslogtype)" in "$(repository_get_value newroot)"/"$(repository_get_value chroot_path)"..."
-  	exec_local stop_service $(repository_get_value syslogtype) $(repository_get_value newroot)"/"$(repository_get_value chroot_path) 
+  	exec_local stop_service $(repository_get_value syslogtype) $(repository_get_value newroot)"/"$(repository_get_value chroot_path)
+  	sleep 1  # "Wait" for rsyslogd to be stopped 
 	return_code
   fi
-  step "Stopped syslogd" "syslogstop"
+
+  # Resetup syslog to forward messages to the localhost (whatever it does with those messages).
+  cc_auto_syslogconfig "" "" "$(repository_get_value newroot)/$(repository_get_value chroot_path)" "no" $(repository_get_value syslog_logfile) "localhost"
+  cc_syslog_start "$(repository_get_value newroot)/$(repository_get_value chroot_path)" no_klog
+  step "Restarted syslogd" "syslogrestart"
 fi
 
 chrootpath=$(repository_get_value newroot)/$(repository_get_value chroot_path)
@@ -612,7 +617,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.104  2011-01-28 12:57:42  marc
+# Revision 1.105  2011-02-02 09:18:28  marc
+# starting syslog in the chroot again with logging to localhost.
+#
+# Revision 1.104  2011/01/28 12:57:42  marc
 # Bug #398 added /var/run to xtab so that it would not be umounted before reboot script starts.
 #
 # Revision 1.103  2010/12/07 13:28:55  marc
