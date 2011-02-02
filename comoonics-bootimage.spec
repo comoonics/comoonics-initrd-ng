@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.142 2011-01-31 18:05:01 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.143 2011-02-02 09:19:48 marc Exp $
 #
 ##
 ##
@@ -248,7 +248,7 @@ Sysctl support in the OSR cluster
 
 %package extras-syslog
 Version: 0.1
-Release: 10
+Release: 11
 Requires: comoonics-bootimage >= 1.4-27
 Summary: Syslog implementation for osr
 Group:   System Environment/Base
@@ -969,6 +969,12 @@ rm -rf %{buildroot}
 
 %changelog
 * Mon Jan 31 2011 Marc Grimme <grimme@atix.de> 1.4-70
+- boot-scripts/etc/syslog-lib.sh
+  - added queueing of messages in all generated rsyslog configuration files.
+- boot-scripts/etc/clusterfs-lib.sh
+  - added a parameter to cc_auto_syslog_config to take overwrite the syslog server from outside
+- boot-scripts/linuxrc.generic.sh
+  - restarting syslog if set instead of stopping it.
 - fencing/fence-ack-sv/fenceacksv.sh
   - fixed a bug in the initscript the fenceacksv will fail to stop during shutdown.
 * Thu Jan 27 2011 Marc Grimme <grimme@atix.de> 1.4-69
@@ -1864,7 +1870,10 @@ syslog
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.142  2011-01-31 18:05:01  marc
+# Revision 1.143  2011-02-02 09:19:48  marc
+# new version for comoonics-bootimage 1.4-70, comoonics-bootimage-extras-syslog 0.1-11
+#
+# Revision 1.142  2011/01/31 18:05:01  marc
 # - new version for comoonics-bootimage-fenceacksv 0.3-13
 #
 # Revision 1.141  2011/01/28 13:01:28  marc
