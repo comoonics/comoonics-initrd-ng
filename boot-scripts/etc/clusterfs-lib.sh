@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.52 2011-01-11 14:57:51 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.53 2011-02-02 09:17:02 marc Exp $
 #
 # @(#)$File$
 #
@@ -885,7 +885,7 @@ function cc_auto_hosts {
 #  NAME
 #    cc_auto_syslogconfig
 #  SYNOPSIS
-#    function cc_auto_syslogconfig(cluster_conf, nodename, chroot_path, locallog, syslog_logfile)
+#    function cc_auto_syslogconfig(cluster_conf, nodename, chroot_path, locallog, syslog_logfile, syslog_server)
 #  DESCRIPTION
 #    creates config for the syslog service
 #    to enable local logging use "yes"
@@ -900,7 +900,7 @@ function cc_auto_syslogconfig {
   local clutype=$(repository_get_value clutype)
   local syslog_type=$(repository_get_value syslog_type)
   local syslog_template
-  local syslog_server=""
+  local syslog_server=$6
   local syslog_filter
 
   if [ -z "$syslog_type" ]; then
@@ -918,7 +918,7 @@ function cc_auto_syslogconfig {
       syslog_logfile="/var/log/comoonics-boot.syslog"
     fi
   fi
-  if [ -n "$cluster_conf" ] && [ -n "$nodename" ]; then
+  if [ -n "$cluster_conf" ] && [ -n "$nodename" ] && [ -z "$syslog_server" ]; then
     syslog_server=$(getParameter syslogserver 2>/dev/null)
     syslog_filter=$(getParameter syslogfilter 2>/dev/null)
   fi
@@ -933,8 +933,8 @@ function cc_auto_syslogconfig {
 	repository_store_value syslogtemplate $syslog_template
     
     echo_local -n "Creating syslog config for syslog destinations: $syslog_filter server: $syslog_server"
-    mkdir -p $(dirname $(repository_get_value syslogconf $(default_syslogconf $syslog_type)))
-    exec_local $(echo ${syslog_type} | tr '-' '_')_config $syslog_template $syslog_filter $syslog_server > $(repository_get_value syslogconf $(default_syslogconf $syslog_type))
+    mkdir -p ${chroot_path}/$(dirname $(repository_get_value syslogconf $(default_syslogconf $syslog_type)))
+    exec_local $(echo ${syslog_type} | tr '-' '_')_config $syslog_template $syslog_filter $syslog_server > ${chroot_path}/$(repository_get_value syslogconf $(default_syslogconf $syslog_type))
     return_code
 
     local services=$(repository_get_value servicesfile "/etc/services")
@@ -1489,7 +1489,11 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.52  2011-01-11 14:57:51  marc
+# Revision 1.53  2011-02-02 09:17:02  marc
+# cc_auto_syslog_config:
+# - support for overwriting the syslog server as parameter.
+#
+# Revision 1.52  2011/01/11 14:57:51  marc
 # - Fixed bug in calling of ${syslogtype}_config so that external destination would work
 # - typo in errorhandling for filesystems that could not be mounted
 #
