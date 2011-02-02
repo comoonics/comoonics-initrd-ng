@@ -1,5 +1,5 @@
 #
-# $Id: syslog-lib.sh,v 1.6 2011-01-12 09:05:06 marc Exp $
+# $Id: syslog-lib.sh,v 1.7 2011-02-02 09:17:56 marc Exp $
 #
 # @(#)$File$
 #
@@ -159,7 +159,46 @@ function syslogd_start {
 #  SOURCE
 rsyslogd_config() {
   # The rsyslog.conf is build exacltly the same except from the template
-  syslogd_config $*
+  local debug=$(repository_get_value debug)
+  local rsyslog_conf_template=$1
+  shift
+  local dests=$@
+  local dest
+  local filter
+  
+  #TODO: those values should be set from outside 
+  local queuetype="FixedArray"
+  local queuesize="1000"
+  local queuediscardmark="500"
+  
+  local asyncoutputchannelsetting=$(cat <<EOF
+# ActionQueue setup in order to not get stuck!
+\$ActionQueueType ${queuetype}
+\$ActionQueueSize ${queuesize}
+# Begin discarding when this limit is reached
+\$ActionQueueDiscardMark ${queuediscardmark}
+EOF
+)
+  
+  [ -f "$rsyslog_conf_template" ] && cat $rsyslog_conf_template
+  
+  for dest in $dests; do
+  	filter=$(echo $dest | cut -d: -f1)
+  	dest=$(echo $dest | cut -d: -f2)
+  	# default is all
+  	[ "$dest" = "$filter" ] && filter="*.*"
+  	if [ -n "$filter" ] && [ -n "$dest" ]; then
+      if [ "${dest:0:1}" = "/" ]; then
+      	echo "${asyncoutputchannelsetting}"
+      	echo "$filter $dest"
+      	echo
+      else
+      	echo "${asyncoutputchannelsetting}"
+        echo "$filter @$dest"
+        echo
+  	  fi
+    fi
+  done
 }
 #*********** rsyslog_config
 
@@ -314,7 +353,11 @@ function syslog_ng_start {
 
 ######################
 # $Log: syslog-lib.sh,v $
-# Revision 1.6  2011-01-12 09:05:06  marc
+# Revision 1.7  2011-02-02 09:17:56  marc
+# - rsyslogd_config
+#   - own implementation with queuing for every given output channel
+#
+# Revision 1.6  2011/01/12 09:05:06  marc
 # - also autodetect syslog servers in /usr/sbin
 #
 # Revision 1.5  2011/01/11 14:58:37  marc
