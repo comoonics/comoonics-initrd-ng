@@ -1,2 +1,14 @@
+# ActionQueue setup in order to not get stuck!
+$ActionQueueType FixedArray
+$ActionQueueSize 1000
+# Begin discarding when this limit is reached
+$ActionQueueDiscardMark 500
 kern.* @myserver
+
+# ActionQueue setup in order to not get stuck!
+$ActionQueueType FixedArray
+$ActionQueueSize 1000
+# Begin discarding when this limit is reached
+$ActionQueueDiscardMark 500
 *.* /dev/console
+
