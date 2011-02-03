@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.143 2011-02-02 09:19:48 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.144 2011-02-03 14:53:06 marc Exp $
 #
 ##
 ##
@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 70
+Release: 71
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -968,6 +968,10 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Thu Feb 03 2011 Marc Grimme <grimme@atix.de> 1.4-71
+- boot-scripts/linuxrc.generic.sh
+  - fixed bug that affects all NFS Sharedroot having a syslog specified.
+     - now syslog is only started in the chroot after booting if it is needed. But then it's started in any case.
 * Mon Jan 31 2011 Marc Grimme <grimme@atix.de> 1.4-70
 - boot-scripts/etc/syslog-lib.sh
   - added queueing of messages in all generated rsyslog configuration files.
@@ -1870,7 +1874,10 @@ syslog
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.143  2011-02-02 09:19:48  marc
+# Revision 1.144  2011-02-03 14:53:06  marc
+# new version for comoonics-bootimage-1.4-71
+#
+# Revision 1.143  2011/02/02 09:19:48  marc
 # new version for comoonics-bootimage 1.4-70, comoonics-bootimage-extras-syslog 0.1-11
 #
 # Revision 1.142  2011/01/31 18:05:01  marc
