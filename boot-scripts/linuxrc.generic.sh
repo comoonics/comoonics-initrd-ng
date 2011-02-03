@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.105 2011-02-02 09:18:28 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.106 2011-02-03 14:49:46 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.105 2011-02-02 09:18:28 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.106 2011-02-03 14:49:46 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -88,7 +88,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.105 $ $Date: 2011-02-02 09:18:28 $'
+echo_local 'Internal Version $Revision: 1.106 $ $Date: 2011-02-03 14:49:46 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -587,9 +587,11 @@ if [ $is_syslog -eq 0 ]; then
 	return_code
   fi
 
-  # Resetup syslog to forward messages to the localhost (whatever it does with those messages).
-  cc_auto_syslogconfig "" "" "$(repository_get_value newroot)/$(repository_get_value chroot_path)" "no" $(repository_get_value syslog_logfile) "localhost"
-  cc_syslog_start "$(repository_get_value newroot)/$(repository_get_value chroot_path)" no_klog
+  # Resetup syslog to forward messages to the localhost (whatever it does with those messages) but only if chroot is needed.
+  if [ $(repository_get_value chrootneeded) -eq 0 ]; then
+    cc_auto_syslogconfig "" "" "$(repository_get_value newroot)/$(repository_get_value chroot_path)" "no" $(repository_get_value syslog_logfile) "localhost"
+    cc_syslog_start "$(repository_get_value newroot)/$(repository_get_value chroot_path)" no_klog
+  fi
   step "Restarted syslogd" "syslogrestart"
 fi
 
@@ -617,7 +619,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.105  2011-02-02 09:18:28  marc
+# Revision 1.106  2011-02-03 14:49:46  marc
+# only restart syslog if chroot is needed.
+#
+# Revision 1.105  2011/02/02 09:18:28  marc
 # starting syslog in the chroot again with logging to localhost.
 #
 # Revision 1.104  2011/01/28 12:57:42  marc
