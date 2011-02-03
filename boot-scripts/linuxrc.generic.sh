@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.106 2011-02-03 14:49:46 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.107 2011-02-03 14:51:16 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.106 2011-02-03 14:49:46 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.107 2011-02-03 14:51:16 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -88,7 +88,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.106 $ $Date: 2011-02-03 14:49:46 $'
+echo_local 'Internal Version $Revision: 1.107 $ $Date: 2011-02-03 14:51:16 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -586,14 +586,14 @@ if [ $is_syslog -eq 0 ]; then
   	sleep 1  # "Wait" for rsyslogd to be stopped 
 	return_code
   fi
-
-  # Resetup syslog to forward messages to the localhost (whatever it does with those messages) but only if chroot is needed.
-  if [ $(repository_get_value chrootneeded) -eq 0 ]; then
-    cc_auto_syslogconfig "" "" "$(repository_get_value newroot)/$(repository_get_value chroot_path)" "no" $(repository_get_value syslog_logfile) "localhost"
-    cc_syslog_start "$(repository_get_value newroot)/$(repository_get_value chroot_path)" no_klog
-  fi
-  step "Restarted syslogd" "syslogrestart"
 fi
+
+# Resetup syslog to forward messages to the localhost (whatever it does with those messages) but only if chroot is needed.
+if [ $(repository_get_value chrootneeded) -eq 0 ]; then
+  cc_auto_syslogconfig "" "" "$(repository_get_value newroot)/$(repository_get_value chroot_path)" "no" $(repository_get_value syslog_logfile) "localhost"
+  cc_syslog_start "$(repository_get_value newroot)/$(repository_get_value chroot_path)" no_klog
+fi
+step "Restarted syslogd" "syslogrestart"
 
 chrootpath=$(repository_get_value newroot)/$(repository_get_value chroot_path)
 if [ -z $(getPosInList "ro" "$(repository_get_value mountopts)" ",") ]; then
@@ -619,7 +619,12 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.106  2011-02-03 14:49:46  marc
+# Revision 1.107  2011-02-03 14:51:16  marc
+# Fixed bug (for all NFS sharedroots):
+#   start local logging syslog in anycase where chroot is needed.
+#   But don't start if chroot is not needed.
+#
+# Revision 1.106  2011/02/03 14:49:46  marc
 # only restart syslog if chroot is needed.
 #
 # Revision 1.105  2011/02/02 09:18:28  marc
