@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.144 2011-02-03 14:53:06 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.145 2011-02-08 10:02:06 marc Exp $
 #
 ##
 ##
@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 71
+Release: 73
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -248,7 +248,7 @@ Sysctl support in the OSR cluster
 
 %package extras-syslog
 Version: 0.1
-Release: 11
+Release: 13
 Requires: comoonics-bootimage >= 1.4-27
 Summary: Syslog implementation for osr
 Group:   System Environment/Base
@@ -968,6 +968,22 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Tue Feb 08 2011 Marc Grimme <grimme@atix.de> 1.4-73
+- boot-scripts/linuxrc.generic.sh
+  - fixed a bug with creation of syslog configuration
+- boot-scripts/etc/syslog-lib.sh
+  - syslog_ng_config:
+    - rewrote the whole configuration generation for the filters to be working as expected.
+  -  syslog_ng_start:
+    - added support for no_klog parameter
+- boot-scripts/etc/templates/syslog-ng.conf
+  - better general options
+  - removed proc/kmsg for syslog in chroot
+* Fri Feb 04 2011 Marc Grimme <grimme@atix.de> 1.4-72
+- boot-scripts/etc/syslog-lib.sh
+  - fixed another syslog-ng bug
+- boot-scripts/linuxrc.generic.sh
+  - restart syslog without log file bug with logging to localhost. 
 * Thu Feb 03 2011 Marc Grimme <grimme@atix.de> 1.4-71
 - boot-scripts/linuxrc.generic.sh
   - fixed bug that affects all NFS Sharedroot having a syslog specified.
@@ -1874,7 +1890,11 @@ syslog
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.144  2011-02-03 14:53:06  marc
+# Revision 1.145  2011-02-08 10:02:06  marc
+# - new version comoonics-bootimage-1.4-73
+# - new version comoonics-bootimage-extras-syslog-0.1-13
+#
+# Revision 1.144  2011/02/03 14:53:06  marc
 # new version for comoonics-bootimage-1.4-71
 #
 # Revision 1.143  2011/02/02 09:19:48  marc
