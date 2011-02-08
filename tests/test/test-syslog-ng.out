@@ -1,11 +1,8 @@
 filter filter0 { 
-	facility(kern)
-	;
+	 facility(kern)
+	 ;
 };
 destination destination0 { udp("myserver" port(514)); };
 log { source(src); filter(filter0); destination(destination0); };
-filter filter1 { 
-	;
-};
 destination destination1 { file("/dev/console"); };
-log { source(src); filter(filter1); destination(destination1); };
+log { source(src); destination(destination1); };
