@@ -1,5 +1,5 @@
 #
-# $Id: syslog-lib.sh,v 1.7 2011-02-02 09:17:56 marc Exp $
+# $Id: syslog-lib.sh,v 1.8 2011-02-08 08:43:54 marc Exp $
 #
 # @(#)$File$
 #
@@ -263,51 +263,71 @@ syslog_ng_config() {
   local facility
   local levels
   local level
+  local filtername
+  local firstfilter=1
   
   [ -f "$syslog_conf_template" ] && cat $syslog_conf_template
   
   # Checking for normal syslog all others should be checked before so that this is the last resort syslog
+  set -f
   if [ -n "$debug" ]; then
     filters="$filters kern,daemon.*:/dev/console"
   fi
   
   i=0
   for dest in $dests; do
-  	filter=$(echo "$dest" | cut -d: -f1)
-  	# default is all
-  	[ -z "$filter" ] && filter='*.*'
+  	filter=$(echo $dest | cut -d: -f1)
   	dest=$(echo $dest | cut -d: -f2)
+  	# default is all
+  	[ "$dest" = "$filter" ] && filter="*.*"
   	if [ -n "$filter" ] && [ -n "$dest" ]; then
-  	  set -f
       facilities=( $(echo "$filter" | cut -d . -f1 | tr ',' ' ') )
       levels=( $(echo "$filter" | cut -d . -f2 | tr ',' ' ') )
-      set +f
-      echo "filter filter$i { "
-      for facility in ${facilities[@]:0:${#facilities[@]}-1}; do
-      	echo -e "\tfacility($facility) or "
-      done
-      if [ "${facilities[@]:${#facilities[@]}-1}" != '*' ]; then
-        echo -e "\tfacility(${facilities[@]:${#facilities[@]}-1})"
-      fi
       
-      if [ "$levels" != '*' ]; then
-        for level in ${levels[@]}; do
-      	  if [ "$level" != '*' ]; then
-      	    echo "or level($level)"
+      if [ "$levels" != '*' ] || [ "$facilities" != '*' ]; then
+        filtername="filter$i"
+        echo "filter $filtername { "
+        for facility in ${facilities[@]:0:${#facilities[@]}}; do
+      	  if [ -n "$firstfilter" ] && [ "$facility" != '*' ]; then
+      	    firstfilter=
+      	    echo -e "\t facility($facility)"
+      	  elif [ "$facility" != '*' ]; then
+      	    echo -e "\t or facility($facility)"
       	  fi
         done
+
+        if [ "$levels" != '*' ]; then
+          for level in ${levels[@]}; do
+      	    if [ "$level" != '*' ]; then
+      	    	if [ -n "$firstfilter" ] && [ "$level" != '*' ]; then
+                  firstfilter=
+      	          echo -e "\t level(err..$level)"
+      	    	elif [ "$level" != '*' ]; then
+      	    	  echo -e "\t or level(err..$level)"
+      	    	fi
+      	    fi
+          done
+        fi
+        echo -e "\t ;\n};"
       fi
-      echo -e "\t;\n};"
       	
       if [ "${dest:0:1}" = "/" ]; then
       	echo "destination destination$i { file(\"$dest\"); };"
       else
         echo "destination destination$i { udp(\"$dest\" port(514)); };"
       fi
-      echo "log { source(src); filter(filter$i); destination(destination$i); };"
-      i=$(( $i + 1 )) 
+      if [ -n "$filtername" ]; then
+        echo "log { source(src); filter(filter$i); destination(destination$i); };"
+      else
+        echo "log { source(src); destination(destination$i); };"
+      fi
+      i=$(( $i + 1 ))
+      filtername=
+      filter=
+      dest=
     fi
   done
+  set +f
 }
 #************ syslogng_config
 
@@ -321,6 +341,7 @@ syslog_ng_config() {
 #  SOURCE
 function syslog_ng_start {
 	local chrootpath=$1
+	local no_klog=$2
 	local start_service_f="start_service_chroot $chrootpath"
 	local syslog_sysconfig=$(repository_get_value "syslogsysconfig" "/etc/sysconfig/syslog")
 	
@@ -345,7 +366,7 @@ function syslog_ng_start {
     	$start_service_f syslog-ng $syslogng_OPTIONS
     fi
     which klogd > /dev/null 2>/dev/null
-    if [ $? -eq 0 ]; then
+    if [ $? -eq 0 ] && [ "$no_klog" != "no_klog" ]; then
     	$start_service_f klogd $KLOGD_OPTIONS
     fi
 }
@@ -353,7 +374,13 @@ function syslog_ng_start {
 
 ######################
 # $Log: syslog-lib.sh,v $
-# Revision 1.7  2011-02-02 09:17:56  marc
+# Revision 1.8  2011-02-08 08:43:54  marc
+# syslog_ng_config:
+# - rewrote the whole configuration generation for the filters to be working as expected.
+# syslog_ng_start:
+# - added support for no_klog parameter
+#
+# Revision 1.7  2011/02/02 09:17:56  marc
 # - rsyslogd_config
 #   - own implementation with queuing for every given output channel
 #
