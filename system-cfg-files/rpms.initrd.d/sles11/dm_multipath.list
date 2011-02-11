@@ -1,0 +1,3 @@
+# RPMs needed for devicemapper multipath with sles11
+libaio
+# $Log:$
