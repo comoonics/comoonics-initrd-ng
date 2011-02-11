@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.69 2011-01-28 13:01:51 marc Exp $
+# $Id: Makefile,v 1.70 2011-02-11 11:30:52 marc Exp $
 #
 # @(#)$file$
 #
@@ -249,6 +249,7 @@ CFG_FILES=basefiles.list \
     files.initrd.d/sles/empty.list \
     files.initrd.d/sles/network.list \
     files.initrd.d/sles/dm_multipath.list \
+    files.initrd.d/sles11/dm_multipath.list \
     files.initrd.d/fedora/base.list \
     files.initrd.d/fedora/configs.list \
     files.initrd.d/fedora/network.list \
@@ -298,6 +299,7 @@ CFG_FILES=basefiles.list \
     rpms.initrd.d/sles10/base.list \
     rpms.initrd.d/sles10/python.list \
     rpms.initrd.d/sles11/base.list \
+    rpms.initrd.d/sles11/dm_multipath.list \
     rpms.initrd.d/sles11/python.list \
     rpms.initrd.d/fedora/base.list \
     rpms.initrd.d/fedora/dm_multipath.list \
@@ -596,7 +598,10 @@ channel: rpm channelcopy channelbuild
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.69  2011-01-28 13:01:51  marc
+# Revision 1.70  2011-02-11 11:30:52  marc
+# added the new listfiles.
+#
+# Revision 1.69  2011/01/28 13:01:51  marc
 # added lock-lib.sh
 #
 # Revision 1.68  2011/01/18 09:23:41  marc
