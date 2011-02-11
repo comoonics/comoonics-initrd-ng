@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.78 2010-09-01 09:48:44 marc Exp $
+# $Id: gfs-lib.sh,v 1.79 2011-02-11 15:09:36 marc Exp $
 #
 # @(#)$File$
 #
@@ -1288,6 +1288,33 @@ function gfs_start_qdiskd() {
 }
 #************ gfs_start_qdiskd
 
+#****f* gfs-lib.sh/gfs_stop_qdiskd
+#  NAME
+#    gfs_stop_qdiskd
+#  SYNOPSIS
+#    gfs_stop_qdiskd
+#  DESCRIPTION
+#    Function starts the qdiskd in chroot environment
+#  IDEAS
+#  SOURCE
+#
+function gfs_stop_qdiskd() {
+  ## THIS will be overwritten for rhel5 ##
+  local chroot_path=$1
+
+  $ccs_xml_query query_xml /cluster/quorumd >/dev/null 2>&1
+  if [ $? -eq 0 ]; then
+     stop_service $chroot_path /sbin/qdiskd $chroot_path && \
+     rm $chroot_path/var/lock/subsys/qdisk 2>/dev/null
+  else
+  	 echo_local -n "Stopping qdiskd"
+     passed
+     echo_local
+  fi
+  return $return_c
+}
+#************ gfs_stop_qdiskd
+
 #****f* gfs-lib.sh/gfs_start_groupd
 #  NAME
 #    gfs_start_groupd
@@ -1437,7 +1464,10 @@ function gfs_chroot_needed() {
 }
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.78  2010-09-01 09:48:44  marc
+# Revision 1.79  2011-02-11 15:09:36  marc
+# added gfs_qdiskd_stop function to stop qdisk as required.
+#
+# Revision 1.78  2010/09/01 09:48:44  marc
 #   - gfs_getdefaults
 #     - added localflocks to standard gfs mountoptions
 #
