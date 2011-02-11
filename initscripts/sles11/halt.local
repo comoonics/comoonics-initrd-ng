@@ -1,0 +1,2 @@
+#!/bin/bash
+bash /opt/atix/comoonics-bootimage/boot-scripts/com-halt.sh $@
