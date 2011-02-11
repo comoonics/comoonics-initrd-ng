@@ -3,6 +3,6 @@ filter filter0 {
 	 ;
 };
 destination destination0 { udp("myserver" port(514)); };
-log { source(src); filter(filter0); destination(destination0); };
+log { source(src_klog); filter(filter0); destination(destination0); };
 destination destination1 { file("/dev/console"); };
-log { source(src); destination(destination1); };
+log { source(src_klog); destination(destination1); };
