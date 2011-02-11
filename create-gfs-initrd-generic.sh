@@ -6,7 +6,7 @@
 #  DESCRIPTION
 #*******
 #
-# $Id: create-gfs-initrd-generic.sh,v 1.33 2010-12-07 13:30:28 marc Exp $
+# $Id: create-gfs-initrd-generic.sh,v 1.34 2011-02-11 11:30:25 marc Exp $
 #
 # @(#)$File$
 #
@@ -122,7 +122,7 @@ function getoptions() {
     while getopts LUoRFVvhlpPm:fd:s:r:b:A:D:M: option ; do
 	case "$option" in
 	    v) # version
-		echo "$0 Version "'$Revision: 1.33 $'
+		echo "$0 Version "'$Revision: 1.34 $'
 		exit 0
 		;;
 	    h) # help
@@ -274,6 +274,10 @@ fi
 #	exit 2
 #fi
 
+if [ "${initrdname:0:1}" != "/" ]; then
+	initrdname="${pwd}/$initrdname"
+fi 
+
 if [ -z "$initramfs" ] || [ $initramfs -eq 0 ] && [ -n "$update" ]; then
 	echo "You selected updatemode with old initrd method <ramfs>." >&2
 	echo "This is not supported." >&2
@@ -343,7 +347,7 @@ if [ -z "$update" ]; then
 #  create_filelist $mountpoint > ${mountpoint}/$index_list
   echo_local -N -n "found "${#files[@]}" files" && success
 else
-  echo_local -N -n "Unpacking initrd => ${mountpoint} .."
+  echo_local -N -n "Unpacking initrd ${initrdname} => ${mountpoint}.."
   unzip_and_uncpio_initrd $mountpoint $initrdname $force
   if [ ! -e "${mountpoint}/$index_list" ]; then
   	echo_local -N "Could not find valid index file."
@@ -521,7 +525,10 @@ ls -lk $initrdname
 
 ##########################################
 # $Log: create-gfs-initrd-generic.sh,v $
-# Revision 1.33  2010-12-07 13:30:28  marc
+# Revision 1.34  2011-02-11 11:30:25  marc
+# - fixed bug that with update mode relative files to initrd would not work.
+#
+# Revision 1.33  2010/12/07 13:30:28  marc
 # moved a line
 #
 # Revision 1.32  2010/08/11 09:44:50  marc
