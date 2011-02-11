@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: com-realhalt.sh,v 1.17 2010-09-01 09:49:01 marc Exp $
+# $Id: com-realhalt.sh,v 1.18 2011-02-11 15:09:53 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/com-halt.sh
 #  NAME
 #    com-halt.sh
-#    $Id: com-realhalt.sh,v 1.17 2010-09-01 09:49:01 marc Exp $
+#    $Id: com-realhalt.sh,v 1.18 2011-02-11 15:09:53 marc Exp $
 #  DESCRIPTION
 #    script called from <chrootpath>/com-halt.sh
 #  USAGE
@@ -115,7 +115,7 @@ echo_local "Starting ATIX exitrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.17 $ $Date: 2010-09-01 09:49:01 $'
+echo_local 'Internal Version $Revision: 1.18 $ $Date: 2011-02-11 15:09:53 $'
 echo_local_debug "Calling cmd "$(repository_get_value haltcmd)
 #echo_local "Builddate: "$(date)
 
@@ -194,7 +194,7 @@ if [ -n "$filesystems" ]; then
 fi
 unset filesystems rc
 
-step "halt: Successfully umounted filesystem in oldroot" "halt_umountoldroot"
+step "halt: Successfully umounted filesystem in oldroot" "halt_umountoldfs"
 
 _filesystem=$(repository_get_value oldroot)
 echo_local -n "Umounting oldroot $_filesystem"
@@ -212,7 +212,10 @@ $cmd
 
 #####################
 # $Log: com-realhalt.sh,v $
-# Revision 1.17  2010-09-01 09:49:01  marc
+# Revision 1.18  2011-02-11 15:09:53  marc
+# - fixed a breakpointname
+#
+# Revision 1.17  2010/09/01 09:49:01  marc
 # - added initHaltProcess instead of initEnv
 #
 # Revision 1.16  2010/08/26 12:18:36  marc
