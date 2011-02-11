@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.22 2010-08-19 07:41:11 marc Exp $
+# $Id: gfs-lib.sh,v 1.23 2011-02-11 15:08:11 marc Exp $
 #
 # @(#)$File$
 #
@@ -147,7 +147,7 @@ function gfs_services_stop {
   local lock_method=$2
   local lvm_sup=$3
 
-  local services="fenced cman"
+  local services="qdiskd fenced cman"
   if [ -n "$lvm_sup" ] && [ $lvm_sup -eq 0 ]; then
   	services="fenced clvmd cman"
   fi
@@ -224,30 +224,6 @@ function gfs_services_restart_newroot {
   return $return_c
 }
 #************ gfs_services_start_newroot
-
-#****f* gfs-lib.sh/gfs_start_qdiskd
-#  NAME
-#    gfs_start_qdiskd
-#  SYNOPSIS
-#    function gfs_start_qdiskd {
-#  DESCRIPTION
-#    Function starts the qdiskd in chroot environment
-#  IDEAS
-#  SOURCE
-#
-function gfs_start_qdiskd {
-  local chroot_path=$1
-
-  $ccs_xml_query query_xml /cluster/quorumd > /dev/null 2>&1
-  if [ $? -eq 0 ]; then
-     start_service_chroot $chroot_path /usr/sbin/qdiskd
-  else
-  	 echo_local -n "Starting qdiskd"
-     passed
-     echo_local
-  fi
-}
-#************ gfs_start_qdiskd
 
 #****f* gfs-lib.sh/gfs_start_fenced
 #  NAME
@@ -342,7 +318,10 @@ function gfs_start_cman {
 
 ###############
 # $Log: gfs-lib.sh,v $
-# Revision 1.22  2010-08-19 07:41:11  marc
+# Revision 1.23  2011-02-11 15:08:11  marc
+# added qdisk to be stopped.
+#
+# Revision 1.22  2010/08/19 07:41:11  marc
 # moved setHWClock to gfs_services_start in gfs-lib.sh
 #
 # Revision 1.21  2010/08/06 13:31:51  marc
