@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.145 2011-02-08 10:02:06 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.146 2011-02-11 13:45:00 marc Exp $
 #
 ##
 ##
@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 73
+Release: 74
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -179,6 +179,18 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description extras-dm-multipath-sles
 Extra listfiles for device mapper multipath OSR configurations for SLES
+
+%package extras-dm-multipath-sles11
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage >= 1.4
+Requires: comoonics-bootimage-extras-dm-multipath-sles
+Summary: Listfiles for device mapper multipath OSR configurations for SLES11
+Group:   System Environment/Base
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description extras-dm-multipath-sles11
+Extra listfiles for device mapper multipath OSR configurations for SLES11
 
 %package extras-rdac-multipath
 Version: 0.1
@@ -373,7 +385,7 @@ OSR extra files that are only relevant for Novell SLES 10
 
 %package listfiles-sles11
 Version: 0.1
-Release: 7
+Release: 8
 Requires: comoonics-bootimage >= 1.4-27
 Requires: /etc/SuSE-release
 Requires: comoonics-bootimage-listfiles-sles
@@ -757,6 +769,10 @@ fi
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/sles/dm_multipath.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/dm_multipath.list
 
+%files extras-dm-multipath-sles11
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/sles11/dm_multipath.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles11/dm_multipath.list
+
 %files extras-dm-multipath-fedora
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fedora/dm_multipath.list
 
@@ -968,6 +984,11 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Thu Feb 10 2011 Marc Grimme <grimme@atix.de> 1.4-74
+- boot-scripts/etc/repository-lib.sh
+  - repository_normalize_value: fixed a cosmetic bug
+- create-gfs-initrd-generic.sh:
+  - fixed a bug that updateinitrd would not work with using relative paths.
 * Tue Feb 08 2011 Marc Grimme <grimme@atix.de> 1.4-73
 - boot-scripts/linuxrc.generic.sh
   - fixed a bug with creation of syslog configuration
@@ -1593,6 +1614,10 @@ syslog
 * Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-1
 - initial revision
 
+%changelog extras-dm-multipath-sles11
+* Tue Feb 09 2011 Marc Grimme <grimme@atix.de> - 0.1-1
+- initial revision
+
 %changelog extras-dm-multipath-fedora
 * Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-3
 - first version for comoonics-4.6-rc1 
@@ -1745,6 +1770,8 @@ syslog
 - initial revision
 
 %changelog listfiles-sles11
+* Fri Feb 11 2011 Marc Grimme <grimme@atix.de> 0.1-8
+- added new deps for sles11
 * Thu Aug 13 2010 Marc Grimme <grimme@atix.de> 0.1-7
 - added libuuid1
 * Thu Aug 12 2010 Marc Grimme <grimme@atix.de> 0.1-6
@@ -1890,7 +1917,10 @@ syslog
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.145  2011-02-08 10:02:06  marc
+# Revision 1.146  2011-02-11 13:45:00  marc
+# new versions
+#
+# Revision 1.145  2011/02/08 10:02:06  marc
 # - new version comoonics-bootimage-1.4-73
 # - new version comoonics-bootimage-extras-syslog-0.1-13
 #
