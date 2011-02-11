@@ -3,4 +3,8 @@ libreadline5
 libncurses5
 libblkid1
 libuuid1
+libvolume_id1
+libcom_err2
+libnet
+libext2fs2
 # $Log:$
