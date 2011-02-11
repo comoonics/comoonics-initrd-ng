@@ -1,5 +1,5 @@
 #
-# $Id: repository-lib.sh,v 1.9 2010-07-08 08:11:39 marc Exp $
+# $Id: repository-lib.sh,v 1.10 2011-02-11 11:13:55 marc Exp $
 #
 # @(#)$File$
 #
@@ -70,7 +70,7 @@ repository_load() {
 #  SOURCE
 #
 repository_normalize_value() {
-	echo $1 | tr '-' '_'
+	(echo "$1" | tr '-' '_') 2>/dev/null
 }
 #******* repository_normalize_value
 
@@ -339,7 +339,11 @@ repository_del_parameters() {
 
 #############
 # $Log: repository-lib.sh,v $
-# Revision 1.9  2010-07-08 08:11:39  marc
+# Revision 1.10  2011-02-11 11:13:55  marc
+# - repository_normalize_value
+#     - cosmetic change
+#
+# Revision 1.9  2010/07/08 08:11:39  marc
 # - added function repository_store_parameters and repository_del_parameters being used by exec_local
 # - removed that the repository_values are stored in the environment (obsolete and not used)
 #
