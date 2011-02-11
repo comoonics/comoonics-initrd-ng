@@ -1,5 +1,5 @@
 #
-# $Id: syslog-lib.sh,v 1.8 2011-02-08 08:43:54 marc Exp $
+# $Id: syslog-lib.sh,v 1.9 2011-02-11 11:14:19 marc Exp $
 #
 # @(#)$File$
 #
@@ -265,6 +265,7 @@ syslog_ng_config() {
   local level
   local filtername
   local firstfilter=1
+  local src="src_klog"
   
   [ -f "$syslog_conf_template" ] && cat $syslog_conf_template
   
@@ -276,55 +277,59 @@ syslog_ng_config() {
   
   i=0
   for dest in $dests; do
-  	filter=$(echo $dest | cut -d: -f1)
-  	dest=$(echo $dest | cut -d: -f2)
-  	# default is all
-  	[ "$dest" = "$filter" ] && filter="*.*"
-  	if [ -n "$filter" ] && [ -n "$dest" ]; then
-      facilities=( $(echo "$filter" | cut -d . -f1 | tr ',' ' ') )
-      levels=( $(echo "$filter" | cut -d . -f2 | tr ',' ' ') )
+  	if [ "$dest" = "no_klog" ] || [ "$dest" = "noklog" ]; then
+  		src="src_noklog"
+  	else
+  	    filter=$(echo $dest | cut -d: -f1)
+  	    dest=$(echo $dest | cut -d: -f2)
+  	    # default is all
+  	    [ "$dest" = "$filter" ] && filter="*.*"
+  	    if [ -n "$filter" ] && [ -n "$dest" ]; then
+            facilities=( $(echo "$filter" | cut -d . -f1 | tr ',' ' ') )
+            levels=( $(echo "$filter" | cut -d . -f2 | tr ',' ' ') )
       
-      if [ "$levels" != '*' ] || [ "$facilities" != '*' ]; then
-        filtername="filter$i"
-        echo "filter $filtername { "
-        for facility in ${facilities[@]:0:${#facilities[@]}}; do
-      	  if [ -n "$firstfilter" ] && [ "$facility" != '*' ]; then
-      	    firstfilter=
-      	    echo -e "\t facility($facility)"
-      	  elif [ "$facility" != '*' ]; then
-      	    echo -e "\t or facility($facility)"
-      	  fi
-        done
+            if [ "$levels" != '*' ] || [ "$facilities" != '*' ]; then
+                filtername="filter$i"
+                echo "filter $filtername { "
+                for facility in ${facilities[@]:0:${#facilities[@]}}; do
+      	            if [ -n "$firstfilter" ] && [ "$facility" != '*' ]; then
+      	                firstfilter=
+      	                echo -e "\t facility($facility)"
+      	            elif [ "$facility" != '*' ]; then
+      	                echo -e "\t or facility($facility)"
+      	            fi
+                done
 
-        if [ "$levels" != '*' ]; then
-          for level in ${levels[@]}; do
-      	    if [ "$level" != '*' ]; then
-      	    	if [ -n "$firstfilter" ] && [ "$level" != '*' ]; then
-                  firstfilter=
-      	          echo -e "\t level(err..$level)"
-      	    	elif [ "$level" != '*' ]; then
-      	    	  echo -e "\t or level(err..$level)"
-      	    	fi
-      	    fi
-          done
-        fi
-        echo -e "\t ;\n};"
-      fi
+                if [ "$levels" != '*' ]; then
+                    for level in ${levels[@]}; do
+      	                if [ "$level" != '*' ]; then
+      	    	             if [ -n "$firstfilter" ] && [ "$level" != '*' ]; then
+                                 firstfilter=
+      	                         echo -e "\t level(err..$level)"
+      	    	             elif [ "$level" != '*' ]; then
+      	    	                 echo -e "\t or level(err..$level)"
+      	    	             fi
+      	                fi
+                    done
+                fi
+                echo -e "\t ;\n};"
+            fi
       	
-      if [ "${dest:0:1}" = "/" ]; then
-      	echo "destination destination$i { file(\"$dest\"); };"
-      else
-        echo "destination destination$i { udp(\"$dest\" port(514)); };"
-      fi
-      if [ -n "$filtername" ]; then
-        echo "log { source(src); filter(filter$i); destination(destination$i); };"
-      else
-        echo "log { source(src); destination(destination$i); };"
-      fi
-      i=$(( $i + 1 ))
-      filtername=
-      filter=
-      dest=
+            if [ "${dest:0:1}" = "/" ]; then
+      	        echo "destination destination$i { file(\"$dest\"); };"
+            else
+                echo "destination destination$i { udp(\"$dest\" port(514)); };"
+            fi
+            if [ -n "$filtername" ]; then
+                echo "log { source($src); filter(filter$i); destination(destination$i); };"
+            else
+                echo "log { source($src); destination(destination$i); };"
+            fi
+            i=$(( $i + 1 ))
+            filtername=
+            filter=
+            dest=
+        fi
     fi
   done
   set +f
@@ -374,7 +379,10 @@ function syslog_ng_start {
 
 ######################
 # $Log: syslog-lib.sh,v $
-# Revision 1.8  2011-02-08 08:43:54  marc
+# Revision 1.9  2011-02-11 11:14:19  marc
+# added no_klog parameter to syslogng_config.
+#
+# Revision 1.8  2011/02/08 08:43:54  marc
 # syslog_ng_config:
 # - rewrote the whole configuration generation for the filters to be working as expected.
 # syslog_ng_start:

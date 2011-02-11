@@ -1,5 +1,5 @@
 #
-# $Id: clusterfs-lib.sh,v 1.53 2011-02-02 09:17:02 marc Exp $
+# $Id: clusterfs-lib.sh,v 1.54 2011-02-11 11:12:45 marc Exp $
 #
 # @(#)$File$
 #
@@ -902,6 +902,7 @@ function cc_auto_syslogconfig {
   local syslog_template
   local syslog_server=$6
   local syslog_filter
+  local no_klog=$7
 
   if [ -z "$syslog_type" ]; then
   	syslog_type=$(detect_syslog 2>/dev/null)
@@ -934,7 +935,7 @@ function cc_auto_syslogconfig {
     
     echo_local -n "Creating syslog config for syslog destinations: $syslog_filter server: $syslog_server"
     mkdir -p ${chroot_path}/$(dirname $(repository_get_value syslogconf $(default_syslogconf $syslog_type)))
-    exec_local $(echo ${syslog_type} | tr '-' '_')_config $syslog_template $syslog_filter $syslog_server > ${chroot_path}/$(repository_get_value syslogconf $(default_syslogconf $syslog_type))
+    exec_local $(echo ${syslog_type} | tr '-' '_')_config $syslog_template "$no_klog" $syslog_filter $syslog_server > ${chroot_path}/$(repository_get_value syslogconf $(default_syslogconf $syslog_type))
     return_code
 
     local services=$(repository_get_value servicesfile "/etc/services")
@@ -1489,7 +1490,10 @@ function copy_relevant_files {
 
 
 # $Log: clusterfs-lib.sh,v $
-# Revision 1.53  2011-02-02 09:17:02  marc
+# Revision 1.54  2011-02-11 11:12:45  marc
+# added no_klog parameter to syslogng_config.
+#
+# Revision 1.53  2011/02/02 09:17:02  marc
 # cc_auto_syslog_config:
 # - support for overwriting the syslog server as parameter.
 #
