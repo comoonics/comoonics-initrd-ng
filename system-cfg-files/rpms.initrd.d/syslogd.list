@@ -1,2 +1,2 @@
 # name           filter
-sysklogd         /sbin/.*
+sysklogd         ^/sbin
