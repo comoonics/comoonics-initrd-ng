@@ -1,5 +1,5 @@
 #
-# $Id: gfs-lib.sh,v 1.79 2011-02-11 15:09:36 marc Exp $
+# $Id: gfs-lib.sh,v 1.80 2011-02-14 15:32:38 marc Exp $
 #
 # @(#)$File$
 #
@@ -1275,9 +1275,10 @@ function gfs_start_qdiskd() {
   ## THIS will be overwritten for rhel5 ##
   local chroot_path=$1
 
+  cmd=$(chroot $chroot_path which qdiskd)
   $ccs_xml_query query_xml /cluster/quorumd >/dev/null 2>&1
-  if [ $? -eq 0 ]; then
-     start_service_chroot $chroot_path /sbin/qdiskd -Q && \
+  if [ $? -eq 0 ] && [ -n "$cmd" ]; then
+     start_service_chroot $chroot_path $cmd -Q && \
      touch $chroot_path/var/lock/subsys/qdisk 2>/dev/null
   else
   	 echo_local -n "Starting qdiskd"
@@ -1302,10 +1303,14 @@ function gfs_stop_qdiskd() {
   ## THIS will be overwritten for rhel5 ##
   local chroot_path=$1
 
+  local cmd="qdiskd"
   $ccs_xml_query query_xml /cluster/quorumd >/dev/null 2>&1
-  if [ $? -eq 0 ]; then
-     stop_service $chroot_path /sbin/qdiskd $chroot_path && \
+  if [ $? -eq 0 ] && [ -n "$cmd" ]; then
+  	 echo_local -n "Stopping qdiskd"
+     stop_service $cmd $chroot_path && \
+     success && \
      rm $chroot_path/var/lock/subsys/qdisk 2>/dev/null
+     echo_local
   else
   	 echo_local -n "Stopping qdiskd"
      passed
@@ -1464,7 +1469,10 @@ function gfs_chroot_needed() {
 }
 
 # $Log: gfs-lib.sh,v $
-# Revision 1.79  2011-02-11 15:09:36  marc
+# Revision 1.80  2011-02-14 15:32:38  marc
+# - fixed bug with correct call of stop_service qdiskd.
+#
+# Revision 1.79  2011/02/11 15:09:36  marc
 # added gfs_qdiskd_stop function to stop qdisk as required.
 #
 # Revision 1.78  2010/09/01 09:48:44  marc
