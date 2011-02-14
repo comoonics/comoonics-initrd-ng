@@ -50,7 +50,7 @@ Requires: comoonics-bootimage >= 1.4-55
 Requires: comoonics-bootimage-listfiles-sles11
 Requires: sysvinit-comoonics
 #Conflicts:
-Release: 9.sles11
+Release: 10.sles11
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -73,14 +73,12 @@ Initscripts used by the OSR cluster environment. These are for Novell SLES11.
 install -d -m 755 $RPM_BUILD_ROOT/%{INITDIR}
 install -m755 initscripts/sles11/bootsr $RPM_BUILD_ROOT/%{INITDIR}/bootsr
 install -m755 initscripts/mountcdsls $RPM_BUILD_ROOT/%{INITDIR}/mountcdsls
+install -m755 initscripts/sles11/halt.local $RPM_BUILD_ROOT/%{INITDIR}/halt.local
 
 %clean
 rm -rf %{buildroot}
 
 %postun
-if [ -L /etc/init.d/halt.local ]; then
-   rm /etc/init.d/halt.local
-fi
 
 %post
 
@@ -101,19 +99,6 @@ for service in $services; do
    /sbin/chkconfig $service off &> /dev/null
 done
 
-echo "Creating link for halt.local"
-if [ -e /etc/init.d/halt.local ]; then
-   echo "Could not create link /etc/init.d/halt.local."
-   echo "In order to be able to reboot properly with cluster filesystems it is important to link"
-   echo "/opt/atix/comoonics-bootimage/boot-scripts/com-halt.sh /etc/init.d/halt.local"
-   echo "Please try to fix or validate manually"
-else
-   ln -sf  /opt/atix/comoonics-bootimage/boot-scripts/com-halt.sh /etc/init.d/halt.local
-fi
-
-cat << EOF
-
-EOF
 /bin/true
 
 %preun
@@ -122,8 +107,12 @@ true
 %files
 %attr(755, root, root) %{INITDIR}/bootsr
 %attr(755, root, root) %{INITDIR}/mountcdsls
+%attr(755, root, root) %{INITDIR}/halt.local
 
 %changelog
+* Tue Feb 09 2011 Marc Grimme <grimme@atix.de> 1.4-10sles11
+- initscripts/sles11/halt.local
+  - moved from link to script calling bash and com-halt.sh.
 * Wed Aug 18 2010 Marc Grimme <grimme@atix.de> 1.4-9sles11
 - initscripts/rhel4,rhel5,fedora,sles10,sles11/bootsr
   - fixed bug #382 where the cdsl.local was not remounted in /etc/mtab on locally installed systems
