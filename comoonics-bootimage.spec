@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.146 2011-02-11 13:45:00 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.147 2011-02-14 16:43:14 marc Exp $
 #
 ##
 ##
@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 74
+Release: 75
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -413,7 +413,7 @@ OSR extrafiles for plugins in fenceacksv.
 
 %package listfiles-syslogd
 Version: 0.1
-Release: 3
+Release: 4
 Requires: comoonics-bootimage-extras-syslog
 Summary: Syslog listfiles for syslog classic
 Group:   System Environment/Base
@@ -984,6 +984,11 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Fri Feb 11 2011 Marc Grimme <grimme@atix.de> 1.4-75
+- boot-scripts/etc/gfs-lib.sh
+  - added missing gfs_qdiskd_stop
+- boot-scripts/etc/rhel5/gfs-lib.sh
+  - added qdiskd to services being stopped.
 * Thu Feb 10 2011 Marc Grimme <grimme@atix.de> 1.4-74
 - boot-scripts/etc/repository-lib.sh
   - repository_normalize_value: fixed a cosmetic bug
@@ -1814,6 +1819,8 @@ syslog
 - introduced the changelog
 
 %changelog listfiles-syslogd
+* Mon Feb 14 2011 Marc Grimme <grimme@atix.de> 0.1-4
+- fixed regexp in listfile.
 * Tue Jun 29 2010 Marc Grimme <grimme@atix.de> 0.1-3
 - added a newline in the end to listfile
 * Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-2
@@ -1917,7 +1924,10 @@ syslog
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.146  2011-02-11 13:45:00  marc
+# Revision 1.147  2011-02-14 16:43:14  marc
+# new version comoonics-bootimage-1.4-75 and comoonics-bootimage-listfiles-syslogd-0.1-4
+#
+# Revision 1.146  2011/02/11 13:45:00  marc
 # new versions
 #
 # Revision 1.145  2011/02/08 10:02:06  marc
