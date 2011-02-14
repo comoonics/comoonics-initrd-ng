@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.70 2011-02-11 11:30:52 marc Exp $
+# $Id: Makefile,v 1.71 2011-02-14 16:43:46 marc Exp $
 #
 # @(#)$file$
 #
@@ -401,6 +401,10 @@ CHANNELSUBDIRS=i386 x86_64 noarch SRPMS
 
 TEST_DIR=tests
 
+CLUSTERSUITE_PATH=~/atix/nashead2004/management/comoonics-clustersuite/
+PYTHONPATH=$(CLUSTERSUITE_PATH)/python/lib
+CCS_XML_QUERY=$(CLUSTERSUITE_PATH)/python/bin/com-queryclusterconf
+
 .PHONY: install
 install: 
 	@echo -n "Installing executables..."
@@ -512,6 +516,8 @@ rpmpackagedir:
 
 test:
 	@echo "Testing source..."
+	PYTHONPATH=$(PYTHONPATH) \
+	ccs_xml_query=$(CCS_XML_QUERY) \
 	bash ./$(TEST_DIR)/do_testing.sh
 
 rpmbuild: archive
@@ -598,7 +604,10 @@ channel: rpm channelcopy channelbuild
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.70  2011-02-11 11:30:52  marc
+# Revision 1.71  2011-02-14 16:43:46  marc
+# *** empty log message ***
+#
+# Revision 1.70  2011/02/11 11:30:52  marc
 # added the new listfiles.
 #
 # Revision 1.69  2011/01/28 13:01:51  marc
