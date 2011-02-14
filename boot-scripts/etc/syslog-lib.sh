@@ -1,5 +1,5 @@
 #
-# $Id: syslog-lib.sh,v 1.9 2011-02-11 11:14:19 marc Exp $
+# $Id: syslog-lib.sh,v 1.10 2011-02-14 16:50:13 marc Exp $
 #
 # @(#)$File$
 #
@@ -93,17 +93,19 @@ syslogd_config() {
   #fi
   
   for dest in $dests; do
-  	filter=$(echo $dest | cut -d: -f1)
-  	dest=$(echo $dest | cut -d: -f2)
-  	# default is all
-  	[ "$dest" = "$filter" ] && filter="*.*"
-  	if [ -n "$filter" ] && [ -n "$dest" ]; then
-      if [ "${dest:0:1}" = "/" ]; then
-      	echo "$filter $dest"
-      else
-        echo "$filter @$dest"
-  	  fi
-    fi
+  	if [ "$dest" != "no_klog" ] && [ "$dest" != "noklog" ]; then
+      filter=$(echo $dest | cut -d: -f1)
+  	  dest=$(echo $dest | cut -d: -f2)
+  	  # default is all
+  	  [ "$dest" = "$filter" ] && filter="*.*"
+  	  if [ -n "$filter" ] && [ -n "$dest" ]; then
+        if [ "${dest:0:1}" = "/" ]; then
+        	echo "$filter $dest"
+        else
+          echo "$filter @$dest"
+  	    fi
+      fi
+  	fi
   done
 }
 #************ syslogd_config
@@ -183,21 +185,23 @@ EOF
   [ -f "$rsyslog_conf_template" ] && cat $rsyslog_conf_template
   
   for dest in $dests; do
-  	filter=$(echo $dest | cut -d: -f1)
-  	dest=$(echo $dest | cut -d: -f2)
-  	# default is all
-  	[ "$dest" = "$filter" ] && filter="*.*"
-  	if [ -n "$filter" ] && [ -n "$dest" ]; then
-      if [ "${dest:0:1}" = "/" ]; then
-      	echo "${asyncoutputchannelsetting}"
-      	echo "$filter $dest"
-      	echo
-      else
-      	echo "${asyncoutputchannelsetting}"
-        echo "$filter @$dest"
-        echo
-  	  fi
-    fi
+  	if [ "$dest" != "no_klog" ] && [ "$dest" != "noklog" ]; then
+  	  filter=$(echo $dest | cut -d: -f1)
+  	  dest=$(echo $dest | cut -d: -f2)
+  	  # default is all
+  	  [ "$dest" = "$filter" ] && filter="*.*"
+  	  if [ -n "$filter" ] && [ -n "$dest" ]; then
+        if [ "${dest:0:1}" = "/" ]; then
+      	  echo "${asyncoutputchannelsetting}"
+      	  echo "$filter $dest"
+      	  echo
+        else
+          echo "${asyncoutputchannelsetting}"
+          echo "$filter @$dest"
+          echo
+  	    fi
+      fi
+  	fi
   done
 }
 #*********** rsyslog_config
@@ -379,7 +383,10 @@ function syslog_ng_start {
 
 ######################
 # $Log: syslog-lib.sh,v $
-# Revision 1.9  2011-02-11 11:14:19  marc
+# Revision 1.10  2011-02-14 16:50:13  marc
+# ignore noklog dest in syslogd_config and rsyslog_config
+#
+# Revision 1.9  2011/02/11 11:14:19  marc
 # added no_klog parameter to syslogng_config.
 #
 # Revision 1.8  2011/02/08 08:43:54  marc
