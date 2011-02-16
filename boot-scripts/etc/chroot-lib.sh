@@ -1,5 +1,5 @@
 #
-# $Id: chroot-lib.sh,v 1.12 2011-01-28 12:58:31 marc Exp $
+# $Id: chroot-lib.sh,v 1.13 2011-02-16 14:33:36 marc Exp $
 #
 # @(#)$File$
 #
@@ -32,11 +32,11 @@
 #*******
 
 function lock_rpm() {
-  typeset -f lock   >/dev/null 2>/dev/null && [ -n "$SHAREDLOCKDIR" ] && lock -10 -r12 ${SHAREDLOCKDIR}/rpm
+  typeset -f lock   >/dev/null 2>/dev/null && [ -n "$SHAREDLOCKDIR" ] && [ -d "$SHAREDLOCKDIR" ] && lock -10 -r12 ${SHAREDLOCKDIR}/rpm
 }
 
 function unlock_rpm() {
-  typeset -f unlock >/dev/null 2>/dev/null && [ -n "$SHAREDLOCKDIR" ] && unlock ${SHAREDLOCKDIR}/rpm
+  typeset -f unlock >/dev/null 2>/dev/null && [ -n "$SHAREDLOCKDIR" ] && [ -d "$SHAREDLOCKDIR" ] && unlock ${SHAREDLOCKDIR}/rpm
 }
 
 #****f* create-gfs-initrd-lib.sh/extract_rpm
@@ -617,7 +617,11 @@ function build_chroot () {
 #****** build_chroot
 #####################
 # $Log: chroot-lib.sh,v $
-# Revision 1.12  2011-01-28 12:58:31  marc
+# Revision 1.13  2011-02-16 14:33:36  marc
+# - lock_rpm / unlock_rpm
+#   Would also work if no /var/sharelock exists.
+#
+# Revision 1.12  2011/01/28 12:58:31  marc
 # Bug #396 added lockfile protection for each rpm operation. Result is that nodes can now boot in parallel.
 #
 # Revision 1.11  2010/09/01 15:18:13  marc
