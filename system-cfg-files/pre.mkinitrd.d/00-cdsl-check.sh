@@ -1,3 +1,7 @@
 #!/bin/bash
+MKCDSLINFRASTRUCTURE=${MKCDSLINFRASTRUCTURE:-"/usr/bin/com-mkcdslinfrastructure"}
 
-/usr/bin/com-mkcdslinfrastructure --list >/dev/null
+# Check if the binary exists
+if [ -e "$MKCDSLINFRASTRUCTURE" ]; then
+  $MKCDSLINFRASTRUCTURE --list >/dev/null
+fi

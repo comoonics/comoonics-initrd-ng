@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.109 2011-02-11 11:15:10 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.110 2011-02-16 14:32:55 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.109 2011-02-11 11:15:10 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.110 2011-02-16 14:32:55 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -88,7 +88,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.109 $ $Date: 2011-02-11 11:15:10 $'
+echo_local 'Internal Version $Revision: 1.110 $ $Date: 2011-02-16 14:32:55 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -441,10 +441,13 @@ if [ $return_c -ne 0 ]; then
 fi
 step "RootFS mounted return_c ${return_c}" "rootfsmount"
 
-#FIXME: should somehow detect if we are a cluster if not don't mount cdsl
-clusterfs_mount_cdsl "$(repository_get_value newroot)" "$(repository_get_value cdsl_local_dir)" "$(repository_get_value nodeid)" "$(repository_get_value cdsl_prefix)"
-if [ $return_c -ne 0 ]; then
+if [ "$(repository_get_value cdsl_local_dir)" != "nocdsl" ] && [ "$(repository_get_value cdsl_prefix)" != "nocdsl" ]; then
+  clusterfs_mount_cdsl "$(repository_get_value newroot)" "$(repository_get_value cdsl_local_dir)" "$(repository_get_value nodeid)" "$(repository_get_value cdsl_prefix)"
+  if [ $return_c -ne 0 ]; then
 	breakp "$(errormsg err_rootfs_mount_cdsl $(repository_get_value root))"
+  fi
+else
+  echo_local_debug "Skipped mounting of cdsl."
 fi
 step "CDSL tree mounted" "cdsl"
 
@@ -619,7 +622,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.109  2011-02-11 11:15:10  marc
+# Revision 1.110  2011-02-16 14:32:55  marc
+# - implemented that it might also work without existant cdsl environment.
+#
+# Revision 1.109  2011/02/11 11:15:10  marc
 # added no_klog to cc_auto_syslog_config when being started.
 #
 # Revision 1.108  2011/02/08 09:57:41  marc
