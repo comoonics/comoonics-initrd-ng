@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.147 2011-02-14 16:43:14 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.148 2011-02-16 14:39:32 marc Exp $
 #
 ##
 ##
@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 75
+Release: 76
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -280,7 +280,7 @@ Vi includes for comoonics-bootimage (takes vim)
 
 %package listfiles-all
 Version: 0.1
-Release: 15
+Release: 16
 Requires: comoonics-bootimage >= 1.4-55
 Group:   System Environment/Base
 Summary: OSR listfilesfiles for all distributions 
@@ -984,6 +984,11 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Wed Feb 16 2011 Marc Grimme <grimme@atix.de> 1.4-76
+- boot-scripts/etc/chroot-lib.sh
+  - implemented that it might also work without existent cdsl environment.
+- linuxrc.generic.sh
+  - implemented that it might also work without existent cdsl environment.
 * Fri Feb 11 2011 Marc Grimme <grimme@atix.de> 1.4-75
 - boot-scripts/etc/gfs-lib.sh
   - added missing gfs_qdiskd_stop
@@ -1679,6 +1684,9 @@ syslog
 - initial revision
 
 %changelog listfiles-all
+* Wed Feb 16 2011 Marc Grimme <grimme@atix.de> 0.1-16
+- pre.mkinitrd.d/00-cdsl-check.sh post.mkinitrd.d/02-create-cdsl-repository.sh
+  - checks if cdsl environment is working
 * Wed Aug 10 2010 Marc Grimme <grimme@atix.de> 0.1-15
 - pre.mkinitrd.d/00-cdsl-check.sh
   - checks if cdsl environment is working
@@ -1924,7 +1932,10 @@ syslog
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.147  2011-02-14 16:43:14  marc
+# Revision 1.148  2011-02-16 14:39:32  marc
+# - new bootimage version 1.4-76 and bootimage-listfiles-all 0.1-16
+#
+# Revision 1.147  2011/02/14 16:43:14  marc
 # new version comoonics-bootimage-1.4-75 and comoonics-bootimage-listfiles-syslogd-0.1-4
 #
 # Revision 1.146  2011/02/11 13:45:00  marc
