@@ -4,11 +4,11 @@ Fence Acknowledge Server via normal an ssl
 """
 
 # here is some internal information
-# $Id: shell.py,v 1.8 2010-02-15 14:07:07 marc Exp $
+# $Id: shell.py,v 1.9 2011-02-21 16:15:17 marc Exp $
 #
 
 
-__version__ = "$Revision: 1.8 $"
+__version__ = "$Revision: 1.9 $"
 # $Source: /atix/ATIX/CVSROOT/nashead2004/bootimage/fencing/fence-ack-server/shell.py,v $
 import cmd
 import os
@@ -20,7 +20,7 @@ import logging
 from comoonics import ComLog, ComSystem
 from comoonics import ComExceptions
 from comoonics.cluster.tools import pexpect
-from comoonics.ComSystemInformation import SystemInformation
+from comoonics.tools.ComSystemInformation import SystemInformation
 logger=ComLog.getLogger("comoonics.bootimage.fenceacksv.shell")
 
 try:
@@ -336,7 +336,7 @@ The following fenceclients seem to be pending you can kill them by the command k
         print >>self.stdout, "Prints the version of this service" %(self.shell)
 
     def do_version(self, rest):
-        print >>self.stdout, 'Version $Revision: 1.8 $'
+        print >>self.stdout, 'Version $Revision: 1.9 $'
 
     def help_fence_node(self):
         print >>self.stdout, "Fenced the given node"
@@ -489,7 +489,10 @@ if __name__ == '__main__':
 
 ##############
 # $Log: shell.py,v $
-# Revision 1.8  2010-02-15 14:07:07  marc
+# Revision 1.9  2011-02-21 16:15:17  marc
+# fixed bug in import of SystemInformation
+#
+# Revision 1.8  2010/02/15 14:07:07  marc
 # - moved to latest version
 # - fixed bug in initscript
 #
