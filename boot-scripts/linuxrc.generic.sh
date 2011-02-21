@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.110 2011-02-16 14:32:55 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.111 2011-02-21 16:17:07 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.110 2011-02-16 14:32:55 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.111 2011-02-21 16:17:07 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -88,7 +88,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.110 $ $Date: 2011-02-16 14:32:55 $'
+echo_local 'Internal Version $Revision: 1.111 $ $Date: 2011-02-21 16:17:07 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -155,8 +155,13 @@ step "Hardwaredetection finished" "hwdetect"
 
 echo_local -n "Detecting nodeid & nodename "
 
+# get number of nodeids and change float to int
+nodeids=$(cc_get nodes 2>/dev/null | sed -e 's/.[0-9]*$//)
 #nodeid must be first
 nodeid=$(getParameter nodeid $(cc_getdefaults nodeid))
+if [ -z "$nodeid" ] && [ -n "$nodeids" ]; then
+	nodeid=$(cc_get nodeids 2>/dev/null | cut -f1 -d" ")
+fi
 [ -z "$nodeid" ] && breakp "$(errormsg err_cc_nodeid)"
 nodename=$(getParameter nodename $(cc_getdefaults nodename))
 [ -z "$nodename" ] && breakp "$(errormsg err_cc_nodename)"
@@ -622,7 +627,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.110  2011-02-16 14:32:55  marc
+# Revision 1.111  2011-02-21 16:17:07  marc
+# - if only one nodeid is present this one will be used if in question
+#
+# Revision 1.110  2011/02/16 14:32:55  marc
 # - implemented that it might also work without existant cdsl environment.
 #
 # Revision 1.109  2011/02/11 11:15:10  marc
