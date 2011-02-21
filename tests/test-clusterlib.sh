@@ -12,11 +12,24 @@ if [ $? -ne 0 ]; then
     repository_store_value "nodeid" "1"
     nodeid=$(repository_get_value nodeid)
   
+    _fsparameters=$(cc_get_valid_params)
+    for _parameter in $_fsparameters; do
+      if ! [ "$_parameter" = "rootfs" ]; then
+        echo -n "Testing cc_getdefaults($_parameter)"
+        expectedresult=$(cat $path/test/$clutype/cc_getdefaults_${_parameter} 2>/dev/null)
+        result=$(cc_getdefaults $_parameter)
+        test "$result" = "$expectedresult"
+        detecterror $? "${clutype}_getdefaults $rootfs $_parameter failed. result: $result, expected: $expectedresult." || echo -n " Failed"
+        echo " $result"
+        result=""
+        expectedresult=""
+      fi
+    done
     echo -n "Testing cc_get_nodename_by_id $nodeid"
     expectedresult="gfs-node1"
     result=$(cc_get_nodename_by_id $cluster_conf $nodeid)
     test "$result" = "$expectedresult"
     detecterror $? "cc_get_nodename_by_id $nodeid failed. result: $result, expected: $expectedresult." || echo -n " Failed"
     echo " $result"
-  fi
+   fi
 fi

@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.149 2011-02-21 16:20:07 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.150 2011-02-21 16:22:57 marc Exp $
 #
 ##
 ##
@@ -494,7 +494,7 @@ Version: 0.3
 Release: 14
 Requires: comoonics-fenceacksv-py
 Requires: comoonics-bootimage >= 1.4-51
-Requires: comoonics-tools-py
+Requires: comoonics-tools-py >= 0.1-9
 Summary: The Fenceackserver is a service for last resort actions
 Group:   System Environment/Servers
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
@@ -1943,7 +1943,10 @@ syslog
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.149  2011-02-21 16:20:07  marc
+# Revision 1.150  2011-02-21 16:22:57  marc
+# *** empty log message ***
+#
+# Revision 1.149  2011/02/21 16:20:07  marc
 # new version comoonics-bootimage-1.4-78, comoonics-bootimage-fenceacksv-0.3-19
 #
 # Revision 1.148  2011/02/16 14:39:32  marc
