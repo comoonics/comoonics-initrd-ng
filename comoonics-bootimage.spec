@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.148 2011-02-16 14:39:32 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.149 2011-02-21 16:20:07 marc Exp $
 #
 ##
 ##
@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 76
+Release: 78
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -491,7 +491,7 @@ OSR files needed for the compatibility to 1.2 releases
 
 %package fenceacksv
 Version: 0.3
-Release: 13
+Release: 14
 Requires: comoonics-fenceacksv-py
 Requires: comoonics-bootimage >= 1.4-51
 Requires: comoonics-tools-py
@@ -984,6 +984,14 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Mon Feb 21 2011 Marc Grimme <grimme@atix.de> 1.4-78
+- boot-scripts/linuxrc.generic.sh
+  - if only one nodeid is present this one will be used if in question
+* Fri Feb 18 2011 Marc Grimme <grimme@atix.de> 1.4-77
+- querymap.cfg:
+  - added nodeids query that would return the amount of nodeids in float (1.0, 2.0, ..)
+- linuxrc.generic.sh
+  - if no nodeid is given an only one nodeid is found this is one is used as nodeid => you don't need to specify the nodeid if single node
 * Wed Feb 16 2011 Marc Grimme <grimme@atix.de> 1.4-76
 - boot-scripts/etc/chroot-lib.sh
   - implemented that it might also work without existent cdsl environment.
@@ -1869,6 +1877,9 @@ syslog
 - initial version 
 
 %changelog fenceacksv
+* Mon Feb 21 2011 Marc Grimme <grimme@atix.de> 0.3-15
+- shell.py
+  - fixed dep to SystemInformation
 * Mon Jan 31 2011 Marc Grimme <grimme@atix.de> 0.3-14
 - fenceacksv.sh
   - fixed a bug in the initscript the fenceacksv will fail to stop during shutdown (for ssh).
@@ -1932,7 +1943,10 @@ syslog
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.148  2011-02-16 14:39:32  marc
+# Revision 1.149  2011-02-21 16:20:07  marc
+# new version comoonics-bootimage-1.4-78, comoonics-bootimage-fenceacksv-0.3-19
+#
+# Revision 1.148  2011/02/16 14:39:32  marc
 # - new bootimage version 1.4-76 and bootimage-listfiles-all 0.1-16
 #
 # Revision 1.147  2011/02/14 16:43:14  marc
