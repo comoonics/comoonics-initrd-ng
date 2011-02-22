@@ -1,8 +1,9 @@
+# rpm                      includefilter      excludefilter
 cman
 openais
 lvm2-cluster
 OpenIPMI-tools
-pam
+pam                         .                  ^/var/log
 #######
 # $Log: rhcs5.list,v $
 # Revision 1.2  2007/09/25 15:52:34  mark
