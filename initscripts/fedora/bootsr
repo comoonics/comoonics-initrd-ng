@@ -134,11 +134,15 @@ case "$1" in
 
     # if /etc/mtab is not a link to /proc/mounts we need to update the mtab for the cdsl environment if it is mounted
 	# check for the existence of the cdsl environment on /
-	com-mkcdslinfrastructure --get config_version &> /dev/null
+	which com-mkcdslinfrastructure &> /dev/null && com-mkcdslinfrastructure --get config_version &> /dev/null
 	# now check if /etc/mtab is a symlink to /proc/mounts and if not remount cdsl environment
-    if ! ( [ $? -eq 0 ] && [ -L /etc/mtab ] && [ "$(ls -l /etc/mtab | sed -e 's/^.*-> //')" = "/proc/mounts" ] ); then
-    	mount -f "/"$(com-mkcdslinfrastructure --get tree)"/"$(repository_get_value nodeid) "/"$(com-mkcdslinfrastructure --get link)
-    	action "Remounting cdsl environment." mount -o remount,rw "/"$(com-mkcdslinfrastructure --get link)
+    if ! ( [ $? -eq 0 ] && [ -L /etc/mtab ] && [ "$(ls -l /etc/mtab | sed -e 's/^.*-> //')" = "/proc/mounts" ]) && which com-mkcdslinfrastructure &>/dev/null; then
+    	link=$(com-mkcdslinfrastructure --get link)
+    	tree=$(com-mkcdslinfrastructure --get tree)
+    	if [ -n "$link" ] && [ -n "$tree" ] && [ "$link" != "nocdsl" ] && [ "$tree" != "nocdsl" ]; then
+    	  mount -f "/"$(com-mkcdslinfrastructure --get tree)"/"$(repository_get_value nodeid) "/"$(com-mkcdslinfrastructure --get link)
+    	  action "Remounting cdsl environment." mount -o remount,rw "/"$(com-mkcdslinfrastructure --get link)
+    	fi
     fi
     if  [ -n "$rootfs" ] && check_sharedroot $rootfs; then
       touch /var/lock/subsys/bootsr
