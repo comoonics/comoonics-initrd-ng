@@ -1,5 +1,5 @@
 #
-# $Id: errors.sh,v 1.4 2010-08-18 11:49:39 marc Exp $
+# $Id: errors.sh,v 1.5 2011-02-28 09:01:38 marc Exp $
 #
 # @(#)$File$
 #
@@ -65,7 +65,7 @@ Read errormessage below.\\n
 Command: $(repository_get_value exec_local_lastcmd)\\n
 Errors:  $(repository_get_value exec_local_lasterror)\\n
 '
-err_clusterfs_fsck='Either could not find executable to auto fsck the filesystem ("$(repository_get_value err_clusterfs_fsck_param2)") on "$(repository_get_value err_clusterfs_fsck_param1)"\\n
+err_clusterfs_fsck='Either could not find executable to auto fsck the filesystem - "$(repository_get_value err_clusterfs_fsck_param2)" - on "$(repository_get_value err_clusterfs_fsck_param1)" \\n
 or this filesystem does not support autofsck. This means you have to do it manually.\\n 
 This should be done if you end up here.\\n
 \\n
@@ -91,8 +91,8 @@ specified in the cluster configuration could not be matched to any MAC-Adresses 
 \\n
 You can either fix this and build a new initrd or hardset the nodeid via "setparameter nodename <nodename>"\\n
 '
-err_hw_nicdriver='No network interfaces were found. Either you have not specified a nic in the driver db (modprobe.conf).\\n
-Or there are no valid drivers available for your network interfaces (use "lspci") to validate.\\n
+err_hw_nicdriver='No network interfaces were found. Either you have not specified a nic in the driver db - modprobe.conf.\\n
+Or there are no valid drivers available for your network interfaces - use "lspci" - to validate.\\n
 \\n
 You can either fix this problem and build a new initrd or load the drivers by hand and then exit from here and\\n
 continue booting.\\n
@@ -144,7 +144,7 @@ Errors: $(repository_get_value exec_local_lasterror)\\n
 '
 err_rootfs_device='Could not find the rootdevice "$(repository_get_value root)".\\n 
 This usually means either the rootdevice is not mapped to this node and is therefore not seen or\\n
-a higherlevel software (lvm or multipathing) cannot access the rootdevice because it is not setup as such.\\n
+a higherlevel software - lvm or multipathing - cannot access the rootdevice because it is not setup as such.\\n
 \\n
 The best guess is to manually validate the error then fix it in the initrd base, build a new initrd\n
 and reboot this node.\\n
@@ -163,13 +163,13 @@ Errors: $(repository_get_value exec_local_lasterror)\\n
 '
 
 err_fs_mount_cdsl='Could not mount the cdsl filesystem structure for the filesystem on "$(repository_get_value err_fs_mount_cdsl_param1)".\\n
-Usually this can only happen if you did not set it up (com-mkcdslinfrastructure).\\n
+Usually this can only happen if you did not set it up - com-mkcdslinfrastructure.\\n
 You should fix this and reboot this node.\\n
 '
 
 err_cc_restart_service='Could not restart the service "$(repository_get_value err_cc_restart_service_param1)".\\n 
 \\n
-Please carefully decide if you want to continue (type exit) booting or not.\\n
+Please carefully decide if you want to continue - type exit - booting or not.\\n
 The best guess might be to check why fix the problem and restart the service manully.\\n
 Then you can savely continue booting.\\n
 Command: $(repository_get_value exec_local_lastcmd)\\n
@@ -179,7 +179,7 @@ Errors: $(repository_get_value exec_local_lasterror)\\n
 
 err_fs_device='Could not find the device "$(repository_get_value err_fs_device_param1)".\\n 
 This usually means either the rootdevice is not mapped to this node and is therefore not seen or\\n
-a higherlevel software (lvm or multipathing) cannot access the rootdevice because it is not setup as such.\\n
+a higherlevel software - lvm or multipathing - cannot access the rootdevice because it is not setup as such.\\n
 \\n
 The best guess is to manually validate the error then fix it in the initrd base, build a new initrd\\n
 Command: $(repository_get_value exec_local_lastcmd)\\n
@@ -197,7 +197,10 @@ Errors: $(repository_get_value exec_local_lasterror)\\n
 '
 ##################
 # $Log: errors.sh,v $
-# Revision 1.4  2010-08-18 11:49:39  marc
+# Revision 1.5  2011-02-28 09:01:38  marc
+# fixed syntax errors in errormessages.
+#
+# Revision 1.4  2010/08/18 11:49:39  marc
 # added an errormessage when filesystem cannot be mounted.
 #
 # Revision 1.3  2010/07/08 08:07:21  marc
