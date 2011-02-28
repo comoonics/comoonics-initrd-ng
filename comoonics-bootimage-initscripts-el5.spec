@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.29 2010-08-18 11:53:28 marc Exp $
+# $Id: comoonics-bootimage-initscripts-el5.spec,v 1.30 2011-02-28 14:27:42 marc Exp $
 #
 ##
 ##
@@ -52,7 +52,7 @@ Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-rhel
 Requires: comoonics-bootimage-listfiles-rhel5
 #Conflicts: 
-Release: 19.rhel5
+Release: 20.rhel5
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -90,7 +90,7 @@ install -m600 initscripts/rhel5/halt.orig $RPM_BUILD_ROOT/%{APPDIR}/patches/halt
 install -m600 initscripts/rhel5/network.orig $RPM_BUILD_ROOT/%{APPDIR}/patches/network.orig
 install -m600 initscripts/rhel5/netfs.orig $RPM_BUILD_ROOT/%{APPDIR}/patches/netfs.orig
 install -d $RPM_BUILD_ROOT/%{SBINDIR}
-#install -m755 initscripts/rhel5/halt.local $RPM_BUILD_ROOT/%{SBINDIR}/halt.local
+install -m755 initscripts/halt.local $RPM_BUILD_ROOT/%{SBINDIR}/halt.local
 
 %preun
 if [ "$1" -eq 0 ]; then
@@ -201,17 +201,12 @@ for service in $services; do
    /sbin/chkconfig --del $service &> /dev/null
 done
 
-echo "Creating link for halt.local"
-if [ -e /sbin/halt.local ]; then
-   echo "Could not create link /sbin/halt.local."
-   echo "In order to be able to reboot properly with cluster filesystems it is important to link"
-   echo "/opt/atix/comoonics-bootimage/boot-scripts/com-halt.sh /sbin/halt.local"
-   echo "Please try to fix or validate manually"
-else
-   ln -sf  /opt/atix/comoonics-bootimage/boot-scripts/com-halt.sh /sbin/halt.local
-fi
-
 /bin/true
+
+%postun
+if [ -L %{SBINDIR}/halt.local ]; then
+   rm %{SBINDIR}/halt.local
+fi
 
 %files
 
@@ -228,12 +223,14 @@ fi
 %attr(755, root, root) %{APPDIR}/patches/halt.orig
 %attr(755, root, root) %{APPDIR}/patches/network.orig
 %attr(755, root, root) %{APPDIR}/patches/netfs.orig
-#%attr(755, root, root) %{SBINDIR}/halt.local
+%attr(755, root, root) %{SBINDIR}/halt.local
 
 %clean
 rm -rf %{buildroot}
 
 %changelog
+* Mon Feb 28 2011 Marc Grimme <grimme@atix.de> 1.4-20el5
+- halt.local will now be a file being installed instead of a symbolic link.
 * Wed Aug 18 2010 Marc Grimme <grimme@atix.de> 1.4-19el5
 - initscripts/rhel4,rhel5,fedora,sles10,sles11/bootsr
   - fixed bug #382 where the cdsl.local was not remounted in /etc/mtab on locally installed systems
@@ -284,7 +281,10 @@ rm -rf %{buildroot}
 - first revision
 # ------
 # $Log: comoonics-bootimage-initscripts-el5.spec,v $
-# Revision 1.29  2010-08-18 11:53:28  marc
+# Revision 1.30  2011-02-28 14:27:42  marc
+# new versions for halt.local as file
+#
+# Revision 1.29  2010/08/18 11:53:28  marc
 # new versions
 #
 # Revision 1.28  2010/07/08 08:39:37  marc

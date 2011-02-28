@@ -50,7 +50,7 @@ Requires: comoonics-bootimage >= 1.4-55
 Requires: comoonics-bootimage-listfiles-sles11
 Requires: sysvinit-comoonics
 #Conflicts:
-Release: 10.sles11
+Release: 11.sles11
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -73,7 +73,7 @@ Initscripts used by the OSR cluster environment. These are for Novell SLES11.
 install -d -m 755 $RPM_BUILD_ROOT/%{INITDIR}
 install -m755 initscripts/sles11/bootsr $RPM_BUILD_ROOT/%{INITDIR}/bootsr
 install -m755 initscripts/mountcdsls $RPM_BUILD_ROOT/%{INITDIR}/mountcdsls
-install -m755 initscripts/sles11/halt.local $RPM_BUILD_ROOT/%{INITDIR}/halt.local
+install -m755 initscripts/halt.local $RPM_BUILD_ROOT/%{INITDIR}/halt.local
 
 %clean
 rm -rf %{buildroot}
@@ -110,6 +110,9 @@ true
 %attr(755, root, root) %{INITDIR}/halt.local
 
 %changelog
+* Tue Feb 22 2011 Marc Grimme <grimme@atix.de> 1.4-11sles11
+- initscripts/rhel4,rhel5,fedora,sles10,sles11/bootsr
+  - would work without cdsl tools being available
 * Tue Feb 09 2011 Marc Grimme <grimme@atix.de> 1.4-10sles11
 - initscripts/sles11/halt.local
   - moved from link to script calling bash and com-halt.sh.
