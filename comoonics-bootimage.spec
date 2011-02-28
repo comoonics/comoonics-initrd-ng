@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.150 2011-02-21 16:22:57 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.151 2011-02-28 14:27:29 marc Exp $
 #
 ##
 ##
@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 78
+Release: 79
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -291,7 +291,7 @@ OSR Listfiles that are only relevant for all linux distributions
 
 %package listfiles-rhel
 Version: 0.1
-Release: 7
+Release: 8
 Requires: comoonics-bootimage >= 1.3-36
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-all
@@ -343,7 +343,7 @@ OSR extra files that are only relevant for RHEL4
 
 %package listfiles-rhel5
 Version: 0.1
-Release: 7
+Release: 8
 Requires: comoonics-bootimage >= 1.4-55
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-rhel
@@ -984,6 +984,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Mon Feb 28 2011 Marc Grimme <grimme@atix.de> 1.4-79
+- boot-scripts/error-lib.sh
+  - Fixed syntax errors in errormessages.
 * Mon Feb 21 2011 Marc Grimme <grimme@atix.de> 1.4-78
 - boot-scripts/linuxrc.generic.sh
   - if only one nodeid is present this one will be used if in question
@@ -1725,6 +1728,8 @@ syslog
   - initial revision 
 
 %changelog listfiles-rhel
+* Tue Feb 22 2011 Marc Grimme <grimme@atix.de> 0.1-8
+- added excludefilter to initscripts (hardware.list) rpm to not include /var/log files
 * Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-5
 - first version for comoonics-4.6-rc1 
 * Mon Sep 28 2009 Marc Grimme <grimme@atix.de> - 0.1-4
@@ -1745,8 +1750,9 @@ syslog
   - initial revision 
 
 %changelog listfiles-rhel5
-* Fri Jan 14 2011 Marc Grimme <grimme@atix.de> 0.1-8
+* Tue Feb 22 2011 Marc Grimme <grimme@atix.de> 0.1-8
 - added python-list in rpms.initrd.d/rhel5/python.list to be RHEL5.6 compatible
+- added excludefilter to pam (rhcs.list) rpm to not include /var/Log files
 * Wed Jul 07 2010 Marc Grimme <grimme@atix.de> 0.1-7
 - added MAKEDEV to base.list
 * Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-6
@@ -1943,7 +1949,10 @@ syslog
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.150  2011-02-21 16:22:57  marc
+# Revision 1.151  2011-02-28 14:27:29  marc
+# - fixed errormessages (1.4-79)
+#
+# Revision 1.150  2011/02/21 16:22:57  marc
 # *** empty log message ***
 #
 # Revision 1.149  2011/02/21 16:20:07  marc
