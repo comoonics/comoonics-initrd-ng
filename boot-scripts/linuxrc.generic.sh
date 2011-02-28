@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.112 2011-02-22 16:00:49 marc Exp $
+# $Id: linuxrc.generic.sh,v 1.113 2011-02-28 09:02:11 marc Exp $
 #
 # @(#)$File$
 #
@@ -26,7 +26,7 @@
 #****h* comoonics-bootimage/linuxrc.generic.sh
 #  NAME
 #    linuxrc
-#    $Id: linuxrc.generic.sh,v 1.112 2011-02-22 16:00:49 marc Exp $
+#    $Id: linuxrc.generic.sh,v 1.113 2011-02-28 09:02:11 marc Exp $
 #  DESCRIPTION
 #    The first script called by the initrd.
 #*******
@@ -88,7 +88,7 @@ echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
 echo_local "$release"
-echo_local 'Internal Version $Revision: 1.112 $ $Date: 2011-02-22 16:00:49 $'
+echo_local 'Internal Version $Revision: 1.113 $ $Date: 2011-02-28 09:02:11 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
@@ -156,11 +156,11 @@ step "Hardwaredetection finished" "hwdetect"
 echo_local -n "Detecting nodeid & nodename "
 
 # get number of nodeids and change float to int
-nodeids=$(cc_get nodes 2>/dev/null | sed -e 's/.[0-9]*$//')
+nodes=$(cc_get nodes 2>/dev/null | sed -e 's/\.[0-9]*$//')
 #nodeid must be first
 nodeid=$(getParameter nodeid $(cc_getdefaults nodeid))
-if [ -z "$nodeid" ] && [ -n "$nodeids" ]; then
-	nodeid=$(cc_get nodeids 2>/dev/null | cut -f1 -d" ")
+if [ -z "$nodeid" ] && [ -n "$nodes" ] && [ "$nodes" == "1" ]; then
+	nodeid=$(getParameter nodeid $(cc_get nodeids 2>/dev/null | cut -f1 -d" "))
 fi
 [ -z "$nodeid" ] && breakp "$(errormsg err_cc_nodeid)"
 nodename=$(getParameter nodename $(cc_getdefaults nodename))
@@ -627,7 +627,10 @@ exit_linuxrc 0 "$init_cmd" "$newroot"
 
 ###############
 # $Log: linuxrc.generic.sh,v $
-# Revision 1.112  2011-02-22 16:00:49  marc
+# Revision 1.113  2011-02-28 09:02:11  marc
+# nodeid will be automatically set to 1 if only one node is configurred.
+#
+# Revision 1.112  2011/02/22 16:00:49  marc
 # fixed a typo in nodeid detection
 #
 # Revision 1.111  2011/02/21 16:17:07  marc
