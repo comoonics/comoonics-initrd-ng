@@ -1,0 +1,7 @@
+The filesystem on param1 could not be mountet.
+You should check the errormessage and fix the problem.
+ 
+Usually you do not need to rebuild a new initrd but just fix something in the filesystem.
+Command: errorbin
+Output: 
+Errors:  

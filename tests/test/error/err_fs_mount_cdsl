@@ -1,0 +1,11 @@
+Could not mount the cdsl filesystem structure for the filesystem on param1.
+ Usually this can only happen if you did not set it up - com-mkcdslinfrastructure.
+ You should fix this and reboot this node., expected: .
+errormsg err_cc_restart_service failed. result: Could not restart the service param1.
+ 
+ Please carefully decide if you want to continue - type exit - booting or not.
+ The best guess might be to check why fix the problem and restart the service manully.
+ Then you can savely continue booting.
+ Command: errorbin
+ Output: 
+ Errors

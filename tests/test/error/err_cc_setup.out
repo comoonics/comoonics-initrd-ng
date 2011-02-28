@@ -1,0 +1,5 @@
+The cluster could not be startet. Please check for the errormessages.n 
+ The best guess is to manually validate the error then fix it in the initrd base,n build a new initrd and reboot this node.
+ Command: errorbin
+ Output: 
+ Errors:

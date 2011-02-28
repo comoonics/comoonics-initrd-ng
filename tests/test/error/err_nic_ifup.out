@@ -1,0 +1,7 @@
+Could not power up the network interface param1.
+ You might want to fix the configuration and continue booting.
+ 
+ Or you can fix it in the cluster configuration build a new initrd and reboot.
+ Command: errorbin
+ Output: 
+ Errors:

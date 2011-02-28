@@ -1,0 +1,5 @@
+Either could not find executable to auto fsck the filesystem - param2 - on param1 
+ or this filesystem does not support autofsck. This means you have to do it manually.
+ This should be done if you end up here.
+ 
+ CAUTION: If you are using a clusterfilesystem never ever fsck with other cluster nodes being online!

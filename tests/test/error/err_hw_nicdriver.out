@@ -1,0 +1,5 @@
+No network interfaces were found. Either you have not specified a nic in the driver db - modprobe.conf.
+ Or there are no valid drivers available for your network interfaces - use lspci - to validate.
+ 
+ You can either fix this problem and build a new initrd or load the drivers by hand and then exit from here and
+ continue booting.

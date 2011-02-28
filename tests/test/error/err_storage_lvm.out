@@ -1,0 +1,9 @@
+Could not start lvm configuration. This can have multiple problems.
+ Either the lvm configuration is invalid or lvm could not be setup.
+ 
+ The best guess is to manually validate the error then fix it in the initrd base,
+ build a new initrd and reboot this node.
+ 
+ Command: errorbin
+ Output: 
+ Errors:

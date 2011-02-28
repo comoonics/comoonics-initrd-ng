@@ -1,0 +1,4 @@
+The nodename for this node could not be detected. This usually means the MAC-Addresses
+ specified in the cluster configuration could not be matched to any MAC-Adresses of this node.
+ 
+ You can either fix this and build a new initrd or hardset the nodeid via setparameter nodename <nodename>

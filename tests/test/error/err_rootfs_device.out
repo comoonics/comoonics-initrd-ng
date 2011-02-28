@@ -1,0 +1,8 @@
+Could not find the rootdevice .
+ This usually means either the rootdevice is not mapped to this node and is therefore not seen or
+ a higherlevel software - lvm or multipathing - cannot access the rootdevice because it is not setup as such.
+ 
+ The best guess is to manually validate the error then fix it in the initrd base, build a new initrdn and reboot this node.
+ Command: errorbin
+ Output: 
+ Errors:

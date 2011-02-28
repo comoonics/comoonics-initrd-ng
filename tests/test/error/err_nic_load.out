@@ -1,0 +1,4 @@
+Could not load the driver for the network interface param1.
+ Either manually load it.
+ 
+ Or you can fix it in the cluster configuration build a new initrd and reboot.

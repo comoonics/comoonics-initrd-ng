@@ -1,0 +1,5 @@
+Could not setup storage configuration.
+ This usually means the some kind of SCSI setup or driver multipathing are not working.
+ The best idea would be to validate this, fix it in this shell and continue booting.
+ 
+ Or you can fix it in the cluster configuration build a new initrd and reboot.
