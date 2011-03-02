@@ -1,3 +1,2 @@
-# rpm                includefilter  excludefilter
+# rpm                includefilter  excludefilter  options
 initscripts          .              ^/var/log
-kudzu

@@ -1,3 +1,4 @@
+# name          includefilter      excludefilter    options
 libgcc			\.so
-SysVinit        ^/sbin
-SysVinit        ^/bin
+SysVinit        ^/sbin             -                ignoremissing
+SysVinit        ^/bin              -                ignoremissing

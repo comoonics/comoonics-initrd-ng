@@ -1,19 +1,13 @@
-/etc/sysconfig/kudzu
-/etc/bashrc
-/etc/profile.d/glib2.csh
-/etc/profile.d/glib2.sh
-/etc/profile.d/colorls.csh
-/etc/profile.d/colorls.sh
-/etc/profile.d/less.csh
-/etc/profile.d/less.sh
-/etc/profile.d/which-2.sh
-/etc/profile.d/lang.csh
-/etc/profile.d/lang.sh
-# Not available and therefore not needed
-#/etc/profile.d/krb5.csh
-#/etc/profile.d/krb5.sh
 /etc/rc.d/init.d/functions
-/etc/rc.d/init.d/killall
-/etc/rc.d/init.d/network
-/etc/redhat-release
-/usr/share/hwdata/
+/etc/bashrc                          optional
+/etc/profile.d/glib2.csh             optional
+/etc/profile.d/glib2.sh              optional
+/etc/profile.d/colorls.csh           optional
+/etc/profile.d/colorls.sh            optional
+/etc/profile.d/less.csh              optional
+/etc/profile.d/less.sh               optional
+/etc/profile.d/which-2.sh            optional
+/etc/profile.d/lang.csh              optional
+/etc/profile.d/lang.sh               optional
+/etc/redhat-release                  optional
+/usr/share/hwdata/                   optional
