@@ -1,9 +1,10 @@
+# name          option
 arping
 awk
 basename
 bash
 /bin/true
-/bin/vi
+/bin/vi         optional
 cat
 chmod
 chroot
@@ -21,8 +22,8 @@ fdisk
 find
 fuser
 grep
-gunzip
-gzip
+gunzip          optional
+gzip            optional
 head
 host
 hostname
@@ -32,7 +33,7 @@ insmod
 killall
 killall5
 ldd
-less
+less            optional
 ln
 logger
 ls
@@ -44,7 +45,7 @@ mkdir
 mknod
 modinfo
 modprobe
-more
+more            optional
 mount
 mv
 pidof
@@ -61,8 +62,8 @@ sfdisk
 sh
 sleep
 sort
-strace
-klogd
+strace               optional
+klogd                optional
 tail
 tar
 tee
