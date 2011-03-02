@@ -1,3 +1,72 @@
+Major Task (com.oonics 5.0)
+
+- Kernel modules for being excluded:
+
+  * <kerneldir>/vdso: ?? not needed
+  * <kerneldir>/kernel/kernel/: debug stuff
+  * <kerneldir>/kernel/mm: unknown
+  * <kerneldir>/kernel/sound: sound drivers not needed in initrd
+  * <kerneldir>/kernel/arch/x86/{kernel,kvm,oprofile}: tracing not needed here, and virtualization not needed here
+  * <kerneldir>/kernel/drivers/atm
+  * <kerneldir>/kernel/drivers/auxdisplay
+  * <kerneldir>/kernel/drivers/bluetooth
+  * <kerneldir>/kernel/drivers/char
+  * <kerneldir>/kernel/drivers/cpufreq
+  * <kerneldir>/kernel/drivers/dca
+  * <kerneldir>/kernel/drivers/dma
+  * <kerneldir>/kernel/drivers/edac
+  * <kerneldir>/kernel/drivers/firmware
+  * <kerneldir>/kernel/drivers/hid
+  * <kerneldir>/kernel/drivers/hwmon
+  * <kerneldir>/kernel/drivers/idle
+  * <kerneldir>/kernel/drivers/ieee802154
+  * <kerneldir>/kernel/drivers/input
+  * <kerneldir>/kernel/drivers/isdn
+  * <kerneldir>/kernel/drivers/leds
+  * <kerneldir>/kernel/drivers/media
+  * <kerneldir>/kernel/drivers/mfd
+  * <kerneldir>/kernel/drivers/misc
+  * <kerneldir>/kernel/drivers/net
+  * <kerneldir>/kernel/drivers/pci
+  * <kerneldir>/kernel/drivers/platform
+  * <kerneldir>/kernel/drivers/power
+  * <kerneldir>/kernel/drivers/pps
+  * <kerneldir>/kernel/drivers/regulator
+  * <kerneldir>/kernel/drivers/rtc
+  * <kerneldir>/kernel/drivers/serial
+  * <kerneldir>/kernel/drivers/ssb
+  * <kerneldir>/kernel/drivers/staging
+  * <kerneldir>/kernel/drivers/uio
+  * <kerneldir>/kernel/drivers/uwb
+  * <kerneldir>/kernel/drivers/video
+  * <kerneldir>/kernel/drivers/vhost
+  * <kerneldir>/kernel/drivers/watchdog
+  * <kerneldir>/kernel/drivers/xen
+  * <kerneldir>/kernel/net/802
+  * <kerneldir>/kernel/net/8021q
+  * <kerneldir>/kernel/net/9p
+  * <kerneldir>/kernel/net/atm
+  * <kerneldir>/kernel/net/bluetooth
+  * <kerneldir>/kernel/net/can
+  * <kerneldir>/kernel/net/core
+  * <kerneldir>/kernel/net/dccp
+  * <kerneldir>/kernel/net/ieee802154
+  * <kerneldir>/kernel/net/ipv4
+  * <kerneldir>/kernel/net/ipv6
+  * <kerneldir>/kernel/net/key
+  * <kerneldir>/kernel/net/llc
+  * <kerneldir>/kernel/net/mac80211
+  * <kerneldir>/kernel/net/netfilter
+  * <kerneldir>/kernel/net/phonet
+  * <kerneldir>/kernel/net/rds
+  * <kerneldir>/kernel/net/rfkill
+  * <kerneldir>/kernel/net/sched
+  * <kerneldir>/kernel/net/sctp
+  * <kerneldir>/kernel/net/wimax
+  * <kerneldir>/kernel/net/wireless
+  * <kerneldir>/kernel/net/xfrm
+  
+
 Major Tasks (1.3)
 
   - bootimage library changes fertigstellen / testen [OK/test]
