@@ -1,5 +1,5 @@
 #
-# $Id: chroot-lib.sh,v 1.13 2011-02-16 14:33:36 marc Exp $
+# $Id: chroot-lib.sh,v 1.13 2011/02/16 14:33:36 marc Exp $
 #
 # @(#)$File$
 #
@@ -131,11 +131,14 @@ function get_filelist_from_installed_rpm() {
   local rpm=$1
   local filter1="$2"
   local filter2="$3"
+  local options="$4"
   local qopt=""
   lock_rpm
   rpm -q $rpm >/dev/null 2>&1
   if [ $? -ne 0 ]; then
-    echo "Cannot find rpm \"$rpm\". Skipping." >&2
+	if [ -z "$(getPosInList ignoremissing $options ,)" ] && [ -z "$(getPosInList optional $options ,)" ]; then
+       echo "Cannot find rpm \"$rpm\". Skipping." >&2
+	fi
     unlock_rpm
     return 1
   fi
@@ -148,7 +151,7 @@ function get_filelist_from_installed_rpm() {
        qopt="-a"
    fi
 
-  if [ -z "$filter2" ]; then
+  if [ -z "$filter2" ] || [ "$filter2" = "-" ]; then
       filter2="^\$"
   fi
   #for filename in $(rpm -ql $qopt $rpm | grep -e "$filter"); do
@@ -230,11 +233,12 @@ function get_filelist_from_rpms() {
   resolve_file $rpm_listfile $verbose | while read -r line; do
   	rpmdef=( $line )
   	rpm="${rpmdef[0]}"
-	filter1="${rpmdef[1]}"
-	filter2="${rpmdef[2]}"
+	local filter1="${rpmdef[1]}"
+	local filter2="${rpmdef[2]}"
+	local options="${rpmdef[3]}"
     if [ ${rpm:0:1} != '#' ]; then
       [ -n "$verbose" ] && echo "$rpm with filter $filter1 and ! $filter2" >&2
-      get_filelist_from_installed_rpm $rpm "$filter1" "$filter2"
+      get_filelist_from_installed_rpm $rpm "$filter1" "$filter2" "$options"
     fi
    done
 }
@@ -339,7 +343,7 @@ function resolve_file {
           done
         fi
       else
-        [ -n "$verbose" ] && echo "line $line" >&2
+        [ -n "$verbose" ] && echo "resolv_file.line: $line" >&2
         echo "$line"
       fi
     fi
@@ -511,12 +515,21 @@ function get_all_files_dependent() {
             done
           fi
         else
-	      local filename=`which $line 2>/dev/null`
+          # only take the first name as filename the rest are options
+	      local filename=`which ${line// *} 2>/dev/null`
+	      # cut first name and take rest as options
 	      if [ -z $filename ]; then
-	        filename=$line
+	        filename=${line// *}
 	      fi
-	      echo $filename
-	      get_dependent_files $filename
+	      local options=${line#* }
+	      if [ -e $filename ]; then
+          	if [ -z "$(getPosInList ignoremissing $options ,)" ] && [ -z "$(getPosInList optional $options ,)" ]; then
+          		echo "Cannot find required file $filename. Skipping" >&2
+          	else
+	      	  echo $filename
+              get_dependent_files $filename
+          	fi
+	      fi
         fi
       fi
     fi
@@ -617,7 +630,7 @@ function build_chroot () {
 #****** build_chroot
 #####################
 # $Log: chroot-lib.sh,v $
-# Revision 1.13  2011-02-16 14:33:36  marc
+# Revision 1.13  2011/02/16 14:33:36  marc
 # - lock_rpm / unlock_rpm
 #   Would also work if no /var/sharelock exists.
 #
