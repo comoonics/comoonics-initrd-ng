@@ -1,4 +1,7 @@
 #rpm list for gfs1
+# name                      includefilter        excludefilter   options
 kmod-gfs
 gfs-utils
-comoonics-cluster-tools-py ^/usr/bin/cl_checknodes
+comoonics-cluster-tools-py  ^/usr/bin/cl_checknodes
+SysVinit                    ^/sbin
+SysVinit                    ^/bin
