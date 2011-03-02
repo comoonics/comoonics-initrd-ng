@@ -1,0 +1,24 @@
+<cluster name="testcluster" version="1">
+	<clusternodes>
+		<clusternode name="node1" votes="1" nodeid="1">
+			<fence>
+				<method name="scsi">
+					<device name="fence_scsi" nodename="node1"/>
+				</method>
+			</fence>
+		</clusternode>
+		<clusternode name="node2" votes="2" nodeid="2">
+			<fence>
+				<method name="scsi">
+					<device name="fence_scsi" nodename="node2"/>
+				</method>
+			</fence>
+		</clusternode>
+	</clusternodes>
+	<fencedevices>
+		<fencedevice name="fence_scsi" agent="fence_scsi">
+			<scsi device="/dev/sdb"/>
+			<vg name="myvg"/>
+		</fencedevice>
+	</fencedevices>
+</cluster>

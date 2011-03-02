@@ -1,0 +1,25 @@
+<cluster>
+   ..
+   <clusternodes>
+     <clusternode name=".."..>
+       <fence>
+          <method name="1">
+             <device name="fence_scsi" ..>
+               <scsi device="/dev/sda"/>
+               <scsi device="/dev/mapper/mpath1"/>
+               <vg name="myvg"/>
+             </device>
+          </method>
+       </fence>
+     </clusternode>
+   </clusternodes>
+   ...
+   <fencedevices>
+     <fencedevice name="fence_scsi" agent="/sbin/fence_scsi">
+        <scsi device="/dev/sda"/>
+        <scsi device="/dev/mapper/mpath1"/>
+        <vg name="myvg"/>
+     </fencedevice>
+   </fencedevices>
+   ..
+</cluster>
