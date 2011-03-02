@@ -1,0 +1,5 @@
+# For nfs support
+rpcbind
+libtirpc
+libgssglue
+nfs-utils-lib

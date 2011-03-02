@@ -1,0 +1,23 @@
+# Base rpms for fedora
+# rpm                  includefilter        excludefilter         options
+tcp_wrappers	       \.so
+krb5-libs		       \.so
+nss_db			       \.so                 -                     optional
+nss_ldap		       \.so                 -                     optional    
+ncurses                tinfo\.so
+ncurses                ncurses\.so
+ncurses-libs           tinfo\.so
+ncurses-libs           ncurses\.so
+pcre                   pcre\.so
+libacl                 acl\.so
+libattr                attr\.so
+e2fsprogs-libs         \.so
+keyutils-libs          \.so
+popt                   \.so
+libsysfs               \.so                 -                     optional
+tcp_wrappers-libs      \.so
+openldap               \.so
+libcap                 \.so
+audit-libs
+upstart                ^/sbin/.*
+libgcc			       \.so
