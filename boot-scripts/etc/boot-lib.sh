@@ -762,9 +762,27 @@ function restart_init {
 function stop_service {
   local service_name=$1
   local other_root=$2
+  local force=${2:-1}
+  local pids=$(pidof $service_name 2>/dev/null)
+  local pid=
   if [ -f ${other_root}/var/run/${service_name}.pid ]; then
-    exec_local kill $(cat ${other_root}/var/run/${service_name}.pid)
+    pids=$(cat ${other_root}/var/run/${service_name}.pid)
   fi
+  for pid in $pids; do
+  	local root=$(/bin/ls --directory --inode /proc/$pid/root/ | cut -f1 -d" ")
+   	kill $pid 2>/dev/null
+   	kill -0 $pid 2>/dev/null
+   	if [ -n "$force" ]; then
+   		sleep 2 && kill -0 $pid 2>/dev/null && kill -9 $pid 2>/dev/null
+   	fi
+  done
+  for pid in $pids; do
+  	kill -0 $pid 2>/dev/null
+  	if [ $? -ne 0 ]; then
+  		return $?
+  	fi
+  done
+  return 0
 }
 
 #************ stop_service
