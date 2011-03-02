@@ -1,0 +1,4 @@
+/etc/ld.so.cache
+/etc/passwd
+/etc/group
+/etc/cluster/cluster.conf
