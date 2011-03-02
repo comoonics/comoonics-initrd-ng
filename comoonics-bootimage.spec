@@ -28,7 +28,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.151 2011-02-28 14:27:29 marc Exp $
+# $Id: comoonics-bootimage.spec,v 1.151 2011/02/28 14:27:29 marc Exp $
 #
 ##
 ##
@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 79
+Release: 80
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -96,7 +96,7 @@ Extra listfiles for special network configurations
 
 %package extras-nfs
 Version: 0.1
-Release: 18
+Release: 19
 Requires: comoonics-bootimage >= 1.4
 Summary: Listfiles for nfs sharedroot configurations
 Group:   System Environment/Base
@@ -167,6 +167,19 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description extras-dm-multipath-fedora
 Extra listfiles for device mapper multipath OSR configurations for fedora
+
+%package extras-dm-multipath-rhel6
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage >= 1.4-80
+Requires: /etc/redhat-release
+Requires: comoonics-bootimage-listfiles-rhel6
+Summary: Listfiles for device mapper multipath OSR configurations for RHEL6
+Group:   System Environment/Base
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description extras-dm-multipath-rhel6
+Extra listfiles for device mapper multipath OSR configurations for RHEL6
 
 %package extras-dm-multipath-sles
 Version: 0.1
@@ -326,6 +339,30 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description listfiles-fedora-nfs
 OSR extra files that are only relevant for Fedora Versions and nfs support
+
+%package listfiles-rhel6
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage >= 1.4-80
+Requires: /etc/redhat-release
+Requires: comoonics-bootimage-listfiles-all
+Group: System Environment/Base
+Summary: Extrafiles for RHEL6
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description listfiles-rhel6
+OSR extra files that are only relevant for RHEL6 Versions
+
+%package listfiles-rhel6-nfs
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage-listfiles-rhel6
+Group: System Environment/Base
+Summary: Extrafiles for RHEL6 NFS support 
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description listfiles-rhel6-nfs
+OSR extra files that are only relevant for RHEL6 Versions and nfs support
 
 %package listfiles-rhel4
 Version: 0.1
@@ -687,6 +724,7 @@ fi
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/defaults.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/errors.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/ext3-lib.sh
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/ext4-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/gfs-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/hardware-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/inittab
@@ -708,6 +746,10 @@ fi
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel5/gfs-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel5/hardware-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel5/network-lib.sh
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel6/boot-lib.sh
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel6/gfs-lib.sh
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel6/hardware-lib.sh
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel6/network-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/sles8/hardware-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/sles8/network-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/sles10/boot-lib.sh
@@ -747,6 +789,7 @@ fi
 %files extras-nfs
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/nfs-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel5/nfs-lib.sh
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel6/nfs-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/fedora/nfs-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/sles10/nfs-lib.sh
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/nfs.list
@@ -775,6 +818,9 @@ fi
 
 %files extras-dm-multipath-fedora
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fedora/dm_multipath.list
+
+%files extras-dm-multipath-rhel6
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel6/dm_multipath.list
 
 %files extras-rdac-multipath
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rdac_multipath.list
@@ -914,6 +960,21 @@ fi
 %files listfiles-fedora-nfs
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fedora/nfs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fedora/network.list
+
+%files listfiles-rhel6
+%dir %{CONFIGDIR}/bootimage/files.initrd.d/rhel6
+%dir %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel6
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel6/base.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel6/configs.list
+#%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel6/comoonics.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel6/network.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel6/base.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel6/hardware.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel6/python.list
+
+%files listfiles-rhel6-nfs
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel6/nfs.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel6/network.list
 
 %files listfiles-fenceacksv-plugins
 %config %attr(0644, root, root) %dir %{CONFIGDIR}/bootimage-chroot/rpms.initrd.d/fenceacksv-plugins.list
@@ -1557,6 +1618,9 @@ rm -rf %{buildroot}
 - first release
 
 %changelog extras-nfs
+* Tue Mar 01 2011 Marc Grimme <grimme@atix.de> 0.1-19
+- boot-image/etc/rhel6/nfs-list.sh
+    - initial revision (derived from fedora) 
 * Wed Aug 11 2010 Marc Grimme <grimme@atix.de> 0.1-17
 - boot-image/etc/sles10/nfs-lib.sh
   - initial revision (not start portmap)
@@ -1830,6 +1894,10 @@ syslog
 * Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-4
 - introduced the changelog
 
+%changelog listfiles-rhel6
+* Mon Feb 28 2011 Marc Grimme <grimme@atix.de> 0.1-1
+- first version for comoonics-5.0-pre
+
 %changelog listfiles-fedora-nfs
 * Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-6
 - first version for comoonics-4.6-rc1 
@@ -1949,7 +2017,7 @@ syslog
 #
 # ------
 # $Log: comoonics-bootimage.spec,v $
-# Revision 1.151  2011-02-28 14:27:29  marc
+# Revision 1.151  2011/02/28 14:27:29  marc
 # - fixed errormessages (1.4-79)
 #
 # Revision 1.150  2011/02/21 16:22:57  marc
