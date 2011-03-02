@@ -7,7 +7,7 @@
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.71 2011-02-14 16:43:46 marc Exp $
+# $Id: Makefile,v 1.71 2011/02/14 16:43:46 marc Exp $
 #
 # @(#)$file$
 #
@@ -132,6 +132,7 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/drbd-lib.sh \
   boot-scripts/etc/defaults.sh \
   boot-scripts/etc/ext3-lib.sh \
+  boot-scripts/etc/ext4-lib.sh \
   boot-scripts/etc/errors.sh \
   boot-scripts/etc/gfs-lib.sh \
   boot-scripts/etc/glusterfs-lib.sh \
@@ -143,6 +144,7 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/ocfs2-lib.sh \
   boot-scripts/etc/osr-lib.sh \
   boot-scripts/etc/repository-lib.sh \
+  boot-scripts/etc/selinux-lib.sh \
   boot-scripts/etc/stdfs-lib.sh \
   boot-scripts/etc/std-lib.sh \
   boot-scripts/etc/syslog-lib.sh \
@@ -156,6 +158,11 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/rhel5/hardware-lib.sh \
   boot-scripts/etc/rhel5/network-lib.sh \
   boot-scripts/etc/rhel5/nfs-lib.sh \
+  boot-scripts/etc/rhel6/boot-lib.sh \
+  boot-scripts/etc/rhel6/gfs-lib.sh \
+  boot-scripts/etc/rhel6/hardware-lib.sh \
+  boot-scripts/etc/rhel6/network-lib.sh \
+  boot-scripts/etc/rhel6/nfs-lib.sh \
   boot-scripts/etc/sles8/hardware-lib.sh \
   boot-scripts/etc/sles8/network-lib.sh \
   boot-scripts/etc/sles10/boot-lib.sh \
@@ -235,16 +242,21 @@ CFG_FILES=basefiles.list \
     files.initrd.d/ocfs2.list \
     files.initrd.d/sysctl.list \
     files.initrd.d/user_edit.list \
-	files.initrd.d/rhel/empty.list \
     files.initrd.d/rhel/base.list \
     files.initrd.d/rhel/configs.list \
-    files.initrd.d/rhel/grub.list \
+	files.initrd.d/rhel/empty.list \
     files.initrd.d/rhel/gfs.list \
+    files.initrd.d/rhel/grub.list \
     files.initrd.d/rhel/empty.list \
     files.initrd.d/rhel/network.list \
+	files.initrd.d/rhel4/configs.list \
 	files.initrd.d/rhel4/empty.list \
+	files.initrd.d/rhel5/configs.list \
 	files.initrd.d/rhel5/empty.list \
     files.initrd.d/rhel5/rhcs.list \
+    files.initrd.d/rhel6/base.list \
+    files.initrd.d/rhel6/configs.list \
+    files.initrd.d/rhel6/network.list \
     files.initrd.d/sles/base.list \
     files.initrd.d/sles/empty.list \
     files.initrd.d/sles/network.list \
@@ -274,20 +286,30 @@ CFG_FILES=basefiles.list \
     rpms.initrd.d/syslog-ng.list \
     rpms.initrd.d/syslogd.list \
     rpms.initrd.d/rhel/base.list \
-    rpms.initrd.d/rhel/dm_multipath.list \
     rpms.initrd.d/rhel/comoonics.list \
-	rpms.initrd.d/rhel/empty.list \
     rpms.initrd.d/rhel/dm_multipath.list \
+	rpms.initrd.d/rhel/empty.list \
     rpms.initrd.d/rhel/hardware.list \
+    rpms.initrd.d/rhel/nfs.list \
     rpms.initrd.d/rhel/python.list \
 	rpms.initrd.d/rhel4/empty.list \
-    rpms.initrd.d/rhel4/rhcs.list \
     rpms.initrd.d/rhel4/gfs1.list \
+    rpms.initrd.d/rhel4/hardware.list \
+    rpms.initrd.d/rhel4/nfs.list \
+    rpms.initrd.d/rhel4/rhcs.list \
     rpms.initrd.d/rhel5/base.list \
 	rpms.initrd.d/rhel5/empty.list \
     rpms.initrd.d/rhel5/gfs1.list \
+    rpms.initrd.d/rhel5/hardware.list \
+    rpms.initrd.d/rhel5/nfs.list \
     rpms.initrd.d/rhel5/python.list \
     rpms.initrd.d/rhel5/rhcs.list \
+    rpms.initrd.d/rhel6/base.list \
+    rpms.initrd.d/rhel6/dm_multipath.list \
+    rpms.initrd.d/rhel6/hardware.list \
+    rpms.initrd.d/rhel6/network.list \
+    rpms.initrd.d/rhel6/nfs.list \
+    rpms.initrd.d/rhel6/python.list \
     rpms.initrd.d/sles/python.list \
     rpms.initrd.d/sles/base.list \
     rpms.initrd.d/sles/hardware.list \
@@ -394,9 +416,9 @@ RPM_PACKAGE_SOURCE_DIR=$(RPM_PACKAGE_DIR)/SOURCES
 
 
 CHANNELBASEDIR=/atix/dist-mirrors
-ALL_DISTROS=rhel4 rhel5 sles10 fedora sles11
+ALL_DISTROS=rhel4 rhel5 rhel6 sles10 fedora sles11
 # Which directories are used for installation
-CHANNELDIRS=comoonics/rhel4/preview comoonics/rhel5/preview comoonics/sles10/preview comoonics/fedora/preview comoonics/sles11/preview
+CHANNELDIRS=comoonics/rhel4/preview comoonics/rhel5/preview comoonics/rhel6/preview comoonics/sles10/preview comoonics/fedora/preview comoonics/sles11/preview
 CHANNELSUBDIRS=i386 x86_64 noarch SRPMS
 
 TEST_DIR=tests
@@ -542,6 +564,10 @@ rpmbuild-initscripts-el5: archive
 	cp ../$(ARCHIVE_FILE_INITSCRIPTS) $(RPM_PACKAGE_SOURCE_DIR)/
 	rpmbuild -ba  --target=noarch ./comoonics-bootimage-initscripts-el5.spec
 	
+rpmbuild-initscripts-rhel6: archive
+	cp ../$(ARCHIVE_FILE_INITSCRIPTS) $(RPM_PACKAGE_SOURCE_DIR)/
+	rpmbuild -ba  --target=noarch ./comoonics-bootimage-initscripts-rhel6.spec
+	
 rpmbuild-initscripts-sles10: archive
 	cp ../$(ARCHIVE_FILE_INITSCRIPTS) $(RPM_PACKAGE_SOURCE_DIR)/
 	rpmbuild -ba  --target=noarch ./comoonics-bootimage-initscripts-sles10.spec
@@ -595,8 +621,7 @@ channelbuild:
 	done 
 
 .PHONY:rpm	
-rpm: test rpmbuild rpmbuild-initscripts-el4 rpmbuild-initscripts-el5 rpmbuild-initscripts-sles10 rpmbuild-initscripts-sles11 rpmbuild-initscripts-fedora \
-rpmsign
+rpm: test rpmbuild rpmbuild-initscripts-el4 rpmbuild-initscripts-el5 rpmbuild-initscripts-rhel6 rpmbuild-initscripts-sles10 rpmbuild-initscripts-sles11 rpmbuild-initscripts-fedora rpmsign
 
 .PHONY: channel
 channel: rpm channelcopy channelbuild
@@ -604,7 +629,7 @@ channel: rpm channelcopy channelbuild
 ########################################
 # CVS-Log
 # $Log: Makefile,v $
-# Revision 1.71  2011-02-14 16:43:46  marc
+# Revision 1.71  2011/02/14 16:43:46  marc
 # *** empty log message ***
 #
 # Revision 1.70  2011/02/11 11:30:52  marc
