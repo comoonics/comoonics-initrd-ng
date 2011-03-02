@@ -760,20 +760,45 @@ function step() {
 #  NAME
 #    listBreakpoints
 #  SYNOPSIS
-#    function listBreakpoints() {
+#    function listBreakpoints(includefiles/includepaths, replaces) {
+#        includefiles/includepaths:
+#        replaces: filter commands to replace the output of find. Those must be prefixed with --filter <filtercommand>. 
+#          Default: --filter sed -e s!./linuxrc.*!startup! -e s!./.*halt.*!shutdown!
 #  MODIFICATION HISTORY
 #  IDEAS
 #  SOURCE
 #
 function listBreakpoints {
-	for file in $(find ./ -name "*.sh"); do 
-		awk '
-/step[[:space:]]+"/ && $0 !~ /__name/ { 
+	# don't do globbing here
+	set -f
+	local filelist="-false"
+	local file=""
+	local filter='sed -e s!.*/linuxrc.*:!startup:! -e s!.*halt.*:!shutdown:!'
+	local filterprefix="--filter"
+	if [ $# -eq 0 ]; then
+		filelist="-iwholename *.sh"
+	fi
+	for arg in $@; do
+		echo "$arg" | grep "$filterprefix"
+		if [ $? -eq 0 ]; then
+			filter="${filter} | ${arg%--filter}"
+		else
+			filelist="$filelist -or -iwholename $arg"
+		fi
+	done
+	filelist=$(find ./ $filelist) 
+	
+	for file in $filelist; do 
+		awk -v file=$file '
+/step[[:space:]]+"/ && $0 !~ /__name/ && $0 !~ /__step/ { 
 	step=$0; 
 	sub(/step[[:space:]]+/, "", step); 
 	gsub(/"/, "", step); split(step, steps); 
-	print steps[NF-1];
-}' < $file | sort -u; done
+	print file": "steps[NF-1];
+}' < $file | $filter
+   done
+   # switch on globbing again
+   set +f
 }
 #************ listBreakpoints
 
