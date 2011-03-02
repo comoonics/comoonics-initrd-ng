@@ -6,7 +6,7 @@
 #  DESCRIPTION
 #*******
 #
-# $Id: create-gfs-initrd-generic.sh,v 1.34 2011-02-11 11:30:25 marc Exp $
+# $Id: create-gfs-initrd-generic.sh,v 1.34 2011/02/11 11:30:25 marc Exp $
 #
 # @(#)$File$
 #
@@ -444,7 +444,7 @@ if [ -z "$update" ] || [ -n "$kernel" ]; then
     else
       args=$(get_global_filters $filters_filename | awk '{printf(" -regex %s -or", $0);} END { print " -false"; }')
 	  # no globbing
-      findcmd="find /lib/modules/$_kernel -type f -or -type l -not \( $args \)"
+      findcmd="find /lib/modules/$_kernel \( -type f -or -type l \) -and -not \( $args \)"
     fi
     cpioopts="--pass-through --make-directories"
     if [ -n "$verbose" ]; then
@@ -525,7 +525,7 @@ ls -lk $initrdname
 
 ##########################################
 # $Log: create-gfs-initrd-generic.sh,v $
-# Revision 1.34  2011-02-11 11:30:25  marc
+# Revision 1.34  2011/02/11 11:30:25  marc
 # - fixed bug that with update mode relative files to initrd would not work.
 #
 # Revision 1.33  2010/12/07 13:30:28  marc
