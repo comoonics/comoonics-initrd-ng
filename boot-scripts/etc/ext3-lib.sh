@@ -1,5 +1,5 @@
 #
-# $Id: ext3-lib.sh,v 1.10 2010-08-18 11:49:27 marc Exp $
+# $Id: ext3-lib.sh,v 1.10 2010/08/18 11:49:27 marc Exp $
 #
 # @(#)$File$
 #
@@ -81,15 +81,7 @@ function ext3_get_drivers {
 #  SOURCE
 #
 function ext3_services_start {
-
-  services=""
-  for service in $services; do
-    nfs_start_$service
-    if [ $? -ne 0 ]; then
-      return $?
-    fi
-  done
-  return $return_c
+	return 0
 }
 #************ ext3_services_start
 
@@ -148,9 +140,9 @@ function ext3_getdefaults {
 		root_source|rootsource)
 		    echo "scsi"
 		    ;;
-                readonly)
-                    echo 1
-                    ;;
+        readonly)
+            echo 1
+            ;;
 	    scsi_failover|scsifailover)
 	        echo "driver"
 	        ;;
@@ -257,7 +249,7 @@ ext3_get() {
 # *********** ext3_get
 
 # $Log: ext3-lib.sh,v $
-# Revision 1.10  2010-08-18 11:49:27  marc
+# Revision 1.10  2010/08/18 11:49:27  marc
 # ext3_fsck_needed bug fixed
 #
 # Revision 1.9  2010/06/25 12:36:37  marc
