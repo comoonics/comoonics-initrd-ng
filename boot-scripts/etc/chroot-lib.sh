@@ -522,13 +522,11 @@ function get_all_files_dependent() {
 	        filename=${line// *}
 	      fi
 	      local options=${line#* }
-	      if [ -e $filename ]; then
-          	if [ -z "$(getPosInList ignoremissing $options ,)" ] && [ -z "$(getPosInList optional $options ,)" ]; then
-          		echo "Cannot find required file $filename. Skipping" >&2
-          	else
-	      	  echo $filename
-              get_dependent_files $filename
-          	fi
+	      if ! [ -e "$filename" ] && [ -z "$(getPosInList ignoremissing $options ,)" ] && [ -z "$(getPosInList optional $options ,)" ]; then
+          	echo "Cannot find required file $filename. Skipping" >&2
+	      elif [ -e "$filename" ]; then
+	        echo $filename
+            get_dependent_files $filename
 	      fi
         fi
       fi
