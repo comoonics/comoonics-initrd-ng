@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 80
+Release: 81
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -97,7 +97,7 @@ Extra listfiles for special network configurations
 %package extras-nfs
 Version: 0.1
 Release: 19
-Requires: comoonics-bootimage >= 1.4
+Requires: comoonics-bootimage >= 1.4-81
 Summary: Listfiles for nfs sharedroot configurations
 Group:   System Environment/Base
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
@@ -281,6 +281,16 @@ Group:   System Environment/Base
 %description extras-syslog
 Syslog implementation for osr. Supports syslog classic, syslog-ng, rsyslog (See listfiles-syslog)
 
+%package extras-selinux
+Version: 0.1
+Release: 13
+Requires: comoonics-bootimage >= 1.4-81
+Summary: SELinux implementation for osr
+Group:   System Environment/Base
+
+%description extras-selinux
+SELinux implementation for osr. Supports only local filesystems and distributions supporting SELinux
+
 %package listfiles-vi-sles
 Version: 0.1
 Release: 1
@@ -293,8 +303,8 @@ Vi includes for comoonics-bootimage (takes vim)
 
 %package listfiles-all
 Version: 0.1
-Release: 16
-Requires: comoonics-bootimage >= 1.4-55
+Release: 17
+Requires: comoonics-bootimage >= 1.4-81
 Group:   System Environment/Base
 Summary: OSR listfilesfiles for all distributions 
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
@@ -304,8 +314,8 @@ OSR Listfiles that are only relevant for all linux distributions
 
 %package listfiles-rhel
 Version: 0.1
-Release: 8
-Requires: comoonics-bootimage >= 1.3-36
+Release: 9
+Requires: comoonics-bootimage >= 1.4-81
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-cluster-tools-py
@@ -329,16 +339,33 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 %description listfiles-fedora
 OSR extra files that are only relevant for Fedora Versions
 
-%package listfiles-fedora-nfs
+%package listfiles-rhel4
 Version: 0.1
-Release: 6
-Requires: comoonics-bootimage-listfiles-fedora
+Release: 4
+Requires: comoonics-bootimage >= 1.4-81
+Requires: /etc/redhat-release
+Requires: comoonics-bootimage-listfiles-rhel
 Group: System Environment/Base
-Summary: Extrafiles for Fedora Core NFS support 
+Summary: Extrafiles for RedHat Enterprise Linux Version 4 
+Conflicts: comoonics-bootimage-listfiles-rhel5 
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
-%description listfiles-fedora-nfs
-OSR extra files that are only relevant for Fedora Versions and nfs support
+%description listfiles-rhel4
+OSR extra files that are only relevant for RHEL4
+
+%package listfiles-rhel5
+Version: 0.1
+Release: 9
+Requires: comoonics-bootimage >= 1.4-81
+Requires: /etc/redhat-release
+Requires: comoonics-bootimage-listfiles-rhel
+Group: System Environment/Base
+Summary: Extrafiles for RedHat Enterprise Linux Version 5
+Conflicts: comoonics-bootimage-listfiles-rhel4 
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description listfiles-rhel5
+OSR extra files that are only relevant for RHEL4
 
 %package listfiles-rhel6
 Version: 0.1
@@ -352,45 +379,6 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description listfiles-rhel6
 OSR extra files that are only relevant for RHEL6 Versions
-
-%package listfiles-rhel6-nfs
-Version: 0.1
-Release: 1
-Requires: comoonics-bootimage-listfiles-rhel6
-Group: System Environment/Base
-Summary: Extrafiles for RHEL6 NFS support 
-BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
-
-%description listfiles-rhel6-nfs
-OSR extra files that are only relevant for RHEL6 Versions and nfs support
-
-%package listfiles-rhel4
-Version: 0.1
-Release: 3
-Requires: comoonics-bootimage >= 1.3-36
-Requires: /etc/redhat-release
-Requires: comoonics-bootimage-listfiles-rhel
-Group: System Environment/Base
-Summary: Extrafiles for RedHat Enterprise Linux Version 4 
-Conflicts: comoonics-bootimage-listfiles-rhel5 
-BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
-
-%description listfiles-rhel4
-OSR extra files that are only relevant for RHEL4
-
-%package listfiles-rhel5
-Version: 0.1
-Release: 8
-Requires: comoonics-bootimage >= 1.4-55
-Requires: /etc/redhat-release
-Requires: comoonics-bootimage-listfiles-rhel
-Group: System Environment/Base
-Summary: Extrafiles for RedHat Enterprise Linux Version 5
-Conflicts: comoonics-bootimage-listfiles-rhel4 
-BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
-
-%description listfiles-rhel5
-OSR extra files that are only relevant for RHEL4
 
 %package listfiles-sles
 Version: 0.1
@@ -433,6 +421,90 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description listfiles-sles11
 OSR extra files that are only relevant for Novell SLES 11
+
+%package listfiles-fedora-nfs
+Version: 0.1
+Release: 6
+Requires: comoonics-bootimage-listfiles-fedora
+Group: System Environment/Base
+Summary: Extrafiles for Fedora Core NFS support 
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description listfiles-fedora-nfs
+OSR extra files that are only relevant for Fedora Versions and nfs support
+
+%package listfiles-rhel5-gfs1
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage >= 1.4-81
+Requires: /etc/redhat-release
+Requires: comoonics-bootimage-listfiles-rhel5
+Group: System Environment/Base
+Summary: Extrafiles for RedHat Enterprise Linux Version 5 and GFS1
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description listfiles-rhel5-gfs1
+OSR extra files that are only relevant for RHEL5 and GFS1
+
+%package listfiles-rhel4-nfs
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage-extras-nfs
+Requires: comoonics-bootimage-listfiles-rhel4
+Group: System Environment/Base
+Summary: Extrafiles for RHEL4 NFS support 
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description listfiles-rhel4-nfs
+OSR extra files that are only relevant for RHEL4 Versions and nfs support
+
+%package listfiles-rhel5-nfs
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage-listfiles-rhel5
+Requires: comoonics-bootimage-extras-nfs
+Group: System Environment/Base
+Summary: Extrafiles for RHEL5 NFS support 
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description listfiles-rhel5-nfs
+OSR extra files that are only relevant for RHEL5 Versions and nfs support
+
+%package listfiles-rhel6-nfs
+Version: 0.1
+Release: 2
+Requires: comoonics-bootimage-listfiles-rhel6
+Requires: comoonics-bootimage-extras-nfs
+Group: System Environment/Base
+Summary: Extrafiles for RHEL6 NFS support 
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description listfiles-rhel6-nfs
+OSR extra files that are only relevant for RHEL6 Versions and nfs support
+
+%package listfiles-sles10-nfs
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage-listfiles-sles10
+Requires: comoonics-bootimage-extras-nfs
+Group: System Environment/Base
+Summary: Extrafiles for SLES10 NFS support 
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description listfiles-sles10-nfs
+OSR extra files that are only relevant for SLES10 Versions and nfs support
+
+%package listfiles-sles11-nfs
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage-extras-nfs
+Requires: comoonics-bootimage-listfiles-sles11
+Group: System Environment/Base
+Summary: Extrafiles for SLES11 NFS support 
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description listfiles-sles11-nfs
+OSR extra files that are only relevant for SLES11 Versions and nfs support
 
 %package listfiles-fenceacksv-plugins
 Version: 0.1
@@ -558,27 +630,6 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description fenceclient-ilomp
 A fence client for iloMP cards of HP inegrity servers.
-
-#%package fenceclient-vmware
-#Version: 0.1
-#Release: 5
-#Summary: Fencing for vmware
-#Group:   System Environment/Base
-#BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
-#
-#%description fenceclient-vmware
-#Fencing for vmware clientschlegel
-#
-#%package fencemaster-vmware
-#Version: 0.1
-#Release: 2
-#Summary: Fencing for vmware
-#Group:   System Environment/Base
-#BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
-#AutoReqProv: no
-#
-#%description fencemaster-vmware
-#Fencing for the vmware master server
 
 %prep
 %setup -q
@@ -792,7 +843,6 @@ fi
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel6/nfs-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/fedora/nfs-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/sles10/nfs-lib.sh
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/nfs.list
 
 %files extras-ocfs2
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/ocfs2-lib.sh
@@ -861,6 +911,9 @@ fi
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/templates/rsyslogd.conf
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/templates/syslog-ng.conf
 
+%files extras-selinux
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/selinux-lib.sh
+
 %files listfiles-all
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/basefiles.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.list
@@ -901,7 +954,6 @@ fi
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/grub.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/network.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/base.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/comoonics.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/empty.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/hardware.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/python.list
@@ -910,7 +962,9 @@ fi
 %dir %{CONFIGDIR}/bootimage/files.initrd.d/rhel4
 %dir %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel4
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel4/empty.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel4/configs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel4/empty.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel4/hardware.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel4/gfs1.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel4/rhcs.list
 
@@ -918,12 +972,24 @@ fi
 %dir %{CONFIGDIR}/bootimage/files.initrd.d/rhel5
 %dir %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel5/empty.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel5/configs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel5/rhcs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/empty.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/base.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/gfs1.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/hardware.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/python.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/rhcs.list
+
+%files listfiles-rhel6
+%dir %{CONFIGDIR}/bootimage/files.initrd.d/rhel6
+%dir %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel6
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel6/base.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel6/configs.list
+#%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel6/comoonics.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel6/network.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel6/base.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel6/hardware.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel6/python.list
 
 %files listfiles-sles
 %dir %{CONFIGDIR}/bootimage/files.initrd.d/sles
@@ -957,24 +1023,38 @@ fi
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fedora/hardware.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fedora/python.list
 
+%files listfiles-rhel5-gfs1
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/comoonics.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/gfs1.list
+
 %files listfiles-fedora-nfs
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/nfs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fedora/nfs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fedora/network.list
 
-%files listfiles-rhel6
-%dir %{CONFIGDIR}/bootimage/files.initrd.d/rhel6
-%dir %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel6
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel6/base.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel6/configs.list
-#%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel6/comoonics.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel6/network.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel6/base.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel6/hardware.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel6/python.list
+%files listfiles-rhel4-nfs
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/nfs.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/nfs.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel4/nfs.list
+
+%files listfiles-rhel5-nfs
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/nfs.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/nfs.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/nfs.list
 
 %files listfiles-rhel6-nfs
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/nfs.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/nfs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel6/nfs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel6/network.list
+
+%files listfiles-sles10-nfs
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/nfs.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/nfs.list
+
+%files listfiles-sles11-nfs
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/nfs.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/nfs.list
 
 %files listfiles-fenceacksv-plugins
 %config %attr(0644, root, root) %dir %{CONFIGDIR}/bootimage-chroot/rpms.initrd.d/fenceacksv-plugins.list
@@ -1045,6 +1125,30 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Wed Mar 02 2011 Marc Grimme <grimme@atix.de> 1.4-81
+- boot-scripts/etc/boot-lib.sh: 
+    stop_service: now also stops the service if no pid file exists by
+      killing the pid of the given service within the given root filesystem.
+- boot-scripts/etc/chroot-lib.sh:
+    get_filelist_from_installed_rpm/get_filelist_from_rpms: 
+       added option parameters to specify a rpm as optional (no warning if missing)
+    resolve_file: better output
+    get_all_files_dependent: 
+       added option parameters to specify a file as optional (no warning if missing)
+- boot-scripts/etc/comoonics-release
+    release 5.0 pre
+- boot-scripts/etc/ext3-lib.sh
+    cosmetics
+- boot-scripts/etc/std-lib.sh
+    listBreakpoints will now return all breakpoints with leading filename and step name in
+       order that have been found not sorted by name (see bz #400).
+- boot-scripts/etc/selinux-lib.sh,ext4-lib.sh:
+    new versions
+- boot-scritps/etc/rhel6/*: new versions
+* Wed Mar 02 2011 Marc Grimme <grimme@atix.de> 1.4-80
+- first version for com.oonics-5.0 pre
+- boot-scripts/etc/rhel6/*: added support for RHEL6
+- boot-scripts/etc/ext4-libs.sh: added support for RHEL6
 * Mon Feb 28 2011 Marc Grimme <grimme@atix.de> 1.4-79
 - boot-scripts/error-lib.sh
   - Fixed syntax errors in errormessages.
@@ -1618,9 +1722,8 @@ rm -rf %{buildroot}
 - first release
 
 %changelog extras-nfs
-* Tue Mar 01 2011 Marc Grimme <grimme@atix.de> 0.1-19
-- boot-image/etc/rhel6/nfs-list.sh
-    - initial revision (derived from fedora) 
+* Wed Mar 02 2011 Marc Grimme <grimme@atix.de> 0.1-18
+- rpms.initrd.d/nfs.list: moved portmap to distros
 * Wed Aug 11 2010 Marc Grimme <grimme@atix.de> 0.1-17
 - boot-image/etc/sles10/nfs-lib.sh
   - initial revision (not start portmap)
@@ -1758,7 +1861,14 @@ syslog
 * Wed Sep 09 2009 Marc Grimme <grimme@atix.de> - 0.1-1
 - initial revision
 
+%changelog extras-selinux
+* Wed Mar 02 2011 Marc Grimme <grimme@atix.de> - 0.1-1
+  - initial revision
+
 %changelog listfiles-all
+* Wed Mar 02 2011 Marc Grimme <grimme@atix.de> 0.1-17
+- files.initrd.d/configs.list/base.list/locales.list: added optionals and removed distro dependencies
+- filters.initrd.d/kernel.list: added more modules that are not needed
 * Wed Feb 16 2011 Marc Grimme <grimme@atix.de> 0.1-16
 - pre.mkinitrd.d/00-cdsl-check.sh post.mkinitrd.d/02-create-cdsl-repository.sh
   - checks if cdsl environment is working
@@ -1792,6 +1902,8 @@ syslog
   - initial revision 
 
 %changelog listfiles-rhel
+* Wed Mar 2  2011 Marc Grimme <grimme@atix.de> 0.1-9
+- added optional to listfiles where necessary.
 * Tue Feb 22 2011 Marc Grimme <grimme@atix.de> 0.1-8
 - added excludefilter to initscripts (hardware.list) rpm to not include /var/log files
 * Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-5
@@ -1806,6 +1918,9 @@ syslog
   - initial revision 
 
 %changelog listfiles-rhel4
+* Wed Mar 02 2011 Marc Grimme <grimme@atix.de> 0.1-4
+- files.initrd.d/rhel5/configs.list: added configs.list as file for kudzu in here
+- files.initrd.d/rhel5/hardware.list: added kudzu here
 * Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-3
 - first version for comoonics-4.6-rc1 
 * Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-2
@@ -1814,6 +1929,9 @@ syslog
   - initial revision 
 
 %changelog listfiles-rhel5
+* Wed Mar 02 2011 Marc Grimme <grimme@atix.de> 0.1-9
+- files.initrd.d/rhel5/configs.list: added configs.list as file for kudzu in here
+- files.initrd.d/rhel5/hardware.list: added kudzu here
 * Tue Feb 22 2011 Marc Grimme <grimme@atix.de> 0.1-8
 - added python-list in rpms.initrd.d/rhel5/python.list to be RHEL5.6 compatible
 - added excludefilter to pam (rhcs.list) rpm to not include /var/Log files
@@ -1831,6 +1949,12 @@ syslog
 - First version on the way to rpmlint BUG#290
 * Thu Aug 14 2008 Marc Grimme <grimme@atix.de> - 0.1-1
   - initial revision 
+
+%changelog listfiles-rhel6
+* Wed Mar 02 2011 Marc Grimme <grimme@atix.de> 0.1-2
+- added optionals
+* Mon Feb 28 2011 Marc Grimme <grimme@atix.de> 0.1-1
+- first version for comoonics-5.0-pre
 
 %changelog listfiles-sles
 * Wed Aug 11 2010 Marc Grimme <grimme@atix.de> 0.1-8
@@ -1894,7 +2018,7 @@ syslog
 * Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-4
 - introduced the changelog
 
-%changelog listfiles-rhel6
+%changelog listfiles-rhel5-gfs1
 * Mon Feb 28 2011 Marc Grimme <grimme@atix.de> 0.1-1
 - first version for comoonics-5.0-pre
 
@@ -1907,6 +2031,28 @@ syslog
 - Added a network list file for fedora (libidn)
 * Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-3
 - introduced the changelog
+
+%changelog listfiles-rhel4-nfs
+* Mon Feb 28 2011 Marc Grimme <grimme@atix.de> 0.1-1
+- first version for comoonics-5.0-pre
+
+%changelog listfiles-rhel5-nfs
+* Mon Feb 28 2011 Marc Grimme <grimme@atix.de> 0.1-1
+- first version for comoonics-5.0-pre
+
+%changelog listfiles-rhel6-nfs
+* Wed Mar 02 2011 Marc Grimme <grimme@atix.de> 0.1-2
+- added optionals
+* Mon Feb 28 2011 Marc Grimme <grimme@atix.de> 0.1-1
+- first version for comoonics-5.0-pre
+
+%changelog listfiles-sles10-nfs
+* Mon Feb 28 2011 Marc Grimme <grimme@atix.de> 0.1-1
+- first version for comoonics-5.0-pre
+
+%changelog listfiles-sles11-nfs
+* Mon Feb 28 2011 Marc Grimme <grimme@atix.de> 0.1-1
+- first version for comoonics-5.0-pre
 
 %changelog listfiles-syslogd
 * Mon Feb 14 2011 Marc Grimme <grimme@atix.de> 0.1-4
