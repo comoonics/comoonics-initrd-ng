@@ -317,6 +317,7 @@ CFG_FILES=basefiles.list \
     rpms.initrd.d/sles/empty.list \
     rpms.initrd.d/sles/dm_multipath.list \
     rpms.initrd.d/sles/network.list \
+    rpms.initrd.d/sles/nfs.list \
     rpms.initrd.d/sles/vim.list \
     rpms.initrd.d/sles10/base.list \
     rpms.initrd.d/sles10/python.list \
@@ -537,10 +538,14 @@ rpmpackagedir:
 	@echo "rpmpackagedir: $(RPM_PACKAGE_DIR)"
 
 test:
-	@echo "Testing source..."
-	PYTHONPATH=$(PYTHONPATH) \
-	ccs_xml_query=$(CCS_XML_QUERY) \
-	bash ./$(TEST_DIR)/do_testing.sh
+	@if [ -z "$(NOTESTS)" ]; then \
+		echo "Testing source \"$(NOTESTS)\"..."; \
+		PYTHONPATH=$(PYTHONPATH) \
+		ccs_xml_query=$(CCS_XML_QUERY) \
+		bash ./$(TEST_DIR)/do_testing.sh; \
+	else \
+		echo "Skipping tests \"$(NOTESTS)\"."; \
+	fi
 
 rpmbuild: archive
 	@echo -n "Creating RPM"
