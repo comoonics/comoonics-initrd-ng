@@ -1,17 +1,16 @@
-/etc/sysconfig/network
-/etc/sysconfig/clock
-/etc/filesystems
+/etc/sysconfig/network    optional
+/etc/sysconfig/clock      optional
+/etc/filesystems          optional
 /etc/host.conf
-/etc/hosts.allow
-/etc/hosts.deny
-/etc/profile
+/etc/hosts.allow          optional
+/etc/hosts.deny           optional
+/etc/profile              optional
 /etc/protocols
 /etc/nsswitch.conf
-/etc/ld.so.conf
-/etc/localtime
+/etc/ld.so.conf           optional
+/etc/localtime            optional
 /etc/rc.d
-#/etc/rc.d/init.d
 /etc/init.d
 /etc/resolv.conf
 /etc/hosts
-/etc/modprobe.conf
+/etc/modprobe.conf        optional
