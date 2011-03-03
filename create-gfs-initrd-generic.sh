@@ -403,13 +403,15 @@ while [ $i -lt ${#files[@]} ]; do
     i=$(( $i+1 ))
     todir=${files[$i]}
     subpath=$(dirname ${file#${fromdir}})
-    [ -n "$verbose" ] && echo "File mapping ${file}#${fromdir} => ${mountpoint}/$todir/$subpath"
+    [ -n "$verbose" ] && echo "File mapping ${file}#${fromdir} => ${mountpoint}/$todir/$subpath" >&2
     create_dir ${mountpoint}/$todir/$subpath
     copy_file $file ${mountpoint}/$todir/$subpath
-  else
+  elif [ -e "$file" ]; then 
     dirname=`dirname $file`
     create_dir ${mountpoint}$dirname
     copy_file $file ${mountpoint}$dirname
+  elif [ -n "$verbose" ]; then
+    echo "File $file could not be found. Skipping." >&2
   fi
   i=$(( $i+1 ))
 done
