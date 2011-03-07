@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 79
+Release: 79_1
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -1012,6 +1012,8 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Mon Mar 07 2011 Marc Grimme <grimme@atix.de> 1.4-79_1
+- productive release with listfiles-perl-rhel5 and listfiles-fence_vmware-rhel5
 * Mon Feb 28 2011 Marc Grimme <grimme@atix.de> 1.4-79
 - boot-scripts/error-lib.sh
   - Fixed syntax errors in errormessages.
@@ -1909,6 +1911,14 @@ syslog
 %changelog listfiles-fencexvm
 * Wed Jul 07 2010 Marc Grimme <grimme@atix.de> 0.1-1
 - initial version 
+
+%changelog listfiles-perl-rhel5
+* Mon Mar 07 2011 Marc Grimme <grimme@atix.de> 0.1-1
+- initial revision
+
+%changelog listfiles-fence_vmware-rhel5
+* Mon Mar 07 2011 Marc Grimme <grimme@atix.de> 0.1-1
+- initial revision
 
 %changelog fenceacksv
 * Mon Feb 21 2011 Marc Grimme <grimme@atix.de> 0.3-15
