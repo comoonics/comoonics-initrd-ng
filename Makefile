@@ -253,6 +253,7 @@ CFG_FILES=basefiles.list \
 	files.initrd.d/rhel4/empty.list \
 	files.initrd.d/rhel5/configs.list \
 	files.initrd.d/rhel5/empty.list \
+    files.initrd.d/rhel5/fence_vmware.list \
     files.initrd.d/rhel5/rhcs.list \
     files.initrd.d/rhel6/base.list \
     files.initrd.d/rhel6/configs.list \
@@ -299,6 +300,7 @@ CFG_FILES=basefiles.list \
     rpms.initrd.d/rhel4/rhcs.list \
     rpms.initrd.d/rhel5/base.list \
 	rpms.initrd.d/rhel5/empty.list \
+	rpms.initrd.d/rhel5/perl.list \
     rpms.initrd.d/rhel5/gfs1.list \
     rpms.initrd.d/rhel5/hardware.list \
     rpms.initrd.d/rhel5/nfs.list \
