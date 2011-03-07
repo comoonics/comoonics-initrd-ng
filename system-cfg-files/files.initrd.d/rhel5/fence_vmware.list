@@ -1,0 +1,4 @@
+/usr/lib/perl5/*/VMware/
+/usr/lib*/perl5/*/*-linux-thread-multi/Class/
+/usr/lib*/perl5/*/*-linux-thread-multi/auto/Class/MethodMaker
+/sbin/fence_vmware*
