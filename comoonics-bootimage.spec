@@ -444,6 +444,17 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 %description listfiles-syslog-ng
 Syslog listfiles for syslog-ng daemon
 
+%package listfiles-perl-rhel5
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage
+Summary: Listfiles for perl in the chroot for RHEL5
+Group:   System Environment/Base
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description listfiles-perl-rhel5
+Listfiles for the perl to be imported in the bootimage.
+
 %package listfiles-fencelib
 Version: 0.1
 Release: 1
@@ -455,7 +466,6 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 %description listfiles-fencelib
 Listfiles for the fencelibs to be imported in the bootimage.
 
-
 %package listfiles-fencexvm
 Version: 0.1
 Release: 1
@@ -466,6 +476,18 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description listfiles-fencexvm
 Listfiles for the fence_xvm agent to be imported in the bootimage.
+
+%package listfiles-fence_vmware-rhel5
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage >= 1.4
+Requires: comoonics-bootimage-listfiles-perl-rhel5
+Summary: Files needed for fence_vmware in the kernel
+Group:   System Environment/Base
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description listfiles-fence_vmware-rhel5
+Files needed for fence_vmware in the kernel
 
 %package listfiles-firmware
 Version: 0.1
@@ -932,6 +954,12 @@ fi
 
 %files listfiles-fencexvm
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fencexvm.list
+
+%files listfiles-perl-rhel5
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/perl.list
+
+%files listfiles-fence_vmware-rhel5
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel5/fence_vmware.list
 
 %files listfiles-vi-sles
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/vim.list

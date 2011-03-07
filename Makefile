@@ -244,6 +244,7 @@ CFG_FILES=basefiles.list \
     files.initrd.d/rhel/network.list \
 	files.initrd.d/rhel4/empty.list \
 	files.initrd.d/rhel5/empty.list \
+    files.initrd.d/rhel5/fence_vmware.list \
     files.initrd.d/rhel5/rhcs.list \
     files.initrd.d/sles/base.list \
     files.initrd.d/sles/empty.list \
@@ -285,6 +286,7 @@ CFG_FILES=basefiles.list \
     rpms.initrd.d/rhel4/gfs1.list \
     rpms.initrd.d/rhel5/base.list \
 	rpms.initrd.d/rhel5/empty.list \
+	rpms.initrd.d/rhel5/perl.list \
     rpms.initrd.d/rhel5/gfs1.list \
     rpms.initrd.d/rhel5/python.list \
     rpms.initrd.d/rhel5/rhcs.list \
