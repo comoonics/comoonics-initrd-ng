@@ -1,0 +1,10 @@
+perl
+perl-URI
+perl-HTML-Parser
+perl-Net-Telnet
+perl-Net-SSLeay
+perl-HTML-Tagset
+perl-XML-LibXML-Common
+perl-XML-LibXML
+perl-XML-SAX
+perl-Crypt-SSLeay
