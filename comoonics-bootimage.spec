@@ -2124,6 +2124,14 @@ syslog
 * Wed Jul 07 2010 Marc Grimme <grimme@atix.de> 0.1-1
 - initial version 
 
+%changelog listfiles-perl-rhel5
+* Mon Mar 07 2011 Marc Grimme <grimme@atix.de> 0.1-1
+- initial revision
+
+%changelog listfiles-fence_vmware-rhel5
+* Mon Mar 07 2011 Marc Grimme <grimme@atix.de> 0.1-1
+- initial revision
+
 %changelog fenceacksv
 * Mon Feb 21 2011 Marc Grimme <grimme@atix.de> 0.3-15
 - shell.py
