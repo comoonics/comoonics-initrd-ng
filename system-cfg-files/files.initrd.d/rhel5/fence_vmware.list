@@ -1,4 +1,7 @@
-/usr/lib/perl5/*/VMware/
-/usr/lib*/perl5/*/*-linux-thread-multi/Class/
-/usr/lib*/perl5/*/*-linux-thread-multi/auto/Class/MethodMaker
+/usr/lib/perl5/*/VMware/*
+/usr/lib*/perl5/*/*-linux-thread-multi/Class/*
+/usr/lib*/perl5/*/*-linux-thread-multi/Class/MethodMaker/*
+/usr/lib*/perl5/*/*-linux-thread-multi/auto/Class/MethodMaker/*
+/usr/lib*/perl5/*/*-linux-thread-multi/auto/Class/MethodMaker/Engine/*
+/usr/lib*/perl5/*/*-linux-thread-multi/auto/Class/MethodMaker/scalar/*
 /sbin/fence_vmware*
