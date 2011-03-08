@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 79_2
+Release: 79_3
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -446,7 +446,7 @@ Syslog listfiles for syslog-ng daemon
 
 %package listfiles-perl-rhel5
 Version: 0.1
-Release: 2
+Release: 3
 Requires: comoonics-bootimage
 Summary: Listfiles for perl in the chroot for RHEL5
 Group:   System Environment/Base
@@ -479,7 +479,7 @@ Listfiles for the fence_xvm agent to be imported in the bootimage.
 
 %package listfiles-fence_vmware-rhel5
 Version: 0.1
-Release: 2
+Release: 3
 Requires: comoonics-bootimage >= 1.4
 Requires: comoonics-bootimage-listfiles-perl-rhel5
 Summary: Files needed for fence_vmware in the kernel
@@ -1012,6 +1012,8 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Tue Mar 08 2011 Marc Grimme <grimme@atix.de> 1.4-79_3
+- No change!
 * Tue Mar 08 2011 Marc Grimme <grimme@atix.de> 1.4-79_2
 - system-cfg-files/files.initrd.d/rhel5/fence_vmware.list:
   - full list of files required to get fence_vmware working with rhel5
@@ -1918,12 +1920,16 @@ syslog
 - initial version 
 
 %changelog listfiles-perl-rhel5
+* Tue Mar 08 2011 Marc Grimme <grimme@atix.de> 0.1-3
+- No change
 * Tue Mar 08 2011 Marc Grimme <grimme@atix.de> 0.1-2
 - full list of rpms required to get fenceagents working that require perl
 * Mon Mar 07 2011 Marc Grimme <grimme@atix.de> 0.1-1
 - initial revision
 
 %changelog listfiles-fence_vmware-rhel5
+* Tue Mar 08 2011 Marc Grimme <grimme@atix.de> 0.1-3
+- No change
 * Tue Mar 08 2011 Marc Grimme <grimme@atix.de> 0.1-2
 - full list of files required to get fence_vmware working
 * Mon Mar 07 2011 Marc Grimme <grimme@atix.de> 0.1-1
