@@ -92,9 +92,9 @@ function nfs_load {
 #  SOURCE
 #
 function nfs_services_start {
-  local services="rpcbind"
+  local services="rpcbind rpc_statd"
   for service in $services; do
-    nfs_start_$service
+    nfs_start_$service || breakp $(errormsg err_cc_start_service $service)
   done
   return 0
 }
@@ -111,7 +111,7 @@ function nfs_services_start {
 #  SOURCE
 #
 function nfs_services_stop {
-  local services="rpcbind"
+  local services="rpcbind  rpc_statd"
   for service in $services; do
     nfs_stop_$service
   done
@@ -136,14 +136,15 @@ function nfs_services_restart_newroot {
   local services=
   local service=
 
-  services="rpcbind"
+  services="rpc_statd rpcbind"
   for service in $services; do
-    nfs_stop_$service $new_root
+  	echo_local_debug "Stopping service $service .."
+    nfs_stop_$service "/"
     if [ $? -ne 0 ]; then
-      echo $service > $new_root/${cdsl_local_dir}/FAILURE_$service
+      echo $service > $new_root/$(repository_get_value cdsl_local_dir)/FAILURE_$service
     fi
   done
-  services="rpcpipefs rpcbind"
+  services="rpcpipefs rpcbind rpc_statd"
   for service in $services; do
     nfs_start_$service $new_root
     if [ $? -ne 0 ]; then
