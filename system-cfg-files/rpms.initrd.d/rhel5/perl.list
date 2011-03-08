@@ -8,3 +8,4 @@ perl-XML-LibXML-Common
 perl-XML-LibXML
 perl-XML-SAX
 perl-Crypt-SSLeay
+perl-libwww-perl
