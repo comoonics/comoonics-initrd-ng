@@ -52,9 +52,7 @@ function rhel6_hardware_detect() {
 #
 function rhel6_udev_start() {
     UDEVVERSION=$(udevadm --version)
-	if ! /sbin/pidof udevd > /dev/null; then
-      udevd --daemon --resolve-names=never
-	fi
+    rhel6_udev_daemon_start
 	UDEV_LOG_PRIO_ARG=--log-priority
 	UDEV_QUEUE_EMPTY="udevadm settle --timeout=0"
 
@@ -70,6 +68,22 @@ function rhel6_udev_start() {
 }
 #************rhel5_udev_start
 
+#****f* hardware-lib.sh/udev_daemon_start
+#  NAME
+#    udev_daemon_start
+#  SYNOPSIS
+#    function boot-lib.sh/udev_daemon_start
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function rhel6_udev_daemon_start() {
+	if ! /sbin/pidof udevd > /dev/null; then
+      udevd --daemon --resolve-names=never
+	fi
+}
+#************hardware-lib.sh/udev_daemon_start
+
 #****f* hardware-lib.sh/rhel5_udev_start
 #  NAME
 #    udev_start
@@ -81,7 +95,7 @@ function rhel6_udev_start() {
 #
 function rhel6_udev_stop() {
 	if /sbin/pidof udevd > /dev/null; then
-		kill $(/sbin/pidof udevd)
+		stop_service udevd
 	else
 	    true
 	fi
