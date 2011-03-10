@@ -766,7 +766,7 @@ function step() {
 #  SOURCE
 #
 function listBreakpoints {
-	for file in $(find ./ -name "*.sh"); do 
+	for file in $(find ./ -xdev -name "*.sh"); do 
 		awk '
 /step[[:space:]]+"/ && $0 !~ /__name/ { 
 	step=$0; 
