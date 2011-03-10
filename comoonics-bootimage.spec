@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 79_3
+Release: 79_4
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -1012,6 +1012,13 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Thu Mar 11 2011 Marc Grimme <grimme@atix.de> 1.4-79_4
+- Sporadic reboot problem fix that eventually happend when telinit could not write to /dev/initctl.
+- boot-scripts/etc/boot-lib.sh:
+  - restart_init: issue a telinit u 5 times unless it succeeds and wait 5 seconds during each try.
+- boot-scripts/etc/std-lib.sh
+  - listBreakpoints: added -xdev to find in order to not walk through
+other filesystems
 * Tue Mar 08 2011 Marc Grimme <grimme@atix.de> 1.4-79_3
 - No change!
 * Tue Mar 08 2011 Marc Grimme <grimme@atix.de> 1.4-79_2
