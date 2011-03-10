@@ -740,15 +740,29 @@ function createTemp {
 #  NAME
 #    restart_init
 #  SYNOPSIS
-#    function restart_init {
+#    function restart_init(tries=5, timeout=5) {
 #  MODIFICATION HISTORY
 #  IDEAS
 #  SOURCE
 #
 function restart_init {
-	exec_local telinit u
+	local restarts=${1:-5}
+	local timeout=${2:-5}
+	exec_local __restart_init $restarts $timeout
 }
 #************ restart_init
+
+__restart_init() {
+  local restarts=${1:-5}
+  local timeout=${2:-5}
+  local restarts_done=0
+  
+  while [ $restarts_done -lt $restarts ]; do
+    telinit u && return 0
+    sleep $timeout
+  done
+  return 1
+}
 
 #****f* boot-lib.sh/stop_service
 #  NAME
