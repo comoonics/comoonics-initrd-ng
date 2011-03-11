@@ -176,7 +176,8 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/templates/rsyslogd.conf \
   boot-scripts/etc/templates/syslog-ng.conf \
   boot-scripts/etc/templates/syslog.conf
-#************ LIB_FILES 
+#************ LIB_FILES
+ 
 #****d* Makefile/SYSTEM_CFG_DIR
 #  NAME
 #    SYSTEM_CFG_DIR
@@ -186,6 +187,7 @@ LIB_FILES=create-gfs-initrd-lib.sh \
 #
 SYSTEM_CFG_DIR=/etc/comoonics
 #************ SYSTEM_CFG_DIR 
+
 #****d* Makefile/SYSTEM_CFG_FILES
 #  NAME
 #    SYSTEM_CFG_FILES
