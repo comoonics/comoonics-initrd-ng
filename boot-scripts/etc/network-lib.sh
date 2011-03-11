@@ -249,7 +249,9 @@ function ip2Config() {
 #
 function auto_netconfig {
    local drivers=$*
-   [ -z "$drivers" ] && drivers=$(cat $modules_conf | grep "alias eth[0-9]" | awk '{print $2;}')
+   if [ -z "$drivers" ] && [ -n "$modules_conf" ] && [ -e "$modules_conf" ]; then
+     drivers=$(cat $modules_conf | grep "alias eth[0-9]" | awk '{print $2;}')
+   fi
    
    echo_local -n "Loading modules for all found network cards"
    for module in $drivers; do
