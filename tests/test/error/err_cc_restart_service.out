@@ -1,8 +1,8 @@
 Could not restart the service param1.
  
  Please carefully decide if you want to continue - type exit - booting or not.
- The best guess might be to check why fix the problem and restart the service manully.
- Then you can savely continue booting.
+ The best guess might be to check why and fix the problem and restart the service manually.
+ Then you can safely continue booting.
  Command: errorbin
  Output: 
  Errors: 
