@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 81
+Release: 82
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -96,7 +96,7 @@ Extra listfiles for special network configurations
 
 %package extras-nfs
 Version: 0.1
-Release: 19
+Release: 20
 Requires: comoonics-bootimage >= 1.4-81
 Summary: Listfiles for nfs sharedroot configurations
 Group:   System Environment/Base
@@ -281,14 +281,14 @@ Group:   System Environment/Base
 %description extras-syslog
 Syslog implementation for osr. Supports syslog classic, syslog-ng, rsyslog (See listfiles-syslog)
 
-%package extras-selinux
+%package listfiles-selinux-rhel
 Version: 0.1
-Release: 13
+Release: 2
 Requires: comoonics-bootimage >= 1.4-81
 Summary: SELinux implementation for osr
 Group:   System Environment/Base
 
-%description extras-selinux
+%description listfiles-selinux-rhel
 SELinux implementation for osr. Supports only local filesystems and distributions supporting SELinux
 
 %package listfiles-vi-sles
@@ -424,7 +424,7 @@ OSR extra files that are only relevant for Novell SLES 11
 
 %package listfiles-fedora-nfs
 Version: 0.1
-Release: 6
+Release: 8
 Requires: comoonics-bootimage-listfiles-fedora
 Group: System Environment/Base
 Summary: Extrafiles for Fedora Core NFS support 
@@ -448,7 +448,7 @@ OSR extra files that are only relevant for RHEL5 and GFS1
 
 %package listfiles-rhel4-nfs
 Version: 0.1
-Release: 1
+Release: 2
 Requires: comoonics-bootimage-extras-nfs
 Requires: comoonics-bootimage-listfiles-rhel4
 Group: System Environment/Base
@@ -460,7 +460,7 @@ OSR extra files that are only relevant for RHEL4 Versions and nfs support
 
 %package listfiles-rhel5-nfs
 Version: 0.1
-Release: 1
+Release: 2
 Requires: comoonics-bootimage-listfiles-rhel5
 Requires: comoonics-bootimage-extras-nfs
 Group: System Environment/Base
@@ -472,7 +472,7 @@ OSR extra files that are only relevant for RHEL5 Versions and nfs support
 
 %package listfiles-rhel6-nfs
 Version: 0.1
-Release: 2
+Release: 4
 Requires: comoonics-bootimage-listfiles-rhel6
 Requires: comoonics-bootimage-extras-nfs
 Group: System Environment/Base
@@ -484,7 +484,7 @@ OSR extra files that are only relevant for RHEL6 Versions and nfs support
 
 %package listfiles-sles10-nfs
 Version: 0.1
-Release: 1
+Release: 2
 Requires: comoonics-bootimage-listfiles-sles10
 Requires: comoonics-bootimage-extras-nfs
 Group: System Environment/Base
@@ -496,7 +496,7 @@ OSR extra files that are only relevant for SLES10 Versions and nfs support
 
 %package listfiles-sles11-nfs
 Version: 0.1
-Release: 1
+Release: 2
 Requires: comoonics-bootimage-extras-nfs
 Requires: comoonics-bootimage-listfiles-sles11
 Group: System Environment/Base
@@ -608,6 +608,17 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description listfiles-firmware
 Files needed for firmware in the kernel
+
+%package listfiles-plymouth
+Version: 0.1
+Release: 2
+Requires: comoonics-bootimage >= 1.4-81
+Summary: Files needed for plymouth support in the initrd
+Group:   System Environment/Base
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description listfiles-plymouth
+Files needed for plymouth support in the initrd
 
 %package compat
 Version: 0.1
@@ -804,9 +815,11 @@ fi
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/issue
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/lock-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/network-lib.sh
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/plymouth-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/repository-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/xen-lib.sh
 #%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/passwd
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/selinux-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/stdfs-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/stdlib.py
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/std-lib.sh
@@ -933,9 +946,6 @@ fi
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/templates/rsyslogd.conf
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/templates/syslog-ng.conf
 
-%files extras-selinux
-%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/selinux-lib.sh
-
 %files listfiles-all
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/basefiles.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.list
@@ -1053,30 +1063,45 @@ fi
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/nfs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fedora/nfs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fedora/network.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/nfs.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/03-nfs-deps.sh
 
 %files listfiles-rhel4-nfs
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/nfs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/nfs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel4/nfs.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/nfs.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/03-nfs-deps.sh
 
 %files listfiles-rhel5-nfs
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/nfs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/nfs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/nfs.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/nfs.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/03-nfs-deps.sh
 
 %files listfiles-rhel6-nfs
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/nfs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/nfs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel6/nfs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel6/network.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/nfs.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/03-nfs-deps.sh
 
 %files listfiles-sles10-nfs
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/nfs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/nfs.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/nfs.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/03-nfs-deps.sh
 
 %files listfiles-sles11-nfs
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/nfs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/nfs.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/nfs.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/03-nfs-deps.sh
+
+%files listfiles-selinux-rhel
+%attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/selinux.list
 
 %files listfiles-fenceacksv-plugins
 %config %attr(0644, root, root) %dir %{CONFIGDIR}/bootimage-chroot/rpms.initrd.d/fenceacksv-plugins.list
@@ -1107,6 +1132,9 @@ fi
 
 %files listfiles-firmware
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/firmware.list
+
+%files listfiles-plymouth
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/plymouth.list
 
 %files fenceacksv
 %attr(0755, root, root) %{FENCEACKSV_DIR}/fence_ack_server.py*
@@ -1153,6 +1181,94 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 1.4-82
+  * boot-scripts/etc/plymouth-lib.sh, system-cfg-files/files.initrd.d/nfs.list,
+  system-cfg-files/post.mkinitrd.d/03-nfs-deps.sh,
+  system-cfg-files/rpms.initrd.d/plymouth.list,
+  system-cfg-files/rpms.initrd.d/rhel/selinux.list,
+  tests/test/error/err_cc_start_service.out: new versions
+
+  * tests/test-errors.sh, tests/test/error/err_cc_restart_service.out: - new
+  tests
+
+  * Makefile: - added new files
+
+  * system-cfg-files/rpms.initrd.d/rhel6/nfs.list: - docs
+
+  * boot-scripts/linuxrc.generic.sh: - added starting on udevdaemon early -
+  added plymouth functions if available - added selinux functions if available
+  - moved initrd_exit_postsettings to be executed later
+
+  * boot-scripts/linuxrc: - no boot-log any more
+
+  * boot-scripts/etc/std-lib.sh: - sourceLibs: added sourcing of
+  plymouth-lib.sh and selinux-lib.sh if available - exec_local: remove
+  repository parameters exec_local* - exec_ordered_skripts_in: will now work on
+  multiple scripts in the right order.
+
+  * boot-scripts/etc/stdfs-lib.sh: - is_mounted: remove MOUNTS env variable if
+  set by this function - get_dep_filesystems: also work on paths with multiple
+  // after each other (e.g. //proc)
+
+  * boot-scripts/etc/selinux-lib.sh: - change to status working and tested
+  first stage
+
+  * boot-scripts/etc/passwd: removed empty line
+
+  * boot-scripts/etc/nfs-lib.sh: - nfs_start_rpcpipefs: echo_local ->
+  echo_local_debug - nfs_stop_rpc_statd: added function to stop rpc_statd
+
+  * boot-scripts/etc/network-lib.sh: - auto_netconfig: now errormsg if
+  /etc/modprobe.conf would not be found
+
+  * boot-scripts/etc/hardware-lib.sh: - udev_daemon_start: new function that
+  starts the udevdaemon distribution dependent - dev_start: will mount devtmpfs
+  if possible and call create_std_devfs if not - create_std_devfs: creates all
+  devices if devfs is not available - scsi_start: will not output error if
+  /etc/modprobe.conf would not be found
+
+  * boot-scripts/etc/errors.sh: - new function that reads errordescription from
+  stdin - err_cc_restart_service: fixed typo - err_cc_start_service: new
+  errormsg
+
+  * boot-scripts/etc/comoonics-release: - changed release to 5.0 (Gumpn)
+  * boot-scripts/etc/clusterfs-lib.sh: - copy_relevant_files removed function
+
+  * boot-scripts/etc/boot-lib.sh: - initBootProcess better process of creating
+  directories necessary for initrd - start_service executing service via
+  exec_local - switchRoot * echo -> echo_local * support for switch_root binary
+  if available (experimental) * all dep filesystems on oldroot will be umounted
+  (/proc, /sys and deps) * all dep filesystems on newroot will be mounted
+  (/proc, /sys) - stop_service * docu * add force option the kill -9 if kill
+  -TERM does not work defaults to yes * fixed a bug where the root would not be
+  detected on service will not be killed - clean_initrd * cut of stderr/stdout
+  of kill for processes - initrd_exit_postsettings * docu * typos
+
+  * boot-scripts/etc/fedora/nfs-lib.sh, boot-scripts/etc/rhel6/nfs-lib.sh:
+  removed umounting of /proc (will be done later on)
+  * boot-scripts/etc/bashrc: added plymouth support
+
+  * boot-scripts/etc/rhel6/nfs-lib.sh: nfs_services_stop/start: - added
+  rpc.statd nfs_services_restart_newroot: - added rpc.statd
+
+  * boot-scripts/etc/rhel6/hardware-lib.sh: implemented rhel6_udev_daemon_start
+  and use it.
+
+  * system-cfg-files/rpms.initrd.d/rhel5/perl.list: added perl-libwww-perl
+  which is also required.
+
+  * .../files.initrd.d/rhel5/fence_vmware.list: added more files that would not
+  be included
+  * comoonics-bootimage.spec: added changelogs for listfiles-perl-rhel5 and
+  listfiles-fence_vmware-rhel5
+
+  * Makefile, comoonics-bootimage.spec: added rpms
+  comoonics-bootimage-listfiles-perl-rhel5 and listfiles-fence_vmware-rhel5
+
+  * .../files.initrd.d/rhel5/fence_vmware.list,
+  system-cfg-files/rpms.initrd.d/rhel/perl.list,
+  system-cfg-files/rpms.initrd.d/rhel5/perl.list: initial revision
+
 * Wed Mar 02 2011 Marc Grimme <grimme@atix.de> 1.4-81
 - boot-scripts/etc/boot-lib.sh: 
     stop_service: now also stops the service if no pid file exists by
@@ -1750,6 +1866,10 @@ rm -rf %{buildroot}
 - first release
 
 %changelog extras-nfs
+* Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 0.1-20
+- added rpc_stop..
+* Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 0.1-19
+- no
 * Wed Mar 02 2011 Marc Grimme <grimme@atix.de> 0.1-18
 - rpms.initrd.d/nfs.list: moved portmap to distros
 * Wed Aug 11 2010 Marc Grimme <grimme@atix.de> 0.1-17
@@ -1784,7 +1904,7 @@ rm -rf %{buildroot}
 - bugfixes upstream
 * Tue Jun 10 2008 Marc Grimme <grimme@atix.de> - 0.1-2
 - added nfs-lib.sh file
-syslog
+
 %changelog extras-ocfs2
 * Thu Aug 26 2010 Marc Grimme <grimme@atix.de> 0.1-10
 - boot-scripts/etc/ocfs2-lib.sh ocfs2_init be sure to 
@@ -1889,8 +2009,10 @@ syslog
 * Wed Sep 09 2009 Marc Grimme <grimme@atix.de> - 0.1-1
 - initial revision
 
-%changelog extras-selinux
-* Wed Mar 02 2011 Marc Grimme <grimme@atix.de> - 0.1-1
+%changelog listfiles-selinux-rhel
+* Fri Mar 11 2011 Marc Grimme <grimme@atix.de> - 0.1-2
+  - functional release
+* Wed Mar 09 2011 Marc Grimme <grimme@atix.de> - 0.1-1
   - initial revision
 
 %changelog listfiles-all
@@ -2051,6 +2173,12 @@ syslog
 - first version for comoonics-5.0-pre
 
 %changelog listfiles-fedora-nfs
+* Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 0.1-8
+- new version for comoonics-5.0-pre with post script
+* Tue Mar 08 2011 Marc Grimme <grimme@atix.de> 0.1-7
+- first version for comoonics-5.0-pre
+- added post.mkinitrd.d/03-nfs-deps.sh (setup of /etc/passwd for nfs if need be)
+- added files.mkinitrd.d/nfs.list (/etc/rpc)
 * Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-6
 - first version for comoonics-4.6-rc1 
 * Mon Sep 28 2009 Marc Grimme <grimme@atix.de> - 0.1-5
@@ -2061,24 +2189,45 @@ syslog
 - introduced the changelog
 
 %changelog listfiles-rhel4-nfs
+* Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 0.1-3
+- new version for comoonics-5.0-pre with post script
+* Tue Mar 08 2011 Marc Grimme <grimme@atix.de> 0.1-2
+- first version for comoonics-5.0-pre
+- added post.mkinitrd.d/03-nfs-deps.sh (setup of /etc/passwd for nfs if need be)
+- added files.mkinitrd.d/nfs.list (/etc/rpc)
 * Mon Feb 28 2011 Marc Grimme <grimme@atix.de> 0.1-1
 - first version for comoonics-5.0-pre
 
 %changelog listfiles-rhel5-nfs
+* Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 0.1-3
+- new version for comoonics-5.0-pre with post script
+* Tue Mar 08 2011 Marc Grimme <grimme@atix.de> 0.1-2
+- first version for comoonics-5.0-pre
+- added post.mkinitrd.d/03-nfs-deps.sh (setup of /etc/passwd for nfs if need be)
+- added files.mkinitrd.d/nfs.list (/etc/rpc)
 * Mon Feb 28 2011 Marc Grimme <grimme@atix.de> 0.1-1
 - first version for comoonics-5.0-pre
 
 %changelog listfiles-rhel6-nfs
+* Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 0.1-4
+- new version for comoonics-5.0-pre with post script
+* Tue Mar 08 2011 Marc Grimme <grimme@atix.de> 0.1-3
+- added post.mkinitrd.d/03-nfs-deps.sh (setup of /etc/passwd for nfs if need be)
+- added files.mkinitrd.d/nfs.list (/etc/rpc)
 * Wed Mar 02 2011 Marc Grimme <grimme@atix.de> 0.1-2
 - added optionals
 * Mon Feb 28 2011 Marc Grimme <grimme@atix.de> 0.1-1
 - first version for comoonics-5.0-pre
 
 %changelog listfiles-sles10-nfs
+* Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 0.1-2
+- new version for comoonics-5.0-pre with post script
 * Mon Feb 28 2011 Marc Grimme <grimme@atix.de> 0.1-1
 - first version for comoonics-5.0-pre
 
 %changelog listfiles-sles11-nfs
+* Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 0.1-2
+- new version for comoonics-5.0-pre with post script
 * Mon Feb 28 2011 Marc Grimme <grimme@atix.de> 0.1-1
 - first version for comoonics-5.0-pre
 
@@ -2129,6 +2278,14 @@ syslog
 - initial revision
 
 %changelog listfiles-fence_vmware-rhel5
+* Mon Mar 07 2011 Marc Grimme <grimme@atix.de> 0.1-1
+- initial revision
+
+%changelog listfiles-firmware
+* Mon Mar 07 2011 Marc Grimme <grimme@atix.de> 0.1-1
+- initial revision
+
+%changelog listfiles-plymouth
 * Mon Mar 07 2011 Marc Grimme <grimme@atix.de> 0.1-1
 - initial revision
 
