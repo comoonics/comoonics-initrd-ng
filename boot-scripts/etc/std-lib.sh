@@ -55,6 +55,8 @@ function sourceLibs() {
     . ${predir}/etc/network-lib.sh
     . ${predir}/etc/clusterfs-lib.sh
     . ${predir}/etc/stdfs-lib.sh
+    [ -e ${predir}/etc/plymouth-lib.sh ] && . ${predir}/etc/plymouth-lib.sh
+    [ -e ${predir}/etc/selinux-lib.sh ] && . ${predir}/etc/selinux-lib.sh
     . ${predir}/etc/defaults.sh
     . ${predir}/etc/xen-lib.sh
     
@@ -554,6 +556,9 @@ function exec_local() {
   	tmpfile_err=$(mktemp)
   	tmpfile_out=$(mktemp)
   fi
+  repository_del_value exec_local_lastcmd
+  repository_del_value exec_local_lasterror
+  repository_del_value exec_local_lastout
   if [ -n "$(repository_get_value dstep)" ]; then
   	echo -n "$* (Y|n|c)? " >&2
   	read dstep_ans
@@ -1156,13 +1161,13 @@ exec_ordered_skripts_in() {
    	 	echo_local -n -N "Executing skript \"$skript\"."
    	 	$skript $destpath
    	 	return_code $?
-   	 	[ "$return_c" -eq 0 ] || return_C=$return_c && [ $exitonerror -eq 1 ] && return $return_C
+   	 	[ "$return_c" -eq 0 ] || ( return_C=$return_c && [ $exitonerror -eq 1 ] && return $return_C )
      elif [  "$extension" = ".sh" ]; then
         echo_local -n -N "Sourcing skript \"$skript\"."
         return_c=0
         . $skript $destpath
         return_code
-   	 	[ "$return_c" -eq 0 ] || return_C=$return_c && [ $exitonerror -eq 1 ] && return $return_C
+   	 	[ "$return_c" -eq 0 ] || ( return_C=$return_c && [ $exitonerror -eq 1 ] && return $return_C )
    	 fi
    done
    return $return_C
