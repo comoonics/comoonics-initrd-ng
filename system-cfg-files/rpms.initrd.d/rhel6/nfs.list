@@ -1,4 +1,4 @@
-# For nfs support
+# For nfs support        includefilter          excludefilter      options
 rpcbind
 libtirpc
 libgssglue
