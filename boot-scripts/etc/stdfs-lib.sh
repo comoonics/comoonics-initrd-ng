@@ -252,17 +252,28 @@ function is_mounted {
     local dev=
     local path=
     local rest=
-
     local mountpoint=$(echo "$1" | sed -e 's/\/\/\/*/\//g' | sed -e 's/^\(..*\)\/\/*$/\1/')
-	[ -z "$MOUNTS" ] && MOUNTS=$(cat /proc/mounts)
+    local mountset=
+
+	if [ -z "$MOUNTS" ]; then 
+	  MOUNTS=$(cat /proc/mounts)
+      mountset=1
+    fi	  
 	[ -n "$MOUNTSFILE" ] && MOUNTS=$(cat $MOUNTSFILE)
 	
     echo "$MOUNTS" | while read dev path rest; do
 	   if [ "$path" = "$mountpoint" ]; then
+	   	  [ "$mountset" = "1" ] && unset MOUNTS
           return 1
 	   fi
-    done || return 0 
-    return 1
+    done
+    if [ $? -ne 0 ]; then
+        [ "$mountset" = "1" ] && unset MOUNTS
+    	return 0
+    else 
+        [ "$mountset" = "1" ] && unset MOUNTS
+        return 1
+    fi
 }
 #*********** is_mounted
 
@@ -281,7 +292,7 @@ function is_mounted {
 #  SOURCE
 #
 function get_dep_filesystems {
-	local basepath=$1
+	local basepath=$(echo "$1" | sed -e 's/\/\/\/*/\//g' | sed -e 's/^\(..*\)\/\/*$/\1/')
 	shift
 	local excludepaths=$*
 	local excludepath
