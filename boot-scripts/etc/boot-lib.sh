@@ -426,13 +426,12 @@ function initBootProcess() {
   echo_local_debug "/proc/cmdline"
   exec_local_debug cat /proc/cmdline
 
-  if [ ! -d /tmp ]; then
-  	mkdir /tmp
-  fi
-
-  if [ ! -e /mnt/newroot ]; then
-    mkdir -p /mnt/newroot
-  fi
+  for dir in /tmp /mnt/newroot /var/lock/subsys; do
+  	[ -d $dir ] || mkdir -p $dir
+  done
+  
+  rm -f /etc/mtab
+  ln -s /proc/mounts /etc/mtab
   return $?
 }
 #************ initBootProcess
@@ -520,7 +519,7 @@ function start_service {
   fi
   echo_local -n "Starting service $service_name"
   if [ -n "$nochroot" ]; then
-    $($service $*)
+    exec_local $service $*
     return_code $?
   else
     [ -z "$chroot_dir" ] && chroot_dir="/var/lib/${service_name}"
@@ -548,7 +547,7 @@ function start_service {
 
 	if [ -z "$nostart" ]; then
       echo_local -n "..$service.."
-      /usr/sbin/chroot $chroot_dir $service $*
+      exec_local chroot $chroot_dir $service $*
       if [ $? -ne 0 ] && [ -z "$nofailback" ]; then
         echo_local -n "chroot not worked failing back.." && $service $*
       fi
@@ -617,8 +616,8 @@ function switchRoot() {
      newroot="/mnt/newroot"
   fi
 
-  echo "**********************************************************************"
-  echo " comoonics generic switchroot"
+  echo_local "**********************************************************************"
+  echo_local  " comoonics generic switchroot"
 
   #get init_cmd from /proc
   if [ -e "$newroot/$cominit" ]; then
@@ -627,43 +626,63 @@ function switchRoot() {
   else
   	init_cmd="/sbin/init $(cat /proc/cmdline)"
   fi
-  # clean up
-  if [ -f /etc/boot-environment ]; then
-    echo_local_debug "Sourcing environment"
-  	source /etc/boot-environment
-  fi
-
-  echo_local "Cleaning up..."
-  #umount /dev
-  [ -e /proc/bus/usb ] && umount /proc/bus/usb
-  umount /proc
-  umount /sys
-
-  #if type -t ${distribution}_switchRoot > /dev/null; then
-  #	echo_local_debug "calling ${distribution}_switchRoot ${new_root}"
-  #	exec ${distribution}_switchRoot ${new_root}
-
-  # this returns a comand to delete all unused files.
-  # TODO: directories are not removed. Add functionality to remove empty directories.
-  # CAUTION: Do NOT remove /mnt/newroot ;-)
-  skipfiles=$(for file in $skipfiles; do which $file; done)
-  skipfiles=$(for file in $skipfiles; do get_dependent_files $file; which $file; done | sort -u)
-  skipfiles="$skipfiles /dev/console"
-  skipfiles=$(echo $skipfiles | sort -u | sed 's/ /" -o -regex "/g')
-  cmd=$(echo find / -xdev ! \\\( -regex \"$skipfiles\" \\\) -exec 'rm {}' '\;')
-
-  eval $cmd > /dev/null 2>&1
   
-  # It happens that sometimes a lockfile is being left over by udev or the initprocess. 
-  # So we'll remove any stale lockfile either in /dev or /var/lock/subsys
-  find ${newroot}/var/lock/subsys -type f -delete 2>/dev/null
-  find ${newroot}/dev -name ".*.lock" -or -name "*.lock" -delete 2>/dev/null
+  switch_root=$(which switch_root 2>/dev/null)
+  if [ -n "$switch_root" ] && [ -x $switch_root ]; then
+  	$switch_root $newroot $init_cmd 
+  else
+    # clean up
+    if [ -f /etc/boot-environment ]; then
+      echo_local_debug "Sourcing environment"
+  	  source /etc/boot-environment
+    fi
 
-  cd ${newroot}
-  # TODO
-  /bin/mount --move . /
-  echo_local_debug "Calling init as $init_cmd"
-  exec chroot . $init_cmd </dev/console >/dev/console 2>&1
+    for fs in /proc /sys; do
+      if ! is_mounted ${newroot}$fs; then
+        echo_local -n "Mounting filesystem $fs in ${newroot}.."
+        exec_local chroot ${newroot} mount $fs
+        return_code
+      fi
+    done
+
+    for fs in /sys /proc; do
+      if is_mounted $fs; then
+        for depfilesystem in $(get_dep_filesystems $fs); do
+          if is_mounted $depfilesystem; then 
+            echo_local -n "Umounting $depfilesystem"
+            exec_local umount_filesystem $depfilesystem
+            return_code
+            [ $return_c -eq 0 ] || rc=$return_c
+          fi
+        done
+        echo_local -n "Umounting $fs"
+        exec_local umount_filesystem $fs
+        return_code
+        [ $return_c -eq 0 ] || rc=$return_c
+      fi
+    done
+    echo_local "Cleaning up..."
+    # this returns a comand to delete all unused files.
+    # TODO: directories are not removed. Add functionality to remove empty directories.
+    # CAUTION: Do NOT remove /mnt/newroot ;-)
+    skipfiles=$(for file in $skipfiles; do which $file; done)
+    skipfiles=$(for file in $skipfiles; do get_dependent_files $file; which $file; done | sort -u)
+    skipfiles="$skipfiles /dev/console"
+    skipfiles=$(echo $skipfiles | sort -u | sed 's/ /" -o -regex "/g')
+    cmd=$(echo find / -xdev ! \\\( -regex \"$skipfiles\" \\\) -exec 'rm {}' '\;')
+
+    eval $cmd > /dev/null 2>&1
+  
+    # It happens that sometimes a lockfile is being left over by udev or the initprocess. 
+    # So we'll remove any stale lockfile either in /dev or /var/lock/subsys
+    find ${newroot}/var/lock/subsys -type f -delete 2>/dev/null
+    find ${newroot}/dev -name ".*.lock" -or -name "*.lock" -delete 2>/dev/null
+
+    cd ${newroot}
+    /bin/mount --move . /
+    echo_local_debug "Calling init as $init_cmd"
+    exec chroot . $init_cmd </dev/console >/dev/console 2>&1
+  fi
 }
 #************ switchRoot
 
@@ -754,7 +773,7 @@ function restart_init {
 #  NAME
 #    stop_service
 #  SYNOPSIS
-#    function stop_service {
+#    function stop_service(service_name, root=/, force=1) {
 #  MODIFICATION HISTORY
 #  IDEAS
 #  SOURCE
@@ -762,24 +781,30 @@ function restart_init {
 function stop_service {
   local service_name=$1
   local other_root=$2
-  local force=${2:-1}
+  local force=${3:-1}
   local pids=$(pidof $service_name 2>/dev/null)
   local pid=
   if [ -f ${other_root}/var/run/${service_name}.pid ]; then
     pids=$(cat ${other_root}/var/run/${service_name}.pid)
   fi
   for pid in $pids; do
-  	local root=$(/bin/ls --directory --inode /proc/$pid/root/ | cut -f1 -d" ")
-   	kill $pid 2>/dev/null
-   	kill -0 $pid 2>/dev/null
-   	if [ -n "$force" ]; then
+  	local root=$(/bin/ls --directory --inode /proc/$pid/root/ 2>/dev/null | cut -f1 -d" ")
+  	local other_root=$(/bin/ls --directory --inode $other_root 2>/dev/null | cut -f1 -d" ")
+  	if [ -z "$root" ] || [ -z "$other_root" ] || [ $root = "1" ] || [ "$root" = "$(/bin/ls --directory --inode $other_root 2>/dev/null | cut -f1 -d" ")" ]; then
+   	  kill $pid 2>/dev/null
+   	  kill -0 $pid 2>/dev/null
+   	  if [ -n "$force" ]; then
    		sleep 2 && kill -0 $pid 2>/dev/null && kill -9 $pid 2>/dev/null
+   	  fi
    	fi
   done
   for pid in $pids; do
-  	kill -0 $pid 2>/dev/null
-  	if [ $? -ne 0 ]; then
+  	local root=$(/bin/ls --directory --inode /proc/$pid/root/ 2>/dev/null | cut -f1 -d" ")
+  	if [ -z "$root" ] || [ -z "$other_root" ] || [ $root = "1" ] || [ "$root" = "$(/bin/ls --directory --inode $other_root 2>/dev/null | cut -f1 -d" ")" ]; then
+   	  kill -0 $pid 2>/dev/null
+  	  if [ $? -ne 0 ]; then
   		return $?
+  	  fi
   	fi
   done
   return 0
@@ -799,12 +824,12 @@ function clean_initrd() {
 	local procs="udevd dmeventd"
 	echo_local_debug -N -n "Sending unnecessary processes the TERM signal"
 	for p in $procs; do
-		killall -0 $p && killall $p &> /dev/null
+		killall -0 $p &> /dev/null && killall $p &> /dev/null
 	done
 	sleep 3
 	echo_local_debug -N -n "Sending unnecessary processes the KILL signal"
 	for p in $procs; do
-		killall -0 $p && killall -9 $p &> /dev/null
+		killall -0 $p &> /dev/null && killall -9 $p &> /dev/null
 	done
 	true
 }
@@ -996,18 +1021,21 @@ function check_mtab {
 #  NAME
 #    initrd_exit_postsettings
 #  SYNOPSIS
-#    function initrd_exit_postsettings
+#    function initrd_exit_postsettings(distribution)
 #  IDEAS
 #    Calls the dependent postsettings functions
 function initrd_exit_postsettings {
-	local distribution=${1:-$(repository_get_value distribution)}
+  local distribution=${1:-$(repository_get_value distribution)}
+  local rc=0
 
-	if typeset -f ${distribution}_initrd_exit_postsettings &>/dev/null; then
-		 ${distribution}_initrd_exit_postsettings $*
-	fi
+  if typeset -f ${distribution}_initrd_exit_postsettings &>/dev/null; then
+    ${distribution}_initrd_exit_postsettings $*
+    rc=$?
+  fi
+  
+  return $rc
 } 
 #************** initrd_exit_postsettings
-
 
 # $Log: boot-lib.sh,v $
 # Revision 1.89  2010-12-07 13:27:13  marc
