@@ -22,18 +22,18 @@
 #
 
 # selinux_load_policy(newroot)
-selinux_load_policy() {
+function selinux_load_policy() {
     local NEWROOT=$1
-    local permissive
+    local permissive=0
 	# If SELinux is disabled exit now 
     local selinuxparam=$(getParameter "selinux" 0)
-    if [ -n "$selinuxparam" ] && [ "$selinuxparam" != "0" ]; then
-	    SELINUX="enforcing"
-    	[ -e "$NEWROOT/etc/selinux/config" ] && . "$NEWROOT/etc/selinux/config"
+    SELINUX="disabled"
+    [ -e "$NEWROOT/etc/selinux/config" ] && . "$NEWROOT/etc/selinux/config"
 
+    if [ "$SELINUX" != "disabled" ] || [ "$selinuxparam" != "0" ]; then
+    	# We end up here only if we are enforcing or permissive
         # Check whether SELinux is in permissive mode
-        permissive=$(getParameter "enforcing" 0) 
-        if [ $(getParameter "enforcing" 0) = "0" ] || [ "$SELINUX" = "permissive" ]; then
+        if [ $(getParameter "enforcing" 1) = "0" ] || [ "$SELINUX" = "permissive" ]; then
            permissive=1
         fi
 
@@ -41,7 +41,7 @@ selinux_load_policy() {
         if [ -x "$NEWROOT/usr/sbin/load_policy" -o -x "$NEWROOT/sbin/load_policy" ]; then
           local ret=0
           local out
-          echo_local -n "Loading SELinux policy"
+          echo_local -n "Loading SELinux policy ($SELINUX/$selinuxparam/$permissive)"
           # load_policy does mount /proc and /selinux in 
           # libselinux,selinux_init_load_policy()
           if [ -x "$NEWROOT/sbin/load_policy" ]; then
@@ -69,15 +69,14 @@ selinux_load_policy() {
           if [ $ret -eq 3 -o $permissive -eq 0 ]; then
             error_local "Machine in enforcing mode."
             error_local "Not continuing"
-            emergency_shell -n selinux
             return 1
+          fi
+          return 0
+        elif [ $permissive -eq 0 -a "$SELINUX" != "disabled" ]; then
+          error_local "Machine in enforcing mode and cannot execute load_policy."
+          error_local "To disable selinux, add selinux=0 to the kernel command line."
+          error_local "Not continuing"
+          return 1
         fi
-        return 0
-    elif [ $permissive -eq 0 -a "$SELINUX" != "disabled" ]; then
-        error_local "Machine in enforcing mode and cannot execute load_policy."
-        error_local "To disable selinux, add selinux=0 to the kernel command line."
-        error_local "Not continuing"
-        emergency_shell -n selinux
-        return 1
-    fi
+   fi
 }
