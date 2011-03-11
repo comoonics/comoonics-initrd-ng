@@ -64,6 +64,21 @@ function udev_start() {
 }
 #************udev_start
 
+#****f* hardware-lib.sh/udev_daemon_start
+#  NAME
+#    udev_daemon_start
+#  SYNOPSIS
+#    function boot-lib.sh/udev_daemon_start
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function udev_daemon_start() {
+  local distribution=$(repository_get_value distribution)
+  typeset -f ${distribution}_udev_daemon_start >/dev/null 2>&1 &&  ${distribution}_udev_daemon_start
+}
+#************hardware-lib.sh/udev_daemon_start
+
 #****f* hardware-lib.sh/dev_start
 #  NAME
 #    dev_start
@@ -79,55 +94,41 @@ function dev_start() {
         basedir="$1"
 	fi
 	[ -d ${basedir}/dev ] || mkdir ${basedir}/dev
-	test -e ${basedir}/dev/fd || ln -s ${basedir}/proc/self/fd ${basedir}/dev/fd
     echo_local -n "Mounting dev "
-    is_mounted ${basedir}/dev
-    if [ $? -ne 0 ]; then 
-      mount -o mode=0755 -t tmpfs none ${basedir}/dev
-      return_code $?
-    else
-      passed
+      if ! mount -t devtmpfs -o mode=0755,nosuid udev /dev >/dev/null 2>&1; then
+      is_mounted ${basedir}/dev
+      if [ $? -ne 0 ]; then 
+        mount -o mode=0755 -t tmpfs none ${basedir}/dev
+        return_code $?
+      else
+        passed
+      fi
     fi
-
     echo_local -n "Creating devices "
-	test -e ${basedir}/dev/fd ||      ln -s ${basedir}/proc/self/fd ${basedir}/dev/fd
-    test -e ${basedir}/dev/stdin ||   exec_local ln -s ${basedir}/dev/fd/0 ${basedir}/dev/stdin
-    test -e ${basedir}/dev/stdout ||  exec_local ln -s ${basedir}/dev/fd/1 ${basedir}/dev/stdout
-    test -e ${basedir}/dev/stderr ||  exec_local ln -s ${basedir}/dev/fd/2 ${basedir}/dev/stderr
-    test -d ${basedir}/dev/pts ||     exec_local mkdir ${basedir}/dev/pts
-    is_mounted ${basedir}/dev/pts ||  exec_local mount -t devpts -o gid=5,mode=620 /dev/pts ${basedir}/dev/pts
-    test -d ${basedir}/dev/mapper ||  exec_local mkdir ${basedir}/dev/mapper
-    test -d ${basedir}/dev/shm ||     exec_local mkdir -m1777 ${basedir}/dev/shm
-    test -e ${basedir}/dev/null ||    exec_local mknod ${basedir}/dev/null c 1 3
-    test -e ${basedir}/dev/zero ||    exec_local mknod ${basedir}/dev/zero c 1 5
-    test -e ${basedir}/dev/systty ||  exec_local mknod ${basedir}/dev/systty c 4 0
-    test -e ${basedir}/dev/tty ||     exec_local mknod ${basedir}/dev/tty c 5 0
-    test -e ${basedir}/dev/console || exec_local mknod ${basedir}/dev/console c 5 1
-    test -e ${basedir}/dev/ptmx ||    exec_local mknod ${basedir}/dev/ptmx c 5 2
-    test -e ${basedir}/dev/rtc ||     exec_local mknod ${basedir}/dev/rtc c 10 135
-    test -e ${basedir}/dev/tty0    || exec_local mknod ${basedir}/dev/tty0 c 4 0
-    test -e ${basedir}/dev/tty1    || exec_local mknod ${basedir}/dev/tty1 c 4 1
-    test -e ${basedir}/dev/tty2    || exec_local mknod ${basedir}/dev/tty2 c 4 2
-    test -e ${basedir}/dev/tty3    || exec_local mknod ${basedir}/dev/tty3 c 4 3
-    test -e ${basedir}/dev/tty4    || exec_local mknod ${basedir}/dev/tty4 c 4 4
-    test -e ${basedir}/dev/tty5    || exec_local mknod ${basedir}/dev/tty5 c 4 5
-    test -e ${basedir}/dev/tty6    || exec_local mknod ${basedir}/dev/tty6 c 4 6
-    test -e ${basedir}/dev/tty7    || exec_local mknod ${basedir}/dev/tty7 c 4 7
-    test -e ${basedir}/dev/tty8    || exec_local mknod ${basedir}/dev/tty8 c 4 8
-    test -e ${basedir}/dev/tty9    || exec_local mknod ${basedir}/dev/tty9 c 4 9
-    test -e ${basedir}/dev/tty10   || exec_local mknod ${basedir}/dev/tty10 c 4 10
-    test -e ${basedir}/dev/tty11   || exec_local mknod ${basedir}/dev/tty11 c 4 11
-    test -e ${basedir}/dev/tty12   || exec_local mknod ${basedir}/dev/tty12 c 4 12
-    test -e ${basedir}/dev/ttyS0   || exec_local mknod ${basedir}/dev/ttyS0 c 4 64
-    test -e ${basedir}/dev/ttyS1   || exec_local mknod ${basedir}/dev/ttyS1 c 4 65
-    test -e ${basedir}/dev/ttyS2   || exec_local mknod ${basedir}/dev/ttyS2 c 4 66
-    test -e ${basedir}/dev/ttyS3   || exec_local mknod ${basedir}/dev/ttyS3 c 4 67
-    test -e ${basedir}/dev/kmsg    || exec_local mknod ${basedir}/dev/kmsg c 1 11
-    test -e ${basedir}/dev/log     || ( which mksock >/dev/null 2>&1 && exec_local mksock ${basedir}/dev/log && exec_local chmod 666 ${basedir}/dev/log )
-    
+    exec_local create_std_devfs $basedir
     return_code
 }
 #************dev_start
+
+create_std_devfs() {
+	local basedir=${1:-/}
+	local error=0
+  	test -e ${basedir}/dev/fd      || ln -s ${basedir}/proc/self/fd ${basedir}/dev/fd || error=1
+	test -e ${basedir}/dev/stdin   || ln -s /proc/self/fd/0 ${basedir}/dev/stdin >/dev/null 2>&1 || error=1
+	test -e ${basedir}/dev/stdout  || ln -s /proc/self/fd/1 ${basedir}/dev/stdout >/dev/null 2>&1 || error=1
+	test -e ${basedir}/dev/stderr  || ln -s /proc/self/fd/2 ${basedir}/dev/stderr >/dev/null 2>&1 || error=1
+    test -e ${basedir}/dev/null    || mknod ${basedir}/dev/null c 1 3 || error=1
+    test -e ${basedir}/dev/zero    || mknod ${basedir}/dev/zero c 1 5 || error=1
+    test -e ${basedir}/dev/console || mknod ${basedir}/dev/console c 5 1 || error=1
+    test -e ${basedir}/dev/ptmx    || mknod ${basedir}/dev/ptmx c 5 2 || error=1
+    test -d ${basedir}/dev/mapper  || mkdir ${basedir}/dev/mapper || error=1
+    test -d ${basedir}/dev/shm     || mkdir -m1777 ${basedir}/dev/shm || error=1
+	test -e ${basedir}/dev/fd      || ln -s /proc/self/fd ${basedir}/dev/fd || error=1
+    test -d ${basedir}/dev/pts     || mkdir ${basedir}/dev/pts || error=1
+    is_mounted ${basedir}/dev/pts  || mount -t devpts -o gid=5,mode=620 /dev/pts ${basedir}/dev/pts || error=1
+    is_mounted ${basedir}/dev/shm  || mount -t tmpfs  -o mode=1777,nosuid,nodev  tmpfs ${basedir}/dev/shm || error=1
+    return $error
+}	
 
 #****f* hardware-lib.sh/move_dev
 #  NAME
@@ -199,7 +200,7 @@ function scsi_start() {
     fi
   fi
 
-  if [ -z "${scsi_drivers}" ]; then
+  if [ -z "${scsi_drivers}" ] && [ -n "$modules_conf" ] && [ -e "$modules_conf" ]; then
     scsi_drivers=$(cat ${modules_conf} | awk '/scsi_hostadapter.*/ {print $3}')
   fi
   if [ -n "${scsi_drivers}" ]; then
@@ -410,7 +411,7 @@ function md_start {
 #
 function lvm_check {
 	local device=$1
-	local invalid_majors="8 ca"
+	local invalid_majors="0 8 ca"
 	local valid_majors="fd"
 	local vg=$(lvm_get_vg $device)
 	# in this case no lvm devices exist. So we check if we can get a vg from this device
