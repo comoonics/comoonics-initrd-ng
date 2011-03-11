@@ -1,0 +1,8 @@
+Could not start the service param1.
+ 
+Please carefully decide if you want to continue - type exit - booting or not.
+The best guess might be to check why and fix the problem and start the service manually.
+Then you can safely continue booting.
+Command: errorbin
+Output: 
+Errors: 

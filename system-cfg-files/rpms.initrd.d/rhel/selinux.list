@@ -1,0 +1,2 @@
+policycoreutils 	. 	 ^/usr
+selinux-policy 	^/etc
