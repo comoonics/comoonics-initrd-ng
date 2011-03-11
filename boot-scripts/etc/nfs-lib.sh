@@ -218,7 +218,7 @@ function nfs4_stop_rpc_idmapd {
   killall rpc.idmapd && \
   rm $1/var/lock/subsys/rpcidmapd 2>/dev/null
 }
-#************ nfs4_stop_rpc_statd
+#************ nfs4_stop_rpc_idmapd
 
 function nfs4_checkhosts_alive {
 	nfs_checkhosts_alive $*
@@ -435,7 +435,7 @@ function nfs_start_rpcpipefs {
   local newrootpath=$1
   local chroot_path=$4
   local precmd=""
-  echo_local "nfs_start_rpcpipefs($newrootpath, $chroot_path)"
+  echo_local_debug "nfs_start_rpcpipefs($newrootpath, $chroot_path)"
   local pipefspath="/var/lib/nfs/rpc_pipefs"
   if [ -n "$newrootpath" ] && [ ! -d $(dirname ${newrootpath}${pipefspath}) ]; then
     if [ -e ${newrootpath}$(dirname ${pipefspath}) ] || [ -L ${newrootpath}$(dirname ${pipefspath}) ]; then
@@ -580,7 +580,7 @@ function nfs_start_rpc_lockd {
 	  touch $chrootpath/var/lock/subsys/rpclockd 2>/dev/null
   fi
 }
-#************ nfs_start_rpc_statd
+#************ nfs_start_rpc_lockd
 
 #****f* nfs-lib.sh/nfs_start_rpc_statd
 #  NAME
@@ -603,6 +603,22 @@ function nfs_start_rpc_statd {
   fi
 }
 #************ nfs_start_rpc_statd
+
+#****f* nfs-lib.sh/nfs_stop_rpc_statd
+#  NAME
+#    nfs_stop_rpc_statd
+#  SYNOPSIS
+#    function nfs_stop_rpc_statd
+#  DESCRIPTION
+#    This function stops the rpc.statd daemon
+#  IDEAS
+#  SOURCE
+#
+function nfs_stop_rpc_statd {
+  local chrootpath=$1
+  stop_service rpc.statd "$chrootpath"
+}
+#************ nfs_start_rpc_stop
 
 #****f* nfs-lib.sh/nfs_services_restart_newroot
 #  NAME
