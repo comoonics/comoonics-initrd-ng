@@ -151,10 +151,6 @@ function nfs_services_restart_newroot {
       echo $service > $new_root/${cdsl_local_dir}/FAILURE_$service
     fi
   done
-
-  echo "Umounting $new_root/proc"
-  exec_local umount $new_root/proc
-  return_code
 }
 #************ nfs_services_restart_newroot
 
