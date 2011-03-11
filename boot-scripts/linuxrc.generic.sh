@@ -84,6 +84,11 @@ if [ $? -eq 0 ]; then
   export PYTHONPATH
 fi
 
+# if supported by distribution start udev here
+echo_local -n "Starting udev daemon.."
+exec_local udev_daemon_start
+return_code $?
+
 echo_local "Starting ATIX initrd"
 echo_local "Comoonics-Release"
 release=$(cat ${predir}/etc/comoonics-release)
@@ -92,6 +97,8 @@ echo_local 'Internal Version $Revision: 1.113 $ $Date: 2011-02-28 09:02:11 $'
 echo_local "Builddate: "$(date)
 
 initBootProcess
+typeset -f plymouth_setup >/dev/null 2>&1 && plymouth_setup
+
 x=`cat /proc/version`;
 KERNEL_VERSION=`expr "$x" : 'Linux version \([^ ]*\)'`
 echo_local "Kernel-version: ${KERNEL_VERSION}"
@@ -498,6 +505,15 @@ if [ $? -eq 0 ] && [ -n "$filesystems" ]; then
   step "Additional filesystems $filesystems mounted." "fsmount"
 fi
 
+typeset -f plymouth_start >/dev/null 2>&1 && plymouth_start $(repository_get_value newroot)
+if typeset -f selinux_load_policy >/dev/null 2>&1; then
+	 selinux_load_policy $(repository_get_value newroot) ||	errormsgstdin <<EOF
+Could not setup selinux policy.
+Please check and decide if you want to continue booting or not. 
+EOF
+fi
+step "SElinux and plymouth newroot started." "selinux"
+
 if [ $(repository_get_value chrootneeded) -eq 0 ]; then
   echo_local -n "Moving chroot environment $(repository_get_value chroot_path) to $(repository_get_value newroot)"
   move_chroot $(repository_get_value chroot_mount) $(repository_get_value newroot)/$(repository_get_value chroot_mount)
@@ -574,10 +590,6 @@ step "Scsi restarted in newroot" "scsirestart"
 exec_local clusterfs_services_restart_newroot $(repository_get_value newroot) "$(repository_get_value lockmethod)" "$(repository_get_value lvm_sup)" "$(repository_get_value chroot_path)" || breakp "$(errormsg err_cc_restart_service $(repository_get_value clutype))"
 step "Cluster services restarted in newroot" "clusterrestart"
 
-echo_local "Setting postsettings in initrd.."
-exec_local initrd_exit_postsettings
-step "Exit initrd postsettings done" "postsettings"
-
 if [ $is_syslog -eq 0 ]; then
   #TODO: remove lines as syslog can will stay in /comoonics
   if killall -0 klogd 2>/dev/null; then
@@ -616,6 +628,9 @@ fi
 unset chrootpath
 step "Logfiles chroot copied" "logfiles"
 
+echo_local "Setting postsettings in initrd.."
+exec_local initrd_exit_postsettings / $(repository_get_value newroot)
+step "Exit initrd postsettings done" "postsettings"
 
 step "Initialization completed." "initcomplete"
 
