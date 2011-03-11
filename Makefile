@@ -143,6 +143,7 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/nfs-lib.sh \
   boot-scripts/etc/ocfs2-lib.sh \
   boot-scripts/etc/osr-lib.sh \
+  boot-scripts/etc/plymouth-lib.sh \
   boot-scripts/etc/repository-lib.sh \
   boot-scripts/etc/selinux-lib.sh \
   boot-scripts/etc/stdfs-lib.sh \
@@ -221,27 +222,27 @@ CFG_DIR=$(SYSTEM_CFG_DIR)/bootimage
 #  SOURCE
 #
 CFG_FILES=basefiles.list \
-    files.initrd.d/rdac_multipath.list \
-    files.initrd.d/configs.list \
-    files.initrd.d/locales.list \
-    files.initrd.d/drbd.list \
-    files.initrd.d/scsi.list \
     files.initrd.d/base.list \
-    files.initrd.d/iscsi.list \
     files.initrd.d/bonding.list \
+    files.initrd.d/comoonics.list \
+    files.initrd.d/configs.list \
+    files.initrd.d/drbd.list \
+    files.initrd.d/ext2.list \
+    files.initrd.d/firmware.list \
     files.initrd.d/glusterfs.list \
     files.initrd.d/grub.list \
+    files.initrd.d/iscsi.list \
+    files.initrd.d/locales.list \
     files.initrd.d/mdadm.list \
-    files.initrd.d/comoonics.list \
-    files.initrd.d/firmware.list \
-    files.initrd.d/vlan.list \
-    files.initrd.d/ext2.list \
-    files.initrd.d/xen.list \
-    files.initrd.d/rdac_multipath.list \
     files.initrd.d/network.list \
+    files.initrd.d/nfs.list \
     files.initrd.d/ocfs2.list \
+    files.initrd.d/rdac_multipath.list \
+    files.initrd.d/scsi.list \
     files.initrd.d/sysctl.list \
     files.initrd.d/user_edit.list \
+    files.initrd.d/vlan.list \
+    files.initrd.d/xen.list \
     files.initrd.d/rhel/base.list \
     files.initrd.d/rhel/configs.list \
 	files.initrd.d/rhel/empty.list \
@@ -283,6 +284,7 @@ CFG_FILES=basefiles.list \
     rpms.initrd.d/ocfs2.list \
     rpms.initrd.d/mdadm.list \
     rpms.initrd.d/nfs.list \
+    rpms.initrd.d/plymouth.list \
     rpms.initrd.d/rsyslogd.list \
     rpms.initrd.d/syslog-ng.list \
     rpms.initrd.d/syslogd.list \
@@ -293,6 +295,7 @@ CFG_FILES=basefiles.list \
     rpms.initrd.d/rhel/hardware.list \
     rpms.initrd.d/rhel/nfs.list \
     rpms.initrd.d/rhel/python.list \
+    rpms.initrd.d/rhel/selinux.list \
 	rpms.initrd.d/rhel4/empty.list \
     rpms.initrd.d/rhel4/gfs1.list \
     rpms.initrd.d/rhel4/hardware.list \
@@ -337,7 +340,8 @@ CFG_FILES=basefiles.list \
     filters.initrd.d/kernel.list \
     pre.mkinitrd.d/00-cdsl-check.sh \
     post.mkinitrd.d/01-create-mapfiles.sh \
-    post.mkinitrd.d/02-create-cdsl-repository.sh
+    post.mkinitrd.d/02-create-cdsl-repository.sh \
+    post.mkinitrd.d/03-nfs-deps.sh
 	
 #************ CFG_FILES 
 
