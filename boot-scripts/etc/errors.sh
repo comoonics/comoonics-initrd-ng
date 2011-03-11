@@ -52,6 +52,14 @@ function errormsgissue {
 	repository_del_parameters $ {key}"_" $@
 }
 
+errormsg_stdin() {
+	local key="error"
+	repository_store_parameters ${key}"_" $@
+	while read line; do
+		echo -e $(eval echo $line)
+	done
+	repository_del_parameters $ {key}"_" $@
+}
 err_test='This is a testerror with variable USER=$USER param1=$(repository_get_value err_test_param1)\\n
 Command: $(repository_get_value exec_local_lastcmd)\\n
 Errors:  $(repository_get_value exec_local_lasterror)'
@@ -170,8 +178,18 @@ You should fix this and reboot this node.\\n
 err_cc_restart_service='Could not restart the service "$(repository_get_value err_cc_restart_service_param1)".\\n 
 \\n
 Please carefully decide if you want to continue - type exit - booting or not.\\n
-The best guess might be to check why fix the problem and restart the service manully.\\n
-Then you can savely continue booting.\\n
+The best guess might be to check why and fix the problem and restart the service manually.\\n
+Then you can safely continue booting.\\n
+Command: $(repository_get_value exec_local_lastcmd)\\n
+Output: $(repository_get_value exec_local_lastout)\\n
+Errors: $(repository_get_value exec_local_lasterror)\\n
+'
+
+err_cc_start_service='Could not start the service "$(repository_get_value err_cc_start_service_param1)".\\n 
+\\n
+Please carefully decide if you want to continue - type exit - booting or not.\\n
+The best guess might be to check why and fix the problem and start the service manually.\\n
+Then you can safely continue booting.\\n
 Command: $(repository_get_value exec_local_lastcmd)\\n
 Output: $(repository_get_value exec_local_lastout)\\n
 Errors: $(repository_get_value exec_local_lasterror)\\n
