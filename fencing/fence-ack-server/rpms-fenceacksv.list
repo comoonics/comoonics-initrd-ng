@@ -13,5 +13,7 @@ fipscheck-lib
 # For rhel4 (should be seperated later)
 tcp_wrappers
 pam
+nss
+nspr
 ###################
 # $Log$
