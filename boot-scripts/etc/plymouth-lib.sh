@@ -23,7 +23,7 @@
 
 plymouth_setup() {
   local isplymouth=$(getParameter rd.plymouth)
-  local plymouthd=$(which plymouthd)
+  local plymouthd=$(which plymouthd 2>/dev/null)
   [ -z "$isplymouth" ] && isplymouth=$(getParameter rd_NO_PLYMOUTH)
   [ -z "$isplymouth" ] && isplymouth=1
   which plymouth &>/dev/null && which plymouthd &>/dev/null || isplymouth=0
