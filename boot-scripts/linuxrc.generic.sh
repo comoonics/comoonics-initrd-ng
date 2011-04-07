@@ -224,6 +224,7 @@ success
 clusterfs_chroot_needed initrd
 __default=$?
 getParameter chrootneeded $__default &>/dev/null
+[ "$(repository_get_value chrootneeded)" = "__set__" ] && repository_store_value chrootneeded 0 
 
 _ipConfig=$(cluster_ip_config "$(repository_get_value cluster_conf)" "$(repository_get_value nodename)" "" "$(repository_get_value nodeid)")
 [ -n "$_ipConfig" ] && ( [ -z "$(repository_get_value ipConfig)" ] || [ "$(repository_get_value ipConfig)" = "cluster" ] ) && repository_store_value ipConfig "$_ipConfig"
@@ -521,7 +522,14 @@ if [ $(repository_get_value chrootneeded) -eq 0 ]; then
 
   echo_local -n "Writing information ..."
   exec_local mkdir -p $(repository_get_value newroot)/var/comoonics
-  echo $(repository_get_value chroot_path) > $(repository_get_value newroot)/var/comoonics/chrootpath
+  echo $(repository_get_value chroot_path) > $(repository_get_value newroot)/var/comoonics/chrootpath 2>/dev/null
+  return_code
+  
+  echo_local -n "Writing information to /dev/.initramfs ..."
+  [ -d /dev/.initramfs ] || mkdir /dev/.initramfs
+  for parameter in cluster_conf nodeid nodename chroot_path chrootneeded rootfs; do
+  	repository_get_value $parameter > /dev/.initramfs/comoonics.$parameter
+  done
   return_code
   step "Moving chroot successfully done." "movechroot"
 else
