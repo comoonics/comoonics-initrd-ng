@@ -206,7 +206,7 @@ function ocfs2_services_start {
         set_timeouts "/" $CLUSTER sys/kernel/config
         success
     else
-    	failed
+    	failure
         echo_local "$OUTPUT"
     fi
     return $return_c
