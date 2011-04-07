@@ -2,5 +2,7 @@ comoonics-cs-sysreport-templates
 comoonics-fenceacksv-py
 comoonics-fenceacksv-plugins-py
 comoonics-ec-py
+comoonics-ec-base-py
+comoonics-tools-py
 pyparted
 parted
