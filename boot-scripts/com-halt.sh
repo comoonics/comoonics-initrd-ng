@@ -53,6 +53,7 @@ if [ -n "$CHROOT_PATH" ] && [ -d $CHROOT_PATH/mnt/newroot ]; then
   predir=/opt/atix/comoonics-bootimage/boot-scripts
   source ${predir}/etc/std-lib.sh
   sourceLibs ${predir}
+  repository_has_key rootfs && [ clusterfs_chroot_needed -ne 0 ] && exit 0 
   initEnv
   actlevel=$(runlevel | awk '{ print $2;}')
   	
