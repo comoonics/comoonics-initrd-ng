@@ -626,6 +626,101 @@ function build_chroot () {
 	echo "$chroot_mount $chroot_path"
 }
 #****** build_chroot
+
+#****f* boot-lib.sh/build_chroot
+#  NAME
+#    build chroot environment as fake
+#  SYNOPSIS
+#    function build_chroot_fake(clusterconf, nodename) {
+#  MODIFICATION HISTORY
+#  USAGE
+#
+#  IDEAS
+#
+#  SOURCE
+#
+function build_chroot_fake () {
+	local cluster_conf=$1
+	local nodename=$2
+	local chroot_fstype
+	local chroot_dev
+	local chroot_mount
+	local chroot_path
+	local chroot_options
+
+	# method1: read file /etc/sysconfig/comoonics-chroot
+	if [ -e  /etc/sysconfig/comoonics-chroot ]; then
+		. /etc/sysconfig/comoonics-chroot
+	# method2: read all information from cluster.conf
+	# --if not given: uses default values
+	else
+		# Filesystem type for the chroot device
+		chroot_fstype=$(cc_get_chroot_fstype $cluster_conf $nodename)
+		# chroot device name
+		chroot_dev=$(cc_get_chroot_device $cluster_conf $nodename)
+		# Mountpoint for the chroot device
+		chroot_mount=$(cc_get_chroot_mountpoint $cluster_conf $nodename)
+		# Path where the chroot environment should be build
+		chroot_path=$(cc_get_chroot_dir $cluster_conf $nodename)
+		# Mount options for the chroot device
+		chroot_options=$(cc_get_chroot_mountopts $cluster_conf $nodename)
+	fi
+
+	[ -d $chroot_mountpoint ] || exec_local mkdir -p $chroot_mount
+	exec_local mount -f -t $chroot_fstype -o $chroot_options $chroot_dev $chroot_mount
+	# method3 fallback to tmpfs
+	if [ $? -ne 0 ]; then
+		echo_out -n "Mounting chroot failed. Using default values"
+		#Fallback values
+		# Filesystem type for the chroot device
+		chroot_fstype="tmpfs"
+		# chroot device name
+		chroot_dev="none"
+		# Mountpoint for the chroot device
+		chroot_mount=$DFLT_CHROOT_MOUNT
+		# Path where the chroot environment should be build
+		chroot_path=$DFLT_CHROOT_PATH
+		# Mount options for the chroot device
+		chroot_options="defaults"
+		exec_local mkdir -p $chroot_mount
+		exec_local /bin/mount -t $chroot_fstype -f -o $chroot_options $chroot_dev $chroot_mount
+		return_code >/dev/null
+	fi
+	create_chroot_fake "/" $chroot_path
+	echo "$chroot_mount $chroot_path"
+}
+#****** build_chroot_fake
+
+#****f* boot-lib.sh/create_chroot_fake
+#  NAME
+#    create_chroot_fake build a chroot environment
+#  SYNOPSIS
+#    function create_chroot_fake($chroot_source $chroot_path) {
+#  MODIFICATION HISTORY
+#  USAGE
+#  create_chroot
+#  IDEAS
+#
+#  SOURCE
+#
+function create_chroot_fake () {
+  chroot_source=$1
+  chroot_path=$2
+
+#  cp -axf $chroot_source $chroot_path 2>/dev/null
+  exec_local rm -rf $chroot_path/var/run/*
+  exec_local mkdir -p $chroot_path/tmp
+  exec_local chmod 755 $chroot_path
+  MOUNTS=$(cat /etc/mtab)
+  is_mounted $chroot_path/dev && exec_local mount -f -t tmpfs none $chroot_path/dev
+#  exec_local mount --bind /dev $chroot_path/dev
+#  exec_local cp -a /dev $chroot_path/
+  is_mounted $chroot_path/dev/pts && exec_local mount -f  -t devpts none $chroot_path/dev/pts
+  is_mounted $chroot_path/proc && exec_local mount -f -t proc proc $chroot_path/proc
+  is_mounted $chroot_path/sys && exec_local mount -f -t sysfs sysfs $chroot_path/sys
+}
+#************ create_chroot_fake
+
 #####################
 # $Log: chroot-lib.sh,v $
 # Revision 1.13  2011/02/16 14:33:36  marc
