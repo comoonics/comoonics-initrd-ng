@@ -42,24 +42,43 @@
 %define INITDIR   /etc/rc.d/init.d
 %define SYSCONFIGDIR /%{_sysconfdir}/sysconfig
 
+%define RELEASENAME Gumpn
+%define PRODUCTNAME OpenSharedRoot
+%define PRODUCTVERSION 5.0 pre
+%define DISTRIBUTIONNAME %{PRODUCTNAME} %{PRODUCTVERSION} (%{RELEASENAME})
+%define DISTRIBUTIONBASE %{DISTRIBUTIONNAME} Base
+%define DISTRIBUTIONEXTRAS %{DISTRIBUTIONNAME} Extras
+
+%define GROUPPARENT System Environment
+%define GROUPCHILDEXTRAS Extras
+%define GROUPCHILDBASE Base
+%define GROUPCHILDSLES SLES
+%define GROUPCHILDSLES10 SLES10
+%define GROUPCHILDSLES11 SLES11
+%define GROUPCHILDRHEL RHEL
+%define GROUPCHILDRHEL4 RHEL4
+%define GROUPCHILDRHEL5 RHEL5
+%define GROUPCHILDRHEL6 RHEL6
+%define GROUPCHILDFEDORA Fedora
+
 Name: comoonics-bootimage-initscripts
 Summary: Initscripts used by the OSR cluster environment.
 Version: 1.4
 BuildArch: noarch
-Requires: comoonics-bootimage >= 1.4-55
+Requires: comoonics-bootimage >= 1.4-82
 Requires: SysVinit-comoonics
 Requires: comoonics-bootimage-listfiles-all
-Requires: comoonics-bootimage-listfiles-rhel
 Requires: comoonics-bootimage-listfiles-rhel4
 #Conflicts:
-Release: 9.rhel4
+Release: 10.rhel4
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
 URL:     http://www.atix.de/
 Source:  http://www.atix.de/software/downloads/comoonics/comoonics-bootimage-initscripts-%{version}.tar.gz
 License: GPL
-Group:   System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDRHEL4}
+Distribution: %{DISTRIBUTIONBASE}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description
@@ -147,18 +166,20 @@ chkconfig --del mountcdsls
 %attr(644, root, root) %{SYSCONFIGDIR}/halt-overwrite
 
 %changelog
-* Wed Aug 18 2010 Marc Grimme <grimme@atix.de> 1.4-9rhel4
+* Tue Mar 22 2011 Marc Grimme <grimme@atix.de> 1.4-10.rhel4
+- Rebase
+* Wed Aug 18 2010 Marc Grimme <grimme@atix.de> 1.4-9.rhel4
 - initscripts/rhel4,rhel5,fedora,sles10,sles11/bootsr
   - fixed bug #382 where the cdsl.local was not remounted in /etc/mtab on locally installed systems
-* Fri Aug 06 2010 Marc Grimme <grimme@atix.de> 1.4-8rhel4
+* Fri Aug 06 2010 Marc Grimme <grimme@atix.de> 1.4-8.rhel4
 - moved echo to echo_local in initscripts
-* Thu Jul 08 2010 Marc Grimme <grimme@atix.de> 1.4-7rhel4
+* Thu Jul 08 2010 Marc Grimme <grimme@atix.de> 1.4-7.rhel4
 - bootsr uses bash as shell
-* Thu Jun 08 2010 Marc Grimme <grimme@atix.de> 1.4-6rhel4
+* Thu Jun 08 2010 Marc Grimme <grimme@atix.de> 1.4-6.rhel4
 - introducted initscript mountcdsls
-* Tue Feb 16 2010 Marc Grimme <grimme@atix.de> 1.4-5rhel4
+* Tue Feb 16 2010 Marc Grimme <grimme@atix.de> 1.4-5.rhel4
 - introduced halt-overwrite to solve the halt_get_remaining problem and one patch less.
-* Mon Feb 15 2010 Marc Grimme <grimme@atix.de> 1.4-4rhel4
+* Mon Feb 15 2010 Marc Grimme <grimme@atix.de> 1.4-4.rhel4
 - clean up check_sharedroot
 * Fri Feb 12 2010 Marc Grimme <grimme@atix.de> 1.4-3rhel4
 - fixed many bugs in bootsr and diet and upstream.

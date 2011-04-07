@@ -50,6 +50,25 @@
 %define FENCECLIENTS_DIR /opt/atix/comoonics-fencing
 %define FENCECLIENTS_DOC /usr/share/doc/comoonics-fencing
 
+%define RELEASENAME Gumpn
+%define PRODUCTNAME OpenSharedRoot
+%define PRODUCTVERSION 5.0 pre
+%define DISTRIBUTIONNAME %{PRODUCTNAME} %{PRODUCTVERSION} (%{RELEASENAME})
+%define DISTRIBUTIONBASE %{DISTRIBUTIONNAME} Base
+%define DISTRIBUTIONEXTRAS %{DISTRIBUTIONNAME} Extras
+
+%define GROUPPARENT System Environment
+%define GROUPCHILDEXTRAS Extras
+%define GROUPCHILDBASE Base
+%define GROUPCHILDSLES SLES
+%define GROUPCHILDSLES10 SLES10
+%define GROUPCHILDSLES11 SLES11
+%define GROUPCHILDRHEL RHEL
+%define GROUPCHILDRHEL4 RHEL4
+%define GROUPCHILDRHEL5 RHEL5
+%define GROUPCHILDRHEL6 RHEL6
+%define GROUPCHILDFEDORA Fedora
+
 Name: comoonics-bootimage
 Summary: Scripts for creating an initrd in a OSR Cluster environment
 Version: 1.4
@@ -66,7 +85,8 @@ ExclusiveArch: noarch
 URL:     http://www.atix.de/
 Source:  http://www.atix.de/software/downloads/comoonics/comoonics-bootimage-%{version}.tar.gz
 License: GPL
-Group:   System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
+Distribution: %{DISTRIBUTIONBASE}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description
@@ -77,7 +97,8 @@ Version: 0.1
 Release: 4
 Requires: comoonics-bootimage >= 1.3-1
 Summary: Extra for cluster configuration via osr
-Group:   System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDEXTRAS}
+Distribution: %{DISTRIBUTIONEXTRAS}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description extras-osr
@@ -88,7 +109,7 @@ Version: 0.1
 Release: 3
 Requires: comoonics-bootimage >= 1.3-1
 Summary: Listfiles for special network configurations (vlan)
-Group:   System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description extras-network
@@ -99,8 +120,10 @@ Version: 0.1
 Release: 20
 Requires: comoonics-bootimage >= 1.4-81
 Summary: Listfiles for nfs sharedroot configurations
-Group:   System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
+Distribution: %{DISTRIBUTIONBASE}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Conflicts: comoonics-bootimage-extras-ocfs2
 
 %description extras-nfs
 Extra listfiles for nfs sharedroot configurations
@@ -110,50 +133,75 @@ Version: 0.1
 Release: 10
 Requires: comoonics-bootimage >= 1.4
 Summary: Listfiles for ocfs2 sharedroot configurations
-Group:   System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
+Distribution: %{DISTRIBUTIONBASE}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Conflicts: comoonics-bootimage-extras-nfs
 
 %description extras-ocfs2
 Extra listfiles for ocfs2 sharedroot configurations
-
-# Overwritten by extras-dm-multipath-rhel so we add deps
-%package extras-dm-multipath
-Version: 0.1
-Release: 5
-Requires: comoonics-bootimage >= 1.3-36
-Requires: /etc/redhat-release
-Requires: comoonics-bootimage-listfiles-rhel
-Requires: comoonics-bootimage-extras-dm-multipath-rhel
-Summary: Listfiles for device mapper in OSR
-Group:   System Environment/Base
-BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
-
-%description extras-dm-multipath
-Extra listfiles for device mapper multipath OSR configurations
 
 %package extras-md
 Version: 0.1
 Release: 2
 Requires: comoonics-bootimage >= 1.3-46
 Summary: Listfiles for md support
-Group:   System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDEXTRAS}
+Distribution: %{DISTRIBUTIONEXTRAS}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description extras-md
 Extra listfiles for md in OSR configurations
 
-%package extras-dm-multipath-rhel
+%package extras-dm-multipath-rhel4
 Version: 0.1
-Release: 3
-Requires: comoonics-bootimage >= 1.3-36
+Release: 1
+Requires: comoonics-bootimage >= 1.4-82
 Requires: /etc/redhat-release
-Requires: comoonics-bootimage-listfiles-rhel
-Summary: Listfiles for device mapper multipath OSR configurations for RHEL
-Group:   System Environment/Base
+Requires: comoonics-bootimage-listfiles-rhel4
+Summary: Listfiles for device mapper multipath OSR configurations for RHEL4
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDRHEL4}
+Distribution: %{DISTRIBUTIONBASE}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Conflicts: comoonics-bootimage-extras-rdac-multipath
+Obsoletes: comoonics-bootimage-extras-dm-multipath
+Obsoletes: comoonics-bootimage-extras-dm-multipath-rhel
 
-%description extras-dm-multipath-rhel
-Extra listfiles for device mapper multipath OSR configurations for RHEL
+%description extras-dm-multipath-rhel4
+Extra listfiles for device mapper multipath OSR configurations for RHEL4
+
+%package extras-dm-multipath-rhel5
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage >= 1.4-82
+Requires: /etc/redhat-release
+Requires: comoonics-bootimage-listfiles-rhel5
+Summary: Listfiles for device mapper multipath OSR configurations for RHEL5
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDRHEL5}
+Distribution: %{DISTRIBUTIONBASE}
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Conflicts: comoonics-bootimage-extras-rdac-multipath
+Obsoletes: comoonics-bootimage-extras-dm-multipath
+Obsoletes: comoonics-bootimage-extras-dm-multipath-rhel
+
+%description extras-dm-multipath-rhel5
+Extra listfiles for device mapper multipath OSR configurations for RHEL5
+
+%package extras-dm-multipath-rhel6
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage >= 1.4-82
+Requires: /etc/redhat-release
+Requires: comoonics-bootimage-listfiles-rhel6
+Summary: Listfiles for device mapper multipath OSR configurations for RHEL6
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDRHEL6}
+Distribution: %{DISTRIBUTIONBASE}
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Conflicts: comoonics-bootimage-extras-rdac-multipath
+Obsoletes: comoonics-bootimage-extras-dm-multipath
+
+%description extras-dm-multipath-rhel6
+Extra listfiles for device mapper multipath OSR configurations for RHEL6
 
 %package extras-dm-multipath-fedora
 Version: 0.1
@@ -162,45 +210,42 @@ Requires: comoonics-bootimage >= 1.3-41
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-fedora
 Summary: Listfiles for device mapper multipath OSR configurations for fedora
-Group:   System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDFEDORA}
+Distribution: %{DISTRIBUTIONBASE}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Conflicts: comoonics-bootimage-extras-rdac-multipath
+Obsoletes: comoonics-bootimage-extras-dm-multipath
 
 %description extras-dm-multipath-fedora
 Extra listfiles for device mapper multipath OSR configurations for fedora
 
-%package extras-dm-multipath-rhel6
+%package extras-dm-multipath-sles10
 Version: 0.1
 Release: 1
-Requires: comoonics-bootimage >= 1.4-80
-Requires: /etc/redhat-release
-Requires: comoonics-bootimage-listfiles-rhel6
-Summary: Listfiles for device mapper multipath OSR configurations for RHEL6
-Group:   System Environment/Base
-BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
-
-%description extras-dm-multipath-rhel6
-Extra listfiles for device mapper multipath OSR configurations for RHEL6
-
-%package extras-dm-multipath-sles
-Version: 0.1
-Release: 3
 Requires: comoonics-bootimage >= 1.4
 Requires: multipath-tools
 Summary: Listfiles for device mapper multipath OSR configurations for SLES
-Group:   System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDSLES10}
+Distribution: %{DISTRIBUTIONBASE}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Conflicts: comoonics-bootimage-extras-rdac-multipath
+Obsoletes: comoonics-bootimage-extras-dm-multipath
+Obsoletes: comoonics-bootimage-extras-dm-multipath-sles
 
-%description extras-dm-multipath-sles
+%description extras-dm-multipath-sles10
 Extra listfiles for device mapper multipath OSR configurations for SLES
 
 %package extras-dm-multipath-sles11
 Version: 0.1
 Release: 1
 Requires: comoonics-bootimage >= 1.4
-Requires: comoonics-bootimage-extras-dm-multipath-sles
 Summary: Listfiles for device mapper multipath OSR configurations for SLES11
-Group:   System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDSLES11}
+Distribution: %{DISTRIBUTIONBASE}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Conflicts: comoonics-bootimage-extras-rdac-multipath
+Obsoletes: comoonics-bootimage-extras-dm-multipath
+Obsoletes: comoonics-bootimage-extras-dm-multipath-sles
 
 %description extras-dm-multipath-sles11
 Extra listfiles for device mapper multipath OSR configurations for SLES11
@@ -210,7 +255,8 @@ Version: 0.1
 Release: 4
 Requires: comoonics-bootimage >= 1.3-8
 Summary: Listfiles for rdac multipath sharedroot configurations
-Group:   System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDEXTRAS}
+Distribution: %{DISTRIBUTIONEXTRAS}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description extras-rdac-multipath
@@ -221,7 +267,8 @@ Version: 0.1
 Release: 6
 Requires: comoonics-bootimage >= 1.3-14
 Summary: Listfiles for xen support in the open-sharedroot cluster
-Group:   System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
+Distribution: %{DISTRIBUTIONBASE}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description extras-xen
@@ -232,7 +279,8 @@ Version: 0.1
 Release: 11
 Requires: comoonics-bootimage >= 1.4-55
 Summary: Listfiles for iscsi support in the open-sharedroot cluster
-Group:   System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
+Distribution: %{DISTRIBUTIONBASE}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description extras-iscsi
@@ -243,7 +291,8 @@ Version: 0.1
 Release: 4
 Requires: comoonics-bootimage >= 1.3-33
 Summary: Listfiles for drbd support in the open-sharedroot cluster
-Group:   System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDEXTRAS}
+Distribution: %{DISTRIBUTIONEXTRAS}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description extras-drbd
@@ -254,7 +303,8 @@ Version: 0.1
 Release: 4
 Requires: comoonics-bootimage >= 1.3-44
 Summary: Extras for glusterfs support in the open-sharedroot cluster
-Group:   System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDEXTRAS}
+Distribution: %{DISTRIBUTIONEXTRAS}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description extras-glusterfs
@@ -265,7 +315,8 @@ Version: 0.1
 Release: 2
 Requires: comoonics-bootimage >= 1.3-44
 Summary: Extras for sysctl support in the open-sharedroot cluster
-Group:   System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
+Distribution: %{DISTRIBUTIONBASE}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description extras-sysctl
@@ -276,54 +327,111 @@ Version: 0.1
 Release: 13
 Requires: comoonics-bootimage >= 1.4-27
 Summary: Syslog implementation for osr
-Group:   System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
+Distribution: %{DISTRIBUTIONBASE}
 
 %description extras-syslog
 Syslog implementation for osr. Supports syslog classic, syslog-ng, rsyslog (See listfiles-syslog)
 
-%package listfiles-selinux-rhel
+%package listfiles-selinux-rhel5
 Version: 0.1
-Release: 2
-Requires: comoonics-bootimage >= 1.4-81
+Release: 1
+Requires: comoonics-bootimage >= 1.4-82
 Summary: SELinux implementation for osr
-Group:   System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDRHEL5}
+Distribution: %{DISTRIBUTIONBASE}
 
-%description listfiles-selinux-rhel
+%description listfiles-selinux-rhel5
 SELinux implementation for osr. Supports only local filesystems and distributions supporting SELinux
 
-%package listfiles-vi-sles
+%package listfiles-selinux-rhel6
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage >= 1.4-82
+Summary: SELinux implementation for osr
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDRHEL6}
+Distribution: %{DISTRIBUTIONBASE}
+
+%description listfiles-selinux-rhel6
+SELinux implementation for osr. Supports only local filesystems and distributions supporting SELinux
+
+%package listfiles-vi-sles10
 Version: 0.1
 Release: 1
 Requires: comoonics-bootimage >= 1.4
 Summary: Vim includes for comoonics-bootimage
-Group:   System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDSLES10}
+Distribution: %{DISTRIBUTIONEXTRAS}
 
-%description listfiles-vi-sles
+%description listfiles-vi-sles10
+Vi includes for comoonics-bootimage (takes vim)
+
+%package listfiles-vi-sles11
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage >= 1.4
+Summary: Vim includes for comoonics-bootimage
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDSLES11}
+Distribution: %{DISTRIBUTIONEXTRAS}
+
+%description listfiles-vi-sles11
 Vi includes for comoonics-bootimage (takes vim)
 
 %package listfiles-all
 Version: 0.1
 Release: 17
 Requires: comoonics-bootimage >= 1.4-81
-Group:   System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
+Distribution: %{DISTRIBUTIONBASE}
 Summary: OSR listfilesfiles for all distributions 
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description listfiles-all
 OSR Listfiles that are only relevant for all linux distributions
 
-%package listfiles-rhel
+%package listfiles-rhel4
 Version: 0.1
-Release: 9
+Release: 5
 Requires: comoonics-bootimage >= 1.4-81
+Requires: /etc/redhat-release
+Requires: comoonics-bootimage-listfiles-rhel4
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDRHEL4}
+Summary: Extrafiles for RedHat Enterprise Linux Version 4 
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Conflicts: comoonics-bootimage-listfiles-rhel5 
+Obsoletes: comoonics-bootimage-listfiles-rhel
+
+%description listfiles-rhel4
+OSR extra files that are only relevant for RHEL4
+
+%package listfiles-rhel5
+Version: 0.1
+Release: 10
+Requires: comoonics-bootimage >= 1.4-82
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-cluster-tools-py
-Group: System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDRHEL5}
 Summary: Extrafiles for RedHat Enterprise Linux 
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Obsoletes: comoonics-bootimage-listfiles-rhel
 
-%description listfiles-rhel
+%description listfiles-rhel5
+OSR extra files that are only relevant for RHEL Versions
+
+%package listfiles-rhel6
+Version: 0.1
+Release: 10
+Requires: comoonics-bootimage >= 1.4-82
+Requires: /etc/redhat-release
+Requires: comoonics-bootimage-listfiles-all
+Requires: comoonics-cluster-tools-py
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDRHEL6}
+Summary: Extrafiles for RedHat Enterprise Linux 
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Obsoletes: comoonics-bootimage-listfiles-rhel
+
+%description listfiles-rhel6
 OSR extra files that are only relevant for RHEL Versions
 
 %package listfiles-fedora
@@ -332,92 +440,45 @@ Release: 10
 Requires: comoonics-bootimage >= 1.3-41
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-all
-Group: System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDFEDORA}
 Summary: Extrafiles for Fedora Core 
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description listfiles-fedora
 OSR extra files that are only relevant for Fedora Versions
 
-%package listfiles-rhel4
-Version: 0.1
-Release: 4
-Requires: comoonics-bootimage >= 1.4-81
-Requires: /etc/redhat-release
-Requires: comoonics-bootimage-listfiles-rhel
-Group: System Environment/Base
-Summary: Extrafiles for RedHat Enterprise Linux Version 4 
-Conflicts: comoonics-bootimage-listfiles-rhel5 
-BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
-
-%description listfiles-rhel4
-OSR extra files that are only relevant for RHEL4
-
-%package listfiles-rhel5
-Version: 0.1
-Release: 9
-Requires: comoonics-bootimage >= 1.4-81
-Requires: /etc/redhat-release
-Requires: comoonics-bootimage-listfiles-rhel
-Group: System Environment/Base
-Summary: Extrafiles for RedHat Enterprise Linux Version 5
-Conflicts: comoonics-bootimage-listfiles-rhel4 
-BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
-
-%description listfiles-rhel5
-OSR extra files that are only relevant for RHEL4
-
-%package listfiles-rhel6
-Version: 0.1
-Release: 1
-Requires: comoonics-bootimage >= 1.4-80
-Requires: /etc/redhat-release
-Requires: comoonics-bootimage-listfiles-all
-Group: System Environment/Base
-Summary: Extrafiles for RHEL6
-BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
-
-%description listfiles-rhel6
-OSR extra files that are only relevant for RHEL6 Versions
-
-%package listfiles-sles
-Version: 0.1
-Release: 7
-Requires: comoonics-bootimage >= 1.3-37
-Requires: /etc/SuSE-release
-Requires: comoonics-bootimage-listfiles-all
-Group: System Environment/Base
-Summary: Extrafiles for Novell SuSE Enterprise Server
-Conflicts: comoonics-bootimage-listfiles-rhel 
-BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
-
-%description listfiles-sles
-OSR extra files that are only relevant for Novell SLES 10
-
 %package listfiles-sles10
 Version: 0.1
-Release: 4
+Release: 5
 Requires: comoonics-bootimage >= 1.4-28
 Requires: /etc/SuSE-release
-Requires: comoonics-bootimage-listfiles-sles
-Group: System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDSLES10}
 Summary: Extrafiles for Novell SuSE Enterprise Server 10
-Conflicts: comoonics-bootimage-listfiles-rhel 
+Conflicts: comoonics-bootimage-listfiles-sles11
+Conflicts: comoonics-bootimage-listfiles-rhel4 
+Conflicts: comoonics-bootimage-listfiles-rhel5 
+Conflicts: comoonics-bootimage-listfiles-rhel6 
+Conflicts: comoonics-bootimage-listfiles-fedora 
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Obsoletes: comoonics-bootimage-listfiles-sles
 
 %description listfiles-sles10
 OSR extra files that are only relevant for Novell SLES 10
 
 %package listfiles-sles11
 Version: 0.1
-Release: 8
+Release: 9
 Requires: comoonics-bootimage >= 1.4-27
 Requires: /etc/SuSE-release
-Requires: comoonics-bootimage-listfiles-sles
-Group: System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDSLES11}
 Summary: Extrafiles for Novell SuSE Enterprise Server
-Conflicts: comoonics-bootimage-listfiles-rhel 
+Conflicts: comoonics-bootimage-listfiles-sles10
+Conflicts: comoonics-bootimage-listfiles-rhel4 
+Conflicts: comoonics-bootimage-listfiles-rhel5 
+Conflicts: comoonics-bootimage-listfiles-rhel6 
+Conflicts: comoonics-bootimage-listfiles-fedora 
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Obsoletes: comoonics-bootimage-listfiles-sles
 
 %description listfiles-sles11
 OSR extra files that are only relevant for Novell SLES 11
@@ -426,7 +487,7 @@ OSR extra files that are only relevant for Novell SLES 11
 Version: 0.1
 Release: 8
 Requires: comoonics-bootimage-listfiles-fedora
-Group: System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDFEDORA}
 Summary: Extrafiles for Fedora Core NFS support 
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
@@ -439,45 +500,51 @@ Release: 1
 Requires: comoonics-bootimage >= 1.4-81
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-rhel5
-Group: System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDRHEL5}
 Summary: Extrafiles for RedHat Enterprise Linux Version 5 and GFS1
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Conflicts: comoonics-bootimage-listfiles-rhel5-nfs
+Conflicts: comoonics-bootimage-extras-ocfs2
 
 %description listfiles-rhel5-gfs1
 OSR extra files that are only relevant for RHEL5 and GFS1
-
-%package listfiles-rhel4-nfs
-Version: 0.1
-Release: 2
-Requires: comoonics-bootimage-extras-nfs
-Requires: comoonics-bootimage-listfiles-rhel4
-Group: System Environment/Base
-Summary: Extrafiles for RHEL4 NFS support 
-BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
-
-%description listfiles-rhel4-nfs
-OSR extra files that are only relevant for RHEL4 Versions and nfs support
 
 %package listfiles-rhel5-nfs
 Version: 0.1
 Release: 2
 Requires: comoonics-bootimage-listfiles-rhel5
 Requires: comoonics-bootimage-extras-nfs
-Group: System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDRHEL5}
 Summary: Extrafiles for RHEL5 NFS support 
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Conflicts: comoonics-bootimage-listfiles-rhel5-gfs1
+Conflicts: comoonics-bootimage-extras-ocfs2
 
 %description listfiles-rhel5-nfs
 OSR extra files that are only relevant for RHEL5 Versions and nfs support
+
+%package listfiles-rhel4-nfs
+Version: 0.1
+Release: 2
+Requires: comoonics-bootimage-extras-nfs
+Requires: comoonics-bootimage-listfiles-rhel4
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDRHEL4}
+Summary: Extrafiles for RHEL4 NFS support 
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Conflicts: comoonics-bootimage-extras-ocfs2
+
+%description listfiles-rhel4-nfs
+OSR extra files that are only relevant for RHEL4 Versions and nfs support
 
 %package listfiles-rhel6-nfs
 Version: 0.1
 Release: 4
 Requires: comoonics-bootimage-listfiles-rhel6
 Requires: comoonics-bootimage-extras-nfs
-Group: System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDRHEL6}
 Summary: Extrafiles for RHEL6 NFS support 
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Conflicts: comoonics-bootimage-extras-ocfs2
 
 %description listfiles-rhel6-nfs
 OSR extra files that are only relevant for RHEL6 Versions and nfs support
@@ -487,9 +554,10 @@ Version: 0.1
 Release: 2
 Requires: comoonics-bootimage-listfiles-sles10
 Requires: comoonics-bootimage-extras-nfs
-Group: System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDSLES10}
 Summary: Extrafiles for SLES10 NFS support 
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Conflicts: comoonics-bootimage-extras-ocfs2
 
 %description listfiles-sles10-nfs
 OSR extra files that are only relevant for SLES10 Versions and nfs support
@@ -499,9 +567,10 @@ Version: 0.1
 Release: 2
 Requires: comoonics-bootimage-extras-nfs
 Requires: comoonics-bootimage-listfiles-sles11
-Group: System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDSLES11}
 Summary: Extrafiles for SLES11 NFS support 
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Conflicts: comoonics-bootimage-extras-ocfs2
 
 %description listfiles-sles11-nfs
 OSR extra files that are only relevant for SLES11 Versions and nfs support
@@ -514,7 +583,7 @@ Requires: comoonics-cs-sysreport-templates
 Requires: comoonics-fenceacksv-py
 Requires: comoonics-fenceacksv-plugins-py
 Summary: Extrafiles for plugins in fenceacksv
-Group: System Environment/Server
+Group: Group:   %{GROUPPARENT}/%{GROUPCHILDSERVER}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description listfiles-fenceacksv-plugins
@@ -525,8 +594,11 @@ Version: 0.1
 Release: 4
 Requires: comoonics-bootimage-extras-syslog
 Summary: Syslog listfiles for syslog classic
-Group:   System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
+Distribution: %{DISTRIBUTIONBASE}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Conflicts: comoonics-bootimage-listfiles-rsyslogd
+Conflicts: comoonics-bootimage-listfiles-syslog-ng
 
 %description listfiles-syslogd
 Syslog listfiles for syslog classic
@@ -536,8 +608,11 @@ Version: 0.1
 Release: 4
 Requires: comoonics-bootimage-extras-syslog
 Summary: Syslog listfiles for the rsyslog daemon
-Group:   System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
+Distribution: %{DISTRIBUTIONBASE}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Conflicts: comoonics-bootimage-listfiles-syslog
+Conflicts: comoonics-bootimage-listfiles-syslog-ng
 
 %description listfiles-rsyslogd
 Syslog listfiles for rsyslog daemon
@@ -547,8 +622,11 @@ Version: 0.1
 Release: 2
 Requires: comoonics-bootimage-extras-syslog
 Summary: Syslog listfiles for the syslog-ng daemon
-Group:   System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
+Distribution: %{DISTRIBUTIONBASE}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Conflicts: comoonics-bootimage-listfiles-rsyslogd
+Conflicts: comoonics-bootimage-listfiles-syslog
 
 %description listfiles-syslog-ng
 Syslog listfiles for syslog-ng daemon
@@ -558,7 +636,8 @@ Version: 0.1
 Release: 1
 Requires: comoonics-bootimage
 Summary: Listfiles for perl in the chroot for RHEL5
-Group:   System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDEXTRAS}/%{GROUPCHILDRHEL5}
+Distribution: %{DISTRIBUTIONEXTRAS}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description listfiles-perl-rhel5
@@ -569,7 +648,8 @@ Version: 0.1
 Release: 1
 Requires: comoonics-bootimage
 Summary: Listfiles for Fencelibs
-Group:   System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
+Distribution: %{DISTRIBUTIONBASE}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description listfiles-fencelib
@@ -580,7 +660,8 @@ Version: 0.1
 Release: 1
 Requires: comoonics-bootimage
 Summary: Listfiles for fence_xvm
-Group:   System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
+Distribution: %{DISTRIBUTIONBASE}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description listfiles-fencexvm
@@ -592,7 +673,8 @@ Release: 1
 Requires: comoonics-bootimage >= 1.4
 Requires: comoonics-bootimage-listfiles-perl-rhel5
 Summary: Files needed for fence_vmware in the kernel
-Group:   System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDEXTRAS}/%{GROUPCHILDRHEL5}
+Distribution: %{DISTRIBUTIONEXTRAS}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description listfiles-fence_vmware-rhel5
@@ -603,7 +685,8 @@ Version: 0.1
 Release: 1
 Requires: comoonics-bootimage >= 1.4
 Summary: Files needed for firmware in the kernel
-Group:   System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
+Distribution: %{DISTRIBUTIONBASE}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description listfiles-firmware
@@ -614,7 +697,8 @@ Version: 0.1
 Release: 2
 Requires: comoonics-bootimage >= 1.4-81
 Summary: Files needed for plymouth support in the initrd
-Group:   System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
+Distribution: %{DISTRIBUTIONBASE}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description listfiles-plymouth
@@ -625,7 +709,8 @@ Version: 0.1
 Release: 3
 Requires: comoonics-bootimage >= 1.3-1
 Summary: Files needed for compatibility to 1.2 releases
-Group:   System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
+Distribution: %{DISTRIBUTIONBASE}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description compat
@@ -638,31 +723,12 @@ Requires: comoonics-fenceacksv-py
 Requires: comoonics-bootimage >= 1.4-51
 Requires: comoonics-tools-py >= 0.1-9
 Summary: The Fenceackserver is a service for last resort actions
-Group:   System Environment/Servers
+Group:   Group:   %{GROUPPARENT}/%{GROUPCHILDSERVER}s
+Distribution: %{DISTRIBUTIONBASE}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description fenceacksv
 The Fenceackserver is a service for last resort actions
-
-%package fenceclient-ilo
-Version: 0.1
-Release: 20
-Summary: An alternative fence client for ilo cards of HP servers.
-Group:   System Environment/Base
-BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
-
-%description fenceclient-ilo
-An alternative fence client for ilo cards of HP servers.
-
-%package fenceclient-ilomp
-Version: 0.1
-Release: 3
-Summary: A fence client for iloMP cards of HP inegrity servers.
-Group:   System Environment/Base
-BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
-
-%description fenceclient-ilomp
-A fence client for iloMP cards of HP inegrity servers.
 
 %prep
 %setup -q
@@ -699,13 +765,9 @@ install -m644 %{FENCEACKSV_SOURCE}/rpms-fenceacksv.list $RPM_BUILD_ROOT/%{CONFIG
 # Files for fence-clients (ilo)
 install -d -m 755 $RPM_BUILD_ROOT/%{FENCECLIENTS_DIR}
 install -d -m 755 $RPM_BUILD_ROOT/%{FENCECLIENTS_DOC}
-install -m755 %{FENCECLIENTS_SOURCE}/fence_ilo.py  $RPM_BUILD_ROOT/%{FENCECLIENTS_DIR}/fence_ilo
 install -d -m 755 $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/rpms.initrd.d
 install -d -m 755 $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/pre.mkinitrd.d
 install -d -m 755 $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/post.mkinitrd.d
-install -m755 %{FENCECLIENTS_SOURCE}/rpms-fence_ilo.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/rpms.initrd.d/fence_ilo.list
-install -m755 %{FENCECLIENTS_SOURCE}/fence_ilomp.py  $RPM_BUILD_ROOT/%{FENCECLIENTS_DIR}/fence_ilomp
-install -m755 %{FENCECLIENTS_SOURCE}/rpms-fence_ilomp.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/rpms.initrd.d/fence_ilomp.list
 
 # Files for fence-vmware
 #install -m755 %{FENCECLIENTS_SOURCE}/fence_vmware_client  $RPM_BUILD_ROOT/%{FENCECLIENTS_DIR}
@@ -888,16 +950,22 @@ fi
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/mdadm.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/mdadm.list
 
-%files extras-dm-multipath
-
-%files extras-dm-multipath-rhel
+%files extras-dm-multipath-rhel4
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/dm_multipath.list
 
-%files extras-dm-multipath-sles
+%files extras-dm-multipath-rhel5
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/dm_multipath.list
+
+%files extras-dm-multipath-rhel6
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/dm_multipath.list
+
+%files extras-dm-multipath-sles10
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/sles/dm_multipath.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/dm_multipath.list
 
 %files extras-dm-multipath-sles11
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/sles/dm_multipath.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/dm_multipath.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/sles11/dm_multipath.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles11/dm_multipath.list
 
@@ -976,7 +1044,7 @@ fi
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/02-create-cdsl-repository.sh
 %config(noreplace) %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/user_edit.list
 
-%files listfiles-rhel
+%files listfiles-rhel4
 %dir %{CONFIGDIR}/bootimage/files.initrd.d/rhel
 %dir %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/empty.list
@@ -989,8 +1057,6 @@ fi
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/empty.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/hardware.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/python.list
-
-%files listfiles-rhel4
 %dir %{CONFIGDIR}/bootimage/files.initrd.d/rhel4
 %dir %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel4
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel4/empty.list
@@ -1001,18 +1067,39 @@ fi
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel4/rhcs.list
 
 %files listfiles-rhel5
+%dir %{CONFIGDIR}/bootimage/files.initrd.d/rhel
+%dir %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/empty.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/base.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/configs.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/grub.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/network.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/base.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/empty.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/hardware.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/python.list
 %dir %{CONFIGDIR}/bootimage/files.initrd.d/rhel5
 %dir %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel5/empty.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel5/configs.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel5/rhcs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/empty.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/base.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/hardware.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/python.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/rhcs.list
 
 %files listfiles-rhel6
+%dir %{CONFIGDIR}/bootimage/files.initrd.d/rhel
+%dir %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/empty.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/base.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/configs.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/gfs.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/grub.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/network.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/base.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/empty.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/hardware.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/python.list
 %dir %{CONFIGDIR}/bootimage/files.initrd.d/rhel6
 %dir %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel6
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel6/base.list
@@ -1023,7 +1110,7 @@ fi
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel6/hardware.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel6/python.list
 
-%files listfiles-sles
+%files listfiles-sles10
 %dir %{CONFIGDIR}/bootimage/files.initrd.d/sles
 %dir %{CONFIGDIR}/bootimage/rpms.initrd.d/sles
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/sles/base.list
@@ -1035,12 +1122,21 @@ fi
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/empty.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/network.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/python.list
-
-%files listfiles-sles10
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles10/base.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles10/python.list
 
 %files listfiles-sles11
+%dir %{CONFIGDIR}/bootimage/files.initrd.d/sles
+%dir %{CONFIGDIR}/bootimage/rpms.initrd.d/sles
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/sles/base.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/sles/empty.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/sles/network.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/base.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/comoonics.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/hardware.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/empty.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/network.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/python.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles11/base.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles11/python.list
 
@@ -1057,6 +1153,9 @@ fi
 
 %files listfiles-rhel5-gfs1
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/comoonics.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/gfs.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel5/rhcs.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/rhcs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/gfs1.list
 
 %files listfiles-fedora-nfs
@@ -1100,7 +1199,10 @@ fi
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/nfs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/03-nfs-deps.sh
 
-%files listfiles-selinux-rhel
+%files listfiles-selinux-rhel5
+%attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/selinux.list
+
+%files listfiles-selinux-rhel6
 %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/selinux.list
 
 %files listfiles-fenceacksv-plugins
@@ -1127,7 +1229,10 @@ fi
 %files listfiles-fence_vmware-rhel5
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel5/fence_vmware.list
 
-%files listfiles-vi-sles
+%files listfiles-vi-sles10
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/vim.list
+
+%files listfiles-vi-sles11
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/vim.list
 
 %files listfiles-firmware
@@ -1152,29 +1257,6 @@ fi
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage-chroot/rpms.initrd.d/fenceacksv.list
 #%config(noreplace)     %{SYSCONFIGDIR}/fenceacksv
 %doc %attr(0644, root, root) CHANGELOG
-
-%files fenceclient-ilo
-%attr(0755, root, root) %{FENCECLIENTS_DIR}/fence_ilo
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fence_ilo.list
-%doc %attr(0644, root, root) CHANGELOG
-
-%files fenceclient-ilomp
-%attr(0755, root, root) %{FENCECLIENTS_DIR}/fence_ilomp
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fence_ilomp.list
-%doc %attr(0644, root, root) CHANGELOG
-
-#%files fenceclient-vmware
-#%attr(0755, root, root) %{FENCECLIENTS_DIR}/fence_vmware_client
-#%doc %attr(0644, root, root) %{FENCECLIENTS_DOC}/INSTALL.fence_vmware
-#%doc %attr(0644, root, root) %{FENCECLIENTS_DOC}/README.fence_vmware
-#%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fence_vmware_client.list
-#%doc %attr(0644, root, root) CHANGELOG
-#
-#%files fencemaster-vmware
-#%attr(0755, root, root) %{FENCECLIENTS_DIR}/fence_vmware_master
-#%doc %attr(0644, root, root) %{FENCECLIENTS_DOC}/INSTALL.fence_vmware
-#%doc %attr(0644, root, root) %{FENCECLIENTS_DOC}/README.fence_vmware
-#%doc %attr(0644, root, root) CHANGELOG
 
 %clean
 rm -rf %{buildroot}
@@ -1938,16 +2020,20 @@ rm -rf %{buildroot}
 * Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-3
 - introduced the changelog
 
-%changelog extras-dm-multipath-rhel
-* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-3
-- first version for comoonics-4.6-rc1 
-* Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-2
-- introduced the changelog
+%changelog extras-dm-multipath-rhel4
+* Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 0.1-1
+- introduced instead of rhel
 
-%changelog extras-dm-multipath-sles
-* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-2
-- first version for comoonics-4.6-rc1 
-* Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-1
+%changelog extras-dm-multipath-rhel5
+* Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 0.1-1
+- introduced instead of rhel
+
+%changelog extras-dm-multipath-rhel6
+* Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 0.1-1
+- introduced instead of rhel
+
+%changelog extras-dm-multipath-sles10
+* Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 0.1-1
 - initial revision
 
 %changelog extras-dm-multipath-sles11
@@ -2009,10 +2095,12 @@ rm -rf %{buildroot}
 * Wed Sep 09 2009 Marc Grimme <grimme@atix.de> - 0.1-1
 - initial revision
 
-%changelog listfiles-selinux-rhel
-* Fri Mar 11 2011 Marc Grimme <grimme@atix.de> - 0.1-2
-  - functional release
-* Wed Mar 09 2011 Marc Grimme <grimme@atix.de> - 0.1-1
+%changelog listfiles-selinux-rhel5
+* Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 0.1-1
+  - initial revision
+
+%changelog listfiles-selinux-rhel6
+* Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 0.1-1
   - initial revision
 
 %changelog listfiles-all
@@ -2051,23 +2139,9 @@ rm -rf %{buildroot}
 * Thu Aug 14 2008 Marc Grimme <grimme@atix.de - 0.1-1
   - initial revision 
 
-%changelog listfiles-rhel
-* Wed Mar 2  2011 Marc Grimme <grimme@atix.de> 0.1-9
-- added optional to listfiles where necessary.
-* Tue Feb 22 2011 Marc Grimme <grimme@atix.de> 0.1-8
-- added excludefilter to initscripts (hardware.list) rpm to not include /var/log files
-* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-5
-- first version for comoonics-4.6-rc1 
-* Mon Sep 28 2009 Marc Grimme <grimme@atix.de> - 0.1-4
-- Finalized version with all changes
-* Thu Sep 10 2009 Marc Grimme <grimme@atix.de> - 0.1-3
-- Moved dep to other files in order to have less warnings
-* Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-2
-- First version on the way to rpmlint BUG#290
-* Thu Aug 14 2008 Marc Grimme <grimme@atix.de> - 0.1-1
-  - initial revision 
-
 %changelog listfiles-rhel4
+* Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 0.1-5
+  - moved files from rhel here
 * Wed Mar 02 2011 Marc Grimme <grimme@atix.de> 0.1-4
 - files.initrd.d/rhel5/configs.list: added configs.list as file for kudzu in here
 - files.initrd.d/rhel5/hardware.list: added kudzu here
@@ -2079,6 +2153,9 @@ rm -rf %{buildroot}
   - initial revision 
 
 %changelog listfiles-rhel5
+* Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 0.1-10
+  - moved files from rhel here
+  - moved rhcs-files to listfiles-gfs1-rhel5
 * Wed Mar 02 2011 Marc Grimme <grimme@atix.de> 0.1-9
 - files.initrd.d/rhel5/configs.list: added configs.list as file for kudzu in here
 - files.initrd.d/rhel5/hardware.list: added kudzu here
@@ -2106,25 +2183,9 @@ rm -rf %{buildroot}
 * Mon Feb 28 2011 Marc Grimme <grimme@atix.de> 0.1-1
 - first version for comoonics-5.0-pre
 
-%changelog listfiles-sles
-* Wed Aug 11 2010 Marc Grimme <grimme@atix.de> 0.1-8
-- removed bootimage/rpms.initrd.d/sles/dm_multipath.list
-* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-7
-- first version for comoonics-4.6-rc1 
-* Mon Sep 28 2009 Marc Grimme <grimme@atix.de> - 0.1-6
-- Finalized version with all changes
-* Thu Sep 10 2009 Marc Grimme <grimme@atix.de> - 0.1-5
-- Additional deps
-* Thu Sep 10 2009 Marc Grimme <grimme@atix.de> - 0.1-4
-- Moved dep to other files in order to have less warnings
-* Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-3
-- First version on the way to rpmlint BUG#290
-* Wed Sep 24 2008 Marc Grimme <grimme@atix.de> - 0.1-2
-- Replaced dependency listfiles to listfiles-all in listfiles-sles
-* Thu Aug 14 2008 Marc Grimme <grimme@atix.de - 0.1-1
-  - initial revision 
-
 %changelog listfiles-sles10
+* Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 0.1-5
+  - moved files from sles here
 * Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-4
 - first version for comoonics-4.6-rc1 
 * Thu Oct 08 2009 Marc Grimme <grimme@atix.de> - 0.1-3
@@ -2135,6 +2196,8 @@ rm -rf %{buildroot}
 - initial revision
 
 %changelog listfiles-sles11
+* Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 0.1-9
+  - moved files from sles here
 * Fri Feb 11 2011 Marc Grimme <grimme@atix.de> 0.1-8
 - added new deps for sles11
 * Thu Aug 13 2010 Marc Grimme <grimme@atix.de> 0.1-7
@@ -2290,6 +2353,9 @@ rm -rf %{buildroot}
 - initial revision
 
 %changelog fenceacksv
+* Wed Mar 23 2011 Marc Grimme <grimme@atix.de> 0.3-16
+- rpms-fenceacksv.list
+  - added nspr, nss (for sshd)
 * Mon Feb 21 2011 Marc Grimme <grimme@atix.de> 0.3-15
 - shell.py
   - fixed dep to SystemInformation
@@ -2331,501 +2397,3 @@ rm -rf %{buildroot}
   - first release for 1.3 bootimage
 * Wed Feb 07 2007 Marc Grimme <grimme@atix.de> - 0.1-11
 - introducted changelog
-
-%changelog fenceclient-ilo
-* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-19
-- first version for comoonics-4.6-rc1 
-* Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-18
-- First version on the way to rpmlint BUG#290
-* Mon Jul 30 2007 Marc Grimme <grimme@atix.de> - 0.1-17
-- added help for -x|--xmlfile (#BZ 39)
-* Wed Feb 07 2007 Marc Grimme <grimme@atix.de - 0.1-16
-- introducted changelog
-
-#%changelog fenceclient-vmware
-#* Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-5
-#- First version on the way to rpmlint BUG#290
-#* Wed Feb 07 2007 Marc Grimme <grimme@atix.de - 0.1-4
-#- introducted changelog
-#
-#%changelog fencemaster-vmware
-#* Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-2
-#- First version on the way to rpmlint BUG#290
-#* Wed Feb 07 2007 Marc Grimme <grimme@atix.de - 0.1-1
-#- introducted changelog
-#
-# ------
-# $Log: comoonics-bootimage.spec,v $
-# Revision 1.151  2011/02/28 14:27:29  marc
-# - fixed errormessages (1.4-79)
-#
-# Revision 1.150  2011/02/21 16:22:57  marc
-# *** empty log message ***
-#
-# Revision 1.149  2011/02/21 16:20:07  marc
-# new version comoonics-bootimage-1.4-78, comoonics-bootimage-fenceacksv-0.3-19
-#
-# Revision 1.148  2011/02/16 14:39:32  marc
-# - new bootimage version 1.4-76 and bootimage-listfiles-all 0.1-16
-#
-# Revision 1.147  2011/02/14 16:43:14  marc
-# new version comoonics-bootimage-1.4-75 and comoonics-bootimage-listfiles-syslogd-0.1-4
-#
-# Revision 1.146  2011/02/11 13:45:00  marc
-# new versions
-#
-# Revision 1.145  2011/02/08 10:02:06  marc
-# - new version comoonics-bootimage-1.4-73
-# - new version comoonics-bootimage-extras-syslog-0.1-13
-#
-# Revision 1.144  2011/02/03 14:53:06  marc
-# new version for comoonics-bootimage-1.4-71
-#
-# Revision 1.143  2011/02/02 09:19:48  marc
-# new version for comoonics-bootimage 1.4-70, comoonics-bootimage-extras-syslog 0.1-11
-#
-# Revision 1.142  2011/01/31 18:05:01  marc
-# - new version for comoonics-bootimage-fenceacksv 0.3-13
-#
-# Revision 1.141  2011/01/28 13:01:28  marc
-# new version for comoonics-bootimage-1.4-69
-#
-# Revision 1.140  2011/01/18 09:23:41  marc
-# new versions for comoonics-bootimage-listfiles-rhel5
-#
-# Revision 1.139  2011/01/12 09:36:10  marc
-# new version for comoonics-bootimage (1.4-68) and comoonics-bootimage-extras-syslog (0.1-10)
-#
-# Revision 1.138  2011/01/11 15:01:29  marc
-# - new version for bootimage 1.4-67 and extras-syslog 0.1-9
-#
-# Revision 1.137  2010/12/07 13:31:13  marc
-# new versions
-#
-# Revision 1.136  2010/09/06 13:45:16  marc
-# new version
-#
-# Revision 1.135  2010/09/06 12:59:19  marc
-# - new version
-#
-# Revision 1.134  2010/09/01 15:33:34  marc
-# - new version
-#
-# Revision 1.133  2010/09/01 15:24:19  marc
-# new version
-#
-# Revision 1.132  2010/09/01 09:50:32  marc
-# - new version
-#
-# Revision 1.131  2010/08/26 12:26:48  marc
-# new version
-#
-# Revision 1.130  2010/08/19 09:24:34  marc
-# new version for comoonics-bootimage-sles11-0.1-7
-#
-# Revision 1.129  2010/08/19 07:42:46  marc
-# new versions
-#
-# Revision 1.128  2010/08/18 11:51:07  marc
-# new version
-#
-# Revision 1.127  2010/08/12 13:04:17  marc
-# added base.list.
-#
-# Revision 1.126  2010/08/12 07:42:04  marc
-# new version of comoonics-bootimage
-#
-# Revision 1.125  2010/08/11 09:47:13  marc
-# - new versions
-#
-# Revision 1.124  2010/08/06 13:33:14  marc
-# new versions
-#
-# Revision 1.123  2010/08/06 13:29:13  marc
-# - don't touch service clvmd
-#
-# Revision 1.122  2010/07/09 13:34:42  marc
-# - reverted redirection back to using exec
-#
-# Revision 1.121  2010/07/08 08:39:37  marc
-# new versions
-#
-# Revision 1.120  2010/06/30 07:04:04  marc
-# new version
-#
-# Revision 1.119  2010/06/25 12:54:09  marc
-# new versions for comooncis-bootimage, -extras-nfs/ocfs2/glusterfs/syslog, -fenceacksv
-#
-# Revision 1.118  2010/06/17 08:21:59  marc
-# new versions
-#
-# Revision 1.117  2010/06/09 08:23:22  marc
-# new versions
-#
-# Revision 1.116  2010/05/27 09:57:35  marc
-# new versions 1.4-49, 1.4-50
-#
-# Revision 1.115  2010/04/23 10:23:53  marc
-# new versions
-#
-# Revision 1.114  2010/03/11 10:31:23  marc
-# comoonics-4.6-rc1
-#
-# Revision 1.113  2010/03/08 19:35:14  marc
-# comoonics-4.6-rc1
-#
-# Revision 1.112  2010/02/16 10:07:15  marc
-# new versions
-#
-# Revision 1.111  2010/02/09 21:45:19  marc
-# new versions
-#
-# Revision 1.110  2010/02/07 20:35:13  marc
-# - latest versions
-#
-# Revision 1.109  2009/10/08 07:59:23  marc
-# - new version
-#
-# Revision 1.108  2009/10/07 12:08:30  marc
-# new version
-#
-# Revision 1.107  2009/09/29 12:50:23  marc
-# fenceacksv updates in order to obsolete comoonics-cs-py
-#
-# Revision 1.106  2009/09/28 14:51:19  marc
-# new versions
-#
-# Revision 1.105  2009/09/28 14:40:37  marc
-# new versions
-#
-# Revision 1.104  2009/08/25 12:38:33  marc
-# new version
-#
-# Revision 1.103  2009/08/19 16:10:44  marc
-# another fix for bug358
-#
-# Revision 1.102  2009/08/11 12:17:10  marc
-# new versions
-#
-# Revision 1.101  2009/07/01 09:35:10  marc
-# - fixed fenceacksv bug. new rpmversion 0.3-3
-#
-# Revision 1.100  2009/06/05 07:33:44  marc
-# - new version for comoonics-bootimage 1.4-22
-#
-# Revision 1.99  2009/04/22 11:39:10  marc
-# new version 1.4-21
-#
-# Revision 1.98  2009/04/20 07:42:31  marc
-# - new version 20, nfs 11
-#
-# Revision 1.97  2009/04/14 15:03:41  marc
-# *** empty log message ***
-#
-# Revision 1.96  2009/03/06 13:27:26  marc
-# - removed initial start of udev as it should be started implicitly on demand
-# - fixed bug in network setup because devices would have been created multiple times
-# - some typos
-#
-# Revision 1.95  2009/02/27 10:35:46  marc
-# new version for bootimage (1.4-8)
-#
-# Revision 1.94  2009/02/27 08:43:52  marc
-# new version for bootimage (1.4-7)
-#
-# Revision 1.93  2009/02/25 10:42:24  marc
-# fixed bug with xennet hardware_detection
-#
-# Revision 1.92  2009/02/25 08:42:13  marc
-# changed nfs modules
-#
-# Revision 1.91  2009/02/24 12:13:49  marc
-# new listfiles
-#
-# Revision 1.90  2009/02/24 12:09:45  marc
-# first 1.4 rc
-#
-# Revision 1.89  2009/02/18 18:10:40  marc
-# new version
-#
-# Revision 1.88  2009/02/08 14:24:50  marc
-# typo
-#
-# Revision 1.87  2009/02/08 14:22:38  marc
-# added extras-md
-#
-# Revision 1.86  2009/02/08 13:17:54  marc
-# new version for comoonics-bootimage (1.3-46
-#
-# Revision 1.85  2009/02/03 16:33:08  marc
-# new version
-#
-# Revision 1.84  2009/01/29 19:48:58  marc
-# new versions
-#
-# Revision 1.83  2008/12/08 15:43:04  marc
-# rpmlint Bug#290
-#
-# Revision 1.82  2008/12/08 15:05:25  marc
-# rpmlint Bug#290
-#
-# Revision 1.81  2008/12/05 16:12:58  marc
-# First step to go rpmlint compat BUG#230
-#
-# Revision 1.80  2008/12/01 14:44:28  marc
-# changed file attributes (Bug #290)
-#
-# Revision 1.79  2008/11/18 14:28:26  marc
-# - implemented RFE-BUG 289 (level up/down)
-#
-# Revision 1.78  2008/10/14 10:57:07  marc
-# Enhancement #273 and dependencies implemented (flexible boot of local fs systems)
-#
-# Revision 1.77  2008/09/24 08:14:25  marc
-# - Bugfix #272 where static ipaddress will not be set in sles10
-# - Replaced dependency listfiles to listfiles-all in listfiles-sles
-#
-# Revision 1.76  2008/09/24 08:12:43  marc
-# - Bugfix #272 where static ipaddress will not be set in sles10
-# - Replaced dependency listfiles to listfiles-all in listfiles-sles
-#
-# Revision 1.75  2008/09/10 13:12:10  marc
-# Fixed bugs #267, #265, #264
-#
-# Revision 1.74  2008/08/14 14:40:41  marc
-# -added channel option which will build channel
-# - added new versions
-#
-# Revision 1.73  2008/07/03 13:04:17  mark
-# new release
-#
-# Revision 1.72  2008/06/23 22:13:42  mark
-# new release
-#
-# Revision 1.71  2008/06/10 10:10:57  marc
-# - new versions
-#
-# Revision 1.70  2008/05/28 14:54:46  mark
-# new bootimage revision
-#
-# Revision 1.69  2008/05/17 08:34:22  marc
-# - added new version 1.3-30
-#
-# Revision 1.68  2008/02/29 09:09:07  mark
-# added wildcards to .py files
-#
-# Revision 1.67  2008/01/24 13:57:15  marc
-# - Fixed Bug#170 initrd fails with dm_multipath in RHEL5
-# - Fixed Bug#178 nousb bootparameter should be available
-# - Fixed Bug#179 xen guest will not be detected with rhel4
-# - rewrote iscsilibs to be more generix
-# - Implemented RFE#144 Mac-Address in configuration files.
-#
-# Revision 1.66  2007/12/07 16:39:59  reiner
-# Added GPL license and changed ATIX GmbH to AG.
-#
-# Revision 1.65  2007/11/28 12:41:42  mark
-# new release
-#
-# Revision 1.64  2007/10/18 08:22:37  marc
-# - new version of extras-xen 0.1-2
-#
-# Revision 1.63  2007/10/18 08:15:27  mark
-# new build
-#
-# Revision 1.62  2007/10/16 08:04:33  marc
-# - added get_rootsource
-# - fixed BUG 142
-# - lvm switch support
-#
-# Revision 1.61  2007/10/11 07:34:37  mark
-# new revision
-#
-# Revision 1.60  2007/10/10 19:50:52  marc
-# new version 1.3-20
-#
-# Revision 1.59  2007/10/10 15:11:07  mark
-# new release
-#
-# Revision 1.58  2007/10/10 12:29:16  mark
-# new release
-#
-# Revision 1.57  2007/10/09 14:25:12  marc
-# - new release of comoonics-bootimage 1.3-17
-#
-# Revision 1.56  2007/10/08 16:15:05  mark
-# new release
-#
-# Revision 1.55  2007/10/05 14:09:53  mark
-# new revision
-#
-# Revision 1.54  2007/10/05 10:10:13  marc
-# - new version comoonics-bootimage-1.3-15
-#
-# Revision 1.53  2007/10/02 12:16:30  marc
-# - new release comoonics-bootimage-1.3-14
-#
-# Revision 1.52  2007/09/27 11:56:14  marc
-# new version of comoonics-bootimage-1.3-13
-#
-# Revision 1.51  2007/09/26 11:55:51  mark
-# new releases
-#
-# Revision 1.50  2007/09/21 15:34:51  mark
-# new release
-#
-# Revision 1.49  2007/09/18 11:21:15  mark
-# bootimage-1.3.10
-#
-# Revision 1.48  2007/09/15 14:49:38  mark
-# moved listfiles into extra rpms
-#
-# Revision 1.47  2007/09/14 13:35:52  marc
-# added rdac-rpm and comments
-#
-# Revision 1.46  2007/09/13 09:06:44  mark
-# merged changes
-#
-# Revision 1.45  2007/09/12 13:48:05  mark
-# moved initscripts into another specfile
-#
-# Revision 1.44  2007/09/10 15:03:18  marc
-# - new version of fenceacksv 0.3-1
-#
-# Revision 1.43  2007/09/10 09:24:01  marc
-# -new version of fenceacksv 0.3-1
-#
-# Revision 1.42  2007/09/07 08:30:25  mark
-# merged fixes from 1.2
-#
-# Revision 1.41  2007/09/07 07:55:42  mark
-# removed tmpwatch conflict
-# added rhel5 parts
-#
-# Revision 1.40  2007/08/29 06:46:13  marc
-# setting AUTOREQ: NO for vmware agent
-#
-# Revision 1.39  2007/08/08 14:25:17  mark
-# release 1.3.4
-#
-# Revision 1.38  2007/08/07 12:42:38  mark
-# added release 1.3.1
-# added extras-nfs
-# added extras-network
-#
-# Revision 1.37  2007/07/30 06:47:12  marc
-# added help for -x|--xmlfile (#BZ 39)
-#
-# Revision 1.36  2007/07/24 17:05:34  mark
-# added 1.2.03
-#
-# Revision 1.35  2007/05/23 15:30:00  mark
-# version 1.2.02
-#
-# Revision 1.34  2007/03/01 10:50:04  marc
-# changed getopt
-#
-# Revision 1.33  2007/02/23 16:44:50  mark
-# revision 1.0.81
-#
-# Revision 1.32  2007/02/09 11:08:17  marc
-# new version 81
-#
-# Revision 1.31  2007/01/23 12:57:14  mark
-# new release 1.0.75
-#
-# Revision 1.30  2006/12/04 17:37:12  marc
-# new versions
-#
-# Revision 1.29  2006/11/10 11:38:29  mark
-# release 1.0.73
-# added conflicts tmpwatch and tmpwatch warnings
-#
-# Revision 1.28  2006/10/26 16:13:24  mark
-# release got from src.rpm
-# added support for ccsd-chroot
-#
-# Revision 1.27  2006/10/06 08:36:27  marc
-# version with quorumack
-#
-# Revision 1.26  2006/08/28 16:00:27  marc
-# very well tested version
-#
-# Revision 1.25  2006/08/14 17:42:41  marc
-# new version with max_drop_count and fenced from local disk
-#
-# Revision 1.24  2006/07/19 15%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/fedora/base.list
-# removed the fence-tool lists for chroot
-#
-# Revision 1.23  2006/07/19 15:11:36  marc
-# fixed fence_bug for x86_64
-#
-# Revision 1.22  2006/07/13 11:35:16  marc
-# new version changing file xtensions
-#
-# Revision 1.21  2006/07/03 08:33:59  marc
-# new version
-#
-# Revision 1.20  2006/06/19 15:57:40  marc
-# added devicemapper support
-#
-# Revision 1.19  2006/06/09 14:04:05  marc%attr(640, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/configs.list
-
-# new version.
-#
-# Revision 1.18  2006/06/07 09:42:23  marc
-# *** empty log message ***
-#
-# Revision 1.17  2006/05/12 13:01:56  marc
-# First stable 1.0 Version
-#
-# Revision 1.16  2006/05/07 12:06:56  marc
-# version 1.0 stable
-#
-# Revision 1.15  2006/05/03 12:47:17  marc
-# added documentation
-#
-# Revision 1.14  2006/04/13 18:52:09  marc
-# latest versino
-#
-# Revision 1.13  2006/04/13 18:46:31  marc
-# new version
-#
-# Revision 1.12  2006/04/11 13:42:45  marc
-# cvs stable version
-#
-# Revision 1.11  2006/04/11 13:41:20  marc
-# added hostnames and x86_64 support
-#
-# Revision 1.10  2006/02/16 13:59:06  marc
-# stable version 20
-#
-# Revision 1.9  2006/01/28 15:01:49  marc
-# fenced is restarted in the initrd
-#
-# Revision 1.8  2006/01/25 14:55:51  marc
-# first stable 0.3
-#
-# Revision 1.7  2006/01/23 14:05:30  mark
-# added 
-#
-# Revision 1.6  2005/07/08 13:15:57  mark
-# added some files
-#
-# Revision 1.5  2005/06/27 14:24:20  mark
-# added gfs 61, rhel4 support
-#
-# Revision 1.4  2005/06/08 13:33:22  marc
-# new revision
-#
-# Revision 1.3  2005/01/05 10:57:07  marc
-# new release and added the latest files.
-#
-# Revision 1.2  2005/01/03 08:34:16  marc
-# added new subversion for first offical rpm version
-#
-# Revision 1.1  2005/01/03 08:33:17  marc
-# first offical rpm version
-# - initial revision
-#
-#

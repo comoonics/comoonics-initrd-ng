@@ -421,12 +421,14 @@ RPM_PACKAGE_BIN_DIR=$(RPM_PACKAGE_DIR)/RPMS/*
 RPM_PACKAGE_SRC_DIR=$(RPM_PACKAGE_DIR)/SRPMS
 RPM_PACKAGE_SOURCE_DIR=$(RPM_PACKAGE_DIR)/SOURCES
 
-
-CHANNELBASEDIR=/atix/dist-mirrors
-ALL_DISTROS=rhel4 rhel5 rhel6 sles10 fedora sles11
 # Which directories are used for installation
-CHANNELDIRS=comoonics/rhel4/preview comoonics/rhel5/preview comoonics/rhel6/preview comoonics/sles10/preview comoonics/fedora/preview comoonics/sles11/preview
-CHANNELSUBDIRS=i386 x86_64 noarch SRPMS
+CHANNELBASEDIR=/atix/dist-mirrors
+DISTROS=rhel4 rhel5 rhel6 sles10 fedora sles11
+PRODUCTNAME=comoonics
+PRODUCTVERSION=5.0
+CHANNELNAMES=preview:base addons:extras
+CHANNELDIR=$(CHANNELBASEDIR)/$(PRODUCTNAME)/$(PRODUCTVERSION)
+ARCHITECTURES=i386 x86_64 noarch SRPMS
 
 TEST_DIR=tests
 
@@ -599,37 +601,27 @@ rpmsign:
 .PHONY: channelcopy
 channelcopy:
 	# Create an array of all CHANNELDIRS distros (second dir in path) and one without numbers at the end ready to be feeded in find
-	@for channeldir in $(CHANNELDIRS); do \
-		TMPFILE="$(CHANNELBASEDIR)/$$channeldir/.channelcopy"$$$$; \
-		touch $$TMPFILE; \
-		sleep 1; \
-		echo "Copying rpms to channel $$channeldir..$$TMPFILE"; \
-		includeddistros=`echo -n $$channeldir | awk -F/ '{ print "-name \"*"$$2"*\" -or -name \"*"gensub("[0-9]+$$","","",$$2)"-*\" -or "; }'`; \
-		excludeddistros=`echo -n $(ALL_DISTROS) | awk -F/ 'BEGIN { RS=" "; } $$0=="'$$includedistro'" { next; } { print "-not -name \"*"$$0"*\" -and -not -name \"*"gensub("[0-9]+$$","","",$$0)"*\" -and "; }'`; \
-		for subdir in $(CHANNELSUBDIRS); do \
-			if [ $$subdir == "SRPMS" ]; then \
-				type="src"; \
-				rpmdir=""; \
-			else \
-				type=$$subdir; \
-				rpmdir="/RPMS"; \
-			fi; \
-			echo 'find $(RPM_PACKAGE_DIR) -name "$(PACKAGE_NAME)*.'$$type'.rpm" -and -not -name "*.el?.*" -and '$$excludeddistros' -true -exec cp -f {} $(CHANNELBASEDIR)/'$$channeldir'/'$${subdir}$${rpmdir}' \;' ;\
-			echo 'find $(RPM_PACKAGE_DIR) -name "$(PACKAGE_NAME)*.'$$type'.rpm" -and -not -name "*.el?.*" -and '$$excludeddistros' -true -exec cp -f {} $(CHANNELBASEDIR)/'$$channeldir'/'$${subdir}$${rpmdir}' \;' | bash ;\
-			echo 'find $(RPM_PACKAGE_DIR) -name "$(PACKAGE_NAME)*.'$$type'.rpm" -and -not -name "*.el?.*" -and \( '$$includeddistros' -false \) -exec cp -f {} $(CHANNELBASEDIR)/'$$channeldir'/'$${subdir}$${rpmdir}' \;' ;\
-			echo 'find $(RPM_PACKAGE_DIR) -name "$(PACKAGE_NAME)*.'$$type'.rpm" -and -not -name "*.el?.*" -and \( '$$includeddistros' -false \) -exec cp -f {} $(CHANNELBASEDIR)/'$$channeldir'/'$${subdir}$${rpmdir}' \;' | bash ;\
+	@for channel in $(CHANNELNAMES); do \
+	    channelname=`echo $$channel | cut -f1 -d:`; \
+	    channelalias=`echo $$channel | cut -f2 -d:`; \
+	    for distribution in $(DISTROS); do \
+	       for architecture in $(ARCHITECTURES); do \
+		      echo -n "Copying rpms to channel $(CHANNELDIR)/$$channelname/$$distribution/$$architecture.."; \
+		      ./build/copy_rpms.sh $$distribution $(CHANNELDIR)/$$channelname $$channelalias $$architecture; \
+		      echo "(DONE)"; \
+		   done; \
 		done; \
-		echo find $(CHANNELBASEDIR)/$$channeldir -name "$(PACKAGE_NAME)*.rpm" -newer $$TMPFILE; \
-		find $(CHANNELBASEDIR)/$$channeldir -name "$(PACKAGE_NAME)*.rpm" -newer $$TMPFILE; \
-		rm -f $$TMPFILE; \
 	done;
 	
 .PHONY: channelbuild
 channelbuild:
 	@echo "Rebuilding channels.."
-	@for channeldir in $(CHANNELDIRS); do \
-		$(CHANNELBASEDIR)/updaterepositories -r $$channeldir; \
-	done 
+	@for channel in $(CHANNELNAMES); do \
+        channelname=`echo $$channel | cut -f1 -d:`; \
+	    for distribution in $(DISTROS); do \
+              $(CHANNELBASEDIR)/updaterepositories -r $(PRODUCTNAME)/$(PRODUCTVERSION)/$$channelname/$$distribution; \
+	    done; \
+	 done 
 
 .PHONY:rpm	
 rpm: test rpmbuild rpmbuild-initscripts-el4 rpmbuild-initscripts-el5 rpmbuild-initscripts-rhel6 rpmbuild-initscripts-sles10 rpmbuild-initscripts-sles11 rpmbuild-initscripts-fedora rpmsign

@@ -42,24 +42,43 @@
 %define INITDIR   /etc/rc.d/init.d
 %define SYSCONFIGDIR /%{_sysconfdir}/sysconfig
 
+%define RELEASENAME Gumpn
+%define PRODUCTNAME OpenSharedRoot
+%define PRODUCTVERSION 5.0 pre
+%define DISTRIBUTIONNAME %{PRODUCTNAME} %{PRODUCTVERSION} (%{RELEASENAME})
+%define DISTRIBUTIONBASE %{DISTRIBUTIONNAME} Base
+%define DISTRIBUTIONEXTRAS %{DISTRIBUTIONNAME} Extras
+
+%define GROUPPARENT System Environment
+%define GROUPCHILDEXTRAS Extras
+%define GROUPCHILDBASE Base
+%define GROUPCHILDSLES SLES
+%define GROUPCHILDSLES10 SLES10
+%define GROUPCHILDSLES11 SLES11
+%define GROUPCHILDRHEL RHEL
+%define GROUPCHILDRHEL4 RHEL4
+%define GROUPCHILDRHEL5 RHEL5
+%define GROUPCHILDRHEL6 RHEL6
+%define GROUPCHILDFEDORA Fedora
+
 Name: comoonics-bootimage-initscripts
 Summary: Initscripts used by the OSR cluster environment.
 Version: 1.4
 BuildArch: noarch
-Requires: comoonics-bootimage >= 1.4-55
+Requires: comoonics-bootimage >= 1.4-82
 Requires: SysVinit-comoonics
 Requires: comoonics-bootimage-listfiles-all
-Requires: comoonics-bootimage-listfiles-rhel
 Requires: comoonics-bootimage-listfiles-rhel5
 #Conflicts: 
-Release: 20.rhel5
+Release: 22.rhel5
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
 URL:     http://www.atix.de/
 Source:  http://www.atix.de/software/downloads/comoonics/comoonics-bootimage-initscripts-%{version}.tar.gz
 License: GPL
-Group:   System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDRHEL5}
+Distribution: %{DISTRIBUTIONBASE}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description
@@ -229,19 +248,23 @@ fi
 rm -rf %{buildroot}
 
 %changelog
-* Mon Feb 28 2011 Marc Grimme <grimme@atix.de> 1.4-20el5
+* Tue Mar 22 2011 Marc Grimme <grimme@atix.de> 1.4-22.rhel5
+- Rebase
+* Tue Mar 22 2011 Marc Grimme <grimme@atix.de> 1.4-21.rhel5
+- Rebase
+* Mon Feb 28 2011 Marc Grimme <grimme@atix.de> 1.4-20.rhel5
 - halt.local will now be a file being installed instead of a symbolic link.
-* Wed Aug 18 2010 Marc Grimme <grimme@atix.de> 1.4-19el5
+* Wed Aug 18 2010 Marc Grimme <grimme@atix.de> 1.4-19.rhel5
 - initscripts/rhel4,rhel5,fedora,sles10,sles11/bootsr
   - fixed bug #382 where the cdsl.local was not remounted in /etc/mtab on locally installed systems
-* Thu Jul 08 2010 Marc Grimme <grimme@atix.de> 1.4-18el5
+* Thu Jul 08 2010 Marc Grimme <grimme@atix.de> 1.4-18.rhel5
 - bootsr uses bash as shell
-* Thu Jun 08 2010 Marc Grimme <grimme@atix.de> 1.4-17el5
+* Thu Jun 08 2010 Marc Grimme <grimme@atix.de> 1.4-17.rhel5
 - introducted initscript mountcdsls
-* Fri Apr 23 2010 Marc Grimme <grimme@atix.de> 1.4-16el5
+* Fri Apr 23 2010 Marc Grimme <grimme@atix.de> 1.4-16.rhel5
 - netfs-tab.patch: initial revision
 - netfs-xtab.patch: removed old data
-* Tue Feb 23 2010 Marc Grimme <grimme@atix.de> 1.4-15el5
+* Tue Feb 23 2010 Marc Grimme <grimme@atix.de> 1.4-15.rhel5
 - Fixes in check_mtab
 * Fri Oct 09 2009 Marc Grimme <grimme@atix.de> 1.4-13el5
 - removed halt patches as the are not needed with /sbin/halt.local

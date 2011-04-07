@@ -42,23 +42,43 @@
 %define INITDIR   /etc/rc.d/init.d
 %define SYSCONFIGDIR /%{_sysconfdir}/sysconfig
 
+%define RELEASENAME Gumpn
+%define PRODUCTNAME OpenSharedRoot
+%define PRODUCTVERSION 5.0 pre
+%define DISTRIBUTIONNAME %{PRODUCTNAME} %{PRODUCTVERSION} (%{RELEASENAME})
+%define DISTRIBUTIONBASE %{DISTRIBUTIONNAME} Base
+%define DISTRIBUTIONEXTRAS %{DISTRIBUTIONNAME} Extras
+
+%define GROUPPARENT System Environment
+%define GROUPCHILDEXTRAS Extras
+%define GROUPCHILDBASE Base
+%define GROUPCHILDSLES SLES
+%define GROUPCHILDSLES10 SLES10
+%define GROUPCHILDSLES11 SLES11
+%define GROUPCHILDRHEL RHEL
+%define GROUPCHILDRHEL4 RHEL4
+%define GROUPCHILDRHEL5 RHEL5
+%define GROUPCHILDRHEL6 RHEL6
+%define GROUPCHILDFEDORA Fedora
+
 Name: comoonics-bootimage-initscripts
 Summary: Initscripts used by the OSR cluster environment.
 Version: 1.4
 BuildArch: noarch
-Requires: comoonics-bootimage >= 1.4-55
+Requires: comoonics-bootimage >= 1.4-82
 # Requires: SysVinit-comoonics
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-fedora
 #Conflicts: 
-Release: 17.fedora
+Release: 18.fedora
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
 URL:     http://www.atix.de/
 Source:  http://www.atix.de/software/downloads/comoonics/comoonics-bootimage-initscripts-%{version}.tar.gz
 License: GPL
-Group:   System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDFEDORA}
+Distribution: %{DISTRIBUTIONBASE}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description
@@ -228,7 +248,9 @@ fi
 rm -rf %{buildroot}
 
 %changelog
-* Mon Feb 28 2011 Marc Grimme <grimme@atix.de> 1.4-17fedora
+* Tue Mar 22 2011 Marc Grimme <grimme@atix.de> 1.4-18.fedora
+- Rebase
+* Mon Feb 28 2011 Marc Grimme <grimme@atix.de> 1.4-17.fedora
 - halt.local will now be a file being installed instead of a symbolic link.
 * Tue Feb 22 2011 Marc Grimme <grimme@atix.de> 1.4-16fedora
 - initscripts/rhel4,rhel5,fedora,sles10,sles11/bootsr

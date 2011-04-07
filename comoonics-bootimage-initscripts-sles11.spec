@@ -42,22 +42,42 @@
 %define INITDIR   /etc/init.d
 %define SYSCONFIGDIR /%{_sysconfdir}/sysconfig
 
+%define RELEASENAME Gumpn
+%define PRODUCTNAME OpenSharedRoot
+%define PRODUCTVERSION 5.0 pre
+%define DISTRIBUTIONNAME %{PRODUCTNAME} %{PRODUCTVERSION} (%{RELEASENAME})
+%define DISTRIBUTIONBASE %{DISTRIBUTIONNAME} Base
+%define DISTRIBUTIONEXTRAS %{DISTRIBUTIONNAME} Extras
+
+%define GROUPPARENT System Environment
+%define GROUPCHILDEXTRAS Extras
+%define GROUPCHILDBASE Base
+%define GROUPCHILDSLES SLES
+%define GROUPCHILDSLES10 SLES10
+%define GROUPCHILDSLES11 SLES11
+%define GROUPCHILDRHEL RHEL
+%define GROUPCHILDRHEL4 RHEL4
+%define GROUPCHILDRHEL5 RHEL5
+%define GROUPCHILDRHEL6 RHEL6
+%define GROUPCHILDFEDORA Fedora
+
 Name: comoonics-bootimage-initscripts
 Summary: Initscripts used by the OSR cluster environment for Novell SLES10.
 Version: 1.4
 BuildArch: noarch
-Requires: comoonics-bootimage >= 1.4-55
+Requires: comoonics-bootimage >= 1.4-82
 Requires: comoonics-bootimage-listfiles-sles11
 Requires: sysvinit-comoonics
 #Conflicts:
-Release: 11.sles11
+Release: 12.sles11
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
 URL:     http://www.atix.de/
 Source:  http://www.atix.de/software/downloads/comoonics/comoonics-bootimage-initscripts-%{version}.tar.gz
 License: GPL
-Group:   System Environment/Base
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDSLES11}
+Distribution: %{DISTRIBUTIONBASE}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description
@@ -110,7 +130,9 @@ true
 %attr(755, root, root) %{INITDIR}/halt.local
 
 %changelog
-* Tue Feb 22 2011 Marc Grimme <grimme@atix.de> 1.4-11sles11
+* Tue Mar 22 2011 Marc Grimme <grimme@atix.de> 1.4-12.sles11
+- Rebase
+* Tue Feb 22 2011 Marc Grimme <grimme@atix.de> 1.4-11.sles11
 - initscripts/rhel4,rhel5,fedora,sles10,sles11/bootsr
   - would work without cdsl tools being available
 * Tue Feb 09 2011 Marc Grimme <grimme@atix.de> 1.4-10sles11

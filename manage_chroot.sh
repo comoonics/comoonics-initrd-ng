@@ -62,6 +62,12 @@ sourceRootfsLibs $(dirname $0)/boot-scripts
 distribution=$(repository_get_value distribution)
 [ -z $MKCDSLINFRASTRUCTURE ] && MKCDSLINFRASTRUCTURE=com-mkcdslinfrastructure
 
+# overwrite with bootparameter if need be
+chrootneeded=$(getParameter chrootneeded 2>/dev/null)
+if [ "$(repository_get_value chrootneeded)" = "__set__" ]; then
+	repository_store_value chrootneeded 0
+	chrootneeded=0
+fi 
 if [ -z "$chrootneeded" ]; then
   clusterfs_chroot_needed init
   __default=$?
@@ -127,7 +133,8 @@ function close_fds() {
 
 function umount_chroot() {
 	for dir in $UMOUNTFS; do 
-		umount $chrootdir/$dir & >/dev/null
+	   echo_local -n -N "..$dir.."
+	   umount_filesystem $chrootdir/$dir & >/dev/null
 	done
 }
 
@@ -136,6 +143,10 @@ function mount_chroot() {
 	local subdir fstype device
 	local i=
 	mounts=( "/dev/pts" "devpts" "none"  "/proc" "proc" "proc" "/sys" "sysfs" "sysfs" )
+	for file in /dev/.initramfs/comoonics.*; do
+		cp $file $REPOSITORY_PATH
+	done
+	chrootdir=${chrootdir:-$(repository_get_value chroot_path)}
 	if [ -z "$chrootdir" ]; then
 		return 1
 	fi
@@ -149,17 +160,32 @@ function mount_chroot() {
   		repository_store_value chroot_path ${res[1]}
 		echo_local -n -N "res: $res -> chroot_mount="$(repository_get_value chroot_mount)", chroot_path="$(repository_get_value chroot_path)
 		return_code $retc 
-	fi		
+	fi
+	# chrootdir is mounted but not written to /etc/mtab
+	if [ ! -L /etc/mtab ] && ! MOUNTS=$(cat /etc/mtab) is_mounted $chrootdir && is_mounted $chrootdir && repository_has_key nodename; then
+		echo_local -N -n "persist "
+		res=( $(build_chroot_fake $(repository_get_value cluster_conf) $(repository_get_value nodename)) )
+  		retc=$?
+  		repository_store_value chroot_mount ${res[0]}
+  		#FIXME: chroot_path should be the same as chrootdir but what to do here? How to decide?
+  		repository_store_value chroot_path ${res[1]}
+  		echo_local_debug -N -n "chroot_mount: ${res[0]}, chroot_path: ${res[1]} res: ${res[@]} "
+	fi 
 	echo_local -N -n "subdirs "
 	while [ ${#mounts} -gt 0 ]; do
-		subdir=${mounts[0]}
-		fstype=${mount[1]}
-		device=${mount[2]}
+		local subdir=${mounts[0]}
+		local fstype=${mounts[1]}
+		local device=${mounts[2]}
 		mounts=( ${mounts[@]:3} )
 		if ! is_mounted "${chrootdir}${subdir}" && ! is_mounted $(repository_get_value cdsl_local_dir)${chrootdir}${subdir}; then
-			echo_local -N -n "..${subdir}.."
+			echo_local -N -n "..$chrootdir${subdir}.."
+			#echo_local_debug -N -n ".. mount -t $fstype $device $chrootdir${subdir}.."
 			mkdir -p $chrootdir${subdir} >/dev/null 2>&1
 			mount -t $fstype $device $chrootdir${subdir}
+        elif ! MOUNTS=$(cat /etc/mtab) is_mounted "${chrootdir}${subdir}" && is_mounted "${chrootdir}${subdir}"; then
+            echo_local -N -n "..$chrootdir${subdir}.."
+            mkdir -p $chrootdir${subdir} >/dev/null 2>&1
+            mount -f -t $fstype $device $chrootdir${subdir}
 		fi
 	done
 	unset mounts
@@ -480,8 +506,12 @@ fi
 # - test /comoonics or die
 
 if [ $chrootneeded -eq 0 ] && ! [ -e /var/comoonics/chrootpath ]; then
-	echo "Error: cannot find /var/comoonics/chrootpath" >&2
-	exit 1
+	if is_mounted /var/comoonics/chroot; then
+	  echo /var/comoonics/chroot > /var/comoonics/chrootpath
+	else
+	  echo "Error: cannot find /var/comoonics/chrootpath" >&2
+	  exit 1
+	fi
 fi
 
 if [ $chrootneeded -eq 0 ]; then
