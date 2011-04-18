@@ -1,7 +1,7 @@
 cman
 openais
 lvm2-cluster
-OpenIPMI-tools
+OpenIPMI-tools              -                  -              optional
 pam
 #######
 # $Log: rhcs5.list,v $
