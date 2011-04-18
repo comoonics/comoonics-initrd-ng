@@ -2,12 +2,18 @@
 # Copyright 2008 Marcus D. Hanwell <marcus@cryos.org>
 # Distributed under the terms of the GNU General Public License v2 or later
 
-import string, re, os
+import string, re, os, sys
 
 # Execute git log with the desired command line options.
-fin = os.popen('git log --summary --stat --no-merges --date=short', 'r')
+args=""
+if len(sys.argv)>1:
+    args=" ".join(sys.argv[1:])
+    args+=" --"
+cmd='git log --summary --stat --no-merges --date=short %s' %args
+print "cmd: %s" %cmd
+fin = os.popen(cmd, 'r')
 # Create a ChangeLog file in the current directory.
-fout = open('ChangeLog', 'w')
+fout = sys.stdout
 
 # Set up the loop variables in order to locate the blocks we want
 authorFound = False
@@ -18,6 +24,7 @@ message = ""
 messageNL = False
 files = ""
 prevAuthorLine = ""
+commitprefix="-"
 
 # The main part of the loop
 for line in fin:
@@ -83,31 +90,35 @@ for line in fin:
         # author on this day
         authorLine = date + "  " + author
         if len(prevAuthorLine) == 0:
-            fout.write(authorLine + "\n")
+            fout.write(" "+authorLine)
         elif authorLine == prevAuthorLine:
             pass
         else:
-            fout.write("\n" + authorLine + "\n")
+            fout.write("\n\n "+authorLine)
 
         # Assemble the actual commit message line(s) and limit the line length
         # to 80 characters.
-        commitLine = "* " + files + ": " + message
+        commitLine = commitprefix+" " + files + ": " + message
         i = 0
         commit = ""
         while i < len(commitLine):
+            if i > 0:
+                space="\n    "
+            else:
+                space="\n  "
             if len(commitLine) < i + 78:
-                commit = commit + "\n  " + commitLine[i:len(commitLine)]
+                commit = commit + space + commitLine[i:len(commitLine)]
                 break
             index = commitLine.rfind(' ', i, i+78)
             if index > i:
-                commit = commit + "\n  " + commitLine[i:index]
+                commit = commit + space + commitLine[i:index]
                 i = index+1
             else:
-                commit = commit + "\n  " + commitLine[i:78]
+                commit = commit + space + commitLine[i:78]
                 i = i+79
 
         # Write out the commit line
-        fout.write(commit + "\n")
+        fout.write(commit)
 
         #Now reset all the variables ready for a new commit block.
         authorFound = False
@@ -121,4 +132,5 @@ for line in fin:
 
 # Close the input and output lines now that we are finished.
 fin.close()
+fout.write("\n")
 fout.close()
