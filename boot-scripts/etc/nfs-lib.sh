@@ -374,7 +374,6 @@ function nfs_load {
   for module in ${NFS_MODULES}; do
     exec_local /sbin/modprobe ${module}
   done
-  return_code
 
   echo_local_debug  "Loaded modules:"
   exec_local_debug /sbin/lsmod
