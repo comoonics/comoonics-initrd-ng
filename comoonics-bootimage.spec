@@ -1266,6 +1266,12 @@ rm -rf %{buildroot}
 %changelog
 * Mon Apr 18 2011 Marc Grimme <grimme@atix.de> 1.4-83
  2011-04-18  Marc Grimme <grimme@atix.de>
+  - .../pre.mkinitrd.d/00-bootimage-check.sh: initial revision. Script to check
+    if all required rpms are installed.
+  - Makefile, comoonics-bootimage.spec: new versions
+  - build/gitlog2rpmchangelog.py: initial revision to outcreate changelog for
+    rpms.
+  - build/gitlog2changelog.py: add params to be given to git command.
   - tests/test/osr-nodeidvalues-1.conf: removed fenceacksv test.
   - fencing/fence-ack-server/CA.cert, fencing/fence-ack-server/CA.pkey,
     fencing/fence-ack-server/client.cert, fencing/fence-ack-server/client.pkey,
