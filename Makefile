@@ -363,7 +363,7 @@ CFG_DIR_CHROOT=$(SYSTEM_CFG_DIR)/bootimage-chroot
 #
 CFG_FILES_CHROOT=files.list \
 	rpms.list \
-	rpms.initrd.d/fenceacksv-plugins.list
+	rpms.initrd.d/imsd-plugins.list
 	
 #************ CFG_FILES 
 #****d* Makefile/EMPTY_DIRS
