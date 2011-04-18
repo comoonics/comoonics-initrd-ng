@@ -51,7 +51,7 @@ osr_generate_nodevalues() {
 #
 # Returns a "string" as list of elements to be found in a cluster configuration
 osr_get_cluster_elements() {
-	echo "name clustername eth syslog rootvolume fenceacksv scsi rootsource chrootenv filesystem"
+	echo "name clustername eth syslog rootvolume scsi rootsource chrootenv filesystem"
 } 
 
 #
@@ -80,7 +80,6 @@ osr_get_cluster_attributes() {
 		"rootvolume") echo "name fstype mountopts" ;;
 	    "filesystem") echo "dest source fstype mountopts mounttimes mountwait" ;;
 		"rootsource") echo "name" ;;
-		"fenceacksv") echo "name" ;;
 		"name") echo "name" ;;
 		"clustername") echo "name" ;;
 		"chrootenv") echo "mountpoint fstype device chrootdir" ;;
