@@ -107,4 +107,4 @@ unset logo
 unset shellissue
 unset shellissuetmp
 
-typeset -f plymouth_hide >/dev/null 2>&1 && plymouth_hide
+typeset -f plymouth_hide >/dev/null 2>&1 && plymouth_hide >/dev/null 2>&1
