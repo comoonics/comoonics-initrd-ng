@@ -508,10 +508,10 @@ fi
 
 typeset -f plymouth_start >/dev/null 2>&1 && plymouth_start $(repository_get_value newroot)
 if typeset -f selinux_load_policy >/dev/null 2>&1; then
-	 selinux_load_policy $(repository_get_value newroot) ||	errormsgstdin <<EOF
+	 selinux_load_policy $(repository_get_value newroot) ||	breakp "$(errormsg_stdin <<EOF
 Could not setup selinux policy.
 Please check and decide if you want to continue booting or not. 
-EOF
+EOF)"
 fi
 step "SElinux and plymouth newroot started." "selinux"
 
