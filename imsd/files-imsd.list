@@ -1,0 +1,10 @@
+####################
+# Files to include in initrd to get fenceackserver running
+####################
+# $Id$
+logger
+# for ssh having passwords
+/etc/shadow
+/etc/shadow-
+###################
+# $Log$
