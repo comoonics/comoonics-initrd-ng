@@ -338,6 +338,7 @@ CFG_FILES=basefiles.list \
     filters.list \
     filters.initrd.d/empty.list \
     filters.initrd.d/kernel.list \
+    pre.mkinitrd.d/00-bootimage-check.sh \
     pre.mkinitrd.d/00-cdsl-check.sh \
     post.mkinitrd.d/01-create-mapfiles.sh \
     post.mkinitrd.d/02-create-cdsl-repository.sh \

@@ -43,8 +43,8 @@
 %define INITDIR   /etc/rc.d/init.d
 %define SYSCONFIGDIR /%{_sysconfdir}/sysconfig
 
-%define FENCEACKSV_SOURCE fencing/fence-ack-server
-%define FENCEACKSV_DIR    /opt/atix/comoonics-fenceacksv
+%define IMSD_SOURCE imsd
+%define IMSD_DIR    /opt/atix/comoonics-imsd
 
 %define FENCECLIENTS_SOURCE fencing/
 %define FENCECLIENTS_DIR /opt/atix/comoonics-fencing
@@ -78,7 +78,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 82
+Release: 83
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -94,7 +94,7 @@ Scripts for creating an initrd in a OSR cluster environment
 
 %package extras-osr
 Version: 0.1
-Release: 4
+Release: 5
 Requires: comoonics-bootimage >= 1.3-1
 Summary: Extra for cluster configuration via osr
 Group:   %{GROUPPARENT}/%{GROUPCHILDEXTRAS}
@@ -117,7 +117,7 @@ Extra listfiles for special network configurations
 
 %package extras-nfs
 Version: 0.1
-Release: 20
+Release: 21
 Requires: comoonics-bootimage >= 1.4-81
 Summary: Listfiles for nfs sharedroot configurations
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
@@ -575,19 +575,20 @@ Conflicts: comoonics-bootimage-extras-ocfs2
 %description listfiles-sles11-nfs
 OSR extra files that are only relevant for SLES11 Versions and nfs support
 
-%package listfiles-fenceacksv-plugins
+%package listfiles-imsd-plugins
 Version: 0.1
-Release: 4
-Requires: comoonics-bootimage >= 1.3-20
+Release: 2
+Obsoletes: comoonics-bootimage-listfiles-fenceacksv-plugins
+Requires: comoonics-bootimage >= 1.4-71
 Requires: comoonics-cs-sysreport-templates
-Requires: comoonics-fenceacksv-py
-Requires: comoonics-fenceacksv-plugins-py
-Summary: Extrafiles for plugins in fenceacksv
-Group: Group:   %{GROUPPARENT}/%{GROUPCHILDSERVER}
+Requires: comoonics-imsd-py
+Requires: comoonics-imsd-plugins-py
+Summary: Extrafiles for plugins in imsd
+Group: Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
-%description listfiles-fenceacksv-plugins
-OSR extrafiles for plugins in fenceacksv.
+%description listfiles-imsd-plugins
+OSR extrafiles for plugins in imsd.
 
 %package listfiles-syslogd
 Version: 0.1
@@ -716,18 +717,19 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 %description compat
 OSR files needed for the compatibility to 1.2 releases
 
-%package fenceacksv
-Version: 0.3
-Release: 14
-Requires: comoonics-fenceacksv-py
-Requires: comoonics-bootimage >= 1.4-51
+%package imsd
+Version: 0.1
+Release: 2
+Obsoletes: comoonics-bootimage-fenceacksv
+Requires: comoonics-imsd-py
+Requires: comoonics-bootimage >= 1.4-71
 Requires: comoonics-tools-py >= 0.1-9
-Summary: The Fenceackserver is a service for last resort actions
-Group:   Group:   %{GROUPPARENT}/%{GROUPCHILDSERVER}s
+Summary: The Integrated Management Server Device is a service for last resort actions
+Group:   Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
 Distribution: %{DISTRIBUTIONBASE}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
-%description fenceacksv
+%description imsd
 The Fenceackserver is a service for last resort actions
 
 %prep
@@ -743,24 +745,18 @@ install -d -m 755 $RPM_BUILD_ROOT/%{SYSCONFIGDIR}
 install -m0644 etc/sysconfig/comoonics-chroot.compat-vg_local $RPM_BUILD_ROOT/%{SYSCONFIGDIR}/comoonics-chroot
 
 
-# Files for fenceacksv
-install -d -m 755 $RPM_BUILD_ROOT/%{FENCEACKSV_DIR}
-install -m755 %{FENCEACKSV_SOURCE}/fence_ack_server.py $RPM_BUILD_ROOT/%{FENCEACKSV_DIR}/
-install -m644 %{FENCEACKSV_SOURCE}/shell.py $RPM_BUILD_ROOT/%{FENCEACKSV_DIR}/
-#install -m644 %{FENCEACKSV_SOURCE}/pexpect.py $RPM_BUILD_ROOT/%{FENCEACKSV_DIR}/
-install -m640 %{FENCEACKSV_SOURCE}/server.pkey $RPM_BUILD_ROOT/%{FENCEACKSV_DIR}/
-install -m640 %{FENCEACKSV_SOURCE}/server.cert $RPM_BUILD_ROOT/%{FENCEACKSV_DIR}/
-install -m640 %{FENCEACKSV_SOURCE}/CA.pkey $RPM_BUILD_ROOT/%{FENCEACKSV_DIR}/
-install -m640 %{FENCEACKSV_SOURCE}/CA.cert $RPM_BUILD_ROOT/%{FENCEACKSV_DIR}/
+# Files for imsd
+install -d -m 755 $RPM_BUILD_ROOT/%{IMSD_DIR}
+install -m644 %{IMSD_SOURCE}/shell.py $RPM_BUILD_ROOT/%{IMSD_DIR}/
 
 install -d -m 755 $RPM_BUILD_ROOT/%{INITDIR}
-install -m755 %{FENCEACKSV_SOURCE}/fenceacksv.sh $RPM_BUILD_ROOT/%{INITDIR}/fenceacksv
+install -m755 %{IMSD_SOURCE}/imsd.sh $RPM_BUILD_ROOT/%{INITDIR}/imsd
 install -d -m 755 $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage-chroot
 install -d -m 755 $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage-chroot/files.initrd.d
 install -d -m 755 $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage-chroot/rpms.initrd.d
-install -m644 %{FENCEACKSV_SOURCE}/files-fenceacksv.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage-chroot/files.initrd.d/fenceacksv.list
-install -m644 %{FENCEACKSV_SOURCE}/rpms-fenceacksv.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage-chroot/rpms.initrd.d/fenceacksv.list
-# install -m640 %{FENCEACKSV_SOURCE}/fenceacksv-config.sh $RPM_BUILD_ROOT/%{SYSCONFIGDIR}/fenceacksv
+install -m644 %{IMSD_SOURCE}/files-imsd.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage-chroot/files.initrd.d/imsd.list
+install -m644 %{IMSD_SOURCE}/rpms-imsd.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage-chroot/rpms.initrd.d/imsd.list
+# install -m640 %{IMSD_SOURCE}/imsd-config.sh $RPM_BUILD_ROOT/%{SYSCONFIGDIR}/imsd
 
 # Files for fence-clients (ilo)
 install -d -m 755 $RPM_BUILD_ROOT/%{FENCECLIENTS_DIR}
@@ -824,20 +820,34 @@ Cluster services will be started in a chroot environment. Check out latest docum
 on http://www.open-sharedroot.org
 '
 
-%post fenceacksv
-echo "Setting up fenceacksv"
-pushd %{FENCEACKSV_DIR} >/dev/null
-ln -sf fence_ack_server.py fenceacksv
-popd >/dev/null
-chkconfig --add fenceacksv &> /dev/null
-chkconfig --list fenceacksv
+%post imsd
+echo "Setting up imsd"
+chkconfig --add imsd &> /dev/null
+chkconfig --list imsd
 echo "Done"
 
-%preun fenceacksv
+%preun imsd
 if [ "$1" -eq 0 ]; then
-  echo "Uninstalling fenceacksv"
-  chkconfig --del fenceacksv
+  echo "Uninstalling imsd"
+  chkconfig --del imsd
 fi
+
+# Triggers to be triggered by different other rpms
+#%triggerin -n listfiles-rhel5 -- kernel
+#comecmkinitrdfile=/etc/comoonics/enterprisecopy/mkinitrd.xml
+#mkinitrdcmd=/opt/atix/comoonics-bootimage/mkinitrd
+#initrd_name=initrd_sr-$(uname -r).img
+#. /etc/sysconfig/comoonics
+#
+#
+#which com-ec >/dev/null 2>&1
+# Not yet supported because com-ec does not easily allow overwriting of initrd filename
+#if [ $? -eq 0 ] && [ -f $comecmkinitrdfile ]; then
+#   echo "Building new initrd through com-ec (this could take some time)...   
+#   com-ec $comecmkinitrdfile
+#else
+#$mkinitrdcmd $initrd_name
+
 
 %files
 %dir %{LIBDIR}/boot-scripts/sys
@@ -918,6 +928,10 @@ fi
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage-chroot/rpms.list
 %dir %{CONFIGDIR}/bootimage-chroot/files.initrd.d
 %dir %{CONFIGDIR}/bootimage-chroot/rpms.initrd.d
+%dir %{CONFIGDIR}/bootimage/pre.mkinitrd.d
+%dir %{CONFIGDIR}/bootimage/post.mkinitrd.d
+%config %attr(0755, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/00-cdsl-check.sh
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/02-create-cdsl-repository.sh
 
 %config(noreplace) %attr(0644, root, root) %{CONFIGDIR}/comoonics-bootimage.cfg
 %config(noreplace) %attr(0644, root, root) %{CONFIGDIR}/querymap.cfg
@@ -1021,8 +1035,6 @@ fi
 %dir %{CONFIGDIR}/bootimage/files.initrd.d
 %dir %{CONFIGDIR}/bootimage/rpms.initrd.d
 %dir %{CONFIGDIR}/bootimage/filters.initrd.d
-%dir %{CONFIGDIR}/bootimage/pre.mkinitrd.d
-%dir %{CONFIGDIR}/bootimage/post.mkinitrd.d
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/base.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/bonding.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/comoonics.list
@@ -1040,8 +1052,6 @@ fi
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/python.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/filters.initrd.d/empty.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/filters.initrd.d/kernel.list
-%config %attr(0755, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/00-cdsl-check.sh
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/02-create-cdsl-repository.sh
 %config(noreplace) %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/user_edit.list
 
 %files listfiles-rhel4
@@ -1205,8 +1215,8 @@ fi
 %files listfiles-selinux-rhel6
 %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/selinux.list
 
-%files listfiles-fenceacksv-plugins
-%config %attr(0644, root, root) %dir %{CONFIGDIR}/bootimage-chroot/rpms.initrd.d/fenceacksv-plugins.list
+%files listfiles-imsd-plugins
+%config %attr(0644, root, root) %dir %{CONFIGDIR}/bootimage-chroot/rpms.initrd.d/imsd-plugins.list
 
 %files listfiles-syslogd
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/syslogd.list
@@ -1241,21 +1251,12 @@ fi
 %files listfiles-plymouth
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/plymouth.list
 
-%files fenceacksv
-%attr(0755, root, root) %{FENCEACKSV_DIR}/fence_ack_server.py*
-#%attr(0755, root, root) %{FENCEACKSV_DIR}/fence_ack_server.pyc
-#%attr(0755, root, root) %{FENCEACKSV_DIR}/fence_ack_server.pyo
-%attr(0644, root, root) %{FENCEACKSV_DIR}/shell.py*
-#%attr(0644, root, root) %{FENCEACKSV_DIR}/shell.pyc
-#%attr(0644, root, root) %{FENCEACKSV_DIR}/shell.pyo
-%attr(0644, root, root) %{FENCEACKSV_DIR}/server.pkey
-%attr(0644, root, root) %{FENCEACKSV_DIR}/server.cert
-%attr(0644, root, root) %{FENCEACKSV_DIR}/CA.pkey
-%attr(0644, root, root) %{FENCEACKSV_DIR}/CA.cert
-%config %attr(0755, root, root) %{INITDIR}/fenceacksv
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage-chroot/files.initrd.d/fenceacksv.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage-chroot/rpms.initrd.d/fenceacksv.list
-#%config(noreplace)     %{SYSCONFIGDIR}/fenceacksv
+%files imsd
+%attr(0644, root, root) %{IMSD_DIR}/shell.py*
+%config %attr(0755, root, root) %{INITDIR}/imsd
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage-chroot/files.initrd.d/imsd.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage-chroot/rpms.initrd.d/imsd.list
+#%config(noreplace)     %{SYSCONFIGDIR}/imsd
 %doc %attr(0644, root, root) CHANGELOG
 
 %clean
@@ -1263,59 +1264,108 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Mon Apr 18 2011 Marc Grimme <grimme@atix.de> 1.4-83
+ 2011-04-18  Marc Grimme <grimme@atix.de>
+  - tests/test/osr-nodeidvalues-1.conf: removed fenceacksv test.
+  - fencing/fence-ack-server/CA.cert, fencing/fence-ack-server/CA.pkey,
+    fencing/fence-ack-server/client.cert, fencing/fence-ack-server/client.pkey,
+    fencing/fence-ack-server/client.py, fencing/fence-ack-server/cluster.conf,
+    fencing/fence-ack-server/fence_ack_server.py,
+    fencing/fence-ack-server/fenceacksv.sh,
+    fencing/fence-ack-server/files-fenceacksv.list,
+    fencing/fence-ack-server/rpms-fenceacksv.list,
+    fencing/fence-ack-server/server.cert, fencing/fence-ack-server/server.pkey,
+    fencing/fence-ack-server/shell.py,
+    fencing/fence-ack-server/starttestservice.sh,
+    fencing/fence-ack-server/test/__init__.py,
+    .../fence-ack-server/test/cluster_fence_scsi.xml,
+    .../test/cluster_fence_scsi_devices.xml,
+    fencing/fence-ack-server/test/test_FenceScsi.py,
+    fencing/fence-ack-server/test_client.py,
+    fencing/fence-ack-server/testserver.py,
+    fencing/fence-ack-server/testservice.sh, fencing/test/__init__.py,
+    fencing/test/cluster_fence_scsi.xml,
+    fencing/test/cluster_fence_scsi_devices.xml, fencing/test/test_FenceScsi.py,
+    .../rpms.initrd.d/fenceacksv-plugins.list: removed as fenceacksv is obsolete
+  - Makefile: moved fenceacksv files to imsd
+  - querymap.cfg: removed available fenceacksv queries.
+  - .../rpms.initrd.d/imsd-plugins.list: result of renaming fenceacksv to imsd.
+  - system-cfg-files/filters.initrd.d/kernel.list: - removed filter out of
+    modules needed for bonding.
+  - imsd/files-imsd.list, imsd/imsd.sh, imsd/rpms-imsd.list, imsd/shell.py,
+    imsd/testserver.py, imsd/testservice.sh: imsd as result of renaming
+    fenceacksv.
+  - boot-scripts/linuxrc.generic.sh: fixed errmsgstdin usage in combination
+    with breakp to break if problems with selinux.
+  - boot-scripts/etc/fedora/nfs-lib.sh: - removed nfs_load function
+  - boot-scripts/etc/selinux-lib.sh: fixed bug with right detection of
+    bootparams and config in /etc/selinux/config
+  - boot-scripts/etc/osr-lib.sh: osr_get_cluster_elements: - removed fenceacksv
+    from elements to be converted.
+  - boot-scripts/etc/nfs-lib.sh: removed dublicated returncode in nfs-lib.sh
+  - boot-scripts/etc/rhel6/nfs-lib.sh: nfs_load removed.
+  - boot-scripts/etc/bashrc: hide implicit usage of plymouth functions.
+
+ 2011-04-07  Marc Grimme <grimme@atix.de>
+  - Makefile, build/clean_rpms.sh, build/copy_rpms.sh, build/init_repo.sh,
+    comoonics-bootimage-initscripts-el4.spec,
+    comoonics-bootimage-initscripts-el5.spec,
+    comoonics-bootimage-initscripts-fedora.spec,
+    comoonics-bootimage-initscripts-rhel6.spec,
+    comoonics-bootimage-initscripts-sles10.spec,
+    comoonics-bootimage-initscripts-sles11.spec, comoonics-bootimage.spec,
+    manage_chroot.sh: implemented optimized build process.
+  - .../rpms.initrd.d/fenceacksv-plugins.list: added more packages to be needed
+    for imsd (comoonics-ec-py, comoonics-tools-py, comoonics-ec-base-py).
+  - system-cfg-files/rpms.initrd.d/rhel5/base.list: added pam files that are
+    required in this place.
+  - initscripts/rhel5/bootsr: support for forcefully overwrite of chroot
+    requirement
+  - fencing/fence-ack-server/rpms-fenceacksv.list: added rpms to be needed for
+    sshd support
+  - boot-scripts/linuxrc.generic.sh: support for forcefull requirement of
+    chroot environment.
+  - boot-scripts/com-halt.sh: exit if chroot is not needed.
+  - boot-scripts/etc/plymouth-lib.sh: boot-scripts/etc/plymouth-lib.sh: - less
+    senseless output in plymouth_setup
+  - boot-scripts/etc/ocfs2-lib.sh: boot-scripts/etc/ocfs2-lib.sh: - fixed typo
+    in ocfs2_services_start
 * Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 1.4-82
   * boot-scripts/etc/plymouth-lib.sh, system-cfg-files/files.initrd.d/nfs.list,
   system-cfg-files/post.mkinitrd.d/03-nfs-deps.sh,
   system-cfg-files/rpms.initrd.d/plymouth.list,
   system-cfg-files/rpms.initrd.d/rhel/selinux.list,
   tests/test/error/err_cc_start_service.out: new versions
-
-  * tests/test-errors.sh, tests/test/error/err_cc_restart_service.out: - new
-  tests
-
+  * tests/test-errors.sh, tests/test/error/err_cc_restart_service.out: - new tests
   * Makefile: - added new files
-
   * system-cfg-files/rpms.initrd.d/rhel6/nfs.list: - docs
-
   * boot-scripts/linuxrc.generic.sh: - added starting on udevdaemon early -
   added plymouth functions if available - added selinux functions if available
   - moved initrd_exit_postsettings to be executed later
-
   * boot-scripts/linuxrc: - no boot-log any more
-
   * boot-scripts/etc/std-lib.sh: - sourceLibs: added sourcing of
   plymouth-lib.sh and selinux-lib.sh if available - exec_local: remove
   repository parameters exec_local* - exec_ordered_skripts_in: will now work on
   multiple scripts in the right order.
-
   * boot-scripts/etc/stdfs-lib.sh: - is_mounted: remove MOUNTS env variable if
-  set by this function - get_dep_filesystems: also work on paths with multiple
-  // after each other (e.g. //proc)
-
-  * boot-scripts/etc/selinux-lib.sh: - change to status working and tested
-  first stage
-
+    set by this function - get_dep_filesystems: also work on paths with multiple
+    // after each other (e.g. //proc)
+  * boot-scripts/etc/selinux-lib.sh: - change to status working and tested first stage
   * boot-scripts/etc/passwd: removed empty line
-
   * boot-scripts/etc/nfs-lib.sh: - nfs_start_rpcpipefs: echo_local ->
   echo_local_debug - nfs_stop_rpc_statd: added function to stop rpc_statd
-
   * boot-scripts/etc/network-lib.sh: - auto_netconfig: now errormsg if
   /etc/modprobe.conf would not be found
-
   * boot-scripts/etc/hardware-lib.sh: - udev_daemon_start: new function that
   starts the udevdaemon distribution dependent - dev_start: will mount devtmpfs
   if possible and call create_std_devfs if not - create_std_devfs: creates all
   devices if devfs is not available - scsi_start: will not output error if
   /etc/modprobe.conf would not be found
-
   * boot-scripts/etc/errors.sh: - new function that reads errordescription from
   stdin - err_cc_restart_service: fixed typo - err_cc_start_service: new
   errormsg
-
   * boot-scripts/etc/comoonics-release: - changed release to 5.0 (Gumpn)
   * boot-scripts/etc/clusterfs-lib.sh: - copy_relevant_files removed function
-
   * boot-scripts/etc/boot-lib.sh: - initBootProcess better process of creating
   directories necessary for initrd - start_service executing service via
   exec_local - switchRoot * echo -> echo_local * support for switch_root binary
@@ -1325,32 +1375,24 @@ rm -rf %{buildroot}
   -TERM does not work defaults to yes * fixed a bug where the root would not be
   detected on service will not be killed - clean_initrd * cut of stderr/stdout
   of kill for processes - initrd_exit_postsettings * docu * typos
-
   * boot-scripts/etc/fedora/nfs-lib.sh, boot-scripts/etc/rhel6/nfs-lib.sh:
   removed umounting of /proc (will be done later on)
   * boot-scripts/etc/bashrc: added plymouth support
-
   * boot-scripts/etc/rhel6/nfs-lib.sh: nfs_services_stop/start: - added
   rpc.statd nfs_services_restart_newroot: - added rpc.statd
-
   * boot-scripts/etc/rhel6/hardware-lib.sh: implemented rhel6_udev_daemon_start
   and use it.
-
   * system-cfg-files/rpms.initrd.d/rhel5/perl.list: added perl-libwww-perl
   which is also required.
-
   * .../files.initrd.d/rhel5/fence_vmware.list: added more files that would not
   be included
   * comoonics-bootimage.spec: added changelogs for listfiles-perl-rhel5 and
   listfiles-fence_vmware-rhel5
-
   * Makefile, comoonics-bootimage.spec: added rpms
   comoonics-bootimage-listfiles-perl-rhel5 and listfiles-fence_vmware-rhel5
-
   * .../files.initrd.d/rhel5/fence_vmware.list,
   system-cfg-files/rpms.initrd.d/rhel/perl.list,
   system-cfg-files/rpms.initrd.d/rhel5/perl.list: initial revision
-
 * Wed Mar 02 2011 Marc Grimme <grimme@atix.de> 1.4-81
 - boot-scripts/etc/boot-lib.sh: 
     stop_service: now also stops the service if no pid file exists by
@@ -2322,11 +2364,9 @@ rm -rf %{buildroot}
 * Wed Sep 09 2009 Marc Grimme <grimme@atix.de> - 0.1-1
 - initial revision
 
-%changelog listfiles-fenceacksv-plugins
-* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-5
-- first version for comoonics-4.6-rc1 
-* Fri Feb 12 2010 Marc Grimme <grimme@atix.de> - 0.1-4
-- Removed comoonics-cs-py dep.
+%changelog listfiles-imsd-plugins
+* Tue Apr 07 2011 Marc Grimme <grimme@atix.de> 0.1-1
+- renamed from listfiles-fenceacksv-plugins
 
 %changelog listfiles-fencelib
 * Wed Jul 07 2010 Marc Grimme <grimme@atix.de> 0.1-1
@@ -2352,48 +2392,6 @@ rm -rf %{buildroot}
 * Mon Mar 07 2011 Marc Grimme <grimme@atix.de> 0.1-1
 - initial revision
 
-%changelog fenceacksv
-* Wed Mar 23 2011 Marc Grimme <grimme@atix.de> 0.3-16
-- rpms-fenceacksv.list
-  - added nspr, nss (for sshd)
-* Mon Feb 21 2011 Marc Grimme <grimme@atix.de> 0.3-15
-- shell.py
-  - fixed dep to SystemInformation
-* Mon Jan 31 2011 Marc Grimme <grimme@atix.de> 0.3-14
-- fenceacksv.sh
-  - fixed a bug in the initscript the fenceacksv will fail to stop during shutdown (for ssh).
-* Fri Aug 06 2010 Marc Grimme <grimme@atix.de> 0.3-12
-- fenceacksv.sh:
-  - status works also with ssh
-- rpms-fenceacksv.list:
-  - added RHEL4 deps for ssh
-* Wed Jul 07 2010 Marc Grimme <grimme@atix.de> 0.3-11
-- for ssh mode: using ssh keys found in /etc/ssh not its own ones
-* Fri Jun 25 2010 Marc Grimme <grimme@atix.de> 0.3-10
-- fenceacksv.sh: make the fenceackshell executable
-* Wed Jun 16 2010 Marc Grimme <grimme@atix.de> - 0.3-9
-- added support for running fenceacksv over sshd
-* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> - 0.3-8
-- first version for comoonics-4.6-rc1 
-* Mon Feb 15 2010 Marc Grimme <grimme@atix.de> - 0.3-7
-- Upstream fixes.
-* Fri Feb 12 2010 Marc Grimme <grimme@atix.de> - 0.3-6
-- Fixed imports and errors during starting
-- Added dep to comoonics-tools-py
-* Fri Feb 12 2010 Marc Grimme <grimme@atix.de> - 0.3-5
-- Removed deps to GetOpts. Imports.
-* Tue Sep 29 2009 Marc Grimme <grimme@atix.de> - 0.3-4
-- Removed deps and added comoonics-fenceacksv-py
-* Tue Jul 01 2009 Marc Grimme <grimme@atix.de> - 0.3-3
-- Fixed bug where logger was pathdependent
-* Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.3-2
-- First version on the way to rpmlint BUG#290
-* Mon Sep 10 2007 Marc Grimme <grimme@atix.de> - 0.3-1
-  - Fixed Bug BZ#107, fixed problems with not installed plugins
-  - Fixed Bug BZ#29, output of ackmanual
-  - Rewritten
-  - Support for plugins (available: sysrq, sysreport)
-* Mon Sep 10 2007 Mark Hlawatschek <hlawatschek@atix.de> - 0.2-1
-  - first release for 1.3 bootimage
-* Wed Feb 07 2007 Marc Grimme <grimme@atix.de> - 0.1-11
-- introducted changelog
+%changelog imsd
+* Tue Apr 07 2011 Marc Grimme <grimme@atix.de> 0.1-1
+- renamed from fenceacksv
