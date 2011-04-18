@@ -30,7 +30,7 @@ function selinux_load_policy() {
     SELINUX="disabled"
     [ -e "$NEWROOT/etc/selinux/config" ] && . "$NEWROOT/etc/selinux/config"
 
-    if [ "$SELINUX" != "disabled" ] || [ "$selinuxparam" != "0" ]; then
+    if [ "$SELINUX" != "disabled" ] && [ "$selinuxparam" != "0" ]; then
     	# We end up here only if we are enforcing or permissive
         # Check whether SELinux is in permissive mode
         if [ $(getParameter "enforcing" 1) = "0" ] || [ "$SELINUX" = "permissive" ]; then
