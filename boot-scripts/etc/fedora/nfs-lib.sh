@@ -54,33 +54,6 @@ function nfs_getdefaults {
 }
 #********** clusterfs_getdefaults
 
-#****f* nfs-lib.sh/nfs_load
-#  NAME
-#    nfs_load
-#  SYNOPSIS
-#    function nfs_load
-#  DESCRIPTION
-#    This function loads all relevant nfs modules
-#  IDEAS
-#  SOURCE
-#
-function nfs_load {
-
-  NFS_MODULES=$(nfs_get_drivers)
-
-  echo_local -n "Loading NFS modules ($NFS_MODULES)..."
-  for module in ${NFS_MODULES}; do
-    exec_local /sbin/modprobe ${module}
-  done
-  return_code
-
-  echo_local_debug  "Loaded modules:"
-  exec_local_debug /sbin/lsmod
-
-  return $return_c
-}
-#************ nfs_load
-
 #****f* nfs-lib.sh/nfs_services_start
 #  NAME
 #    nfs_services_start
