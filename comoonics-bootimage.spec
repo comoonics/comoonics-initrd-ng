@@ -930,6 +930,7 @@ fi
 %dir %{CONFIGDIR}/bootimage-chroot/rpms.initrd.d
 %dir %{CONFIGDIR}/bootimage/pre.mkinitrd.d
 %dir %{CONFIGDIR}/bootimage/post.mkinitrd.d
+%config %attr(0755, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/00-bootimage-check.sh
 %config %attr(0755, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/00-cdsl-check.sh
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/02-create-cdsl-repository.sh
 
@@ -1266,6 +1267,10 @@ rm -rf %{buildroot}
 %changelog
 * Mon Apr 18 2011 Marc Grimme <grimme@atix.de> 1.4-83
  2011-04-18  Marc Grimme <grimme@atix.de>
+  - system-cfg-files/rpms.initrd.d/rhel4/rhcs.list,
+    system-cfg-files/rpms.initrd.d/rhel5/rhcs.list,
+    system-cfg-files/rpms.initrd.d/rhel6/rhcs.list: OpenIPMI-tools are set
+    optional
   - .../pre.mkinitrd.d/00-bootimage-check.sh: initial revision. Script to check
     if all required rpms are installed.
   - Makefile, comoonics-bootimage.spec: new versions
@@ -1996,6 +2001,8 @@ rm -rf %{buildroot}
 - first release
 
 %changelog extras-nfs
+* Mon Apr 18 2011 Marc Grimme <grimme@atix.de> 0.1-21
+- removed nfs_load whereever possible
 * Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 0.1-20
 - added rpc_stop..
 * Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 0.1-19
@@ -2371,6 +2378,8 @@ rm -rf %{buildroot}
 - initial revision
 
 %changelog listfiles-imsd-plugins
+* Mon Apr 18 2011 Marc Grimme <grimme@atix.de> 0.1-2
+- more deps for imsd (comoonics-base-py, comoonics-storage-py, ..)
 * Tue Apr 07 2011 Marc Grimme <grimme@atix.de> 0.1-1
 - renamed from listfiles-fenceacksv-plugins
 
