@@ -1138,34 +1138,35 @@ function is_newer() {
 #    This function "executes" the files being found in skriptpath. 
 #    All files without executable flag and ending with .sh are sourced not executed!!
 #
-exec_ordered_skripts_in() {
-   local skriptpath=$1
+exec_ordered_scripts_in() {
+   local scriptpath=$1
    local destpath=$2
    local sourceit=$3
    # defaults to set
    local exitonerror=${4:-1}
-   local skript
+   local script
    local return_C
    
-   if [ ! -d "$skriptpath" ]; then
+   if [ ! -d "$scriptpath" ]; then
    	 return 1
    fi
    
-   for skript in "$skriptpath"/*; do
-     local extension=$(echo $skript | sed -e 's/^.*\(\.[^.]*\)$/\1/') 
-   	 if [ -d "$skript" ]; then
+   for script in "$scriptpath"/*; do
+     local extension=$(echo $script | sed -e 's/^.*\(\.[^.]*\)$/\1/')
+     local scriptname=$(basename $script)
+   	 if [ -d "$script" ]; then
    	 	# silently skip directories
-   	 	echo_local_debug -N "Skipping \"$skript\" as it is a directory"
+   	 	echo_local_debug -N "Skipping \"$scriptname\" as it is a directory"
    	 	true
-   	 elif [ -x "$skript" ]; then
-   	 	echo_local -n -N "Executing skript \"$skript\"."
-   	 	$skript $destpath
+   	 elif [ -x "$script" ]; then
+   	 	echo_local -n -N "Executing script \"$scriptname\"."
+   	 	$script $destpath
    	 	return_code $?
    	 	[ "$return_c" -eq 0 ] || ( return_C=$return_c && [ $exitonerror -eq 1 ] && return $return_C )
      elif [  "$extension" = ".sh" ]; then
-        echo_local -n -N "Sourcing skript \"$skript\"."
+        echo_local -n -N "Sourcing script \"$scriptname\"."
         return_c=0
-        . $skript $destpath
+        . $script $destpath
         return_code
    	 	[ "$return_c" -eq 0 ] || ( return_C=$return_c && [ $exitonerror -eq 1 ] && return $return_C )
    	 fi
