@@ -485,6 +485,7 @@ The following fenceclients seem to be pending you can kill them by the command k
             print >>self.stdout, "OK"
 
 if __name__ == '__main__':
+    logging.basicConfig()
     try:
         from comoonics.imsd.plugins.ComSysreportPlugin import SysreportPlugin
         import comoonics.imsd.plugins
