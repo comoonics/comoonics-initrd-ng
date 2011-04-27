@@ -53,10 +53,15 @@ size=120000
 
 del_kernels=""
 update=
+# index file inside the initrd
 index_list=".index.lst"
+# cached index file outside initrd used to speed up creation of initrd
+indexfile="file-list.txt"
+cachedir=/var/cache/comoonics-bootimage
 modules=""
 pre_do=1
 post_do=1
+use_cachefile=1
 
 initEnv
 
@@ -99,8 +104,9 @@ for localfilesystems.
 -U: switch to update modes
 -A kernelversion: add this kernelversion to this initrd (can be specified multiple times)
 -D kernelversion: remove this kernelversion from this initrd  (can be specified multiple times)
--p: toggle pre  initrd generated skripts found in $pre_mkinitrd_path (default: $predo)
--P: toggle post initrd generated skripts found in $post_mkinitrd_path (default: $postdo)
+-p: toggle pre  initrd generated scripts found in $pre_mkinitrd_path (default: $predo)
+-P: toggle post initrd generated scripts found in $post_mkinitrd_path (default: $postdo)
+-c: toggle the usage of cachefiles (no speed up but be sure what to copy (default: $use_cachefile).
 
 initrdname: which file should be the initrd
 kernel-version: which kernel version should be included in this initrd (=-A) (can be specified multiple times) 
@@ -119,7 +125,7 @@ USAGE_EOF
 #
 function getoptions() {
     local i=0
-    while getopts LUoRFVvhlpPm:fd:s:r:b:A:D:M: option ; do
+    while getopts LUoRFVvhlpPcm:fd:s:r:b:A:D:M: option ; do
 	case "$option" in
 	    v) # version
 		echo "$0 Version "'$Revision: 1.34 $'
@@ -149,6 +155,7 @@ function getoptions() {
 		;;
         V) # verbose mode
         verbose=1
+        debug=1
         ;;
         F) # ignore locks
         Force=1
@@ -178,11 +185,14 @@ function getoptions() {
         M) # add a specific module
         modules="$modules $OPTARG"
         ;;
-        p) # toggle premkinitrd skripts execute
+        p) # toggle premkinitrd scripts execute
         pre_do=$((! $pre_do))
         ;;
-        P) # toggle postmkinitrd skripts execute
-        post_do=$((! $post_do))
+        P) # toggle postmkinitrd scripts execute
+        post_do=$((! $post_do ))
+        ;;
+        c) # toggle the usage of cachefiles
+        use_cachefile=$((! $use_cachefile ))
         ;;
 	    *)
 		echo "Error wrong option."
@@ -322,7 +332,7 @@ pushd $mountpoint >/dev/null 2>&1
 
 if [ -d "$pre_mkinitrd_path" ] && [ -n "$pre_do" ] && [ $pre_do -eq 1 ]; then
   echo_local -N "Executing files before mkinitrd."
-  exec_ordered_skripts_in $pre_mkinitrd_path $mountpoint
+  exec_ordered_scripts_in $pre_mkinitrd_path $mountpoint
   if [ $? -ne 0 ]; then
   	rm $lockfile
   	exit $return_C
@@ -330,91 +340,51 @@ if [ -d "$pre_mkinitrd_path" ] && [ -n "$pre_do" ] && [ $pre_do -eq 1 ]; then
 fi
 
 if [ -z "$update" ]; then
-  # extracting rpms
-  if [ -n "$rpm_filename" ] && [ -e "$rpm_filename" ]; then
-    echo_local -N -n "Extracting rpms..."
-    #extract_all_rpms $rpm_filename $mountpoint $rpm_dir $verbose || echo "(WARNING)"
-    rpmfilelist=$(get_filelist_from_rpms $rpm_filename $filters_filename $verbose)
+  if [ $use_cachefile -ne 1 ] || [ ! -e "$cachedir/$indexfile" ]; then
+    # extracting rpms
+    if [ -n "$rpm_filename" ] && [ -e "$rpm_filename" ]; then
+      echo_local -N -n "Extracting rpms..."
+      get_filelist_from_rpms $rpm_filename $filters_filename $verbose | tr ' ' '\n'| sort -u | grep -v "^.$" | grep -v "^..$" | tr '&' '\n' >> $cachedir/$indexfile
+      success
+    fi
+
+    echo_local -N -n "Retrieving dependent files..."
+    get_all_files_dependent $dep_filename $verbose | tr ' ' '\n'| sort -u | grep -v "^.$" | grep -v "^..$" | tr '&' '\n' >> $cachedir/$indexfile
+    if [ $? -ne 0 ]; then
+      failure
+      rm -rf ${mountpoint}
+      rm $lockfile
+      exit 12
+    fi
     success
   fi
-
-  echo_local -N -n "Retrieving dependent files..."
-  # compiling marked perlfiles in this function
-  #dep_files=$(get_all_depfiles $dep_filename $verbose)
-  filelist=$(get_all_files_dependent $dep_filename $verbose)
-  files=( $( ( echo $rpmfilelist; echo $filelist ) | tr ' ' '\n'| sort -u | grep -v "^.$" | grep -v "^..$" | tr '&' '\n') ) 
-  echo ${files[@]} | tr ' ' '\n' > ${mountpoint}/file-list.txt
-#  create_filelist $mountpoint > ${mountpoint}/$index_list
-  echo_local -N -n "found "${#files[@]}" files" && success
+  echo_local -n -N "Copying files.. "
+  cat $cachedir/$indexfile | copy_filelist $mountpoint > $cachedir/${indexfile}.tmp
+  rm -f $cachedir/${indexfile}
+  mv -f $cachedir/${indexfile}.tmp $cachedir/${indexfile}
 else
   echo_local -N -n "Unpacking initrd ${initrdname} => ${mountpoint}.."
   unzip_and_uncpio_initrd $mountpoint $initrdname $force
   if [ ! -e "${mountpoint}/$index_list" ]; then
   	echo_local -N "Could not find valid index file."
   	echo_local -N -n "Autocreating index file .."
-    create_filelist $mountpoint > ${mountpoint}/$index_list || (failure; echo "Could not create index file. Breaking." >&2; exit 5)
+    create_filelist $mountpoint > ${mountpoint}/$index_list || (failure; echo "Could not create index file. Breaking." >&2; rm $lockfile; exit 5)
     success
   fi
-  files=( $(PYTHONPATH=${predir}/etc python -c '
+  echo_local -n -N "Copying files.. "
+  PYTHONPATH=${predir}/etc
+  python -c '
 import stdlib
 stdlib.get_files_newer(open("'$index_list'"), 
           { '$(create_python_dict_from_mappaths $(get_mappaths_from_depfiles $dep_filename))'
-          	 "/":"/"} )') )
-  if [ $? -ne 0 ]; then
-    rm -rf ${mountpoint}/*
-    rm $lockfile
-    exit 11
-  fi
-  echo_local -N "Files to update "${#files[@]}
-  if [ -n "$verbose" ]; then
-    echo_local -N ${files[@]} | tr ' ' '\n'
-  fi
+          	 "/":"/"} )' | copy_filelist $mountpoint > $cachedir/$indexfile
 fi
-
-echo_local -N -n "Copying files..."
-i=0
-while [ $i -lt ${#files[@]} ]; do
-  file=${files[$i]}
-  if [ -d $file ] && [ ! -L $file ]; then
-#    echo "Directory $file => ${mountpoint}/$file"
-    create_dir ${mountpoint}/$file
-    #copy_file $file ${mountpoint}/$(dirname $file)
-  elif [ ! -e "$file" ] && [ "$file" = '@map' ]; then
-    i=$(( $i+1 ))
-    file=${files[$i]}
-    i=$(( $i+1 ))
-    todir=${files[$i]}
-    if [ -d $file ]; then
-      [ -n "$verbose" ] && echo "Directory mapping $file => ${mountpoint}/$todir"
-      create_dir ${mountpoint}/$todir
-      for file2 in $(ls -1 $file/*); do
-         copy_file $file/\* ${mountpoint}/$todir/
-      done
-    else
-      dirname=`dirname $file`
-      create_dir ${mountpoint}$todir
-      copy_file $file ${mountpoint}$todir
-    fi
-  elif [ ! -e "$file" ] && [ "$file" = '@mapfile' ]; then
-    i=$(( $i+1 ))
-    file=${files[$i]}
-    i=$(( $i+1 ))
-    fromdir=${files[$i]}
-    i=$(( $i+1 ))
-    todir=${files[$i]}
-    subpath=$(dirname ${file#${fromdir}})
-    [ -n "$verbose" ] && echo "File mapping ${file}#${fromdir} => ${mountpoint}/$todir/$subpath" >&2
-    create_dir ${mountpoint}/$todir/$subpath
-    copy_file $file ${mountpoint}/$todir/$subpath
-  elif [ -e "$file" ]; then 
-    dirname=`dirname $file`
-    create_dir ${mountpoint}$dirname
-    copy_file $file ${mountpoint}$dirname
-  elif [ -n "$verbose" ]; then
-    echo "File $file could not be found. Skipping." >&2
-  fi
-  i=$(( $i+1 ))
-done
+if [ $? -ne 0 ]; then
+  failure
+  rm -rf ${mountpoint}
+  rm $lockfile
+  exit 11
+fi
 success
 
 if [ -z "$update" ] || [ -n "$kernel" ]; then
@@ -448,7 +418,7 @@ if [ -z "$update" ] || [ -n "$kernel" ]; then
 	  # no globbing
       findcmd="find /lib/modules/$_kernel \( -type f -or -type l \) -and -not \( $args \)"
     fi
-    cpioopts="--pass-through --make-directories"
+    cpioopts="--pass-through --make-directories --quiet"
     if [ -n "$verbose" ]; then
       echo_local -N "Calling find with $findcmd"
       cpioopts="$cpioopts --verbose"
@@ -491,7 +461,7 @@ fi
 
 if [ -d "$post_mkinitrd_path" ] && [ -n "$post_do" ] && [ $post_do -eq 1 ]; then
   echo_local -N "Executing files after mkinitrd."
-  exec_ordered_skripts_in $post_mkinitrd_path $mountpoint
+  exec_ordered_scripts_in $post_mkinitrd_path $mountpoint
   if [ $? -ne 0 ]; then
   	rm $lockfile
   	exit $return_c
