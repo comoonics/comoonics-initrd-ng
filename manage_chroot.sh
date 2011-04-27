@@ -76,13 +76,27 @@ fi
 initEnv
 
 # dep_filename is the file where all dependent files are to be taken from
-dep_filename=/etc/comoonics/bootimage-chroot/files.list
+dep_filename_chroot=/etc/comoonics/bootimage-chroot/files.list
 # rpm_filename is the file where all dependent files are to be taken from
-rpm_filename=/etc/comoonics/bootimage-chroot/rpms.list
+rpm_filename_chroot=/etc/comoonics/bootimage-chroot/rpms.list
+# filter_filename is the file where all dependent files are to be taken from
+filters_filename_chroot=/etc/comoonics/bootimage-chroot/filter.list
+#
+# path to scripts to be executed before collecting files
+pre_updatechroot_path=/etc/comoonics/bootimage-chroot/pre.updatechroot.d
+#
+# path to scripts to be executed after update chroot has been finished
+post_updatechroot_path=/etc/comoonics/bootimage-chroot/post.updatechroot.d
+# where save the cachefiles
+cachedir=/var/cache/comoonics-bootimage
+
 # cluster.conf
 cluconf=/etc/cluster/cluster.conf
 # filesystems
 UMOUNTFS="/dev/pts /dev /proc /sys"
+
+cfg_file=/etc/comoonics/comoonics-bootimage.cfg
+source ${cfg_file}
 
 repository_store_value cluster_conf $cluconf
 repository_store_value hardwareids "$(hardware_ids)"
@@ -218,6 +232,17 @@ function status_service_cmd() {
 function update_chroot() {
 	#log -n "starting update_chroot "
 	local rc=0
+	local rpmfilelist=
+	local filelist=
+	local files=
+	local indexfile="file-list-chroot.txt"
+	local dep_filename=$1
+	local rpm_filename=$2
+	local filters_filename=$3
+	local pre_mkinitrd_path=$4
+	local post_mkinitrd_path=$5
+	local chrootdir=$6
+	local cachedir=$7
 
 	if [ ! -e $dep_filename ]; then
 		echo_local "dependency file $dep_filename does not exist"
@@ -226,24 +251,45 @@ function update_chroot() {
 
 	if [ ! -e $rpm_filename ]; then
 		echo_local "rpm_filename $rpm_filename does not exist!"
+		exit 1
 	fi
 
-	# extracting rpms
-	if [ -n "$rpm_filename" ] && [ -e "$rpm_filename" ]; then
+	if [ ! -e "$cachedir" ]; then
+		echo_local -n -N "Cachedir $cachedir does not exist creating.."
+		mkdir -p $cachedir
+	fi
+
+	if [ -d "$pre_mkinitrd_path" ]; then
+      echo_local -N "Executing files before update chroot."
+      exec_ordered_scripts_in $pre_mkinitrd_path $chrootdir
+      [ $rc -eq 0 ] && rc=$?
+    fi
+    if [ -z "$cachedir" ] || [ ! -e "${cachedir}/$indexfile" ] ; then
+	  # extracting rpms
+	  if [ -n "$rpm_filename" ] && [ -e "$rpm_filename" ]; then
 		echo_local -N -n "rpmfiles.."
-  		extract_all_rpms $rpm_filename $chrootdir $rpm_dir $verbose
+	    rpmfilelist=$(get_filelist_from_rpms $rpm_filename $filters_filename $verbose)
 		[ $rc -eq 0 ] && rc=$?
-	fi
+	  fi
 
-	echo_local -N -n "dependent files "
+	  echo_local -N -n "dependent files "
 
-	files=( $(get_all_files_dependent $dep_filename $verbose | sort -u | grep -v "^.$" | grep -v "^..$"| tr '&' '\n'))
-	[ $rc -eq 0 ] && rc=$?
-	echo_local -N -n "\"${#files[@]}\" .." 
-
-	echo_local -N -n "copying... "
-	copy_filelist $chrootdir ${files[@]}
-	[ $rc -eq 0 ] && rc=$?
+      filelist=$(get_all_files_dependent $dep_filename $verbose)
+	  [ $rc -eq 0 ] && rc=$?
+      echo_local -N -n "copying ($chrootdir)... "
+      ( echo $rpmfilelist; echo $filelist ) | tr ' ' '\n'| sort -u | grep -v "^.$" | grep -v "^..$" | tr '&' '\n' | copy_filelist $chrootdir > ${cachedir}/$indexfile
+      [ $rc -eq 0 ] && rc=$?
+	else
+	  cat ${cachedir}/$indexfile | copy_filelist $chrootdir > ${cachedir}/$indexfile
+      [ $rc -eq 0 ] && rc=$?
+    fi
+	
+	if [ -d "$post_mkinitrd_path" ]; then
+      echo_local -N "Executing files after update chroot."
+      exec_ordered_scripts_in $post_mkinitrd_path $chrootdir
+      [ $rc -eq 0 ] && rc=$?
+    fi
+	
 	return $rc
 }
 
@@ -561,7 +607,7 @@ case "$action" in
 	"")
 	;;
 	"update")
-		[ $chrootneeded -eq 0 ] && update_chroot
+		[ $chrootneeded -eq 0 ] && update_chroot "$dep_filename_chroot" "$rpm_filename_chroot" "$filters_filename_chroot" "$(test ${pre_do:-0} -eq 1 && echo $pre_updatechroot_path)" "$(test ${post_do:-0} -eq 1 && echo $post_updatechroot_path)" "$chrootdir" "$(test ${use_cachedir:-1} && echo $cachedir)"
 	;;
 	"umount")
 		[ $chrootneeded -eq 0 ] && umount_chroot
