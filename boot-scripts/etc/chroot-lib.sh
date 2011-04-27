@@ -259,7 +259,7 @@ function get_global_filters() {
 	local filterfile=$1
 	local verbose=$2
 	
-    resolve_file $filterfile
+    [ -n "$filterfile" ] && [ -e $filterfile ] && resolve_file $filterfile
 }
 #************ get_global_filters
 
