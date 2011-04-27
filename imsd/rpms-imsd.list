@@ -2,7 +2,8 @@
 # Files to include in initrd to get fenceackserver running
 ####################
 # $Id$
-pyOpenSSL
+# name                        include          exclude      params
+pyOpenSSL                     .                -            optional           
 comoonics-bootimage-imsd
 comoonics-cluster-tools-py
 comoonics-tools-py
