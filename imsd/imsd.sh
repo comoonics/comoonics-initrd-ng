@@ -146,6 +146,7 @@ start_sshd()
     	
 	mkdir -p ${CHROOT_PATH}/var/empty/sshd/etc
 	cp -af ${CHROOT_PATH}/etc/localtime ${CHROOT_PATH}/var/empty/sshd/etc
+	touch ${CHROOT_PATH}/var/log/lastlog
 
 	echo -n $"Starting imsd via $prog: "
 	$SSHD $OPTIONS && success || failure
