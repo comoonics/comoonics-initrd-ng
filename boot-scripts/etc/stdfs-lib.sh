@@ -180,60 +180,64 @@ function cp_file {
 #  NAME
 #    copy_filelist
 #  SYNOPSIS
-#    function copy_file( destdir, file1, ...) {
+#    function copy_file( destdir)
 #  DESCRIPTION
-#    copy al list of files to destdir.
+#    copy files got from stdin.
 #  MODIFICATION HISTORY
 #  IDEAS
 #  SOURCE
 #
 function copy_filelist() {
-	destdir=$1
-	shift
-	if ! [ -d "$destdir" ]; then
-		echo "$destdir is not a directory"
-		exit 1
-	fi	
-	local -a files=( $* )
-	i=0
-	while [ $i -lt ${#files[@]} ]; do
-		file=${files[$i]}
-		#copy directories
-  		if [ -d $file ]; then
-    		echo_local_debug "Directory $file => ${destdir}/$file"
-    		create_dir ${destdir}/$file
-    		copy_file $file ${destdir}/$(dirname $file)
-  		#copy @map srcfile dest
-  		elif [ ! -e "$file" ] && [ "$file" = '@map' ]; then
-    		i=$(( $i+1 ))
-    		file=${files[$i]}
-    		i=$(( $i+1 ))
-    		todir=${files[$i]}
-    		if [ -d $file ]; then
-      			echo_local_debug "Directory mapping $file => ${destdir}/$todir"
-      			create_dir ${destdir}/$todir
-      			for file2 in $(ls -1 $file/*); do
-         			copy_file $file/\* ${destdir}/$todir/
-      			done
-    		else
-      			echo_local_debug "Copy file (@map) $file => ${destdir}/$todir"
-      			dirname=`dirname $file`
-      			create_dir ${destdir}$todir
-      			copy_file $file ${destdir}$todir
-    		fi
-  			# only copy file
-  		else
-    		dirname=`dirname $file`
-    		if is_modified $file $destdir/$file; then
-    		  echo_local_debug "Copy file (std) $file => $destdir/$dirname"
-    		  create_dir ${destdir}$dirname
-    		  copy_file $file ${destdir}$dirname
-    		else
-    		  echo_local_debug "Skip file (std) $file cause it exists or is not modified."
-    		fi
-  		fi
-  		i=$(( $i+1 ))
-	done
+  local destdir=$1
+  local file2=
+  local todir=
+
+  shift
+  if ! [ -d "$destdir" ]; then
+    error_local -N "$destdir is not a directory"
+    return 1
+  fi	
+  while read file; do
+    # this is a directory and not a symbolic link
+    if [ -d "$file" ] && [ ! -L "$file" ]; then
+      echo "$file"
+      create_dir ${destdir}/$file
+    # if we are a mapping to another directory read more information
+    elif [ ! -e "$file" ] && [ "$file" = '@map' ]; then
+      read file
+      read todir
+      echo "@map $file $todir"
+      if [ -d $file ]; then
+        echo_local_debug -N "Directory mapping $file => ${destdir}/$todir" >&2
+        create_dir ${destdir}/$todir
+        for file2 in $(ls -1 $file/*); do
+          copy_file $file/\* ${destdir}/$todir/
+        done
+      else
+        dirname=`dirname $file`
+        create_dir ${destdir}$todir
+        copy_file $file ${destdir}$todir
+      fi
+    # we are a filemapping file
+    elif [ ! -e "$file" ] && [ "$file" = '@mapfile' ]; then
+      read file
+      read fromdir
+      read todir
+      echo "@mapfile $file $fromdir $todir"
+      subpath=$(dirname ${file#${fromdir}})
+      echo_local_debug -N "File mapping ${file}#${fromdir} => ${destdir}/$todir/$subpath" >&2
+      create_dir ${destdir}/$todir/$subpath
+      copy_file $file ${destdir}/$todir/$subpath
+    # else we are a normal existant file
+    elif [ -e "$file" ]; then 
+      echo "$file"
+      dirname=`dirname $file`
+      create_dir ${destdir}$dirname
+      copy_file $file ${destdir}$dirname
+	else
+      echo_local_debug -N "File $file could not be found. Skipping." >&2
+    fi
+  done
 }
 #************ copy_filelist
 
