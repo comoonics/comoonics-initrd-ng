@@ -235,7 +235,6 @@ function update_chroot() {
 	local rpmfilelist=
 	local filelist=
 	local files=
-	local indexfile="file-list-chroot.txt"
 	local dep_filename=$1
 	local rpm_filename=$2
 	local filters_filename=$3
@@ -243,6 +242,7 @@ function update_chroot() {
 	local post_mkinitrd_path=$5
 	local chrootdir=$6
 	local cachedir=$7
+	local indexfile=${8:-"file-list-chroot.txt"}
 
 	if [ ! -e $dep_filename ]; then
 		echo_local "dependency file $dep_filename does not exist"
@@ -276,7 +276,7 @@ function update_chroot() {
 
       filelist=$(get_all_files_dependent $dep_filename $verbose)
 	  [ $rc -eq 0 ] && rc=$?
-      echo_local -N -n "copying ($chrootdir)... "
+      echo_local -N -n "copying ($chrootdir ${cachedir}/$indexfile)... "
       ( echo $rpmfilelist; echo $filelist ) | tr ' ' '\n'| sort -u | grep -v "^.$" | grep -v "^..$" | tr '&' '\n' | copy_filelist $chrootdir > ${cachedir}/$indexfile
       [ $rc -eq 0 ] && rc=$?
 	else
@@ -607,7 +607,7 @@ case "$action" in
 	"")
 	;;
 	"update")
-		[ $chrootneeded -eq 0 ] && update_chroot "$dep_filename_chroot" "$rpm_filename_chroot" "$filters_filename_chroot" "$(test ${pre_do:-0} -eq 1 && echo $pre_updatechroot_path)" "$(test ${post_do:-0} -eq 1 && echo $post_updatechroot_path)" "$chrootdir" "$(test ${use_cachedir:-1} && echo $cachedir)"
+		[ $chrootneeded -eq 0 ] && update_chroot "$dep_filename_chroot" "$rpm_filename_chroot" "$filters_filename_chroot" "$(test ${pre_do:-0} -eq 1 && echo $pre_updatechroot_path)" "$(test ${post_do:-0} -eq 1 && echo $post_updatechroot_path)" "$chrootdir" "$(test ${use_cachedir:-1} && echo $cachedir)" "$(test ${use_cachedir:-1} && echo $indexfile_chroot)"
 	;;
 	"umount")
 		[ $chrootneeded -eq 0 ] && umount_chroot
