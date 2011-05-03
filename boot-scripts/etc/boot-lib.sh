@@ -790,7 +790,7 @@ function stop_service {
   for pid in $pids; do
   	local root=$(/bin/ls --directory --inode /proc/$pid/root/ 2>/dev/null | cut -f1 -d" ")
   	local other_root=$(/bin/ls --directory --inode $other_root 2>/dev/null | cut -f1 -d" ")
-  	if [ -z "$root" ] || [ -z "$other_root" ] || [ $root = "1" ] || [ "$root" = "$(/bin/ls --directory --inode $other_root 2>/dev/null | cut -f1 -d" ")" ]; then
+  	if [ -z "$root" ] || [ -z "$other_root" ] || [ $root = "1" ] || [ "$root" -eq "$other_root" ]; then
    	  kill $pid 2>/dev/null
    	  kill -0 $pid 2>/dev/null
    	  if [ -n "$force" ]; then
@@ -800,7 +800,8 @@ function stop_service {
   done
   for pid in $pids; do
   	local root=$(/bin/ls --directory --inode /proc/$pid/root/ 2>/dev/null | cut -f1 -d" ")
-  	if [ -z "$root" ] || [ -z "$other_root" ] || [ $root = "1" ] || [ "$root" = "$(/bin/ls --directory --inode $other_root 2>/dev/null | cut -f1 -d" ")" ]; then
+  	local other_root=$(/bin/ls --directory --inode $other_root 2>/dev/null | cut -f1 -d" ")
+  	if [ -z "$root" ] || [ -z "$other_root" ] || [ $root = "1" ] || [ "$root" -eq "$other_root" ]; then
    	  kill -0 $pid 2>/dev/null
   	  if [ $? -ne 0 ]; then
   		return $?
