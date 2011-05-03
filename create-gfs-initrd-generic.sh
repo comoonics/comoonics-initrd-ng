@@ -327,8 +327,31 @@ if [ -z "$initramfs" ] || [ $initramfs -eq 0 ]; then
 fi
 
 map_paths=$(get_mappaths_from_depfiles $dep_filename)
-
 pushd $mountpoint >/dev/null 2>&1  	
+
+if [ -n "$update" ]; then
+  echo_local -N -n "Unpacking initrd ${initrdname} => ${mountpoint}.."
+  unzip_and_uncpio_initrd $mountpoint $initrdname $force
+  if [ ! -e "${mountpoint}/$index_list" ]; then
+  	echo_local -N "Could not find valid index file."
+  	echo_local -N -n "Autocreating index file .."
+    create_filelist $mountpoint > ${mountpoint}/$index_list || (failure; echo "Could not create index file. Breaking." >&2; rm $lockfile; exit 5)
+    success
+  fi
+  echo_local -n -N "Copying files ${predir}/etc .. "
+  PYTHONPATH=${predir}/etc python -c '
+import stdlib
+stdlib.get_files_newer(open("'$index_list'"), 
+          { '$(create_python_dict_from_mappaths $(get_mappaths_from_depfiles $dep_filename))'
+          	 "/":"/"} )' | copy_filelist $mountpoint > $cachedir/$indexfile
+  if [ $? -ne 0 ]; then
+    failure
+    rm -rf ${mountpoint}
+    rm $lockfile
+    exit 11
+  fi
+  success
+fi
 
 if [ -d "$pre_mkinitrd_path" ] && [ -n "$pre_do" ] && [ $pre_do -eq 1 ]; then
   echo_local -N "Executing files before mkinitrd."
@@ -362,30 +385,14 @@ if [ -z "$update" ]; then
   cat $cachedir/$indexfile | copy_filelist $mountpoint > $cachedir/${indexfile}.tmp
   rm -f $cachedir/${indexfile}
   mv -f $cachedir/${indexfile}.tmp $cachedir/${indexfile}
-else
-  echo_local -N -n "Unpacking initrd ${initrdname} => ${mountpoint}.."
-  unzip_and_uncpio_initrd $mountpoint $initrdname $force
-  if [ ! -e "${mountpoint}/$index_list" ]; then
-  	echo_local -N "Could not find valid index file."
-  	echo_local -N -n "Autocreating index file .."
-    create_filelist $mountpoint > ${mountpoint}/$index_list || (failure; echo "Could not create index file. Breaking." >&2; rm $lockfile; exit 5)
-    success
+  if [ $? -ne 0 ]; then
+    failure
+    rm -rf ${mountpoint}
+    rm $lockfile
+    exit 11
   fi
-  echo_local -n -N "Copying files.. "
-  PYTHONPATH=${predir}/etc
-  python -c '
-import stdlib
-stdlib.get_files_newer(open("'$index_list'"), 
-          { '$(create_python_dict_from_mappaths $(get_mappaths_from_depfiles $dep_filename))'
-          	 "/":"/"} )' | copy_filelist $mountpoint > $cachedir/$indexfile
+  success
 fi
-if [ $? -ne 0 ]; then
-  failure
-  rm -rf ${mountpoint}
-  rm $lockfile
-  exit 11
-fi
-success
 
 if [ -z "$update" ] || [ -n "$kernel" ]; then
   # first remove any kernel already specified
