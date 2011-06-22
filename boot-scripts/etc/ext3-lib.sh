@@ -95,7 +95,7 @@ function ext3_services_start {
 #  IDEAS
 #  SOURCE
 #
-function ext3_services_restart_newroot {
+function ext3_services_restart {
 	return 0
 }
 #************ ext3_services_restart
@@ -164,13 +164,7 @@ function ext3_getdefaults {
 #  SOURCE
 #
 function ext3_services_restart_newroot {
-  local chroot_path=$1
-  local lock_method=$2
-  local lvm_sup=$3
-
-  echo "Umounting $chroot_path/proc"
-  exec_local umount $chroot_path/proc
-  return_code
+	return 0
 }
 #************ ext3_services_restart_newroot
 
