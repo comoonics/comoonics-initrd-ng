@@ -611,6 +611,7 @@ function prepare_newroot() {
 function switchRoot() {
   local skipfiles="rm mount chroot find"
   local newroot=$1
+  local chrootneeded=$2
   local cominit="/usr/comoonics/sbin/init"
   if [ -z "$new_root" ]; then
      newroot="/mnt/newroot"
@@ -620,7 +621,7 @@ function switchRoot() {
   echo_local  " comoonics generic switchroot"
 
   #get init_cmd from /proc
-  if [ -e "$newroot/$cominit" ]; then
+  if [ -n "$chrootneeded" ] && [ "$chrootneeded" -eq 0 ] && [ -e "$newroot/$cominit" ]; then
   	init_cmd="$cominit $(cat /proc/cmdline)"
   	echo_local_debug "found init in $init_cmd"
   else
