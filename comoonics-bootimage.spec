@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 79_4
+Release: 79_6
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -93,6 +93,17 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description extras-network
 Extra listfiles for special network configurations
+
+%package extras-ext4
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage >= 1.4-79_5
+Group: System Environment/Base
+Summary: Extrafiles for Ext4 as Rootfs
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+
+%description extras-ext4
+OSR extra files that are only relevant Ext4 as Rootfs
 
 %package extras-nfs
 Version: 0.1
@@ -399,7 +410,7 @@ OSR extra files that are only relevant for Novell SLES 11
 
 %package listfiles-fenceacksv-plugins
 Version: 0.1
-Release: 4
+Release: 6
 Requires: comoonics-bootimage >= 1.3-20
 Requires: comoonics-cs-sysreport-templates
 Requires: comoonics-fenceacksv-py
@@ -709,6 +720,7 @@ fi
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/defaults.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/errors.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/ext3-lib.sh
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/ext4-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/gfs-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/hardware-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/inittab
@@ -765,6 +777,9 @@ fi
 
 %files extras-network
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/vlan.list
+
+%files extras-ext4
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/ext4.list
 
 %files extras-nfs
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/nfs-lib.sh
@@ -1012,6 +1027,12 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Mon Jul 18 2011 Marc Grimme <grimme@atix.de> 1.4-79_6
+- fixed bug #430 where multiple properties per network interface would not be detected in the initrd.
+* Tue Mar 15 2011 Marc Grimme <grimme@atix.de> 1.4-79_5
+- added feature to support chrootneeded as bootparameter (preview).
+- added feature to support ext4 as root filesystem.
+- added feature to use /usr/comoonics/sbin/init only if chroot is needed otherwise it does not help.
 * Thu Mar 11 2011 Marc Grimme <grimme@atix.de> 1.4-79_4
 - Sporadic reboot problem fix that eventually happend when telinit could not write to /dev/initctl.
 - boot-scripts/etc/boot-lib.sh:
@@ -1600,6 +1621,11 @@ other filesystems
 * Mon Feb 11 2008 Marc Grimme <grimme@atix.de> - 0.1-1
 - first release
 
+%changelog extras-ext4
+* Wed Jun 22 2011 Marc Grimme <grimme@atix.de> 0.1-1
+- boot-image/etc/ext4-lib.sh (new)
+- syscfg-files/rpms.initrd.d/ext4.list (new)
+
 %changelog extras-nfs
 * Wed Aug 11 2010 Marc Grimme <grimme@atix.de> 0.1-17
 - boot-image/etc/sles10/nfs-lib.sh
@@ -1913,6 +1939,8 @@ syslog
 - initial revision
 
 %changelog listfiles-fenceacksv-plugins
+* Tue Mar 15 2011 Marc Grimme <grimme@atix.de> 0.1-6
+- updated version with new rpms for comoonics-4.6
 * Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-5
 - first version for comoonics-4.6-rc1 
 * Fri Feb 12 2010 Marc Grimme <grimme@atix.de> - 0.1-4

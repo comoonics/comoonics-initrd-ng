@@ -52,7 +52,7 @@ Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-rhel
 Requires: comoonics-bootimage-listfiles-rhel5
 #Conflicts: 
-Release: 20.rhel5
+Release: 21.rhel5
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -229,6 +229,8 @@ fi
 rm -rf %{buildroot}
 
 %changelog
+* Mon Mar 15 2011 Marc Grimme <grimme@atix.de> 1.4-21el5
+- bootsr: made it work with bootparameter chrootneeded set.
 * Mon Feb 28 2011 Marc Grimme <grimme@atix.de> 1.4-20el5
 - halt.local will now be a file being installed instead of a symbolic link.
 * Wed Aug 18 2010 Marc Grimme <grimme@atix.de> 1.4-19el5
