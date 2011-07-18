@@ -119,11 +119,12 @@ error_code=0
 
 #echo "Init_cmd: $init_cmd, newroot: $newroot"
 shell=$(repository_get_value shell)
+chrootneeded=$(repository_get_value chrootneeded)
 [ -z "$shell" ] && shell="/bin/sh" 
 if [ -n "$error_code" ] && [ $error_code -eq 0 ]; then
   exec 1>&- 2>&- # 3>&- 4>&- 5>&-
   exec 1>/dev/console 2>/dev/console
-  switchRoot $newroot
+  switchRoot "$newroot" "$chrootneeded"
 elif [ -n "$error_code" ] && [ $error_code -eq 2 ]; then
   echo "Userquit falling back to bash.." > $(repository_get_value shell_issuetmp)
   exec 1>/dev/console 2>/dev/console $shell

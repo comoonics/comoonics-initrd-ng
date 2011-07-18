@@ -597,7 +597,8 @@ if [ $is_syslog -eq 0 ]; then
 fi
 
 # Resetup syslog to forward messages to the localhost (whatever it does with those messages) but only if chroot is needed.
-if [ $(repository_get_value chrootneeded) -eq 0 ]; then
+chrootneeded=$(repository_get_value chrootneeded)
+if [ $chrootneeded -eq 0 ]; then
   cc_auto_syslogconfig "" "" "$(repository_get_value newroot)/$(repository_get_value chroot_path)" "no" "localhost" "no_klog"
   cc_syslog_start "$(repository_get_value newroot)/$(repository_get_value chroot_path)" no_klog
 fi
@@ -616,12 +617,11 @@ fi
 unset chrootpath
 step "Logfiles chroot copied" "logfiles"
 
-
 step "Initialization completed." "initcomplete"
 
 newroot=$(repository_get_value newroot)
 echo_local "Starting init-process ($init_cmd)..."
-exit_linuxrc 0 "$init_cmd" "$newroot"
+exit_linuxrc 0 "$init_cmd" "$newroot" "$chrootneeded"
 
 #********** main
 
