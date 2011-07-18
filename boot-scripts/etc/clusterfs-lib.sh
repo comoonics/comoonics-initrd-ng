@@ -843,7 +843,7 @@ function cc_auto_netconfig {
     local bridge=$(cc_get $cluster_conf eth_name_bridge $nodeid $netdev 2>/dev/null)
     local onboot=$(cc_get $cluster_conf eth_name_onboot $nodeid $netdev 2>/dev/null)
     local driver=$(cc_get $cluster_conf eth_name_driver $nodeid $netdev 2>/dev/null)
-    local properties=$(cc_get $cluster_conf eth_name_properties $nodeid $netdev 2>/dev/null | tr " " ":")
+    local properties=$(cc_get $cluster_conf eth_name_properties $nodeid $netdev 2>/dev/null | tr --delete '\n' | tr " " ":")
     if [ -z "$onboot" ]; then
   	  onboot="yes"
     fi 
