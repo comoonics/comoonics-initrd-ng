@@ -103,7 +103,7 @@ function ext3_services_start {
 #  IDEAS
 #  SOURCE
 #
-function ext3_services_restart_newroot {
+function ext3_services_restart {
 	return 0
 }
 #************ ext3_services_restart
