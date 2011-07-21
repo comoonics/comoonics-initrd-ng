@@ -1145,7 +1145,7 @@ exec_ordered_scripts_in() {
    # defaults to set
    local exitonerror=${4:-1}
    local script
-   local return_C
+   local return_C=0
    
    if [ ! -d "$scriptpath" ]; then
    	 return 1
@@ -1161,14 +1161,17 @@ exec_ordered_scripts_in() {
    	 elif [ -x "$script" ]; then
    	 	echo_local -n -N "Executing script \"$scriptname\"."
    	 	$script $destpath
-   	 	return_code $?
-   	 	[ "$return_c" -eq 0 ] || ( return_C=$return_c && [ $exitonerror -eq 1 ] && return $return_C )
      elif [  "$extension" = ".sh" ]; then
         echo_local -n -N "Sourcing script \"$scriptname\"."
         return_c=0
         . $script $destpath
-        return_code
-   	 	[ "$return_c" -eq 0 ] || ( return_C=$return_c && [ $exitonerror -eq 1 ] && return $return_C )
+   	 fi
+     return_code $?
+   	 if [ "$return_c" -ne 0 ]; then
+   	 	return_C=$return_c
+   	 fi
+   	 if [ "$return_c" -ne 0 ] && [ $exitonerror -eq 1 ]; then
+   	 	return $return_C
    	 fi
    done
    return $return_C
