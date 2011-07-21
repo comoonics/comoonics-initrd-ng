@@ -270,8 +270,14 @@ function auto_netconfig {
 #    Just returns how many NICs were found on this system
 #
 function found_nics {
-  local nics=$(ifconfig -a | grep -v -i "Link encap: Local" | grep -v -i "Link encap:UNSPEC" | grep -i hwaddr | awk '{print $5;};' | wc -l)
-  return $nics
+  local nics=0
+  for nic in $(ls /sys/class/net); do
+  	if [ -f /sys/class/net/${nic}/address ] && [ -f /sys/class/net/${nic}/type ] && [ "$(cat /sys/class/net/${nic}/type)" -lt 256 ]; then
+  	  nics=$(($nics + 1))
+  	fi
+  done
+  test $nics -gt 0
+  return $?
 }
 	
 #****f* boot-lib.sh/getPosFromIPString
