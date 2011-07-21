@@ -41,11 +41,34 @@ EOF
   test "$out" = "$result"
   detecterror $? "get_dep_filesystems /a /a/c: $out != $result"
 
-
   out=$(get_dep_filesystems /d /a/c)
   result=""
   test "$out" = "$result"
   detecterror $? "get_dep_filesystems /d: $out != $result"
   echo
+  
+  echo -n "Testing get_filesystem $MOUNTSFILE"
+
+  result="/dev1 /a fstype1 rest"
+  out=$(get_filesystem /a)
+  test $? -eq 0 && test "$out" = "$result"
+  detecterror $? "get_filesystem /a: $out != $result"
+
+  result="/dev2 /a/b fstype2 rest"
+  out=$(get_filesystem /a/b)
+  test $? -eq 0 && test "$out" = "$result"
+  detecterror $? "get_filesystem /a/b: $out != $result"
+
+  result=""
+  out=$(get_filesystem /c)
+  test $? -ne 0 && test "$out" = "$result"
+  detecterror $? "get_filesystem /c: $out != $result"
+ 
+  result=""
+  out=$(get_filesystem)
+  test $? -ne 0 && test "$out" = "$result"
+  detecterror $? "get_filesystem: $out != $result"
+  echo 
+
   rm -f $MOUNTSFILE
 fi
