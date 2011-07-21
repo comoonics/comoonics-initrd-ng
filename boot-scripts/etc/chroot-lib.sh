@@ -481,7 +481,7 @@ function get_all_files_dependent() {
           aline=( $(echo $line | tr '&' ' ') )
 	      mapdir=${aline[2]}
           line=${aline[1]}
-          [ -n "$verbose" ] && echo "Mapping $line to $mapdir" >&2
+          [ -n "$verbose" ] && echo "Mapping dir $line to $mapdir" >&2
 	      local filename=`which $line 2>/dev/null`
 	      if [ -z $filename ]; then
 	        filename=$line
