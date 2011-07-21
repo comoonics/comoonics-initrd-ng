@@ -94,6 +94,22 @@ function ocfs2_getdefaults {
 }
 #********** ocfs2_getdefaults
 
+#************* ocfs2_chroot_needed
+#  NAME
+#    ocfs2_chroot_needed
+#  SYNOPSIS
+#    function ocfs2_chroot_needed(initrd|init|..)
+#  DESCRIPTION
+#    Returns 0 if this rootfilesystem needs a chroot inside initrd or init. Otherwise not 0
+#  IDEAS
+#  SOURCE
+#
+function ocfs2_chroot_needed {
+	return 0
+}
+#*********** ocfs2_chroot_needed
+
+
 #****f* boot-scripts/etc/clusterfs-lib.sh/ocfs2_get
 #  NAME
 #    ocfs2_get
