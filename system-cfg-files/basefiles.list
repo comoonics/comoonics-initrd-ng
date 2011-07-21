@@ -6,7 +6,6 @@
 #*******
 # $Id: basefiles.list,v 1.7 2008-08-14 14:40:04 marc Exp $
 # Map the initrd libs
-@map&/opt/atix/comoonics-bootimage/boot-scripts&/
 # General Files
 @include $(ls -1 /etc/comoonics/bootimage/files.initrd.d/*.list 2>/dev/null)
 @include $(ls -1 /etc/comoonics/bootimage/files.initrd.d/*/*.list 2>/dev/null)

@@ -1,3 +1,4 @@
 # Comoonics files
 /etc/cluster/cluster.conf
 /etc/comoonics/querymap.cfg
+@map&/opt/atix/comoonics-bootimage/boot-scripts&/
