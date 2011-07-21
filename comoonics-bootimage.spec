@@ -42,6 +42,8 @@
 %define ENVFILE   %{ENVDIR}/%{name}.sh
 %define INITDIR   /etc/rc.d/init.d
 %define SYSCONFIGDIR /%{_sysconfdir}/sysconfig
+%define CACHEDIR   /var/cache
+%define CACHEFILES %{CACHEDIR}/comoonics-bootimage/file-list.txt %{CACHEDIR}/comoonics-bootimage/file-list-chroot.txt
 
 %define IMSD_SOURCE imsd
 %define IMSD_DIR    /opt/atix/comoonics-imsd
@@ -78,7 +80,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 83
+Release: 85
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -494,6 +496,44 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 %description listfiles-fedora-nfs
 OSR extra files that are only relevant for Fedora Versions and nfs support
 
+%package listfiles-rhel5-ext3
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage >= 1.4-84
+Requires: /etc/redhat-release
+Requires: comoonics-bootimage-listfiles-rhel5
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDRHEL5}
+Summary: Extrafiles for RedHat Enterprise Linux Version 5 and Ext3
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Conflicts: comoonics-bootimage-listfiles-rhel5-ext4
+Conflicts: comoonics-bootimage-listfiles-rhel5-nfs
+Conflicts: comoonics-bootimage-listfiles-rhel5-gfs1
+Conflicts: comoonics-bootimage-listfiles-rhel5-gfs2
+Conflicts: comoonics-bootimage-listfiles-rhel5-ocfs2
+Conflicts: comoonics-bootimage-extras-ocfs2
+
+%description listfiles-rhel5-ext3
+OSR extra files that are only relevant for RHEL5 and EXT3
+
+%package listfiles-rhel5-ext4
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage >= 1.4-84
+Requires: /etc/redhat-release
+Requires: comoonics-bootimage-listfiles-rhel5
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDRHEL5}
+Summary: Extrafiles for RedHat Enterprise Linux Version 5 and Ext4
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Conflicts: comoonics-bootimage-listfiles-rhel5-ext3
+Conflicts: comoonics-bootimage-listfiles-rhel5-nfs
+Conflicts: comoonics-bootimage-listfiles-rhel5-gfs1
+Conflicts: comoonics-bootimage-listfiles-rhel5-gfs2
+Conflicts: comoonics-bootimage-listfiles-rhel5-ocfs2
+Conflicts: comoonics-bootimage-extras-ocfs2
+
+%description listfiles-rhel5-ext4
+OSR extra files that are only relevant for RHEL5 and EXT4
+
 %package listfiles-rhel5-gfs1
 Version: 0.1
 Release: 1
@@ -503,11 +543,34 @@ Requires: comoonics-bootimage-listfiles-rhel5
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDRHEL5}
 Summary: Extrafiles for RedHat Enterprise Linux Version 5 and GFS1
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Conflicts: comoonics-bootimage-listfiles-rhel5-ext3
+Conflicts: comoonics-bootimage-listfiles-rhel5-ext4
 Conflicts: comoonics-bootimage-listfiles-rhel5-nfs
+Conflicts: comoonics-bootimage-listfiles-rhel5-gfs2
+Conflicts: comoonics-bootimage-listfiles-rhel5-ocfs2
 Conflicts: comoonics-bootimage-extras-ocfs2
 
 %description listfiles-rhel5-gfs1
 OSR extra files that are only relevant for RHEL5 and GFS1
+
+%package listfiles-rhel5-gfs2
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage >= 1.4-81
+Requires: /etc/redhat-release
+Requires: comoonics-bootimage-listfiles-rhel5
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDRHEL5}
+Summary: Extrafiles for RedHat Enterprise Linux Version 5 and GFS2
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Conflicts: comoonics-bootimage-listfiles-rhel5-ext3
+Conflicts: comoonics-bootimage-listfiles-rhel5-ext4
+Conflicts: comoonics-bootimage-listfiles-rhel5-nfs
+Conflicts: comoonics-bootimage-listfiles-rhel5-gfs1
+Conflicts: comoonics-bootimage-listfiles-rhel5-ocfs2
+Conflicts: comoonics-bootimage-extras-ocfs2
+
+%description listfiles-rhel5-gfs2
+OSR extra files that are only relevant for RHEL5 and GFS2
 
 %package listfiles-rhel5-nfs
 Version: 0.1
@@ -536,6 +599,44 @@ Conflicts: comoonics-bootimage-extras-ocfs2
 %description listfiles-rhel4-nfs
 OSR extra files that are only relevant for RHEL4 Versions and nfs support
 
+%package listfiles-rhel6-ext3
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage >= 1.4-84
+Requires: /etc/redhat-release
+Requires: comoonics-bootimage-listfiles-rhel6
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDRHEL6}
+Summary: Extrafiles for RedHat Enterprise Linux Version 6 and Ext3
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Conflicts: comoonics-bootimage-listfiles-rhel6-ext4
+Conflicts: comoonics-bootimage-listfiles-rhel6-nfs
+Conflicts: comoonics-bootimage-listfiles-rhel6-gfs1
+Conflicts: comoonics-bootimage-listfiles-rhel6-gfs2
+Conflicts: comoonics-bootimage-listfiles-rhel6-ocfs2
+Conflicts: comoonics-bootimage-extras-ocfs2
+
+%description listfiles-rhel6-ext3
+OSR extra files that are only relevant for RHEL6 and EXT3
+
+%package listfiles-rhel6-ext4
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage >= 1.4-84
+Requires: /etc/redhat-release
+Requires: comoonics-bootimage-listfiles-rhel6
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDRHEL6}
+Summary: Extrafiles for RedHat Enterprise Linux Version 6 and Ext4
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Conflicts: comoonics-bootimage-listfiles-rhel6-ext3
+Conflicts: comoonics-bootimage-listfiles-rhel6-nfs
+Conflicts: comoonics-bootimage-listfiles-rhel6-gfs1
+Conflicts: comoonics-bootimage-listfiles-rhel6-gfs2
+Conflicts: comoonics-bootimage-listfiles-rhel6-ocfs2
+Conflicts: comoonics-bootimage-extras-ocfs2
+
+%description listfiles-rhel6-ext4
+OSR extra files that are only relevant for RHEL6 and EXT4
+
 %package listfiles-rhel6-nfs
 Version: 0.1
 Release: 4
@@ -544,6 +645,11 @@ Requires: comoonics-bootimage-extras-nfs
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDRHEL6}
 Summary: Extrafiles for RHEL6 NFS support 
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Conflicts: comoonics-bootimage-listfiles-rhel6-ext3
+Conflicts: comoonics-bootimage-listfiles-rhel6-ext4
+Conflicts: comoonics-bootimage-listfiles-rhel6-gfs1
+Conflicts: comoonics-bootimage-listfiles-rhel6-gfs2
+Conflicts: comoonics-bootimage-listfiles-rhel6-ocfs2
 Conflicts: comoonics-bootimage-extras-ocfs2
 
 %description listfiles-rhel6-nfs
@@ -719,7 +825,7 @@ OSR files needed for the compatibility to 1.2 releases
 
 %package imsd
 Version: 0.1
-Release: 2
+Release: 3
 Obsoletes: comoonics-bootimage-fenceacksv
 Requires: comoonics-imsd-py
 Requires: comoonics-bootimage >= 1.4-71
@@ -761,16 +867,12 @@ install -m644 %{IMSD_SOURCE}/rpms-imsd.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootima
 # Files for fence-clients (ilo)
 install -d -m 755 $RPM_BUILD_ROOT/%{FENCECLIENTS_DIR}
 install -d -m 755 $RPM_BUILD_ROOT/%{FENCECLIENTS_DOC}
+
+# Directories required by mkinitrd
 install -d -m 755 $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/rpms.initrd.d
 install -d -m 755 $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/pre.mkinitrd.d
 install -d -m 755 $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/post.mkinitrd.d
-
-# Files for fence-vmware
-#install -m755 %{FENCECLIENTS_SOURCE}/fence_vmware_client  $RPM_BUILD_ROOT/%{FENCECLIENTS_DIR}
-#install -m755 %{FENCECLIENTS_SOURCE}/rpms-fence_vmware_client.list $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/rpms.initrd.d/fence_vmware_client.list
-#install -m755 %{FENCECLIENTS_SOURCE}/fence_vmware_master  $RPM_BUILD_ROOT/%{FENCECLIENTS_DIR}
-#install -m755 %{FENCECLIENTS_SOURCE}/README.fence_vmware  $RPM_BUILD_ROOT/%{FENCECLIENTS_DOC}
-#install -m755 %{FENCECLIENTS_SOURCE}/INSTALL.fence_vmware  $RPM_BUILD_ROOT/%{FENCECLIENTS_DOC}
+install -d -m 755 $RPM_BUILD_ROOT/%{CACHEDIR}/comoonics-bootimage
 
 %postun
 
@@ -806,6 +908,12 @@ elif [ -f /etc/redhat-release ]; then
 	services="cman gfs qdiskd"
 fi
 
+echo "Cleaning cachefiles if need be.."
+for cachefile in %{CACHEFILES}; do
+   echo "Clean ${cachefile}"
+   test -f "$cachefile" && rm -f $cachefile
+done
+
 if [ -n "$services" ]; then
   echo "Disabling services ($services)"
   for service in $services; do
@@ -831,6 +939,12 @@ if [ "$1" -eq 0 ]; then
   echo "Uninstalling imsd"
   chkconfig --del imsd
 fi
+
+%triggerin -- kernel
+echo "Triggerin called from kernel rpm."
+echo "Params:"
+echo $*
+echo "End of environment."
 
 # Triggers to be triggered by different other rpms
 #%triggerin -n listfiles-rhel5 -- kernel
@@ -905,7 +1019,6 @@ fi
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel5/hardware-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel5/network-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel6/boot-lib.sh
-%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel6/gfs-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel6/hardware-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel6/network-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/sles8/hardware-lib.sh
@@ -930,8 +1043,9 @@ fi
 %dir %{CONFIGDIR}/bootimage-chroot/rpms.initrd.d
 %dir %{CONFIGDIR}/bootimage/pre.mkinitrd.d
 %dir %{CONFIGDIR}/bootimage/post.mkinitrd.d
-%config %attr(0755, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/00-bootimage-check.sh
-%config %attr(0755, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/00-cdsl-check.sh
+%dir %{CACHEDIR}/comoonics-bootimage
+%config %attr(0755, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/50-bootimage-check.sh
+%config %attr(0755, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/50-cdsl-check.sh
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/02-create-cdsl-repository.sh
 
 %config(noreplace) %attr(0644, root, root) %{CONFIGDIR}/comoonics-bootimage.cfg
@@ -1162,6 +1276,17 @@ fi
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fedora/hardware.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fedora/python.list
 
+%files listfiles-fedora-nfs
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/nfs.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fedora/nfs.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fedora/network.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/nfs.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/03-nfs-deps.sh
+
+%files listfiles-rhel5-ext3
+
+%files listfiles-rhel5-ext4
+
 %files listfiles-rhel5-gfs1
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/comoonics.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/gfs.list
@@ -1169,10 +1294,12 @@ fi
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/rhcs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/gfs1.list
 
-%files listfiles-fedora-nfs
+%files listfiles-rhel5-gfs2
+
+%files listfiles-rhel5-nfs
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/nfs.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fedora/nfs.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fedora/network.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/nfs.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/nfs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/nfs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/03-nfs-deps.sh
 
@@ -1183,12 +1310,9 @@ fi
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/nfs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/03-nfs-deps.sh
 
-%files listfiles-rhel5-nfs
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/nfs.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/nfs.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/nfs.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/nfs.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/03-nfs-deps.sh
+%files listfiles-rhel6-ext3
+
+%files listfiles-rhel6-ext4
 
 %files listfiles-rhel6-nfs
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/nfs.list
@@ -1263,8 +1387,124 @@ fi
 %clean
 rm -rf %{buildroot}
 
-
 %changelog
+* Mon Jul 21 2011 Marc Grimme <grimme@atix.de> 1.4-85
+  - boot-scripts/usr/share/hwdata/CardMonitorCombos,
+    boot-scripts/usr/share/hwdata/Cards,
+    boot-scripts/usr/share/hwdata/MonitorsDB,
+    boot-scripts/usr/share/hwdata/pci.ids,
+    boot-scripts/usr/share/hwdata/pcitable,
+    boot-scripts/usr/share/hwdata/upgradelist,
+    boot-scripts/usr/share/hwdata/usb.ids: removed obsolete files
+  - .../pre.mkinitrd.d/00-bootimage-check.sh,
+    system-cfg-files/pre.mkinitrd.d/00-cdsl-check.sh: renamed files.
+  - querymap.cfg: syslog_{name,level,subsys,type,filter} and
+    syslog{name,level,subsys,type,filter} are now available.
+  - create-gfs-initrd-generic.sh: 
+    - rename variable rpm_list => rpm_filename (makes more sense) 
+    - validating cluster conf removed. Should be found in pre.mkinitrd.d scripts 
+    - prgdir is exported to pre/post.mkinitrd.d scripts 
+    - Errormessage displayed it pre/post script fails 
+    - files used by initrd are written to cache files for speed up 
+    - clean up will be prompted as output
+  - tests/test-stdfs-lib.sh: new tests for hardware-lib.sh
+  - system-cfg-files/pre.mkinitrd.d/50-cdsl-check.sh: rename
+  - .../pre.mkinitrd.d/50-bootimage-check.sh: rename
+  - system-cfg-files/basefiles.list,
+    system-cfg-files/files.initrd.d/comoonics.list: Mapping of
+       /opt/atix/comoonics-bootimage/boot-scripts is removed from here.
+  - initscripts/bootsr: chroot needed is also honored by bootsr. If need be it
+      is left over although the root filesystem does not require it.
+  - boot-scripts/linuxrc.generic.sh: 
+    - if nodeid is given as parameter or only one node is specified don't use 
+      hardware detection. 
+    - added some comments to document the hwdetect and nodeid detect behavior 
+    - removed the part where it is required to detect nics. 
+      This should be moved (if needed) to other places.
+    - ipConfig is detect earlier as it is required earlier 
+    - /var/run is hardcoded to /etc/xtab 
+    - chrootneeded is passed over to exit_linuxrc (bug#419)
+  - boot-scripts/linuxrc: 
+    - don't umount /proc - pass chrootneeded to switchRoot in appropriate way.
+  - boot-scripts/com-halt.sh: fixed syntax error that failed the script.
+  - boot-scripts/etc/std-lib.sh: 
+    - exec_ordered_scripts_in: better handling of return code of executed scripts.
+  - boot-scripts/etc/stdfs-lib.sh: 
+    - copy_filelist: rewrote the parsing of depfile lists to be more stable 
+    - get_filesystem: new function that returns parameters for mounted 
+       file systems
+  - boot-scripts/etc/ocfs2-lib.sh: ocfs2_chroot_needed: added function.
+  - boot-scripts/etc/chroot-lib.sh: get_all_files_dependent: typo
+  - boot-scripts/etc/boot-lib.sh: 
+    - exit_linuxrc: use chrootneeded as parameter and store it (bug#419)
+  - boot-scripts/etc/network-lib.sh: 
+    - found_nics: - use /sys/class/net instead of ifconfig and friends
+  - boot-scripts/etc/hardware-lib.sh: 
+    - dev_start: fixed bug where dev was not properly mounted 
+    - device_mapper_check: new function that detects if a device
+       is dev mapper or not. 
+    - device_mapper_multipath_check: new function that detects if a device is 
+       dev mapper multipath device or not. 
+    - lvm_check rewrite.
+       Would return 0 for nearly every possible device. Changed now to be more
+       reliable. 
+    - lvm_get_vg would not detect vgnames with - in it. Now it does. But
+       not the ones with -- in it. 
+    - hardware_detect call of unloading of modules goes
+       into unload_modules 
+    - unload_modules function that unloads all loaded modules
+       except the ones previously loaded and the ones that are drivers for either
+       storage or network. It also unloads all unsed modules one by one.
+    - used_modules new function that returns all used modules unused_modules new
+       function that returns all unused modules 
+    - unload_module if a module has the .ko in the end remove it hardware_ids 
+       don't use ifconfig and friends but /sys/class/net/.. to be more independent 
+       on tools
+  - boot-scripts/etc/gfs-lib.sh: gfs_stop_fenced: fixed typo
+  - boot-scripts/etc/clusterfs-lib.sh: cc_auto_netconfig (bug#431): 
+    - mac_addr will always be uppercase no matter what has been specified 
+    - master, slave, gateway, netmask will be detected/or not in any case 
+    - mac_addr defaults to the one found at the corresponding nic if available
+  - boot-scripts/etc/rhel5/hardware-lib.sh: rhel5_hardware_detect: 
+    - no kudzu -t 30 -c NETWORK -q is required any more. Network configurations are 
+      generated from the cluster configuration or not needed (see bug#431).
+  - boot-scripts/etc/ext3-lib.sh: 
+    - ext3_services_restart_newroot: removed
+      unnecessary implementation of this empty function
+  - boot-scripts/linuxrc: passed chrootneeded to switchRoot.
+  - boot-scripts/etc/boot-lib.sh: 
+    - switchRoot: added param2 chrootneeded (=0 if yes) to trigger 
+      usage of /usr/comoonics/sbin/init otherwise not use it.
+    - manage_chroot.sh: update_chroot: added index file as parameter.
+  - create-gfs-initrd-generic.sh: for update mode: moved unpacking of initrd
+    before pre scripts will be executed.
+  - comoonics-bootimage.cfg: 
+    - added cachefiles as variables * fixed
+      dep_filename_chroot to use files.list not basefiles.list.
+  - boot-scripts/etc/boot-lib.sh: stop_service: fixed wrong detection if
+      process is running or not.
+  
+* Mon Apr 27 2011 Marc Grimme <grimme@atix.de> 1.4-84
+  2011-05-03  Marc Grimme <grimme@atix.de>
+  - manage_chroot.sh: update_chroot: added index file as parameter.
+  - create-gfs-initrd-generic.sh: for update mode: moved unpacking of initrd
+    before pre scripts will be executed.
+  - comoonics-bootimage.cfg: * added cachefiles as variables * fixed
+    dep_filename_chroot to use files.list not basefiles.list.
+  - boot-scripts/etc/boot-lib.sh: stop_service: fixed wrong detection if
+    process is running or not.
+
+  2011-04-27  Marc Grimme <grimme@atix.de>
+  - manage_chroot.sh: update_chroot: now using filters and cachefiles
+  - create-gfs-initrd-generic.sh: added cachefile usage
+  - comoonics-bootimage.cfg: added parameter defaults for: -
+    filters_filename_chroot, pre-/post_updatechroot_path, use_cachefiles
+  - boot-scripts/etc/std-lib.sh: exec_ordered_scripts_in: replace skript with
+    script
+  - boot-scripts/etc/stdfs-lib.sh: copy_filelist: now read from stdin instead
+    of commandline
+  - boot-scripts/etc/chroot-lib.sh: - get_global_filters: if no filterfile
+    given ignore it
 * Mon Apr 18 2011 Marc Grimme <grimme@atix.de> 1.4-83
  2011-04-18  Marc Grimme <grimme@atix.de>
   - system-cfg-files/rpms.initrd.d/rhel4/rhcs.list,
@@ -2408,5 +2648,12 @@ rm -rf %{buildroot}
 - initial revision
 
 %changelog imsd
+* Wed Apr 27 2011 Marc Grimme <grimme@atix.de> 0.1-3
+  - imsd/shell.py: added basicConfig for logging
+  - imsd/rpms-imsd.list: added comment made pyOpenSSL optional
+  - imsd/imsd.sh: autocreate lastlog in CHROOT.
+* Mon Apr 18 2011 Marc Grimme <grimme@atix.de> 0.1-2
+- better debuging
+- some rpms are flagged optional
 * Tue Apr 07 2011 Marc Grimme <grimme@atix.de> 0.1-1
 - renamed from fenceacksv
