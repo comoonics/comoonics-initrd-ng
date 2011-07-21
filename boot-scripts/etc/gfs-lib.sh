@@ -1072,7 +1072,7 @@ function gfs_start_fenced() {
 #
 function gfs_stop_fenced() {
   local chroot_path=$1
-  echo_local "stopping fenced"
+  echo_local -n "stopping fenced"
   exec_local '/sbin/fence_tool leave -w' && \
   rm $chroot_path/var/lock/subsys/fenced 2>/dev/null
   return_code
