@@ -203,10 +203,10 @@ function copy_filelist() {
       echo "$file"
       create_dir ${destdir}/$file
     # if we are a mapping to another directory read more information
-    elif [ ! -e "$file" ] && [ "$file" = '@map' ]; then
-      read file
-      read todir
-      echo "@map $file $todir"
+    elif [ ! -e "$file" ] && [ "${file:0:4}" = '@map' ]; then
+      echo "${file}"
+      todir=$(echo "${file}" | cut -f3 -d'&')
+      file=$(echo "${file}" | cut -f2 -d'&')
       if [ -d $file ]; then
         echo_local_debug -N "Directory mapping $file => ${destdir}/$todir" >&2
         create_dir ${destdir}/$todir
@@ -220,10 +220,10 @@ function copy_filelist() {
       fi
     # we are a filemapping file
     elif [ ! -e "$file" ] && [ "$file" = '@mapfile' ]; then
-      read file
-      read fromdir
-      read todir
-      echo "@mapfile $file $fromdir $todir"
+      echo "${file}"
+      todir=$(echo "${file}" | cut -f4 -d'&')
+      fromdir=$(echo "${file}" | cut -f3 -d'&')
+      file=$(echo "${file}" | cut -f2 -d'&')
       subpath=$(dirname ${file#${fromdir}})
       echo_local_debug -N "File mapping ${file}#${fromdir} => ${destdir}/$todir/$subpath" >&2
       create_dir ${destdir}/$todir/$subpath
@@ -280,6 +280,59 @@ function is_mounted {
     fi
 }
 #*********** is_mounted
+
+#****f* std-lib.sh/get_filesystem
+#  NAME
+#    get_filesystem
+#  SYNOPSIS
+#    function get_filesystem( path, [excludelist]) {
+#  DESCRIPTION
+#    returns a list of values of the filesystem mounted on the path <path> (only the first one to be found).
+#    This function returns "" and $?!=0 if no filesystem can be found under <path>.
+#    Otherwise $?==0 will be set and it will output a list of values seperated by OFS which defaults to " ".
+#    The values output are as follows:
+#        device the path is mounted
+#        path
+#        filesystem type
+#        mountoptions this filesystem is mounted with 
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
+#
+function get_filesystem {
+	# strip the path
+	local path=$(echo "$1" | sed -e 's/\/\/\/*/\//g' | sed -e 's/^\(..*\)\/\/*$/\1/')
+	shift
+	local dev=
+	local excludepaths=$*
+	local excludepath
+	local curpath=
+	local fs=
+	local rc=
+	local mountopts=
+	local found=1
+	
+	[ -z "$MOUNTSFILE" ] && local MOUNTSFILE="/proc/mounts"
+	[ -z "$OFS" ] && local OFS=" "
+	
+	# This is a subshell.
+	while read dev curpath fs mountopts rest; do
+		exclude=0
+		if [ -n "$excludepaths" ]; then
+		  for excludepath in $excludepaths; do
+		  	if [ "${path}" = "$excludepath" ] || [ "${dev}" = "$excludepath" ] ; then
+		  		exclude=1
+		  	fi
+		  done
+		fi
+		if [ $exclude -eq 0 ] && [ ${#curpath} -eq ${#path} ] && [ "${curpath}" = "$path" ]; then
+		  echo "${dev}${OFS}${curpath}${OFS}${fs}${OFS}${mountopts}"
+		  found=0
+		fi
+    done < $MOUNTSFILE
+    return $found
+}
+#************** get_dep_filesystems
 
 #****f* std-lib.sh/get_dep_filesystems
 #  NAME
