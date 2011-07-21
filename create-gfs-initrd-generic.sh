@@ -148,7 +148,7 @@ function getoptions() {
 		size="$OPTARG"
 		;;
 	    r ) # rpm-list
-		rpm_list="$OPTARG"
+		rpm_filename="$OPTARG"
 		;;
 	    b) # release file
 		build_file="$OPTARG"
@@ -244,7 +244,6 @@ if [ -z "$update" ] && [ -z "$kernel" ]; then
 fi
 
 prgdir=${predir}
-
 if [ -e $lockfile ] && [ -z "$Force" ]; then
   echo "Lockfile "$lockfile" exists. "
   echo "Another $(basename $0) is running. Please check if another process is running or remove the lockfile.."
@@ -307,15 +306,6 @@ if [ ! -e "$initrdname" ] && [ -n "$update" ]; then
 	exit 5
 fi
 
-echo_local -n -N "Validating cluster configuration."
-exec_local cc_validate
-return_code
-if [ $? -ne 0 ]; then
-   errormsg err_cc_validate
-   rm $lockfile
-   exit 10
-fi
-
 if [ -z "$initramfs" ] || [ $initramfs -eq 0 ]; then
   echo_local -N -n "Makeing initrd ..."
   make_initrd $initrdname $size || (failure && rm $lockfile && exit $?)
@@ -354,12 +344,16 @@ stdlib.get_files_newer(open("'$index_list'"),
 fi
 
 if [ -d "$pre_mkinitrd_path" ] && [ -n "$pre_do" ] && [ $pre_do -eq 1 ]; then
+  export prgdir
   echo_local -N "Executing files before mkinitrd."
   exec_ordered_scripts_in $pre_mkinitrd_path $mountpoint
   if [ $? -ne 0 ]; then
+  	echo_local -N "Could not execute files before mkinitrd." 
+  	unset prgdir
   	rm $lockfile
   	exit $return_C
   fi
+  unset prgdir
 fi
 
 if [ -z "$update" ]; then
@@ -367,12 +361,12 @@ if [ -z "$update" ]; then
     # extracting rpms
     if [ -n "$rpm_filename" ] && [ -e "$rpm_filename" ]; then
       echo_local -N -n "Extracting rpms..."
-      get_filelist_from_rpms $rpm_filename $filters_filename $verbose | tr ' ' '\n'| sort -u | grep -v "^.$" | grep -v "^..$" | tr '&' '\n' >> $cachedir/$indexfile
+      get_filelist_from_rpms $rpm_filename $filters_filename $verbose | tr ' ' '\n'| sort -u | grep -v "^.$" | grep -v "^..$" >> $cachedir/$indexfile
       success
     fi
 
     echo_local -N -n "Retrieving dependent files..."
-    get_all_files_dependent $dep_filename $verbose | tr ' ' '\n'| sort -u | grep -v "^.$" | grep -v "^..$" | tr '&' '\n' >> $cachedir/$indexfile
+    get_all_files_dependent $dep_filename $verbose | tr ' ' '\n'| sort -u | grep -v "^.$" | grep -v "^..$" >> $cachedir/$indexfile
     if [ $? -ne 0 ]; then
       failure
       rm -rf ${mountpoint}
@@ -468,11 +462,14 @@ fi
 
 if [ -d "$post_mkinitrd_path" ] && [ -n "$post_do" ] && [ $post_do -eq 1 ]; then
   echo_local -N "Executing files after mkinitrd."
+  export prgdir
   exec_ordered_scripts_in $post_mkinitrd_path $mountpoint
   if [ $? -ne 0 ]; then
+	unset prgdir
   	rm $lockfile
   	exit $return_c
   fi
+  unset prgdir
 fi
 
 create_builddate_file $build_file # && success || failure
@@ -494,10 +491,12 @@ fi
 success
 
 cd $pwd
+echo_local -N -n "Cleaning up ($mountpoint, $no_remove_tmp)..."
 if [ -z "$no_remove_tmp" ]; then
-  echo_local -N -n "Cleaning up ($mountpoint, $no_remove_tmp)..."
   rm -fr $mountpoint
   success
+else
+  passed
 fi
 ls -lk $initrdname
 #************ main
