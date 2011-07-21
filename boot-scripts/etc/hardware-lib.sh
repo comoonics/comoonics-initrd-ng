@@ -95,9 +95,8 @@ function dev_start() {
 	fi
 	[ -d ${basedir}/dev ] || mkdir ${basedir}/dev
     echo_local -n "Mounting dev "
-      if ! mount -t devtmpfs -o mode=0755,nosuid udev /dev >/dev/null 2>&1; then
-      is_mounted ${basedir}/dev
-      if [ $? -ne 0 ]; then 
+    if ! mount -t devtmpfs -o mode=0755,nosuid udev ${basedir}/dev >/dev/null 2>&1; then
+      if ! is_mounted ${basedir}/dev; then 
         mount -o mode=0755 -t tmpfs none ${basedir}/dev
         return_code $?
       else
@@ -400,6 +399,65 @@ function md_start {
 }
 #******** md_start
 
+#****f* boot-lib.sh/device_mapper_check
+#  NAME
+#    device_mapper_check
+#  SYNOPSIS
+#    function device_mapper_check $device
+#  DESCRIPTION
+#    checks if device is device mapper compatible or not.
+#    Returns 0 on success 1 otherwise
+#
+function device_mapper_check {
+	local device=$1
+	local valid_majors="fd fc"
+	local major=
+	# and if the device does not exist.
+	if ! [ -e "$device" ] && [ -z "$device_mapper_check_stat_output" ]; then
+		return 1
+	# so but if the device does exist and has a major of 253/0xfd which is the dm device
+	elif [ -b "$device" ] || [ -n "$device_mapper_check_stat_output" ]; then
+		if [ -n "$device_mapper_check_stat_output" ]; then
+			major=$(echo $device_mapper_check_stat_output)
+		else
+			major=$(stat --dereference --format="%t" $device)
+		fi
+		for _major in $valid_majors; do
+			if [ "$major" = "$_major" ]; then
+				return 0
+			fi
+		done
+	    return 1
+    fi
+	return 1
+}
+#************* device_mapper_check
+
+#****f* boot-lib.sh/device_mapper_multipath_check
+#  NAME
+#    device_mapper_multipath_check
+#  SYNOPSIS
+#    function device_mapper_multipath_check $device
+#  DESCRIPTION
+#    checks if device is device mapper multipath compatible or not.
+#    Returns 0 on success 1 otherwise
+#
+function device_mapper_multipath_check {
+	local device=$1
+	if device_mapper_check $device; then
+		if [ -n "$device_mapper_multipath_check_multipath_return" ]; then
+			return $device_mapper_multipath_check_multipath_return
+		else
+			multipathcmd=$(which multipath)
+			$multipathcmd -l $device 2>/dev/null
+			return $?
+		fi
+	else
+		return 1
+	fi
+}
+#************* device_mapper_check
+
 #****f* boot-lib.sh/lvm_check
 #  NAME
 #    lvm_check
@@ -412,16 +470,21 @@ function md_start {
 function lvm_check {
 	local device=$1
 	local invalid_majors="0 8 ca"
-	local valid_majors="fd"
+	local valid_majors="fd fc"
 	local vg=$(lvm_get_vg $device)
+	local major=
 	# in this case no lvm devices exist. So we check if we can get a vg from this device
 	# and if the device does not exist.
-	if [ -n "$vg" ] && ! [ -e "$device" ]; then
-		return 0
+	if [ -z "$vg" ] && ! [ -e "$device" ]; then
+		return 1
 	# so but if the device does exist and has a major of 253/0xfd which is the dm device and a vg also
 	# we expect it to be lvm
 	elif [ -n "$vg" ] && [ -b "$device" ]; then
-		major=$(stat --dereference --format="%t" $device)
+		if [ -n "$lvm_check_stat_output" ]; then
+			major=$(echo $lvm_check_stat_output)
+		else
+			major=$(stat --dereference --format="%t" $device)
+		fi
 		for _major in $valid_majors; do
 			if [ "$major" = "$_major" ]; then
 				return 0
@@ -429,14 +492,22 @@ function lvm_check {
 		done
 	    return 1
 	elif [ -e "$device" ]; then
-		major=$(stat --dereference --format="%t" $device)
+		if [ -n "$lvm_check_stat_output" ]; then
+			major=$(echo $lvm_check_stat_output)
+		else
+			major=$(stat --dereference --format="%t" $device)
+		fi
 		for _major in $invalid_majors; do
 			if [ "$major" = "$_major" ]; then
 				return 1
 			fi
 		done
+	elif [ ! -e "$device" ] && [ -n "$vg" ]; then
+	  # This is the case where the device is not existant but could be that the vg was not yet activated
+      lvm vgs $vg &>/dev/null
+      return $?
     fi
-	return 0
+	return 1
 }
 #************* lvm_check
 
@@ -485,12 +556,17 @@ function lvm_get_vg {
    local volumegroup=""
    local lv=""
    if [ "${device:0:11}" = "/dev/mapper" ]; then
-     echo ${device:12} | sed -e 's/-\S\S*$//'
+     # {ddash} is if the vgname consists of a "-" in the name. Then the /dev/mapper device is xx--yy instead of xx-yy
+     # we substitute -- with {ddash} for extracting the vgname and later on resubstitute it again this time with a 
+     # single dash as the name itself has a single dash
+     # What will be done if vgnames have double dash in the name? This is unsolved!
+     echo ${device:12} | sed -e 's/--/{ddash}/g' -e 's/-[^-][^-]*$//' -e 's/{ddash}/-/g'
      return 0
    elif [ "${device:0:4}" = "/dev" ]; then
      vg=$(basename $(dirname $device))
      [ $vg == "dev" ] || echo $vg
-     return 0
+     test -n "$vg" && test $vg != "dev"
+     return $?
    fi
    return 1
 }
@@ -559,7 +635,6 @@ function setHWClock() {
 function hardware_detect() {
   local drivers=$*
   local distribution=$(repository_get_value distribution)
-  local remove_times=4
   local driver=""
   
   /sbin/depmod -a &>/dev/null
@@ -570,7 +645,6 @@ function hardware_detect() {
   echo_local -n "Detecting Hardware "
   echo_local_debug -N -n "..(saving modules).."
   local modules=$( (listmodules; echo -e "$xmodules") | sort)
-  local allowedunloadmodules=$(find /lib/modules/$(uname -r)/kernel/drivers -path "*/net/*" -or -path "*/scsi/*" -type f -printf "%f\n")
   # detecting xen
   xen_domx_detect
   if [ $? -eq 0 ]; then
@@ -591,11 +665,25 @@ function hardware_detect() {
   repository_append_value hardwareids " $hwids"
   return_code $return_c
   
+  unload_modules ${modules[@]}
+
+  echo_local_debug "Loaded modules"
+  exec_local_debug cat /proc/modules 
+
+  return $return_c
+}
+
+unload_modules() {
+  local modules=$@
+  local allowedunloadmodules=$(find /lib/modules/$(uname -r)/kernel/drivers \( -path "*/net/*" -type f -or -type l \) -printf "%f\n")
+  local remove_times=4
   local _modules=""
   local _xclude=0
+  local i=0
   echo_local -n "Removing loaded modules"
-  for i in $(seq 0 $remove_times); do
-    for _module in $(listmodules); do
+  _modules=$(listmodules | sort)
+  while [ -n "$(unused_modules)" ] && [ $i -le $remove_times ] && [ "$modules" != "$_modules" ]; do
+    for _module in $(unused_modules); do
       _xclude=0
 	  if [ -n "$modules" ]; then
 	    for _smodule in $modules; do
@@ -611,18 +699,10 @@ function hardware_detect() {
       fi
     done
     _modules=$(listmodules | sort)
-    if [ "$modules" = "$_modules" ]; then
-      break
-    fi
+    i=$(($i + 1))
   done
   [ -e /proc/modules ] && stabilized --type=hash --interval=600 --good=5 /proc/modules
   return_code
-  local exitc=$return_c
-
-  echo_local_debug "Loaded modules"
-  exec_local_debug cat /proc/modules 
-
-  return $exitc
 }
 #************ hardware_detect
 
@@ -656,6 +736,46 @@ modprobe() {
 }
 #************ modprobe
 
+#****f* hardware-lib.sh/used_modules
+#  NAME
+#    used_modules
+#  SYNOPSIS
+#    function used_modules( module)
+#  DESCRIPTION
+#    lists all names of modules that are used by this module
+#    return 0 if modules used found else return 1.
+#  SOURCE
+#
+used_modules() {
+	local module=$1
+	if [ -z "$loadedmodules" ]; then
+		cat /proc/modules
+	else
+		echo "$loadedmodules"
+	fi | awk -v module="$module" '
+$1==module && $3>0 && $5=="Live" { 
+  print $4;
+  exit 0; 
+}
+END {
+	exit 1;
+}
+'
+}
+#************ used_modules
+
+unused_modules() {
+	if [ -z "$loadedmodules" ]; then
+		cat /proc/modules
+	else
+		echo "$loadedmodules"
+	fi | awk '
+$3==0 && $5=="Live" {
+	print $1;
+}
+'
+}
+
 #****f* hardware-lib.sh/unload_module
 #  NAME
 #    unload_module
@@ -677,6 +797,8 @@ unload_module() {
 			ret=$?
 		else
 		    for _module in $allowedmodules; do
+		    	# remove .ko from the end of the module (might be there)
+		    	_module=${_module%.ko}
 		    	if [ "$module" = "$_module" ]; then
 		    		modprobe -q -r $module
 		    		ret=$?
@@ -698,7 +820,15 @@ unload_module() {
 #  SOURCE
 #
 function hardware_ids {
-  ifconfig -a | grep -v -i "Link encap: Local" | grep -v -i "Link encap:UNSPEC" | grep -i hwaddr | awk 'BEGIN{OFS=":";}{print $1,$5;};'
+  for nic in /sys/class/net/*; do
+  	ip link set $nic up &>/dev/null
+  	
+    if [ -f /sys/class/net/${nic}/address ] && [ -f /sys/class/net/${nic}/type ] && [ "$(cat /sys/class/net/${nic}/type)" -lt 256 ]; then
+  	  echo -n "${nic}:" 
+  	  cat /sys/class/net/${nic}/address | tr [a-f] [A-F]
+    fi
+  	ip link set $nic down &>/dev/null
+  done
 }
 #************ hardware_ids
 
