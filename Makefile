@@ -160,7 +160,6 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/rhel5/network-lib.sh \
   boot-scripts/etc/rhel5/nfs-lib.sh \
   boot-scripts/etc/rhel6/boot-lib.sh \
-  boot-scripts/etc/rhel6/gfs-lib.sh \
   boot-scripts/etc/rhel6/hardware-lib.sh \
   boot-scripts/etc/rhel6/network-lib.sh \
   boot-scripts/etc/rhel6/nfs-lib.sh \
@@ -338,8 +337,8 @@ CFG_FILES=basefiles.list \
     filters.list \
     filters.initrd.d/empty.list \
     filters.initrd.d/kernel.list \
-    pre.mkinitrd.d/00-bootimage-check.sh \
-    pre.mkinitrd.d/00-cdsl-check.sh \
+    pre.mkinitrd.d/50-bootimage-check.sh \
+    pre.mkinitrd.d/50-cdsl-check.sh \
     post.mkinitrd.d/01-create-mapfiles.sh \
     post.mkinitrd.d/02-create-cdsl-repository.sh \
     post.mkinitrd.d/03-nfs-deps.sh
