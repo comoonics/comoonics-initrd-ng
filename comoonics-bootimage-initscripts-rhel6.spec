@@ -41,6 +41,8 @@
 %define ENVFILE   %{ENVDIR}/%{name}.sh
 %define INITDIR   /etc/rc.d/init.d
 %define SYSCONFIGDIR /%{_sysconfdir}/sysconfig
+%define KERNEL_SYSCONFIG_FILE %{SYSCONFIGDIR}/kernel
+%define COMOONICS_NEW_KERNEL_PKG_UPDATE %{APPDIR}/patches/new-kernel-pkg-update.sh
 
 %define RELEASENAME Gumpn
 %define PRODUCTNAME OpenSharedRoot
@@ -69,7 +71,7 @@ Requires: comoonics-bootimage >= 1.4-82
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-rhel6
 #Conflicts: 
-Release: 2.rhel6
+Release: 3.rhel6
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -97,6 +99,7 @@ install -m755 initscripts/mountcdsls $RPM_BUILD_ROOT/%{INITDIR}/mountcdsls
 install -d -m 755 $RPM_BUILD_ROOT/%{APPDIR}/patches
 install -d $RPM_BUILD_ROOT/%{SBINDIR}
 install -m755 initscripts/halt.local $RPM_BUILD_ROOT/%{SBINDIR}/halt.local
+install -m600 initscripts/rhel5/new-kernel-pkg-update.sh $RPM_BUILD_ROOT/%{APPDIR}/patches/new-kernel-pkg-update.sh
 
 %preun
 if [ "$1" -eq 0 ]; then
@@ -207,6 +210,11 @@ for service in $services; do
    /sbin/chkconfig --del $service &> /dev/null
 done
 
+if ! grep "source %{COMOONICS_NEW_KERNEL_PKG_UPDATE}" "%{KERNEL_SYSCONFIG_FILE}"; then
+  echo "Adapting  %{KERNEL_SYSCONFIG_FILE} .."
+  echo "test -e %{COMOONICS_NEW_KERNEL_PKG_UPDATE} && source %{COMOONICS_NEW_KERNEL_PKG_UPDATE}" >> %{KERNEL_SYSCONFIG_FILE}
+fi
+
 /bin/true
 
 %postun
@@ -219,11 +227,15 @@ fi
 %attr(755, root, root) %{INITDIR}/bootsr
 %attr(755, root, root) %{INITDIR}/mountcdsls
 %attr(755, root, root) %{SBINDIR}/halt.local
+%attr(644, root, root) %{APPDIR}/patches/new-kernel-pkg-update.sh
 
 %clean
 rm -rf %{buildroot}
 
 %changelog
+* Tue May 10 2011 Marc Grimme <grimme@atix.de> 1.4-3.rhel6
+- introducing updated version to /sbin/new-kernel-pkg-update in order to allow autobuild of initrds 
+  (requirement boot is mounted).
 * Tue Mar 22 2011 Marc Grimme <grimme@atix.de> 1.4-2.rhel6
 - Rebase
 * Mon Feb 28 2011 Marc Grimme <grimme@atix.de> 1.4-1.rhel6

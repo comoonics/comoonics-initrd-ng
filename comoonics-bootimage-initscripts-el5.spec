@@ -41,6 +41,8 @@
 %define ENVFILE   %{ENVDIR}/%{name}.sh
 %define INITDIR   /etc/rc.d/init.d
 %define SYSCONFIGDIR /%{_sysconfdir}/sysconfig
+%define KERNEL_SYSCONFIG_FILE %{SYSCONFIGDIR}/kernel
+%define COMOONICS_NEW_KERNEL_PKG_UPDATE %{APPDIR}/patches/new-kernel-pkg-update.sh
 
 %define RELEASENAME Gumpn
 %define PRODUCTNAME OpenSharedRoot
@@ -70,7 +72,7 @@ Requires: SysVinit-comoonics
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-rhel5
 #Conflicts: 
-Release: 22.rhel5
+Release: 23.rhel5
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -93,7 +95,7 @@ Initscripts used by the OSR cluster environment.
 %install
 # Files for compat
 install -d -m 755 $RPM_BUILD_ROOT/%{INITDIR}
-install -m755 initscripts/rhel5/bootsr $RPM_BUILD_ROOT/%{INITDIR}/bootsr
+install -m755 initscripts/bootsr $RPM_BUILD_ROOT/%{INITDIR}/bootsr
 install -m755 initscripts/mountcdsls $RPM_BUILD_ROOT/%{INITDIR}/mountcdsls
 install -d -m 755 $RPM_BUILD_ROOT/%{APPDIR}/patches
 install -m600 initscripts/rhel5/halt-xtab.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/halt-xtab.patch
@@ -110,6 +112,7 @@ install -m600 initscripts/rhel5/network.orig $RPM_BUILD_ROOT/%{APPDIR}/patches/n
 install -m600 initscripts/rhel5/netfs.orig $RPM_BUILD_ROOT/%{APPDIR}/patches/netfs.orig
 install -d $RPM_BUILD_ROOT/%{SBINDIR}
 install -m755 initscripts/halt.local $RPM_BUILD_ROOT/%{SBINDIR}/halt.local
+install -m600 initscripts/rhel5/new-kernel-pkg-update.sh $RPM_BUILD_ROOT/%{APPDIR}/patches/new-kernel-pkg-update.sh
 
 %preun
 if [ "$1" -eq 0 ]; then
@@ -220,6 +223,11 @@ for service in $services; do
    /sbin/chkconfig --del $service &> /dev/null
 done
 
+if ! grep "source %{COMOONICS_NEW_KERNEL_PKG_UPDATE}" "%{KERNEL_SYSCONFIG_FILE}"; then
+  echo "Adapting  %{KERNEL_SYSCONFIG_FILE} .."
+  echo "test -e %{COMOONICS_NEW_KERNEL_PKG_UPDATE} && source %{COMOONICS_NEW_KERNEL_PKG_UPDATE}" >> %{KERNEL_SYSCONFIG_FILE}
+fi
+
 /bin/true
 
 %postun
@@ -239,6 +247,7 @@ fi
 %attr(644, root, root) %{APPDIR}/patches/netfs-xtab.patch
 %attr(644, root, root) %{APPDIR}/patches/network-comoonics.patch
 %attr(644, root, root) %{APPDIR}/patches/network-xrootfs.patch
+%attr(644, root, root) %{APPDIR}/patches/new-kernel-pkg-update.sh
 %attr(755, root, root) %{APPDIR}/patches/halt.orig
 %attr(755, root, root) %{APPDIR}/patches/network.orig
 %attr(755, root, root) %{APPDIR}/patches/netfs.orig
@@ -248,6 +257,10 @@ fi
 rm -rf %{buildroot}
 
 %changelog
+* Tue May 03 2011 Marc Grimme <grimme@atix.de> 1.4-23.rhel5
+- added bootsr from generic initscripts
+- introducing updated version to /sbin/new-kernel-pkg-update in order to allow autobuild of initrds 
+  (requirement boot is mounted).
 * Tue Mar 22 2011 Marc Grimme <grimme@atix.de> 1.4-22.rhel5
 - Rebase
 * Tue Mar 22 2011 Marc Grimme <grimme@atix.de> 1.4-21.rhel5
