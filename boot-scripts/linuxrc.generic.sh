@@ -144,7 +144,12 @@ exec_local cc_validate
 return_code || breakp $(errormsg err_cc_validate $cluster_conf)
 step "Successfully validated cluster configuration" "ccvalidate"
 
-if [ -z "$simulation" ] || [ "$simulation" -ne 1 ]; then
+# get number of nodeids and change float to int
+nodes=$(cc_get nodes 2>/dev/null | sed -e 's/\.[0-9]*$//')
+#nodeid must be first
+nodeid=$(getParameter nodeid $(cc_getdefaults nodeid))
+# No need for hwdetection if either nodeid is set or nodes==1 or simulation mode is enabled
+if [ -z "$nodeid" ] || [ "$nodes" -gt 1 ] && ([ -z "$simulation" ] || [ "$simulation" -ne 1 ]) ; then
   num_names=$(cc_get_nic_names "" "" "" $(repository_get_value cluster_conf) | wc -w)
   num_drivers=$(cc_get_nic_drivers "" "" "" $(repository_get_value cluster_conf) | wc -w)
   drivers=""
@@ -160,13 +165,11 @@ if [ -z "$simulation" ] || [ "$simulation" -ne 1 ]; then
 fi
 step "Hardwaredetection finished" "hwdetect"
 
-echo_local -n "Detecting nodeid & nodename "
-
-# get number of nodeids and change float to int
-nodes=$(cc_get nodes 2>/dev/null | sed -e 's/\.[0-9]*$//')
-#nodeid must be first
+# redetect nodeid because hwdata is available now. Will return the previously detected nodeid if present.
 nodeid=$(getParameter nodeid $(cc_getdefaults nodeid))
+echo_local -n "Detecting nodeid & nodename "
 if [ -z "$nodeid" ] && [ -n "$nodes" ] && [ "$nodes" == "1" ]; then
+	# if no nodeid found until now and nodes are only 1 either get nodeid from cmdline or set to 1.
 	nodeid=$(getParameter nodeid $(cc_get nodeids 2>/dev/null | cut -f1 -d" "))
 fi
 [ -z "$nodeid" ] && breakp "$(errormsg err_cc_nodeid)"
@@ -180,10 +183,8 @@ sourceRootfsLibs ${predir}
 success
 
 # Just load nic drivers
-auto_netconfig $(cc_get_nic_drivers $(repository_get_value nodeid) $(repository_get_value nodename) "" $(repository_get_value cluster_conf))
-found_nics && udev_start # now we should be able to trigger this.
-found_nics && breakp "$(errormsg err_hw_nicdriver)"
-step "NIC modules loaded." "autonetconfig"
+_ipConfig=$(cluster_ip_config "$(repository_get_value cluster_conf)" "$(repository_get_value nodename)" "" "$(repository_get_value nodeid)")
+[ -n "$_ipConfig" ] && ( [ -z "$(repository_get_value ipConfig)" ] || [ "$(repository_get_value ipConfig)" = "cluster" ] ) && repository_store_value ipConfig "$_ipConfig"
 
 echo_local -n "Scanning other parameters "
 _ccparameters=$(cc_get_valid_params)
@@ -225,9 +226,6 @@ clusterfs_chroot_needed initrd
 __default=$?
 getParameter chrootneeded $__default &>/dev/null
 [ "$(repository_get_value chrootneeded)" = "__set__" ] && repository_store_value chrootneeded 0 
-
-_ipConfig=$(cluster_ip_config "$(repository_get_value cluster_conf)" "$(repository_get_value nodename)" "" "$(repository_get_value nodeid)")
-[ -n "$_ipConfig" ] && ( [ -z "$(repository_get_value ipConfig)" ] || [ "$(repository_get_value ipConfig)" = "cluster" ] ) && repository_store_value ipConfig "$_ipConfig"
 
 step "Inialization started" "init"
 
@@ -543,9 +541,9 @@ fi
 if [ -z "$(getPosInList ro $(repository_get_value mountopts) ,)" ]; then
   echo_local -n "Writing xtab.. "
   if [ $(repository_get_value chrootneeded) -eq 0 ]; then
-    create_xtab "$(repository_get_value newroot)/$(repository_get_value xtabfile)" "$(repository_get_value cdsl_local_dir)" "$(repository_get_value chroot_mount)" "/var/run" 
+    create_xtab "$(repository_get_value newroot)/$(repository_get_value xtabfile)" "/$(repository_get_value cdsl_local_dir)" "$(repository_get_value chroot_mount)" "/var/run" 
   else  
-    create_xtab "$(repository_get_value newroot)/$(repository_get_value xtabfile)" "$(repository_get_value cdsl_local_dir)" "/var/run"
+    create_xtab "$(repository_get_value newroot)/$(repository_get_value xtabfile)" "/$(repository_get_value cdsl_local_dir)" "/var/run"
   fi
   success
 
@@ -615,9 +613,9 @@ if [ $is_syslog -eq 0 ]; then
 	return_code
   fi
 fi
-
+chrootneeded=$(repository_get_value chrootneeded)
 # Resetup syslog to forward messages to the localhost (whatever it does with those messages) but only if chroot is needed.
-if [ $(repository_get_value chrootneeded) -eq 0 ]; then
+if [ $chrootneeded -eq 0 ]; then
   cc_auto_syslogconfig "" "" "$(repository_get_value newroot)/$(repository_get_value chroot_path)" "no" "localhost" "no_klog"
   cc_syslog_start "$(repository_get_value newroot)/$(repository_get_value chroot_path)" no_klog
 fi
@@ -644,7 +642,7 @@ step "Initialization completed." "initcomplete"
 
 newroot=$(repository_get_value newroot)
 echo_local "Starting init-process ($init_cmd)..."
-exit_linuxrc 0 "$init_cmd" "$newroot"
+exit_linuxrc 0 "$init_cmd" "$newroot" "$chrootneeded"
 
 #********** main
 
