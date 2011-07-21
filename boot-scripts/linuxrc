@@ -61,7 +61,7 @@ source /etc/repository-lib.sh
 source /etc/hardware-lib.sh
 source /etc/stdfs-lib.sh
 
-mkdir -p /proc
+[ -d /proc ] || mkdir -p /proc
 mount -t proc proc /proc 2>/dev/null
 # default make output to KMSG
 [ -z "$KMSG" ] && [ -z "$NOKMSG" ] && KMSG=1
@@ -86,7 +86,6 @@ if cat /proc/cmdline | grep com-expert; then
 	$shell
 	bootlog=$(repository_get_value bootlog)
 fi
-umount /proc
 unset shell
 
 distribution=$(getDistribution)
@@ -123,7 +122,7 @@ chrootneeded=$(repository_get_value chrootneeded)
 if [ -n "$error_code" ] && [ $error_code -eq 0 ]; then
   exec 1>&- 2>&- # 3>&- 4>&- 5>&-
   exec 1>/dev/console 2>/dev/console
-  switchRoot $newroot $chrootneeded
+  switchRoot "$newroot" "$chrootneeded"
 elif [ -n "$error_code" ] && [ $error_code -eq 2 ]; then
   echo "Userquit falling back to bash.." > $(repository_get_value shell_issuetmp)
   exec 1>/dev/console 2>/dev/console $shell
