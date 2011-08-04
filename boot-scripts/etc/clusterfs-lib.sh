@@ -104,7 +104,7 @@ function getCluType {
    local clutype=""
    
    typeset -f osr_nodeids_file &> /dev/null
-   if test $? -eq 0 && test -f $(osr_nodeids_file); then
+   if [ $? -eq 0 ] && ([ -f $(osr_nodeids_file) ] || [ ! -f "$cluster_conf" ]); then
    	  echo "osr"
    	  return 0
    fi
@@ -843,7 +843,7 @@ function cc_auto_netconfig {
     local bridge=$(cc_get $cluster_conf eth_name_bridge $nodeid $netdev 2>/dev/null)
     local onboot=$(cc_get $cluster_conf eth_name_onboot $nodeid $netdev 2>/dev/null)
     local driver=$(cc_get $cluster_conf eth_name_driver $nodeid $netdev 2>/dev/null)
-    local properties=$(cc_get $cluster_conf eth_name_properties $nodeid $netdev 2>/dev/null | tr " " ":")
+    local properties=$(cc_get $cluster_conf eth_name_properties $nodeid $netdev 2>/dev/null | tr --delete '\n' | tr " " ":")
     local master=$(cc_get $cluster_conf eth_name_master $nodeid $netdev 2>/dev/null)
     local slave=$(cc_get $cluster_conf eth_name_slave $nodeid $netdev 2>/dev/null)
     local gateway=$(cc_get $cluster_conf eth_name_gateway $nodeid $netdev 2>/dev/null) || local gateway=""
