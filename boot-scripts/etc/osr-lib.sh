@@ -303,7 +303,7 @@ osr_get_node_attrs() {
       test -n "$value" && values="${values}${delim}${value}"
     else
       eval value=\$${element}_${attr}
-      if [ -z "$value" ] && [ -n "$keyname" ]; then
+      if [ -z "$value" ] && [ -n "$keyname" ] && [ "$keyname" != "$attr" ]; then
       	for key in $(osr_get_node_attrs "$keyname" "$element" "$nodeid" "$nodename" "" "$nodesconf" "$nodeconf"); do 
       	  key=$(osr_quote_or_remove "$key")
       	  eval value=\$${element}_${key}_${attr}
@@ -643,7 +643,7 @@ osr_get() {
   	shift
   fi
   local query=$(osr_resolve_element_alias $1)
-  local nodeid=$2
+  local nodeid=${2:-1}
   local key=$3
   if [ -f "$4" ]; then
     local nodeconf="$4"
@@ -678,7 +678,7 @@ osr_init() {
 #    validates the cluster configuration. 
 #  SOURCE
 osr_validate() {
-	test -f $(osr_nodeids_file)
+	true
 }
 #*********** osr_validate
 
