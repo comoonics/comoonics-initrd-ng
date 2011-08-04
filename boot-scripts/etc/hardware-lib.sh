@@ -820,14 +820,19 @@ unload_module() {
 #  SOURCE
 #
 function hardware_ids {
-  for nic in /sys/class/net/*; do
-  	ip link set $nic up &>/dev/null
+  local link_was_up=0
+  for nic in $(ls /sys/class/net); do
+  	if test "$(cat /sys/class/net/${nic}/carrier 2>/dev/null)" = "1"; then
+  	  link_was_up=1
+  	fi
+  	  		
+  	test $link_was_up -eq 0 && ip link set $nic up &>/dev/null
   	
     if [ -f /sys/class/net/${nic}/address ] && [ -f /sys/class/net/${nic}/type ] && [ "$(cat /sys/class/net/${nic}/type)" -lt 256 ]; then
   	  echo -n "${nic}:" 
   	  cat /sys/class/net/${nic}/address | tr [a-f] [A-F]
     fi
-  	ip link set $nic down &>/dev/null
+  	test $link_was_up -eq 0 && ip link set $nic down &>/dev/null
   done
 }
 #************ hardware_ids
