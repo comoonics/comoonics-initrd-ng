@@ -1146,11 +1146,14 @@ exec_ordered_scripts_in() {
    local exitonerror=${4:-1}
    local script
    local return_C=0
-   
+   local oldrepopath=$REPOSITORY_PATH
    if [ ! -d "$scriptpath" ]; then
    	 return 1
    fi
-   
+   REPOSITORY_PATH=${destpath}/$oldrepopath
+   DEST_PATH=${destpath}
+   export REPOSITORY_PATH
+   [ -d $REPOSITORY_PATH ] || mkdir -p $REPOSITORY_PATH
    for script in "$scriptpath"/*; do
      local extension=$(echo $script | sed -e 's/^.*\(\.[^.]*\)$/\1/')
      local scriptname=$(basename $script)
@@ -1174,6 +1177,9 @@ exec_ordered_scripts_in() {
    	 	return $return_C
    	 fi
    done
+   REPOSITORY_PATH=$oldrepopath
+   export REPOSITORY_PATH
+   unset DEST_PATH
    return $return_C
 }
 #************ exec_ordered_skripts_in
