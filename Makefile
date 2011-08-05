@@ -337,8 +337,11 @@ CFG_FILES=basefiles.list \
     filters.list \
     filters.initrd.d/empty.list \
     filters.initrd.d/kernel.list \
-    pre.mkinitrd.d/50-bootimage-check.sh \
+    pre.mkinitrd.d/20-clusterconf-validate.sh \
+    pre.mkinitrd.d/30-rootfs-check.sh \
+    pre.mkinitrd.d/35-rootdevice-check.sh \
     pre.mkinitrd.d/50-cdsl-check.sh \
+    pre.mkinitrd.d/60-osr-repository-generate.sh \
     post.mkinitrd.d/01-create-mapfiles.sh \
     post.mkinitrd.d/02-create-cdsl-repository.sh \
     post.mkinitrd.d/03-nfs-deps.sh

@@ -71,8 +71,9 @@ Requires: comoonics-bootimage >= 1.4-82
 Requires: SysVinit-comoonics
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-rhel5
+Requires: initscripts >= 8.45.38-2.el5
 #Conflicts: 
-Release: 23.rhel5
+Release: 24.rhel5
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -102,7 +103,6 @@ install -m600 initscripts/rhel5/halt-xtab.patch $RPM_BUILD_ROOT/%{APPDIR}/patche
 #install -m600 initscripts/rhel5/halt-local.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/halt-local.patch
 install -m600 initscripts/rhel5/halt-killall.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/halt-killall.patch
 install -m600 initscripts/rhel5/halt-comoonics.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/halt-comoonics.patch
-install -m600 initscripts/rhel5/netfs-tabs.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/netfs-xtab.patch
 install -m600 initscripts/rhel5/netfs-xtab.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/netfs-xtab.patch
 install -m600 initscripts/rhel5/netfs-comoonics.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/netfs-comoonics.patch
 install -m600 initscripts/rhel5/network-xrootfs.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/network-xrootfs.patch
@@ -257,6 +257,8 @@ fi
 rm -rf %{buildroot}
 
 %changelog
+* Thu Jul 28 2011 Marc Grimme <grimme@atix.de> 1.4-24.rhel5
+- upstream patches for RHEL5.7
 * Tue May 03 2011 Marc Grimme <grimme@atix.de> 1.4-23.rhel5
 - added bootsr from generic initscripts
 - introducing updated version to /sbin/new-kernel-pkg-update in order to allow autobuild of initrds 

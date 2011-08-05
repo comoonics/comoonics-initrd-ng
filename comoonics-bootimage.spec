@@ -3,7 +3,7 @@
 #    comoonics-bootimage.spec
 #    $id$
 #  DESCRIPTION
-#    RPM Configurationfile for the Comoonics bootimage
+#    RPM Configurationfile for the com.oonics bootimage
 #  AUTHOR
 #    Marc Grimme
 #
@@ -80,7 +80,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 85
+Release: 86
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -96,7 +96,7 @@ Scripts for creating an initrd in a OSR cluster environment
 
 %package extras-osr
 Version: 0.1
-Release: 5
+Release: 6
 Requires: comoonics-bootimage >= 1.3-1
 Summary: Extra for cluster configuration via osr
 Group:   %{GROUPPARENT}/%{GROUPCHILDEXTRAS}
@@ -507,7 +507,7 @@ Summary: Extrafiles for RedHat Enterprise Linux Version 5 and Ext3
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 Conflicts: comoonics-bootimage-listfiles-rhel5-ext4
 Conflicts: comoonics-bootimage-listfiles-rhel5-nfs
-Conflicts: comoonics-bootimage-listfiles-rhel5-gfs1
+Conflicts: comoonics-bootimage-listfiles-rhel5-gfs
 Conflicts: comoonics-bootimage-listfiles-rhel5-gfs2
 Conflicts: comoonics-bootimage-listfiles-rhel5-ocfs2
 Conflicts: comoonics-bootimage-extras-ocfs2
@@ -526,7 +526,7 @@ Summary: Extrafiles for RedHat Enterprise Linux Version 5 and Ext4
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 Conflicts: comoonics-bootimage-listfiles-rhel5-ext3
 Conflicts: comoonics-bootimage-listfiles-rhel5-nfs
-Conflicts: comoonics-bootimage-listfiles-rhel5-gfs1
+Conflicts: comoonics-bootimage-listfiles-rhel5-gfs
 Conflicts: comoonics-bootimage-listfiles-rhel5-gfs2
 Conflicts: comoonics-bootimage-listfiles-rhel5-ocfs2
 Conflicts: comoonics-bootimage-extras-ocfs2
@@ -534,14 +534,14 @@ Conflicts: comoonics-bootimage-extras-ocfs2
 %description listfiles-rhel5-ext4
 OSR extra files that are only relevant for RHEL5 and EXT4
 
-%package listfiles-rhel5-gfs1
+%package listfiles-rhel5-gfs
 Version: 0.1
 Release: 1
 Requires: comoonics-bootimage >= 1.4-81
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-rhel5
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDRHEL5}
-Summary: Extrafiles for RedHat Enterprise Linux Version 5 and GFS1
+Summary: Extrafiles for RedHat Enterprise Linux Version 5 and GFS
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 Conflicts: comoonics-bootimage-listfiles-rhel5-ext3
 Conflicts: comoonics-bootimage-listfiles-rhel5-ext4
@@ -549,9 +549,10 @@ Conflicts: comoonics-bootimage-listfiles-rhel5-nfs
 Conflicts: comoonics-bootimage-listfiles-rhel5-gfs2
 Conflicts: comoonics-bootimage-listfiles-rhel5-ocfs2
 Conflicts: comoonics-bootimage-extras-ocfs2
+Obsoletes: comoonics-bootimage-listfiles-rhel5-gfs1
 
-%description listfiles-rhel5-gfs1
-OSR extra files that are only relevant for RHEL5 and GFS1
+%description listfiles-rhel5-gfs
+OSR extra files that are only relevant for RHEL5 and GFS
 
 %package listfiles-rhel5-gfs2
 Version: 0.1
@@ -565,7 +566,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 Conflicts: comoonics-bootimage-listfiles-rhel5-ext3
 Conflicts: comoonics-bootimage-listfiles-rhel5-ext4
 Conflicts: comoonics-bootimage-listfiles-rhel5-nfs
-Conflicts: comoonics-bootimage-listfiles-rhel5-gfs1
+Conflicts: comoonics-bootimage-listfiles-rhel5-gfs
 Conflicts: comoonics-bootimage-listfiles-rhel5-ocfs2
 Conflicts: comoonics-bootimage-extras-ocfs2
 
@@ -580,7 +581,7 @@ Requires: comoonics-bootimage-extras-nfs
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDRHEL5}
 Summary: Extrafiles for RHEL5 NFS support 
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
-Conflicts: comoonics-bootimage-listfiles-rhel5-gfs1
+Conflicts: comoonics-bootimage-listfiles-rhel5-gfs
 Conflicts: comoonics-bootimage-extras-ocfs2
 
 %description listfiles-rhel5-nfs
@@ -610,7 +611,7 @@ Summary: Extrafiles for RedHat Enterprise Linux Version 6 and Ext3
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 Conflicts: comoonics-bootimage-listfiles-rhel6-ext4
 Conflicts: comoonics-bootimage-listfiles-rhel6-nfs
-Conflicts: comoonics-bootimage-listfiles-rhel6-gfs1
+Conflicts: comoonics-bootimage-listfiles-rhel6-gfs
 Conflicts: comoonics-bootimage-listfiles-rhel6-gfs2
 Conflicts: comoonics-bootimage-listfiles-rhel6-ocfs2
 Conflicts: comoonics-bootimage-extras-ocfs2
@@ -629,7 +630,7 @@ Summary: Extrafiles for RedHat Enterprise Linux Version 6 and Ext4
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 Conflicts: comoonics-bootimage-listfiles-rhel6-ext3
 Conflicts: comoonics-bootimage-listfiles-rhel6-nfs
-Conflicts: comoonics-bootimage-listfiles-rhel6-gfs1
+Conflicts: comoonics-bootimage-listfiles-rhel6-gfs
 Conflicts: comoonics-bootimage-listfiles-rhel6-gfs2
 Conflicts: comoonics-bootimage-listfiles-rhel6-ocfs2
 Conflicts: comoonics-bootimage-extras-ocfs2
@@ -647,7 +648,7 @@ Summary: Extrafiles for RHEL6 NFS support
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 Conflicts: comoonics-bootimage-listfiles-rhel6-ext3
 Conflicts: comoonics-bootimage-listfiles-rhel6-ext4
-Conflicts: comoonics-bootimage-listfiles-rhel6-gfs1
+Conflicts: comoonics-bootimage-listfiles-rhel6-gfs
 Conflicts: comoonics-bootimage-listfiles-rhel6-gfs2
 Conflicts: comoonics-bootimage-listfiles-rhel6-ocfs2
 Conflicts: comoonics-bootimage-extras-ocfs2
@@ -1044,9 +1045,10 @@ echo "End of environment."
 %dir %{CONFIGDIR}/bootimage/pre.mkinitrd.d
 %dir %{CONFIGDIR}/bootimage/post.mkinitrd.d
 %dir %{CACHEDIR}/comoonics-bootimage
-%config %attr(0755, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/50-bootimage-check.sh
-%config %attr(0755, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/50-cdsl-check.sh
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/02-create-cdsl-repository.sh
+%attr(0755, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/20-clusterconf-validate.sh
+%attr(0755, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/30-bootimage-check.sh
+%attr(0755, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/50-cdsl-check.sh
+%attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/02-create-cdsl-repository.sh
 
 %config(noreplace) %attr(0644, root, root) %{CONFIGDIR}/comoonics-bootimage.cfg
 %config(noreplace) %attr(0644, root, root) %{CONFIGDIR}/querymap.cfg
@@ -1058,7 +1060,10 @@ echo "End of environment."
 
 %files extras-osr
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/osr-lib.sh
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/01-create-mapfiles.sh
+%attr(0644, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/30-rootfs-check.sh
+%attr(0644, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/35-rootdevice-check.sh
+%attr(0644, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/60-osr-repository-generate.sh
+%attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/01-create-mapfiles.sh
 
 %files extras-network
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/vlan.list
@@ -1287,7 +1292,7 @@ echo "End of environment."
 
 %files listfiles-rhel5-ext4
 
-%files listfiles-rhel5-gfs1
+%files listfiles-rhel5-gfs
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/comoonics.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/gfs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel5/rhcs.list
@@ -1388,6 +1393,7 @@ echo "End of environment."
 rm -rf %{buildroot}
 
 %changelog
+* Thu Aug 04 2011 Marc Grimme <grimme@atix.de> 1.4-86
 * Mon Jul 21 2011 Marc Grimme <grimme@atix.de> 1.4-85
   - boot-scripts/usr/share/hwdata/CardMonitorCombos,
     boot-scripts/usr/share/hwdata/Cards,
@@ -2526,7 +2532,7 @@ rm -rf %{buildroot}
 * Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-4
 - introduced the changelog
 
-%changelog listfiles-rhel5-gfs1
+%changelog listfiles-rhel5-gfs
 * Mon Feb 28 2011 Marc Grimme <grimme@atix.de> 0.1-1
 - first version for comoonics-5.0-pre
 
