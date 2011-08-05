@@ -105,24 +105,6 @@ function umount_chroot {
 }
 #************ get_runlevel
 
-#****f* bootsr/main
-#  NAME
-#    main
-#  SYNOPSIS
-#    function main
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-logfile=/var/log/osr.log
-
-#to be backward compatible
-exec 3>> $logfile
-exec 4>> $logfile
-exec 5>> $logfile
-exec 6>> $logfile
-exec 7>> $logfile
-
 rootfs=$(repository_get_value rootfs)
 clutype=$(repository_get_value clutype)
 # overwrite with bootparameter if need be
@@ -184,7 +166,7 @@ case "$1" in
       exit 0
       ;;
   reload)
-      if  [ -n "$rootfs" ] && check_sharedroot $rootfs || [ "$chrootneeded" -eq 0 ]; then
+      if  [ -n "$rootfs" ] && (check_sharedroot $rootfs || [ "${chrootneeded}" = "0" ]); then
   	    
 	    if clusterfs_chroot_needed init || [ "$chrootneeded" -eq 0 ] ; then
 	      action "Updating chroot environment" $UPDATE_CHROOT
