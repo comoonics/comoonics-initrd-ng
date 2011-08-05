@@ -13,30 +13,34 @@
 # Provides: $local_fs $remote_fs
 ### END INIT INFO
 
-# Patched for comoonics patch 1.1
+# Patched for comoonics patch 1.4
 
 [ -f /etc/sysconfig/network ] || exit 0
 . /etc/init.d/functions
 . /etc/sysconfig/network
 
+xtab=$(awk 'BEGIN{printf"/("}{ gsub(/\//, "\\/"); printf $0"|";}END{printf"^$)/"}' /etc/xtab 2>/dev/null)
+
 # Check that networking is up.
 [ "${NETWORKING}" = "no" ] && exit 0
 
-NFSFSTAB=`LC_ALL=C awk '!/^#/ && $3 ~ /^nfs/ && $3 != "nfsd" && $4 !~ /noauto/ { print $2 }' /etc/fstab`
+NFSFSTAB=`LC_ALL=C awk '!/^#/ && $3 ~ /^nfs/ && $3 != "nfsd" && $4 !~ /noauto/ && $2 !~ '$xtab' { print $2 }' /etc/fstab`
 SMBFSTAB=`LC_ALL=C awk '!/^#/ && $3 == "smbfs" && $4 !~ /noauto/ { print $2 }' /etc/fstab`
 CIFSFSTAB=`LC_ALL=C awk '!/^#/ && $3 == "cifs" && $4 !~ /noauto/ { print $2 }' /etc/fstab`
 NCPFSTAB=`LC_ALL=C awk '!/^#/ && $3 == "ncpfs" && $4 !~ /noauto/ { print $2 }' /etc/fstab`
-NETDEVFSTAB=`LC_ALL=C awk '!/^#/ && $4 ~/_netdev/ && $4 !~ /noauto/ { print $1 }' /etc/fstab`
+NETDEVFSTAB=`LC_ALL=C awk '!/^#/ && $4 ~/_netdev/ && $4 !~ /noauto/ && $2 !~ '$xtab' { print $1 }' /etc/fstab`
 
-NFSMTAB=`LC_ALL=C awk '$3 ~ /^nfs/ && $3 != "nfsd" && $2 != "/" && $2 != "/cdsl.local" { print $2 }' /proc/mounts`
+NFSMTAB=`LC_ALL=C awk '$3 ~ /^nfs/ && $3 != "nfsd" && $2 != "/" && $2 !~ '$xtab' { print $2 }' /proc/mounts`
 SMBMTAB=`LC_ALL=C awk '$3 == "smbfs" { print $2 }' /proc/mounts`
 CIFSMTAB=`LC_ALL=C awk '$3 == "cifs" { print $2 }' /proc/mounts`
 NCPMTAB=`LC_ALL=C awk '$3 == "ncpfs" { print $2 }' /proc/mounts`
-NETDEVMTAB=`LC_ALL=C awk '$4 ~ /_netdev/ && $2 != "/" && $2 != "/cdsl.local" { print $2 }' /etc/mtab`
+NETDEVMTAB=`LC_ALL=C awk '$4 ~ /_netdev/ && $2 != "/" && $2 !~ '$xtab' { print $2 }' /etc/mtab`
 
 # See how we were called.
 case "$1" in
   start)
+	# Let udev handle any backlog before trying to mount file systems
+	/sbin/udevsettle --timeout=30
         [ -n "$NFSFSTAB" ] && 
 	  {
 	    [ ! -f /var/lock/subsys/portmap ] && service portmap start
@@ -47,6 +51,9 @@ case "$1" in
         [ -n "$NCPFSTAB" ] && action $"Mounting NCP filesystems: " mount -a -t ncpfs
         [ -n "$NETDEVFSTAB" ] &&
 	  {
+	    if [ -f /etc/mdadm.conf ]; then
+		mdadm -A -s 
+	    fi
 	    if [ -f /etc/multipath.conf -a -x /sbin/multipath.static ]; then
 	    	modprobe dm-multipath >/dev/null 2>&1
 		/sbin/multipath.static -v 0
@@ -94,19 +101,20 @@ case "$1" in
 	   fi
 	  }
 	touch /var/lock/subsys/netfs
+	# The 'no' applies to all listed filesystem types. See mount(8).
 	action $"Mounting other filesystems: " mount -a -t nonfs,nfs4,smbfs,cifs,ncpfs,gfs
 	;;
   stop)
         # Unmount loopback stuff first
 	__umount_loopback_loop
   	if [ -n "$NETDEVMTAB" ]; then
-		__umount_loop '$4 ~ /_netdev/ && $2 != "/" {print $2}' \
+		__umount_loop '$4 ~ /_netdev/ && $2 != "/" && $2 !~ '$xtab' {print $2}' \
 			/etc/mtab \
 			$"Unmounting network block filesystems: " \
 			$"Unmounting network block filesystems (retry): "
 	fi
   	if [ -n "$NFSMTAB" ]; then
-		__umount_loop '$3 ~ /^nfs/ && $2 != "/" {print $2}' \
+		__umount_loop '$3 ~ /^nfs/ && $3 != "nfsd" && $2 != "/" && $2 !~ '$xtab' {print $2}' \
 			/proc/mounts \
 			$"Unmounting NFS filesystems: " \
 			$"Unmounting NFS filesystems (retry): " \

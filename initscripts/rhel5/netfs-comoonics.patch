@@ -4,7 +4,7 @@
  # Provides: $local_fs $remote_fs
  ### END INIT INFO
  
-+# Patched for comoonics patch 1.3
++# Patched for comoonics patch 1.4
 +
  [ -f /etc/sysconfig/network ] || exit 0
  . /etc/init.d/functions

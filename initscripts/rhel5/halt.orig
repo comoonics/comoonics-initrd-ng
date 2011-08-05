@@ -8,8 +8,15 @@
 #               Modified for RHS Linux by Damien Neil
 #
 
+# Patched for comoonics patch 1.7
+
+KILLALL_OPTS=$(awk '{ printf "-x %s ", $0; }' /etc/xkillall_procs 2>/dev/null)
+
 NOLOCALE=1
 . /etc/init.d/functions
+
+UMOUNT="umount"
+[ ! -w /etc ] && UMOUNT="umount -n"
 
 action() {
    echo -n "$1 "
@@ -28,7 +35,7 @@ halt_crypto() {
 	[ -z "$dst" -o "${dst#\#}" != "$dst" ] && continue
         if [ -b "/dev/mapper/$dst" ]; then
             if /sbin/dmsetup info "$dst" | grep -q '^Open count: *0$'; then
-                /sbin/cryptsetup remove "$dst"
+                action $"Stopping disk encryption for $dst" /sbin/cryptsetup remove "$dst"
             else
                 fnval=1
             fi
@@ -65,9 +72,9 @@ esac
 # Kill all processes.
 [ "${BASH+bash}" = bash ] && enable kill
 
-action $"Sending all processes the TERM signal..." /sbin/killall5 -15
+action $"Sending all processes the TERM signal..." /usr/comoonics/sbin/killall5 -15 ${KILLALL_OPTS}
 sleep 5
-action $"Sending all processes the KILL signal..."  /sbin/killall5 -9
+action $"Sending all processes the KILL signal..."  /usr/comoonics/sbin/killall5 -9 ${KILLALL_OPTS}
 
 # Write to wtmp file before unmounting /var
 /sbin/halt -w
@@ -131,7 +138,7 @@ esac
 # Try to unmount tmpfs filesystems to avoid swapping them in.  Ignore failures.
 tmpfs=$(awk '$2 ~ /^\/($|proc|dev)/ { next; }
 	     $3 == "tmpfs" { print $2; }' /proc/mounts | sort -r)
-[ -n "$tmpfs" ] && fstab-decode umount $tmpfs 2>/dev/null
+[ -n "$tmpfs" ] && fstab-decode $UMOUNT $tmpfs 2>/dev/null
 
 # Turn off swap, then unmount file systems.
 [ -f /proc/swaps ] && SWAPS=`awk '! /^Filename/ { print $1 }' /proc/swaps`
@@ -143,8 +150,6 @@ if [ -n "$SWAPS" ]; then
 	    backdev=$(/sbin/cryptsetup status "$dst" \
 		| awk '$1 == "device:" { print $2 }')
 	    /sbin/cryptsetup remove "$dst"
-	    # Leave partition with a blank plain-text swap
-	    mkswap "$backdev" > /dev/null
 	fi
     done
 fi
@@ -164,16 +169,16 @@ __umount_loop '$3 ~ /^rpc_pipefs$/ || $3 ~ /^rpc_svc_gss_pipefs$/ {print $2}' \
 
 LANG=C __umount_loop '$2 ~ /^\/$|^\/proc|^\/dev/{next}
 	$3 == "tmpfs" || $3 == "proc" {print $2 ; next}
-	/(loopfs|autofs|nfs|cifs|smbfs|ncpfs|sysfs|^none|^\/dev\/ram|^\/dev\/root$)/ {next}
+	$3 ~ /(loopfs|autofs|nfs|cifs|smbfs|ncpfs|sysfs)/ {next}
+	/(^none|^\/dev\/ram|^\/dev\/root$)/ {next}
 	{print $2}' /proc/mounts \
 	$"Unmounting file systems: " \
 	$"Unmounting file systems (retry): " \
 	-f
 
-[ -f /proc/bus/usb/devices ] && umount /proc/bus/usb
+[ -f /proc/bus/usb/devices ] && $UMOUNT /proc/bus/usb
 
-[ -f /etc/crypttab ] && \
-    LANG=C action $"Stopping disk encryption: " halt_crypto
+[ -f /etc/crypttab ] && halt_crypto
 
 # remove the crash indicator flag
 rm -f /.autofsck
@@ -183,11 +188,11 @@ rm -f /.autofsck
 awk '$2 !~ /\/(|dev|proc|selinux)$/ && $1 !~ /^\/dev\/ram/ { print $2 }' \
     /proc/mounts | sort -r | \
   while read line; do
-    fstab-decode umount -f $line
+    fstab-decode $UMOUNT -f $line
 done
 
 if [ -x /sbin/halt.local ]; then
-   /sbin/halt.local
+   /sbin/halt.local "$message" "$HALTARGS" "$kexec_command" "$command"
 fi
 
 # Remount read only anything that's left mounted.
@@ -217,6 +222,6 @@ fi
 [ -n "$kexec_command" ] && $kexec_command -e -x >& /dev/null
 
 HALTARGS="-d"
-[ -f /poweroff -o ! -f /halt ] && HALTARGS="$HALTARGS -p"
+[ "$INIT_HALT" != "HALT" ] && HALTARGS="$HALTARGS -p"
 
 exec $command $HALTARGS
