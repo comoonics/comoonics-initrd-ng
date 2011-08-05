@@ -29,16 +29,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-
-logfile=/var/log/manage_chroot.log
-
-#to be backward compatible
-exec 3>> $logfile
-exec 4>> $logfile
-exec 5>> $logfile
-exec 6>> $logfile
-exec 7>> $logfile
-
 if [ -f /etc/sysconfig/comoonics-chroot ]; then
 	source /etc/sysconfig/comoonics-chroot
 fi
@@ -453,28 +443,18 @@ function createxfiles {
 function patch_files {
   local files="halt network netfs"
   local patchfiles=
+  local initdpath="/etc/rc.d/init.d"
+  local bootimagepath="/opt/atix/comoonics-bootimage/patches/"
+  local bakext="com_bak"
   if [ -n "$1" ]; then
     files=$*
   fi
   # we patch all versions here
   for initscript in $files; do
-    patchfiles=$(ls -1 /opt/atix/comoonics-bootimage/patches/${initscript}-*.patch 2>/dev/null | sort -r)
-	if [ -n "$patchfiles" ] && [ -f "/etc/init.d/$initscript" ] && ! grep "comoonics patch " /etc/init.d/$initscript > /dev/null; then
-		echo -n "Patching $initscript ("
-		for patchfile in $patchfiles; do
-			echo -n $(basename $patchfile)", "
-			cd /etc/init.d/ && patch -f -r /tmp/$(basename ${patchfile}).patch.rej > /dev/null < $patchfile
-	        if [ $? -ne 0 ]; then
-		      echo >&2
-		      echo >&2
-		      echo "FAILURE!!!!" >&2
-		      echo "Patching $initscript with patch $patchfile" >&2
-		      echo "You might want to consider restoring the original initscript and the patch again by:" >&2
-		      echo "cp /opt/atix/comoonics-bootimage/patches/${initscript}.orig /etc/init.d/${initscript}"
-		      echo "/opt/atix/comoonics-bootimage/manage_chroot.sh -a unpatch_files ${initscript}"
-		      echo >&2
-		    fi
-		done
+	if [ -f "${initdpath}/$initscript" ] && [ -f ${bootimagepath}/$initscript ] && ! diff ${initdpath}/$initscript ${bootimagepath}/$initscript >/dev/null; then
+		echo -n "Updateing $initscript ("
+		cp -f ${initdpath}/$initscript ${initdpath}/${initscript}.${bakext}
+		cp -f /opt/atix/comoonics-bootimage/patches/$initscript $initdpath 
 	    echo ")"
 	fi
   done
@@ -493,29 +473,19 @@ function patch_files {
 function unpatch_files {
   local files="halt network netfs"
   local patchfiles=
+  local initdpath="/etc/rc.d/init.d"
+  local bootimagepath="/opt/atix/comoonics-bootimage/patches/"
+  local bakext="com_bak"
   if [ -n "$1" ]; then
     files=$*
   fi
   # we patch all versions here
   for initscript in $files; do
-    patchfiles=$(ls -1 /opt/atix/comoonics-bootimage/patches/${initscript}-*.patch 2>/dev/null | sort -r)
-	if [ -n "$patchfiles" ] && [ -f "/etc/init.d/$initscript" ] && grep "comoonics patch " /etc/init.d/$initscript > /dev/null; then
-		echo -n "Unpatching $initscript ("
-		for patchfile in $patchfiles; do
-			echo -n $(basename $patchfile)", "
-			cd /etc/init.d/ && patch -R -f -r /tmp/$(basename ${patchfile}).patch.rej > /dev/null < $patchfile
-	        if [ $? -ne 0 ]; then
-		      echo >&2
-		      echo >&2
-		      echo "FAILURE!!!!" >&2
-		      echo "Patching $initscript with patch $patchfile" >&2
-		      echo "You might want to consider restoring the original initscript and the patch again by:" >&2
-		      echo "cp /opt/atix/comoonics-bootimage/patches/${initscript}.orig /etc/init.d/${initscript}"
-		      echo "/opt/atix/comoonics-bootimage/manage_chroot.sh -a patch_files ${initscript}"
-		      echo >&2
-		    fi
-		done
-		echo ")"
+	if [ -f "${initdpath}/$initscript" ] && [ -f ${initdpath}/${initscript}.${bakext} ] && ! diff ${initdpath}/$initscript ${initdpath}/${initscript}.${bakext} >/dev/null; then
+		echo -n "Restoring $initscript ("
+		cp -f ${initdpath}/${initscript}.${bakext} ${initdpath}/${initscript}
+		rm -f ${initdpath}/${initscript}.${bakext}
+	    echo ")"
 	fi
   done
 }
