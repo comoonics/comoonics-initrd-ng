@@ -21,3 +21,4 @@ libcap                 \.so
 audit-libs
 upstart                ^/sbin/.*
 libgcc			       \.so
+mktemp
