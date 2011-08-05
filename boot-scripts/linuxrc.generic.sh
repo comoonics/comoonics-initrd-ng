@@ -146,10 +146,11 @@ step "Successfully validated cluster configuration" "ccvalidate"
 
 # get number of nodeids and change float to int
 nodes=$(cc_get nodes 2>/dev/null | sed -e 's/\.[0-9]*$//')
+nodes=${nodes:-0}
 #nodeid must be first
 nodeid=$(getParameter nodeid $(cc_getdefaults nodeid))
 # No need for hwdetection if either nodeid is set or nodes==1 or simulation mode is enabled
-if [ -z "$nodeid" ] || [ "$nodes" -gt 1 ] && ([ -z "$simulation" ] || [ "$simulation" -ne 1 ]) ; then
+if [ -z "$nodeid" ] || ([ "$nodes" -ne 0 ] && [ "$nodes" -gt 1 ]) && ([ -z "$simulation" ] || [ "$simulation" -ne 1 ]) ; then
   num_names=$(cc_get_nic_names "" "" "" $(repository_get_value cluster_conf) | wc -w)
   num_drivers=$(cc_get_nic_drivers "" "" "" $(repository_get_value cluster_conf) | wc -w)
   drivers=""
@@ -174,7 +175,7 @@ if [ -z "$nodeid" ] && [ -n "$nodes" ] && [ "$nodes" == "1" ]; then
 fi
 [ -z "$nodeid" ] && breakp "$(errormsg err_cc_nodeid)"
 nodename=$(getParameter nodename $(cc_getdefaults nodename))
-[ -z "$nodename" ] && breakp "$(errormsg err_cc_nodename)"
+#[ -z "$nodename" ] && breakp "$(errormsg err_cc_nodename)"
 [ -z "$nodeid" ] && nodeid=$(repository_get_value nodeid)
 [ -z "$nodename" ] && nodeid=$(repository_get_value nodename)
 echo_local -N -n "nodeid: $nodeid, nodename: $nodename "
@@ -235,9 +236,11 @@ echo_local_debug "*****<REPOSITORY>**********"
 
 step "Parameter loaded" "parameter"
 
-if [ -z "$(repository_get_value ipConfig)" ]; then
-  breakp "$(errormsg err_nic_config)"
-fi
+# Not needed cause an empty network configuration is also possible
+#FIXME: Perhaps we should have something like a function clusterfs_network_needed as a first try.
+#if [ -z "$(repository_get_value ipConfig)" ]; then
+#  breakp "$(errormsg err_nic_config)"
+#fi
 
 xen_domx_detect
 if [ $? -ne 0 ] && [ -z "$(repository_get_value nousb)" ]; then
@@ -314,6 +317,9 @@ for ipconfig in $networkipconfig $vlanipconfig $bridgeipconfig $restartipconfig;
   		echo_local -n "Loading driver $driver for nic $dev.."
   		exec_local modprobe $driver
   		return_code $?
+  	elif [ ! -d /sys/class/net/${dev} ]; then
+  	    # trigger harware detection if nic is not available
+        udev_start
   	fi
     echo_local -n "Powering up $dev.."
     exec_local nicUp $dev boot >/dev/null 2>&1 || breakp "$(errormsg err_nic_ifup $dev)"
@@ -333,7 +339,7 @@ if [ -n $bridges ]; then
   step "Network bridges setup finished" "netbridge"
 fi
 
-cc_auto_syslogconfig $(repository_get_value cluster_conf) $(repository_get_value nodename) / "no" $(repository_get_value syslog_logfile)
+cc_auto_syslogconfig "$(repository_get_value cluster_conf)" "$(repository_get_value nodename)" / "no" "$(repository_get_value syslog_logfile)"
 is_syslog=$?
 if [ $is_syslog -eq 0 ]; then
   cc_syslog_start
