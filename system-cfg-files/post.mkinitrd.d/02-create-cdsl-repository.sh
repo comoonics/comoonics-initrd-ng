@@ -1,12 +1,6 @@
 #!/bin/sh
 MKCDSLINFRASTRUCTURE=${MKCDSLINFRASTRUCTURE:-"/usr/bin/com-mkcdslinfrastructure"}
 
-# Check if the binary exists
-DESTDIR=$destpath/${REPOSITORY_PATH}
-
-OLDREPO=${REPOSITORY_PATH}
-REPOSITORY_PATH=$DESTDIR
-
 NOCDSL="nocdsl"
 
 tree="$NOCDSL"
@@ -23,7 +17,6 @@ if [ -e "$MKCDSLINFRASTRUCTURE" ]; then
 fi
 repository_store_value cdsl_prefix "$tree"  &&
 repository_store_value cdsl_local_dir "$link" &&
-REPOSITORY_PATH=${OLDREPO}
 unset tree
 unset link
 
