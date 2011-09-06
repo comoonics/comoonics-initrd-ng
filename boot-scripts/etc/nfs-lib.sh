@@ -1,8 +1,4 @@
 #
-# $Id: nfs-lib.sh,v 1.19 2010-08-11 09:44:05 marc Exp $
-#
-# @(#)$File$
-#
 # Copyright (c) 2001 ATIX GmbH, 2007 ATIX AG.
 # Einsteinstrasse 10, 85716 Unterschleissheim, Germany
 # All rights reserved.
@@ -248,7 +244,7 @@ function nfs4_chroot_needed {
 #  NAME
 #    nfs4_get_userspace_procs
 #  SYNOPSIS
-#    function nfs4_get_userspace_procs(cluster_conf, nodename)
+#    function nfs4_get_userspace_procs(nodename)
 #  DESCRIPTION
 #    gets userspace programs that are to be running dependent on rootfs
 #  SOURCE
@@ -336,18 +332,14 @@ function nfs_get_drivers {
 #  NAME
 #    nfs_get_mountopts
 #  SYNOPSIS
-#    nfs_get_mountopts(cluster_conf, nodename)
+#    nfs_get_mountopts(nodename)
 #  DESCRIPTION
 #    Gets the mountopts for this node
 #  IDEAS
 #  SOURCE
 #
 function nfs_get_mountopts() {
-   local xml_file=$1
-   local hostname=$2
-   [ -z "$hostname" ] && hostname=$(nfs_get_nodename $xml_file)
-   local xml_cmd="${ccs_xml_query} -f $xml_file"
-   _mount_opts=$($xml_cmd -q mountopts $hostname)
+   _mount_opts=$(nfs_get mountopts "$@")
    if [ -z "$_mount_opts" ]; then
      echo $default_mountopts
    else
@@ -680,7 +672,7 @@ function nfs_init {
 #  NAME
 #    nfs_get_userspace_procs
 #  SYNOPSIS
-#    function nfs_get_userspace_procs(cluster_conf, nodename)
+#    function nfs_get_userspace_procs(clust er_conf,nodename)
 #  DESCRIPTION
 #    gets userspace programs that are to be running dependent on rootfs
 #  SOURCE
@@ -696,7 +688,7 @@ function nfs_get_userspace_procs {
 #  NAME
 #    nfs_get
 #  SYNOPSIS
-#    nfs_get [cluster_conf] [querymap] opts
+#    nfs_get opts
 #  DESCRIPTTION
 #    returns the name of the cluster.
 #  SOURCE
@@ -705,66 +697,3 @@ nfs_get() {
    cc_get $@
 }
 # *********** nfs_get
-
-# $Log: nfs-lib.sh,v $
-# Revision 1.19  2010-08-11 09:44:05  marc
-# nfs_start_rpcpipefs: mount pipefs in chroot
-#
-# Revision 1.18  2010/06/25 12:36:37  marc
-# - ext3/ocfs2/nfs-lib.sh:
-#   - added ext3/ocfs2/nfs_get
-#
-# Revision 1.17  2010/06/08 13:35:43  marc
-# - fix of bug #378 unimplemented function $rootfs_get_mountopts
-#
-# Revision 1.16  2010/05/27 09:52:08  marc
-# umount /proc
-#
-# Revision 1.15  2009/12/09 10:57:56  marc
-# cosmetics
-#
-# Revision 1.14  2009/08/11 09:58:16  marc
-# fixed bug #357 where NFSv4 was not working with RHEL5
-#
-# Revision 1.13  2009/04/20 07:10:46  marc
-# - more fixes to get it working as expected (rhel5/fc)
-#
-# Revision 1.12  2009/04/14 14:57:01  marc
-# - many fixes with nfs4 and rebooting and starting rpc.idmapd in chroot
-# - dependent fixes with nfs and pipefs being liked if need be.
-#
-# Revision 1.11  2009/03/25 13:52:35  marc
-# - added get_drivers functions to return modules in more general
-#
-# Revision 1.10  2009/02/24 12:03:04  marc
-# removed obsolete nfslock module.
-#
-# Revision 1.9  2009/02/18 18:03:42  marc
-# *** empty log message ***
-#
-# Revision 1.8  2009/02/02 20:13:23  marc
-# - Bugfix to only start portmap
-#
-# Revision 1.7  2009/01/28 12:55:20  marc
-# rewritten for nfsv4
-#
-# Revision 1.6  2008/10/28 12:52:07  marc
-# fixed bug#288 where default mountoptions would always include noatime,nodiratime
-#
-# Revision 1.5  2008/08/14 14:35:24  marc
-# - optimized to more modern version
-# - added getdefaults
-# - other minor bugfixes
-#
-# Revision 1.4  2008/06/20 15:50:36  mark
-# get default mount opts right
-#
-# Revision 1.3  2008/06/10 09:59:09  marc
-# - added empty nfs_init
-#
-# Revision 1.2  2007/12/07 16:39:59  reiner
-# Added GPL license and changed ATIX GmbH to AG.
-#
-# Revision 1.1  2007/03/09 17:56:33  mark
-# initial check in
-#

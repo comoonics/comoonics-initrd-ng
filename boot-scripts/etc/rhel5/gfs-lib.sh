@@ -1,8 +1,4 @@
 #
-# $Id: gfs-lib.sh,v 1.23 2011-02-11 15:08:11 marc Exp $
-#
-# @(#)$File$
-#
 # Copyright (c) 2007 ATIX GmbH.
 # Einsteinstrasse 10, 85716 Unterschleissheim, Germany
 # All rights reserved.
@@ -315,27 +311,3 @@ function gfs_start_cman {
   fi
 }
 #************ gfs_start_cman
-
-###############
-# $Log: gfs-lib.sh,v $
-# Revision 1.23  2011-02-11 15:08:11  marc
-# added qdisk to be stopped.
-#
-# Revision 1.22  2010/08/19 07:41:11  marc
-# moved setHWClock to gfs_services_start in gfs-lib.sh
-#
-# Revision 1.21  2010/08/06 13:31:51  marc
-#   - stop clvmd and let it be started during init process
-#
-# Revision 1.20  2010/05/27 09:42:43  marc
-# - reworked umount of proc.
-#
-# Revision 1.19  2009/03/16 19:23:54  marc
-# fix for bug #335 fence_tool -m
-#
-# Revision 1.18  2009/02/20 09:49:42  marc
-# added nodename option to cman_tool join.
-#
-# Revision 1.17  2009/02/08 13:14:07  marc
-# implemented the gfs join process as specified in RedHat initscripts
-#

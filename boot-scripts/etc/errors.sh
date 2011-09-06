@@ -1,8 +1,4 @@
 #
-# $Id: errors.sh,v 1.5 2011-02-28 09:01:38 marc Exp $
-#
-# @(#)$File$
-#
 # Copyright (c) 2001 ATIX GmbH, 2007 ATIX AG.
 # Einsteinstrasse 10, 85716 Unterschleissheim, Germany
 # All rights reserved.
@@ -31,9 +27,9 @@ function errormsg {
 		echo_local "Warning: Could not find errormessage for error \"$key\"!"
 		return 0;
 	fi
-	repository_store_parameters ${key}"_" $@
+	repository_store_parameters ${key}"_" "$@"
 	echo -e $(eval eval echo \$$key)
-	repository_del_parameters $ {key}"_" $@
+	repository_del_parameters $ {key}"_" "$@"
 }
 
 function errormsgissue {
@@ -213,21 +209,3 @@ Command: $(repository_get_value exec_local_lastcmd)\\n
 Output: $(repository_get_value exec_local_lastout)\\n
 Errors: $(repository_get_value exec_local_lasterror)\\n
 '
-##################
-# $Log: errors.sh,v $
-# Revision 1.5  2011-02-28 09:01:38  marc
-# fixed syntax errors in errormessages.
-#
-# Revision 1.4  2010/08/18 11:49:39  marc
-# added an errormessage when filesystem cannot be mounted.
-#
-# Revision 1.3  2010/07/08 08:07:21  marc
-# - reworked the errors to make use of errors, output and command being stored by exec_local
-# - rewrote errors
-#
-# Revision 1.2  2010/02/05 12:34:59  marc
-# typo
-#
-# Revision 1.1  2009/01/28 12:52:26  marc
-# initial revision
-#

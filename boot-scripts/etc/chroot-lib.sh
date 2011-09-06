@@ -1,8 +1,4 @@
 #
-# $Id: chroot-lib.sh,v 1.13 2011/02/16 14:33:36 marc Exp $
-#
-# @(#)$File$
-#
 # Copyright (c) 2001 ATIX GmbH, 2007 ATIX AG.
 # Einsteinstrasse 10, 85716 Unterschleissheim, Germany
 # All rights reserved.
@@ -553,9 +549,9 @@ function get_min_modules() {
 	echo $@ | tr ' ' '\n' | awk '{ gsub("_", "[_-]", $1); print $1; }'
     #awk '{ gsub("_", "[_-]", $1); print $1; }' $loaded_modules
 	awk '$1=="alias" { print $3; }{next;}' $modules_conf | tr ' ' '\n' | awk '{ gsub("_", "[_-]", $1); print $1; }'
-	cc_get_all_drivers "" "" "" $(repository_get_value cluster_conf) | tr ' ' '\n' | awk '{ gsub("_", "[_-]", $1); print $1; }'
+	cc_get_all_drivers | tr ' ' '\n' | awk '{ gsub("_", "[_-]", $1); print $1; }'
 	if clusterfs_blkstorage_needed $(repository_get_value rootfs); then
-		storage_get_drivers $(repository_get_value cluster_conf) | tr ' ' '\n' | awk '{ gsub("_", "[_-]", $1); print $1; }'
+		storage_get_drivers | tr ' ' '\n' | awk '{ gsub("_", "[_-]", $1); print $1; }'
 	fi
 	get_default_drivers | tr ' ' '\n' | awk '{ gsub("_", "[_-]", $1); print $1; }'
 }
@@ -565,7 +561,7 @@ function get_min_modules() {
 #  NAME
 #    move chroot environment
 #  SYNOPSIS
-#    function build_chroot(clusterconf, nodename) {
+#    function build_chroot(nodename) {
 #  MODIFICATION HISTORY
 #  USAGE
 #
@@ -574,8 +570,7 @@ function get_min_modules() {
 #  SOURCE
 #
 function build_chroot () {
-	local cluster_conf=$1
-	local nodename=$2
+	local nodename=$1
 	local chroot_fstype
 	local chroot_dev
 	local chroot_mount
@@ -589,15 +584,15 @@ function build_chroot () {
 	# --if not given: uses default values
 	else
 		# Filesystem type for the chroot device
-		chroot_fstype=$(cc_get_chroot_fstype $cluster_conf $nodename)
+		chroot_fstype=$(cc_get_chroot_fstype $nodename)
 		# chroot device name
-		chroot_dev=$(cc_get_chroot_device $cluster_conf $nodename)
+		chroot_dev=$(cc_get_chroot_device $nodename)
 		# Mountpoint for the chroot device
-		chroot_mount=$(cc_get_chroot_mountpoint $cluster_conf $nodename)
+		chroot_mount=$(cc_get_chroot_mountpoint $nodename)
 		# Path where the chroot environment should be build
-		chroot_path=$(cc_get_chroot_dir $cluster_conf $nodename)
+		chroot_path=$(cc_get_chroot_dir $nodename)
 		# Mount options for the chroot device
-		chroot_options=$(cc_get_chroot_mountopts $cluster_conf $nodename)
+		chroot_options=$(cc_get_chroot_mountopts $nodename)
 	fi
 
 	echo_out -n "Creating chroot environment"
@@ -640,8 +635,7 @@ function build_chroot () {
 #  SOURCE
 #
 function build_chroot_fake () {
-	local cluster_conf=$1
-	local nodename=$2
+	local nodename=$1
 	local chroot_fstype
 	local chroot_dev
 	local chroot_mount
@@ -655,15 +649,15 @@ function build_chroot_fake () {
 	# --if not given: uses default values
 	else
 		# Filesystem type for the chroot device
-		chroot_fstype=$(cc_get_chroot_fstype $cluster_conf $nodename)
+		chroot_fstype=$(cc_get_chroot_fstype $nodename)
 		# chroot device name
-		chroot_dev=$(cc_get_chroot_device $cluster_conf $nodename)
+		chroot_dev=$(cc_get_chroot_device $nodename)
 		# Mountpoint for the chroot device
-		chroot_mount=$(cc_get_chroot_mountpoint $cluster_conf $nodename)
+		chroot_mount=$(cc_get_chroot_mountpoint $nodename)
 		# Path where the chroot environment should be build
-		chroot_path=$(cc_get_chroot_dir $cluster_conf $nodename)
+		chroot_path=$(cc_get_chroot_dir $nodename)
 		# Mount options for the chroot device
-		chroot_options=$(cc_get_chroot_mountopts $cluster_conf $nodename)
+		chroot_options=$(cc_get_chroot_mountopts $nodename)
 	fi
 
 	[ -d $chroot_mountpoint ] || exec_local mkdir -p $chroot_mount
@@ -720,41 +714,3 @@ function create_chroot_fake () {
   is_mounted $chroot_path/sys && exec_local mount -f -t sysfs sysfs $chroot_path/sys
 }
 #************ create_chroot_fake
-
-#####################
-# $Log: chroot-lib.sh,v $
-# Revision 1.13  2011/02/16 14:33:36  marc
-# - lock_rpm / unlock_rpm
-#   Would also work if no /var/sharelock exists.
-#
-# Revision 1.12  2011/01/28 12:58:31  marc
-# Bug #396 added lockfile protection for each rpm operation. Result is that nodes can now boot in parallel.
-#
-# Revision 1.11  2010/09/01 15:18:13  marc
-#   - extract_installed_rpm
-#     - pass filters raw unquoted
-#     - copy file only if it does not already exist
-#   - get_filelist_from_installed_rpm
-#     - pass filters raw unquoted
-#   - extract_all_rpms
-#     - read from file unquoted as raw
-#     - pass filters raw unquoted
-#   - get_filelist_from_rpms
-#     - read from file unquoted as raw
-#     - pass filters raw unquoted
-#   - resolve_file
-#     - read from file unquoted as raw
-#
-# Revision 1.10  2010/07/08 08:00:50  marc
-# moved build_chroot to chroot-lib.sh
-#
-# Revision 1.9  2009/04/14 14:52:13  marc
-# - added mapfile needed for update initrd
-# - fixed bug in get_min_modules where not all modules are constructed with  [-_]
-#
-# Revision 1.8  2009/03/25 13:49:06  marc
-# - fixed BUG 338 (klogd not being started in initrd)
-# - added global filters to filter files from initrd
-# - cleanups
-#
-

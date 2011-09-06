@@ -1,8 +1,4 @@
 #
-# $Id: network-lib.sh,v 1.7 2010/08/06 13:32:48 marc Exp $
-#
-# @(#)$File$
-#
 # Copyright (c) 2001 ATIX GmbH.
 # Einsteinstrasse 10, 85716 Unterschleissheim, Germany
 # All rights reserved.
@@ -58,7 +54,7 @@ function rhel6_ip2Config() {
   if [ -z "$ipHostname" ]; then ipHostname="localhost.localdomain"; fi
   if [ -z "$ipDevice" ]; then ipDevice="eth0"; fi
 
-  [ -z "$networkpath" ] && local networkpath=${__prefix}/etc/sysconfig/network-scripts/
+  [ -z "$networkpath" ] && local networkpath=${__prefix}/$(rhel6_get_networkpath)
 
   if [ -e ${networkpath}/ifcfg-$ipDevice ]; then
     mv -f ${networkpath}/ifcfg-$ipDevice ${networkpath}/ifcfg-$ipDevice.com_back
@@ -106,49 +102,17 @@ function rhel6_ip2Config() {
 }
 #************ rhel6_ip2Config
 
-#################
-# $Log: network-lib.sh,v $
-# Revision 1.7  2010/08/06 13:32:48  marc
-# - fixed bug when detecting network interface properties consisting of "
+#****f* rhel6/network-lib/rhel6_get_networkpath
+#  NAME
+#    rhel6_get_networkpath
+#  SYNOPSIS
+#    function rhel6_get_networkpath()
+#  MODIFICATION HISTORY
+#  IDEAS
+#    returns distribution dependent the path to the network configuration files
+#  SOURCE
 #
-# Revision 1.6  2010/01/04 12:57:31  marc
-# added generic network config properties
-#
-# Revision 1.5  2010/01/04 12:54:28  marc
-# added generic network config properties
-#
-# Revision 1.4  2009/08/11 09:53:06  marc
-# - Added f11 support
-#
-# Revision 1.3  2009/04/22 11:35:56  marc
-# - fixed bug with NIC error generation for fc10.
-#
-# Revision 1.2  2009/04/14 14:48:01  marc
-# added fedora10 functions
-#
-# Revision 1.1  2009/01/28 12:45:29  marc
-# initial revision.
-# Support for fedora
-#
-# Revision 1.4  2008/10/14 10:57:07  marc
-# Enhancement #273 and dependencies implemented (flexible boot of local fs systems)
-#
-# Revision 1.3  2008/08/14 13:32:01  marc
-# - rewrote briding
-# - fix mac bug
-#
-# Revision 1.2  2008/01/24 13:35:15  marc
-# - RFE#145 macaddress will be generated in configuration files
-#
-# Revision 1.1  2007/09/07 07:57:55  mark
-# initial check in
-#
-# Revision 1.3  2007/01/19 10:04:16  mark
-# added vlan support
-#
-# Revision 1.2  2006/05/12 13:03:24  marc
-# First stable version 1.0.
-#
-# Revision 1.1  2006/05/07 11:33:40  marc
-# initial revision
-#
+rhel6_get_networkpath() {
+	echo "/etc/sysconfig/network-scripts"
+}
+#************ rhel6_get_networkpath

@@ -73,7 +73,7 @@ function nfs4_services_stop {
 #  NAME
 #    nfs4_get_userspace_procs
 #  SYNOPSIS
-#    function nfs4_get_userspace_procs(cluster_conf, nodename)
+#    function nfs4_get_userspace_procs(nodename)
 #  DESCRIPTION
 #    gets userspace programs that are to be running dependent on rootfs
 #  SOURCE
@@ -85,9 +85,3 @@ function nfs4_get_userspace_procs {
 rpc.idmapd"
 }
 #******** nfs4_get_userspace_procs
-
-
-# $Log: nfs-lib.sh,v $
-# Revision 1.2  2009-08-11 09:53:27  marc
-# fixed bug #357 where NFSv4 was not working with RHEL5
-#

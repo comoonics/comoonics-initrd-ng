@@ -1,8 +1,4 @@
 #
-# $Id: ext3-lib.sh,v 1.10 2010/08/18 11:49:27 marc Exp $
-#
-# @(#)$File$
-#
 # Copyright (c) 2001 ATIX GmbH, 2007 ATIX AG.
 # Einsteinstrasse 10, 85716 Unterschleissheim, Germany
 # All rights reserved.
@@ -208,18 +204,14 @@ function ext3_fsck {
 #  NAME
 #    ext3_get_mountopts
 #  SYNOPSIS
-#    ext3_get_mountopts(cluster_conf, nodename)
+#    ext3_get_mountopts(nodename)
 #  DESCRIPTION
 #    Gets the mountopts for this node
 #  IDEAS
 #  SOURCE
 #
 function ext3_get_mountopts() {
-   local xml_file=$1
-   local hostname=$2
-   [ -z "$hostname" ] && hostname=$(ext3_get_nodename $xml_file)
-   local xml_cmd="${ccs_xml_query} -f $xml_file"
-   _mount_opts=$($xml_cmd -q mountopts $hostname)
+   _mount_opts=$(ext3_get mountopts "$@")
    if [ -z "$_mount_opts" ]; then
      echo $default_mountopts
    else
@@ -232,7 +224,7 @@ function ext3_get_mountopts() {
 #  NAME
 #    ext3_get
 #  SYNOPSIS
-#    ext3_get [cluster_conf] [querymap] opts
+#    ext3_get [querymap] opts
 #  DESCRIPTTION
 #    returns the name of the cluster.
 #  SOURCE
@@ -241,36 +233,3 @@ ext3_get() {
    cc_get $@
 }
 # *********** ext3_get
-
-# $Log: ext3-lib.sh,v $
-# Revision 1.10  2010/08/18 11:49:27  marc
-# ext3_fsck_needed bug fixed
-#
-# Revision 1.9  2010/06/25 12:36:37  marc
-# - ext3/ocfs2/nfs-lib.sh:
-#   - added ext3/ocfs2/nfs_get
-#
-# Revision 1.8  2010/06/08 13:35:43  marc
-# - fix of bug #378 unimplemented function $rootfs_get_mountopts
-#
-# Revision 1.7  2009/03/25 13:51:00  marc
-# - added get_drivers functions to return modules in more general
-#
-# Revision 1.6  2009/02/18 18:01:14  marc
-# added restart_newroot, fsck
-#
-# Revision 1.5  2009/01/28 12:53:02  marc
-# - added defaults and ro mountpoint
-#
-# Revision 1.4  2008/10/28 12:52:07  marc
-# fixed bug#288 where default mountoptions would always include noatime,nodiratime
-#
-# Revision 1.3  2008/10/14 10:57:07  marc
-# Enhancement #273 and dependencies implemented (flexible boot of local fs systems)
-#
-# Revision 1.2  2007/12/07 16:39:59  reiner
-# Added GPL license and changed ATIX GmbH to AG.
-#
-# Revision 1.1  2007/03/09 17:57:01  mark
-# initial check in
-#

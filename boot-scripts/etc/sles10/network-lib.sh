@@ -1,8 +1,4 @@
 #
-# $Id: network-lib.sh,v 1.8 2010-08-06 13:32:47 marc Exp $
-#
-# @(#)$File$
-#
 # Copyright (c) 2001 ATIX GmbH, 2007 ATIX AG.
 # Einsteinstrasse 10, 85716 Unterschleissheim, Germany
 # All rights reserved.
@@ -22,7 +18,7 @@
 #
 
 #
-#****h* boot-scripts/etc/sles8/network-lib.sh
+#****h* boot-scripts/etc/sles10/network-lib.sh
 #  NAME
 #    network-lib.sh
 #    $id$
@@ -30,7 +26,7 @@
 #    Libraryfunctions for network support functions for SLES8.
 #*******
 
-#****f* boot-lib.sh/sles10_ip2Config
+#****f* sles10/network-lib.sh/sles10_ip2Config
 #  NAME
 #    sles10_ip2Config
 #  SYNOPSIS
@@ -71,7 +67,7 @@ function sles10_ip2Config() {
   if [ -z "$ipHostname" ]; then ipHostname="localhost.localdomain"; fi
   if [ -z "$ipDevice" ]; then ipDevice="eth0"; fi
 
-  [ -z "$networkpath" ] && local networkpath=${__prefix}/etc/sysconfig/network/
+  [ -z "$networkpath" ] && local networkpath=${__prefix}/$(sles10_get_networkpath)
 #  if [ -e ${networkpath}/ifcfg-$ipDevice ]; then
 #    mv -f ${networkpath}/ifcfg-$ipDevice ${networkpath}/ifcfg-$ipDevice.com_back
 #  fi
@@ -128,7 +124,7 @@ function sles10_ip2Config() {
 }
 #************ sles10_ip2Config 
 
-#****f* boot-lib.sh/nicUp
+#****f* sles10/network-lib.sh/nicUp
 #  NAME
 #    nicUp
 #  SYNOPSIS
@@ -141,37 +137,19 @@ function nicUp() {
    local alias=$(repository_get_value "$1_alias" $1)
    /sbin/ifup $alias
 }
-#************ ifup
+#************ nicUp
 
-#################
-# $Log: network-lib.sh,v $
-# Revision 1.8  2010-08-06 13:32:47  marc
-# - fixed bug when detecting network interface properties consisting of "
+#****f* sles10/network-lib/sles10_get_networkpath
+#  NAME
+#    sles10_get_networkpath
+#  SYNOPSIS
+#    function sles10_get_networkpath()
+#  MODIFICATION HISTORY
+#  IDEAS
+#    returns distribution dependent the path to the network configuration files
+#  SOURCE
 #
-# Revision 1.7  2010/03/08 13:15:00  marc
-# - added vlans and bonding
-#
-# Revision 1.6  2010/01/04 12:57:31  marc
-# added generic network config properties
-#
-# Revision 1.5  2009/09/28 12:47:14  marc
-# added function nicUp to overwrite defaults nicUp
-#
-# Revision 1.4  2009/04/22 11:36:45  marc
-# - upstream for sles10
-#
-# Revision 1.3  2008/10/14 10:57:07  marc
-# Enhancement #273 and dependencies implemented (flexible boot of local fs systems)
-#
-# Revision 1.2  2008/09/23 18:24:38  marc
-# fixed bug#272 where static ips would not be specified in network configuration.
-#
-# Revision 1.1  2008/08/14 13:30:52  marc
-# initial revision
-#
-# Revision 1.2  2007/12/07 16:40:00  reiner
-# Added GPL license and changed ATIX GmbH to AG.
-#
-# Revision 1.1  2006/05/07 11:33:40  marc
-# initial revision
-#
+sles10_get_networkpath() {
+	echo "/etc/sysconfig/network"
+}
+#************ sles10_get_networkpath

@@ -149,7 +149,7 @@ function nfs_init {
 #  NAME
 #    nfs_get_userspace_procs
 #  SYNOPSIS
-#    function nfs_get_userspace_procs(cluster_conf, nodename)
+#    function nfs_get_userspace_procs(nodename)
 #  DESCRIPTION
 #    gets userspace programs that are to be running dependent on rootfs
 #  SOURCE
@@ -160,37 +160,3 @@ function nfs_get_userspace_procs {
   echo -e "rpcbind"
 }
 #******** nfs_get_userspace_procs
-
-
-# $Log: nfs-lib.sh,v $
-# Revision 1.3  2009-04-20 07:05:02  marc
-# - added nfs_get_userspace_procs
-# - added local calls
-#
-# Revision 1.2  2009/04/14 14:48:50  marc
-# now restarting rpcbind with nfs
-#
-# Revision 1.1  2009/01/28 12:45:29  marc
-# initial revision.
-# Support for fedora
-#
-# Revision 1.6  2008/10/28 12:52:07  marc
-# fixed bug#288 where default mountoptions would always include noatime,nodiratime
-#
-# Revision 1.5  2008/08/14 14:35:24  marc
-# - optimized to more modern version
-# - added getdefaults
-# - other minor bugfixes
-#
-# Revision 1.4  2008/06/20 15:50:36  mark
-# get default mount opts right
-#
-# Revision 1.3  2008/06/10 09:59:09  marc
-# - added empty nfs_init
-#
-# Revision 1.2  2007/12/07 16:39:59  reiner
-# Added GPL license and changed ATIX GmbH to AG.
-#
-# Revision 1.1  2007/03/09 17:56:33  mark
-# initial check in
-#

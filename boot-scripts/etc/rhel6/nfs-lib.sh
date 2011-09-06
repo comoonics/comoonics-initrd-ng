@@ -1,8 +1,4 @@
 #
-# $Id: nfs-lib.sh,v 1.3 2009-04-20 07:05:02 marc Exp $
-#
-# @(#)$File$
-#
 # Copyright (c) 2001 ATIX GmbH, 2007 ATIX AG.
 # Einsteinstrasse 10, 85716 Unterschleissheim, Germany
 # All rights reserved.
@@ -150,17 +146,11 @@ function nfs_init {
 #  NAME
 #    nfs_get_userspace_procs
 #  SYNOPSIS
-#    function nfs_get_userspace_procs(cluster_conf, nodename)
+#    function nfs_get_userspace_procs(nodename)
 #  DESCRIPTION
 #    gets userspace programs that are to be running dependent on rootfs
 #  SOURCE
 function nfs_get_userspace_procs {
-  local clutype=$1
-  local rootfs=$2
-
   echo -e "rpcbind"
 }
 #******** nfs_get_userspace_procs
-
-
-# $Log: nfs-lib.sh,v $

@@ -1,8 +1,4 @@
 #
-# $Id: ocfs2-lib.sh,v 1.11 2010-08-26 12:19:27 marc Exp $
-#
-# @(#)$File$
-#
 # Copyright (c) 2001 ATIX GmbH, 2007 ATIX AG.
 # Einsteinstrasse 10, 85716 Unterschleissheim, Germany
 # All rights reserved.
@@ -108,21 +104,6 @@ function ocfs2_chroot_needed {
 	return 0
 }
 #*********** ocfs2_chroot_needed
-
-
-#****f* boot-scripts/etc/clusterfs-lib.sh/ocfs2_get
-#  NAME
-#    ocfs2_get
-#  SYNOPSIS
-#    ocfs2_get [cluster_conf] [querymap] opts
-#  DESCRIPTTION
-#    returns the name of the cluster.
-#  SOURCE
-#
-ocfs2_get() {
-   cc_get $@
-}
-# *********** ocfs2_get
 
 #****f* ocfs2-lib.sh/ocfs2_get_drivers
 #  NAME
@@ -369,18 +350,14 @@ function ocfs2_fsck {
 #  NAME
 #    ocfs2_get_mountopts
 #  SYNOPSIS
-#    ocfs2_get_mountopts(cluster_conf, nodename)
+#    ocfs2_get_mountopts(nodename)
 #  DESCRIPTION
 #    Gets the mountopts for this node
 #  IDEAS
 #  SOURCE
 #
 function ocfs2_get_mountopts() {
-   local xml_file=$1
-   local hostname=$2
-   [ -z "$hostname" ] && hostname=$(ocfs2_get_nodename $xml_file)
-   local xml_cmd="${ccs_xml_query} -f $xml_file"
-   _mount_opts=$($xml_cmd -q mountopts $hostname)
+   _mount_opts=$(ocfs2_get mountopts "$@")
    if [ -z "$_mount_opts" ]; then
      echo $default_mountopts
    else
@@ -389,49 +366,16 @@ function ocfs2_get_mountopts() {
 }
 #************ ocfs2_get_mountopts
 
-# $Log: ocfs2-lib.sh,v $
-# Revision 1.11  2010-08-26 12:19:27  marc
-# only mount /proc and /sys/kernel/config if it is not already mounted
+#****f* boot-scripts/etc/clusterfs-lib.sh/ocfs2_get
+#  NAME
+#    ocfs2_get
+#  SYNOPSIS
+#    ocfs2_get opts
+#  DESCRIPTTION
+#    returns the name of the cluster.
+#  SOURCE
 #
-# Revision 1.10  2010/06/25 12:36:37  marc
-# - ext3/ocfs2/nfs-lib.sh:
-#   - added ext3/ocfs2/nfs_get
-#
-# Revision 1.9  2010/06/08 13:35:43  marc
-# - fix of bug #378 unimplemented function $rootfs_get_mountopts
-#
-# Revision 1.8  2010/05/27 09:52:24  marc
-# umount proc
-#
-# Revision 1.7  2010/04/23 10:13:04  marc
-# umount proc in order to get udevd startet automatically.
-#
-# Revision 1.6  2010/01/04 13:24:22  marc
-# changed default mountops
-#
-# Revision 1.5  2009/09/28 13:04:01  marc
-# - fixed some typos and return codes not being returned as expected
-# - removed deps for com-queryclusterconf to cc_ functions
-# - added ocfs2 as module to modules function
-# - added ocfs2_fsck function
-#
-# Revision 1.4  2009/04/14 14:54:16  marc
-# - added get_drivers functions
-#
-# Revision 1.3  2008/08/14 14:36:21  marc
-# - added getdefaults
-# - bugfix when a cluster.conf could not be created
-# - setting of hostname as ocfs2 will not come up without hostname set
-#
-# Revision 1.2  2008/06/11 15:03:25  marc
-# - more output when failing to leave cluster
-#
-# Revision 1.1  2008/06/10 09:59:26  marc
-# *** empty log message ***
-#
-# Revision 1.2  2007/12/07 16:39:59  reiner
-# Added GPL license and changed ATIX GmbH to AG.
-#
-# Revision 1.1  2007/03/09 17:56:33  mark
-# initial check in
-#
+ocfs2_get() {
+   cc_get $@
+}
+# *********** ocfs2_get

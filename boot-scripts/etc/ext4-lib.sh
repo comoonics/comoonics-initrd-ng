@@ -1,8 +1,4 @@
 #
-# $Id: ext4-lib.sh,v 1.10 2010/08/18 11:49:27 marc Exp $
-#
-# @(#)$File$
-#
 # Copyright (c) 2001 ATIX GmbH, 2007 ATIX AG.
 # Einsteinstrasse 10, 85716 Unterschleissheim, Germany
 # All rights reserved.
@@ -208,18 +204,14 @@ function ext4_fsck {
 #  NAME
 #    ext4_get_mountopts
 #  SYNOPSIS
-#    ext4_get_mountopts(cluster_conf, nodename)
+#    ext4_get_mountopts(nodename)
 #  DESCRIPTION
 #    Gets the mountopts for this node
 #  IDEAS
 #  SOURCE
 #
 function ext4_get_mountopts() {
-   local xml_file=$1
-   local hostname=$2
-   [ -z "$hostname" ] && hostname=$(ext4_get_nodename $xml_file)
-   local xml_cmd="${ccs_xml_query} -f $xml_file"
-   _mount_opts=$($xml_cmd -q mountopts $hostname)
+   _mount_opts=$(ext4_get mountopts "$@")
    if [ -z "$_mount_opts" ]; then
      echo $default_mountopts
    else
@@ -232,7 +224,7 @@ function ext4_get_mountopts() {
 #  NAME
 #    ext4_get
 #  SYNOPSIS
-#    ext4_get [cluster_conf] [querymap] opts
+#    ext4_get opts
 #  DESCRIPTTION
 #    returns the name of the cluster.
 #  SOURCE
@@ -241,6 +233,3 @@ ext4_get() {
    cc_get $@
 }
 # *********** ext4_get
-
-# $Log: ext4-lib.sh,v $
-#

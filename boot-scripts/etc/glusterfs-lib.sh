@@ -1,8 +1,4 @@
 #
-# $Id: glusterfs-lib.sh,v 1.6 2010-06-25 12:52:28 marc Exp $
-#
-# @(#)$File$
-#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -115,8 +111,7 @@ function glusterfs_load {
 function glusterfs_services_start {
   ## THIS will be overwritten for rhel5 ##
   local chroot_path=$1
-  local rootsource=$(glusterfs_get_rootsource $cluster_conf $nodename)
-  echo_local "cluster_conf: $cluster_conf"
+  local rootsource=$(glusterfs_get_rootsource $(repository_get_value nodeid))
   echo_local "nodename: $nodename"
   echo_local "rootsource: $rootsource"
 
@@ -162,14 +157,11 @@ function glusterfs_init {
 #  NAME
 #    glusterfs_get_userspace_procs
 #  SYNOPSIS
-#    function glusterfs_get_userspace_procs(cluster_conf, nodename)
+#    function glusterfs_get_userspace_procs(nodename)
 #  DESCRIPTION
 #    gets userspace programs that are to be running dependent on rootfs
 #  SOURCE
 function glusterfs_get_userspace_procs {
-   local clutype=$1
-   local rootfs=$2
-
    echo -e "glusterfs \n\
 glusterfsd"
 }
@@ -179,7 +171,7 @@ glusterfsd"
 #  NAME
 #    glusterfs_get
 #  SYNOPSIS
-#    glusterfs_get [cluster_conf] [querymap] opts
+#    glusterfs_get opts
 #  DESCRIPTTION
 #    returns the name of the cluster.
 #  SOURCE
@@ -188,25 +180,3 @@ glusterfs_get() {
    cc_get $@
 }
 # *********** glusterfs_get
-
-# $Log: glusterfs-lib.sh,v $
-# Revision 1.6  2010-06-25 12:52:28  marc
-# - ext3/ocfs2/nfs/glusterfs-lib.sh:
-#   - added ext3/ocfs2/nfs/glusterfs_get
-#
-# Revision 1.5  2009/09/28 13:00:55  marc
-# - removed glusterfs_get_mountopts as this is called in the cluster library not in the fs library
-#
-# Revision 1.4  2009/08/11 09:54:08  marc
-# - Latest glusterfs-lib.sh upstream patches (gordan bobic)
-#
-# Revision 1.3  2009/04/14 14:54:16  marc
-# - added get_drivers functions
-#
-# Revision 1.2  2009/01/28 10:01:42  marc
-# First shot for:
-# Removed everything that is defined and therefore called from gfs-lib.sh ({clutype}_lib.sh) and left everything that is defined by glusterfs-lib.sh ({rootfs}-lib.sh).
-#
-# Revision 1.1  2009/01/28 09:40:12  marc
-# Import from Gordan Bobic.
-#
