@@ -1,7 +1,10 @@
 if ! runonce; then
 #  REPOSITORY_PREFIX="my_repository"
+  OLD_REPOSITORY_PATH=$REPOSITORY_PATH
+  REPOSITORY_PATH="$(mktemp -d)/var/cache/comoonics-repository"
   repository="test_repository"
   repository_clear $repository
+  repository_init $repository
   
   echo "Testing repository functionality"
   echo -n "Testing repository_store_value test1" 
@@ -74,6 +77,12 @@ if ! runonce; then
   done
   echo
   
+  echo -n "Testing empty default: "
+  repository_store_value a "" "" ""
+  test -z $(repository_get_value a)
+  detecterror $? "repository_get_value a $(repository_get_value a) != ''"
+  echo 
+  
 #  items=$(repository_list_values)
 #  for key in $keys; do
 #  	test "$key" = "test1" -o "$key" = "test2"
@@ -85,4 +94,7 @@ if ! runonce; then
 #  ls -1 ${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}.* 2>/dev/null
 #  invdetecterror $? "Repositoryfile ${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}.* does exists. But we've tryed to clear it away."
 #  echo
+  repository_clear $repository
+  rm -r $REPOSITORY_PATH
+  REPOSITORY_PATH=$OLD_REPOSITORY_PATH
 fi

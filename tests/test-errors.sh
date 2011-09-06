@@ -6,6 +6,7 @@ errorbin() {
 path=$(dirname $0)
 
 if ! $(runonce); then
+  repository_del_value exec_local_lasterror
   echo -n "Testing exec_local"
   exec_local errorbin > /dev/null
   rc=$?
@@ -21,17 +22,17 @@ if ! $(runonce); then
   test "$error1" = "$error2"
   detecterror $? "Testerrormsg for clutype $clutype returned wrong result \"$error1\" != \"$error2\"!!" || echo -n " Failed"
   echo
-  for errormsg in err_test err_cc_validate err_cc_wrongbootparamter err_clusterfs_fsck \
-                  err_clusterfs_mount err_cc_nodeid err_cc_nodename err_hw_nicdriver \
-                  err_nic_ifup err_nic_load err_nic_config err_storage_config err_storage_lvm \
-                  err_cc_setup err_rootfs_device err_rootfs_mount err_fs_mount_cdsl err_cc_start_service err_cc_restart_service\
-                  err_fs_device err_fs_mount; do
-    expectedresult=$(cat $path/test/error/$errormsg.out)
-    result=$(errormsg $errormsg param1 param2 param3 param4)
-    test $? -eq 0 && test "$(echo $result)" = "$(echo $expectedresult)"
-    detecterror $? "errormsg ${errormsg} failed. result: $result, expected: $expectedresult." || echo " Failed"
-#    echo " $result"
-  done
+#  for errormsg in err_test err_cc_validate err_cc_wrongbootparamter err_clusterfs_fsck \
+#                  err_clusterfs_mount err_cc_nodeid err_cc_nodename err_hw_nicdriver \
+#                  err_nic_ifup err_nic_load err_nic_config err_storage_config err_storage_lvm \
+#                  err_cc_setup err_rootfs_device err_rootfs_mount err_fs_mount_cdsl err_cc_start_service err_cc_restart_service\
+#                  err_fs_device err_fs_mount; do
+#    expectedresult=$(cat $path/test/error/$errormsg.out)
+#    result=$(errormsg $errormsg param1 param2 param3 param4)
+#    test $? -eq 0 && test "$(echo $result)" = "$(echo $expectedresult)"
+#    detecterror $? "errormsg ${errormsg} failed. result: $result, expected: $expectedresult." || echo " Failed"
+##    echo " $result"
+#  done
   expectedresult=$(cat <<EOF
 This is a test errormessage read from stdin.
 Param1: param1

@@ -6,6 +6,8 @@ if [ -z "$lastclutype" ] && [ -z "$lastdistribution" ] && [ -z "$lastclutype" ] 
   repository_store_value "cluster_conf" "$path/test/$clutype/cluster-conf-ok.xml"
   cluster_conf="$path/test/$clutype/cluster-conf-ok.xml"
   querymap="$path/../querymap.cfg"
+  repository_store_value osrquerymap $querymap
+  [ -n "$ccs_xml_query" ] && repository_store_value ccs_xml_query $ccs_xml_query
   if ! [ -e "$cluster_conf" ] || ! [ -e $querymap ]; then
   	echo "Cluster_conf $cluster_conf or $querymap for clutype: $clutype does not exist. Breaking."
   else
@@ -25,7 +27,7 @@ if [ -z "$lastclutype" ] && [ -z "$lastdistribution" ] && [ -z "$lastclutype" ] 
 	for _parameter in "mountopts"; do
 	  echo -n "Testing cc_get_${_parameter} $cluster_conf $nodename $nodeid"
       expectedresult=$(cat $path/test/$rootfs/cc_get_${_parameter} 2>/dev/null)
-      result=$(cc_get_${_parameter} $cluster_conf $nodename $nodeid) 
+      result=$(cc_get_${_parameter} $nodeid) 
       test $? -eq 0 && test "$result" = "$expectedresult"
       detecterror $? "cc_get_${_parameter} $cluster_conf $nodename $nodeid failed. result: $result, expected: $expectedresult." || echo -n " Failed"
       echo " $result"
@@ -33,7 +35,7 @@ if [ -z "$lastclutype" ] && [ -z "$lastdistribution" ] && [ -z "$lastclutype" ] 
     
     echo -n "Testing function cc_get for filesystem"
     expectedresult="/var /var2"
-    result=$(cc_get $nodeidsfile filesystem_dest $nodeid)
+    result=$(cc_get filesystem_dest $nodeid)
     errorcode=$?
     test "$result" = "$expectedresult"
     detecterror "$?" "cc_get for filesystem did not return \"$expectedresult\" for nodeid $nodeid but \"$result\" errorcode $errorcode" || echo "FAILED"
@@ -42,7 +44,7 @@ if [ -z "$lastclutype" ] && [ -z "$lastdistribution" ] && [ -z "$lastclutype" ] 
     echo -n "Testing function cc_get for filesystem_var_source"
     for dest in "/var" "/var2"; do
        expectedresult="/cluster/cdsl/1/var"
-       result=$(cc_get $nodeidsfile filesystem_dest_source $nodeid "$dest")
+       result=$(cc_get filesystem_dest_source $nodeid "$dest")
        errorcode=$?
        test "${result:0:${#expectedresult}}" = "$expectedresult"
        detecterror "$?" "cc_get for filesystem_var_source did not return \"$expectedresult\" for nodeid $nodeid but \"$result\" errorcode $errorcode" || echo "FAILED"
@@ -63,7 +65,7 @@ if [ -z "$lastclutype" ] && [ -z "$lastdistribution" ] && [ -z "$lastclutype" ] 
     
       echo -n "Testing getClusterParameter($_parameter)"
       expectedresult=$(cat $path/test/$rootfs/getClusterParameter_${_parameter} 2>/dev/null)
-      result=$(getClusterParameter $_parameter $cluster_conf $nodeid $nodename)
+      result=$(getClusterParameter $_parameter $nodeid $nodename)
       test "$result" = "$expectedresult"
       detecterror $? " $clutype, $rootfs: getClusterParameter($_parameter nodeid $nodeid, nodename $nodename) failed. result: $result, expected: $expectedresult." || echo -n " Failed"
       echo " $result"

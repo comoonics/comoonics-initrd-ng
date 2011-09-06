@@ -74,6 +74,12 @@ shellopts=""
 . $libdir/etc/repository-lib.sh
 . $testdir/lib/test-lib.sh
 
+OLD_REPOSITORY_PATH=$REPOSITORY_PATH
+REPOSITORY_PATH=$(mktemp -d)/$REPOSITORY_PATH
+export REPOSITORY_PATH
+echo "REPOSITORY_PATH: $REPOSITORY_PATH"
+repository_init
+
 export testing_errors testing_errormsgs PYTHONPATH testing_errors libdir testdir root_filesystems cluster_types distributions
 export trace debug
 
@@ -126,4 +132,6 @@ for testscript in $tests; do
 done
 errormsg
 #repository_clear
+REPOSITORY_PATH=$OLD_REPOSITORY_PATH
+export REPOSITORY_PATH
 exit $?
