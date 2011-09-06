@@ -1,8 +1,4 @@
 #
-# $Id: network-lib.sh,v 1.20 2010-03-08 13:11:28 marc Exp $
-#
-# @(#)$File$
-#
 # Copyright (c) 2001 ATIX GmbH, 2007 ATIX AG.
 # Einsteinstrasse 10, 85716 Unterschleissheim, Germany
 # All rights reserved.
@@ -140,34 +136,6 @@ function nicUp() {
    /sbin/ifup $*
 }
 #************ ifup
-#****f* boot-lib.sh/network_setup_bridge
-#  NAME
-#    network_setup_bridge
-#  SYNOPSIS
-#    function network_setup_bridge(bridgename, nodename, cluster_conf)
-#  DOCUMENTATION
-#    Powers up the network bridge
-#  SOURCE
-#
-function network_setup_bridge {
-   local bridgename=$1
-   local nodename=$2
-   local cluster_conf=$3
-
-   _bridgename=$(getParameter bridgename)
-   if [ -n "$_bridgename" ]; then
-     bridgename=$_bridgename
-   fi
-   repository_store_value bridgename $bridgename
-   local script=$(getParameter bridgescript "/etc/xen/scripts/network-bridge")
-   local vifnum=$(getParameter bridgevifnum)
-   local netdev=$(getParameter bridgenetdev)
-   local antispoof=$(getParameter bridgeantispoof no)
-
-   modprobe netloop
-   $script start vifnum=$vifnum netdev=$netdev bridge=$bridgename antispoof=$antispoof
-}
-#************ network_setup_bridge
 
 #****f* boot-lib.sh/ip2Config
 #  NAME
@@ -270,15 +238,17 @@ function auto_netconfig {
 #    Just returns how many NICs were found on this system
 #
 function found_nics {
-  local nics=0
+  local nics
   for nic in $(ls /sys/class/net); do
   	if [ -f /sys/class/net/${nic}/address ] && [ -f /sys/class/net/${nic}/type ] && [ "$(cat /sys/class/net/${nic}/type)" -lt 256 ]; then
+      echo "$nic"
   	  nics=$(($nics + 1))
   	fi
   done
   test $nics -gt 0
   return $?
 }
+#******** found_nics
 	
 #****f* boot-lib.sh/getPosFromIPString
 #  NAME
@@ -310,74 +280,3 @@ function setPosAtIPString() {
   setPosAtList "$1" "$2" "$3" ":"
 }
 #************ getPosFromIPString
-
-#############
-# $Log: network-lib.sh,v $
-# Revision 1.20  2010-03-08 13:11:28  marc
-# use new functions getPos/setPosFrom list for get/setPosFromIPString.
-#
-# Revision 1.19  2010/02/05 12:36:33  marc
-# - added -N to echo_local[_debug] where appropriate
-#
-# Revision 1.18  2010/01/04 13:13:29  marc
-# ip2config: small typo and added properties support
-#
-# Revision 1.17  2009/12/09 10:57:40  marc
-# cosmetics
-#
-# Revision 1.16  2009/02/24 12:02:13  marc
-# *** empty log message ***
-#
-# Revision 1.15  2009/02/18 18:03:20  marc
-# added driver for nic
-#
-# Revision 1.14  2009/02/08 14:00:00  marc
-# Bugfix in NIC detection
-#
-# Revision 1.13  2009/02/02 20:12:55  marc
-# - Bugfix in Hardwaredetection
-#
-# Revision 1.12  2009/01/29 15:57:51  marc
-# Upstream with new HW Detection see bug#325
-#
-# Revision 1.11  2009/01/28 12:54:42  marc
-# Many changes:
-# - moved some functions to std-lib.sh
-# - no "global" variables but repository
-# - bugfixes
-# - support for step with breakpoints
-# - errorhandling
-# - little clean up
-# - better seperation from cc and rootfs functions
-#
-# Revision 1.10  2008/11/18 08:41:59  marc
-# cosmetic change
-#
-# Revision 1.9  2008/10/14 10:57:07  marc
-# Enhancement #273 and dependencies implemented (flexible boot of local fs systems)
-#
-# Revision 1.8  2008/08/14 14:34:36  marc
-# - removed xen deps
-# - added bridging
-#
-# Revision 1.7  2008/01/24 13:33:17  marc
-# - RFE#145 macaddress will be generated in configuration files
-#
-# Revision 1.6  2007/12/07 16:39:59  reiner
-# Added GPL license and changed ATIX GmbH to AG.
-#
-# Revision 1.5  2007/10/10 15:08:56  mark
-# fix for BZ138
-#
-# Revision 1.4  2007/10/05 10:07:31  marc
-# - added xen-support
-#
-# Revision 1.3  2007/09/14 13:28:31  marc
-# no changes
-#
-# Revision 1.2  2006/05/12 13:06:41  marc
-# First stable Version 1.0 for initrd.
-#
-# Revision 1.1  2006/05/07 11:33:40  marc
-# initial revision
-#
