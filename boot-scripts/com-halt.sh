@@ -62,7 +62,6 @@ if [ -n "$CHROOT_PATH" ] && [ -d $CHROOT_PATH/mnt/newroot ]; then
 
   echo_local -n "Scanning for Bootparameters..."
   getParameter newroot "/mnt/newroot" &>/dev/null &&
-  getParameter cluster_conf $cluster_conf &>/dev/null &&
   getParameter debug $debug &>/dev/null &&
   getParameter step $stepmode &>/dev/null &&
   getParameter dstep $dstepmode &>/dev/null &&
