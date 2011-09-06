@@ -1,8 +1,4 @@
 #
-# $Id: nfs-lib.sh,v 1.19 2010-08-11 09:44:05 marc Exp $
-#
-# @(#)$File$
-#
 # Copyright (c) 2001 ATIX GmbH, 2007 ATIX AG.
 # Einsteinstrasse 10, 85716 Unterschleissheim, Germany
 # All rights reserved.
@@ -68,7 +64,7 @@ plymouth_hide() {
 }
 
 plymouth_cmd() {
-  local plymouth=$(which plymouth)
+  local plymouth=$(which plymouth 2>/dev/null)
   if [ -n "$plymouth" ] && [ -x $plymouth ] && [ $(repository_get_value plymouth 0) -eq 1 ]; then
   	echo_local -n "plymouth $@"
   	$plymouth $@
