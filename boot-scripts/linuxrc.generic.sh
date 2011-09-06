@@ -1,9 +1,5 @@
 #!/bin/bash
 #
-# $Id: linuxrc.generic.sh,v 1.113 2011-02-28 09:02:11 marc Exp $
-#
-# @(#)$File$
-#
 # Copyright (c) 2001 ATIX GmbH, 2007 ATIX AG.
 # Einsteinstrasse 10, 85716 Unterschleissheim, Germany
 # All rights reserved.
@@ -111,7 +107,6 @@ fi
 # boot parameters
 echo_local -n "Scanning for Bootparameters..."
 getParameter newroot "/mnt/newroot" &>/dev/null
-getParameter cluster_conf $cluster_conf &>/dev/null
 getParameter debug $debug &>/dev/null
 getParameter step $stepmode &>/dev/null
 getParameter dstep $dstepmode &>/dev/null
@@ -141,7 +136,7 @@ wait
 
 echo_local -n "Validating cluster configuration."
 exec_local cc_validate
-return_code || breakp $(errormsg err_cc_validate $cluster_conf)
+return_code || breakp $(errormsg err_cc_validate $repository_get_value cluster_conf)
 step "Successfully validated cluster configuration" "ccvalidate"
 
 # get number of nodeids and change float to int
@@ -151,11 +146,11 @@ nodes=${nodes:-0}
 nodeid=$(getParameter nodeid $(cc_getdefaults nodeid))
 # No need for hwdetection if either nodeid is set or nodes==1 or simulation mode is enabled
 if [ -z "$nodeid" ] || ([ "$nodes" -ne 0 ] && [ "$nodes" -gt 1 ]) && ([ -z "$simulation" ] || [ "$simulation" -ne 1 ]) ; then
-  num_names=$(cc_get_nic_names "" "" "" $(repository_get_value cluster_conf) | wc -w)
-  num_drivers=$(cc_get_nic_drivers "" "" "" $(repository_get_value cluster_conf) | wc -w)
+  num_names=$(cc_get_nic_names | wc -w)
+  num_drivers=$(cc_get_nic_drivers | wc -w)
   drivers=""
   if [ $num_drivers -ge $num_names ]; then
-  	drivers=$(cc_get_nic_drivers "" "" "" $(repository_get_value cluster_conf))
+  	drivers=$(cc_get_nic_drivers)
   fi
   hardware_detect $drivers
   unset num_names num_drivers drivers
@@ -184,7 +179,7 @@ sourceRootfsLibs ${predir}
 success
 
 # Just load nic drivers
-_ipConfig=$(cluster_ip_config "$(repository_get_value cluster_conf)" "$(repository_get_value nodename)" "" "$(repository_get_value nodeid)")
+_ipConfig=$(cluster_ip_config "$(repository_get_value nodeid)")
 [ -n "$_ipConfig" ] && ( [ -z "$(repository_get_value ipConfig)" ] || [ "$(repository_get_value ipConfig)" = "cluster" ] ) && repository_store_value ipConfig "$_ipConfig"
 
 echo_local -n "Scanning other parameters "
@@ -329,17 +324,7 @@ for ipconfig in $networkipconfig $vlanipconfig $bridgeipconfig $restartipconfig;
 done
 step "Network started" "netstart"
 
-bridges=$(cc_auto_getbridges $(repository_get_value cluster_conf) $(repository_get_value nodename))
-if [ -n $bridges ]; then
-  for bridge in $bridges; do
-     echo_local -n "Setting up network bridge $bridge"
-     network_setup_bridge $bridge $(repository_get_value nodename) $(repository_get_value cluster_conf)
-     return_code $?
-  done
-  step "Network bridges setup finished" "netbridge"
-fi
-
-cc_auto_syslogconfig "$(repository_get_value cluster_conf)" "$(repository_get_value nodename)" / "no" "$(repository_get_value syslog_logfile)"
+cc_auto_syslogconfig "$(repository_get_value nodeid)" / "no" "$(repository_get_value syslog_logfile)"
 is_syslog=$?
 if [ $is_syslog -eq 0 ]; then
   cc_syslog_start
@@ -377,11 +362,11 @@ clusterfs_load $(repository_get_value lockmethod)
 return_code
 step "Cluster, modules loaded" "clusterload"
 
-cc_auto_hosts $(repository_get_value cluster_conf)
+cc_auto_hosts
 
 if [ $(repository_get_value chrootneeded) -eq 0 ]; then
   echo_local -n "Building comoonics chroot environment"
-  res=( $(build_chroot $(repository_get_value cluster_conf) $(repository_get_value nodename)) )
+  res=( $(build_chroot $(repository_get_value nodeid)) )
   repository_store_value chroot_mount ${res[0]}
   repository_store_value chroot_path ${res[1]}
   return_code $?
@@ -391,7 +376,7 @@ fi
 
 # but only if /dev is not the same inode as $chroot_path /dev
 if [ $is_syslog -eq 0 ] && ! is_same_inode /dev $(repository_get_value chroot_path)/dev; then
-  cc_auto_syslogconfig $(repository_get_value cluster_conf) $(repository_get_value nodename) $(repository_get_value chroot_path) "no" $(repository_get_value syslog_logfile)
+  cc_auto_syslogconfig $(repository_get_value nodeid) $(repository_get_value chroot_path) "no" $(repository_get_value syslog_logfile)
   cc_syslog_start $(repository_get_value chroot_path) no_klog
   step "Syslog services started in chroot $(repository_get_value chroot_path)" "syslogchroot"
 fi
@@ -476,16 +461,16 @@ step "CDSL tree mounted" "cdsl"
 # FIXME: Remove line
 #bootlog="/var/log/comoonics-boot.log"
 
-filesystems=$(cc_get $(repository_get_value cluster_conf) filesystem_dest $(repository_get_value nodeid))
+filesystems=$(cc_get filesystem_dest $(repository_get_value nodeid))
 if [ $? -eq 0 ] && [ -n "$filesystems" ]; then
   for dest in $filesystems; do
-    fstype=$(cc_get $(repository_get_value cluster_conf) filesystem_dest_fstype $(repository_get_value nodeid) $dest)
-    source=$(cc_get $(repository_get_value cluster_conf) filesystem_dest_source $(repository_get_value nodeid) $dest)
+    fstype=$(cc_get filesystem_dest_fstype $(repository_get_value nodeid) $dest)
+    source=$(cc_get filesystem_dest_source $(repository_get_value nodeid) $dest)
     [ "$fstype" = "bind" ] && source=$(repository_get_value newroot)/$source
-    mountopts=$(cc_get $(repository_get_value cluster_conf) filesystem_dest_mountopts $(repository_get_value nodeid) $dest)
-    mountwait=$(cc_get $(repository_get_value cluster_conf) filesystem_dest_mountwait $(repository_get_value nodeid) $dest)
-    mounttimes=$(cc_get $(repository_get_value cluster_conf) filesystem_dest_mounttimes $(repository_get_value nodeid) $dest)
-    dest=$(repository_get_value newroot)/$(cc_get $(repository_get_value cluster_conf) filesystem_dest_dest $(repository_get_value nodeid) $dest)
+    mountopts=$(cc_get filesystem_dest_mountopts $(repository_get_value nodeid) $dest)
+    mountwait=$(cc_get filesystem_dest_mountwait $(repository_get_value nodeid) $dest)
+    mounttimes=$(cc_get filesystem_dest_mounttimes $(repository_get_value nodeid) $dest)
+    dest=$(repository_get_value newroot)/$(cc_get filesystem_dest_dest $(repository_get_value nodeid) $dest)
     [ -z "$mountwait" ] && mountwait="$(repository_get_value mountwait)"
     [ -z "$mounttimes" ] && mountwait="$(repository_get_value mounttimes)"
     if lvm_check $source; then
@@ -651,329 +636,3 @@ echo_local "Starting init-process ($init_cmd)..."
 exit_linuxrc 0 "$init_cmd" "$newroot" "$chrootneeded"
 
 #********** main
-
-###############
-# $Log: linuxrc.generic.sh,v $
-# Revision 1.113  2011-02-28 09:02:11  marc
-# nodeid will be automatically set to 1 if only one node is configurred.
-#
-# Revision 1.112  2011/02/22 16:00:49  marc
-# fixed a typo in nodeid detection
-#
-# Revision 1.111  2011/02/21 16:17:07  marc
-# - if only one nodeid is present this one will be used if in question
-#
-# Revision 1.110  2011/02/16 14:32:55  marc
-# - implemented that it might also work without existant cdsl environment.
-#
-# Revision 1.109  2011/02/11 11:15:10  marc
-# added no_klog to cc_auto_syslog_config when being started.
-#
-# Revision 1.108  2011/02/08 09:57:41  marc
-# fixed issue with creating syslog configuration
-#
-# Revision 1.107  2011/02/03 14:51:16  marc
-# Fixed bug (for all NFS sharedroots):
-#   start local logging syslog in anycase where chroot is needed.
-#   But don't start if chroot is not needed.
-#
-# Revision 1.106  2011/02/03 14:49:46  marc
-# only restart syslog if chroot is needed.
-#
-# Revision 1.105  2011/02/02 09:18:28  marc
-# starting syslog in the chroot again with logging to localhost.
-#
-# Revision 1.104  2011/01/28 12:57:42  marc
-# Bug #398 added /var/run to xtab so that it would not be umounted before reboot script starts.
-#
-# Revision 1.103  2010/12/07 13:28:55  marc
-# added Setting postsettings in initrd
-#
-# Revision 1.102  2010/09/01 15:19:12  marc
-#   - added no_klog option
-#   - spread copying of logs to two steps
-#
-# Revision 1.101  2010/08/19 09:24:01  marc
-# - fixed typo
-#
-# Revision 1.100  2010/08/19 07:41:11  marc
-# moved setHWClock to gfs_services_start in gfs-lib.sh
-#
-# Revision 1.99  2010/08/18 11:48:04  marc
-#  setHWClock will only be called when chroot is mounted
-#
-# Revision 1.98  2010/07/08 08:15:48  marc
-# - errormsg reworked
-# - reset nodeid/name if set in breakp shell
-# - moved stopping of syslog down
-#
-# Revision 1.97  2010/06/29 19:00:06  marc
-# moved killing of syslog down
-#
-# Revision 1.96  2010/06/25 12:27:12  marc
-# upstream move. Calling *_get_valid_params for either clusterparams and fsparams.
-#
-# Revision 1.95  2010/06/17 08:18:19  marc
-# - moved move_dev before services being restarted
-# - added vg activation for additional fs if being used.
-#
-# Revision 1.94  2010/06/08 13:45:54  marc
-# add scsi_failover to restart_scsi_newroot
-#
-# Revision 1.93  2010/05/27 09:54:09  marc
-# - removed iscsistart (now in hardware-lib.sh)
-# - added rootsource to lvm functions (only activate vg for rootfs)
-#
-# Revision 1.92  2010/04/23 10:13:32  marc
-# Fixed bug that no xtab would be created.
-#
-# Revision 1.91  2010/04/13 14:07:58  marc
-# support for scsi_failover and scsi_driver as bootparameter
-#
-# Revision 1.90  2010/03/08 13:06:28  marc
-# - added sematic to check if / is mounted ro and then do no rw action
-# - fixed bug with mountopts (ro/rw)
-# - fixed bug with scsi-failover and scsifailover as bootparameter
-#
-# Revision 1.89  2010/02/21 12:05:56  marc
-# there are no mount_opts but mountopts
-#
-# Revision 1.88  2010/02/05 12:46:24  marc
-# - removed format characters or tabs or newlines where unnecessary
-# - added being able to mount more filesystems other then only /
-#
-# Revision 1.87  2010/01/11 10:06:33  marc
-# PYTHONPATH will only be set if python is available.
-#
-# Revision 1.86  2010/01/04 13:26:50  marc
-# also passing nodeid to _ipConfig
-#
-# Revision 1.85  2009/12/09 10:58:42  marc
-# cosmetics
-# implemented move_dev function instead of plain here.
-#
-# Revision 1.84  2009/12/09 09:07:01  marc
-# cosmetics
-#
-# Revision 1.83  2009/09/28 13:12:41  marc
-# - Reimplemented syslog functionality
-# - Removed deps to output channels 3,4
-# - Some typos
-#
-# Revision 1.82  2009/08/19 16:10:44  marc
-# another fix for bug358
-#
-# Revision 1.81  2009/08/11 09:59:29  marc
-# Fixed bug #358 Initramfs consumes more and more during runtime. Which can lead to no free memory
-#
-# Revision 1.80  2009/06/04 15:18:54  reiner
-# Modified usbLoad function. Now it works again and it is used to add USB keyboard support during boot process.
-#
-# Revision 1.79  2009/06/04 07:41:58  reiner
-# Added additional LoadUSB code so that USB Keyboards work in Expertshell and before Interactive Mode begins.
-#
-# Revision 1.78  2009/04/20 07:12:44  marc
-# - fixed a bug where a brigde would not eventually come up with binded to a bond interface (strange!)
-#
-# Revision 1.77  2009/04/14 14:58:49  marc
-# - small bugfix with stepmode and i being pressed and step instead of set
-# - added support for xfiles
-#
-# Revision 1.76  2009/03/06 15:03:02  marc
-# fixed typos
-#
-# Revision 1.75  2009/03/06 13:25:48  marc
-# - removed initial start of udev as it should be started implicitly on demand
-# - fixed bug in network setup because devices would have been created multiple times
-# - some typos
-#
-# Revision 1.74  2009/02/27 10:34:10  marc
-# bugfix with static hardware detection
-#
-# Revision 1.73  2009/02/24 12:03:46  marc
-# * added restricted hardwaredetection when drivers are specified
-#
-# Revision 1.72  2009/02/20 09:51:22  marc
-# small changes in NIC detection
-#
-# Revision 1.71  2009/02/18 18:05:05  marc
-# added driver for nic
-#
-# Revision 1.70  2009/02/08 14:23:49  marc
-# added md
-#
-# Revision 1.69  2009/02/03 20:36:50  marc
-# bugfix for multiple nics
-#
-# Revision 1.68  2009/02/02 20:13:40  marc
-# - Bugfix in hardware detection
-# - Introduced function to not load storage when not needed
-#
-# Revision 1.67  2009/01/29 15:58:24  marc
-# Upstream with new HW Detection see bug#325
-#
-# Revision 1.66  2009/01/28 12:57:44  marc
-# Many changes:
-# - moved some functions to std-lib.sh
-# - no "global" variables but repository
-# - bugfixes
-# - support for step with breakpoints
-# - errorhandling
-# - little clean up
-# - better seperation from cc and rootfs functions
-#
-# Revision 1.65  2008/12/01 12:31:54  marc
-# - more simulation stuff
-# - fixed Bugs within filesystem_ro/filesystem_rw
-#
-# Revision 1.64  2008/11/18 08:48:28  marc
-# - implemented RFE-BUG 289
-#   - possiblilty to execute initrd from shell or insite initrd to analyse behaviour
-#
-# Revision 1.63  2008/10/28 12:51:48  marc
-# fixed bug#288 where default mountoptions would always include noatime,nodiratime
-#
-# Revision 1.62  2008/10/28 12:25:47  marc
-# bugfix
-#
-# Revision 1.61  2008/10/14 10:57:07  marc
-# Enhancement #273 and dependencies implemented (flexible boot of local fs systems)
-#
-# Revision 1.60  2008/08/14 14:38:11  marc
-# - changed parameter orders first clustertype/rootfs then the rest
-# - hardware detection order (starting udev first)
-# - more small fixes
-#
-# Revision 1.59  2008/07/03 12:45:27  mark
-# rewrite of parameter collection to use new getParameter method
-#
-# Revision 1.58  2008/06/10 09:53:33  marc
-# - beautified syslog handling
-#
-# Revision 1.57  2008/05/17 08:32:18  marc
-# changed the time the /etc/hosts is created a little bit to later when nics are already up.
-#
-# Revision 1.56  2008/05/10 19:42:33  marc
-# - Implemened RFE#218 generating right hosts also with using dhcp.
-#
-# Revision 1.55  2008/03/18 17:41:52  marc
-# - fixed bug for not detecting failover in all cases.
-# - Technology preview for drbd added.
-#
-# Revision 1.54  2008/01/24 15:25:21  marc
-# fixed a syntax error.
-#
-# Revision 1.53  2008/01/24 13:26:12  marc
-# - BUG#179 xen detection will not work with RHEL4 guest
-# - BUG#178 nousb parameter can be specified
-# - rewrote part of iscsi
-#
-# Revision 1.52  2007/12/07 16:39:59  reiner
-# Added GPL license and changed ATIX GmbH to AG.
-#
-# Revision 1.51  2007/10/18 08:04:38  mark
-# fixes bug #144
-#
-# Revision 1.50  2007/10/16 08:02:41  marc
-# - added get_rootsource
-# - fixed BUG 142
-# - lvm switch support
-#
-# Revision 1.49  2007/10/10 22:48:08  mark
-# fixes BZ139
-#
-# Revision 1.48  2007/10/10 15:09:48  mark
-# move usbstart out of for-loop
-#
-# Revision 1.47  2007/10/10 12:23:27  mark
-# added syslog to chroot
-#
-# Revision 1.46  2007/10/10 11:05:22  marc
-# readded inclusion of iscsi-lib if available
-#
-# Revision 1.45  2007/10/09 16:48:33  mark
-# restart some cluster services in newroot (clvmd)
-#
-# Revision 1.44  2007/10/09 14:24:27  marc
-# usbLoad fixed and more stabilized
-#
-# Revision 1.43  2007/10/08 16:13:55  mark
-# source distrodependent boot-lib.sh
-#
-# Revision 1.42  2007/10/05 10:07:56  marc
-# - added xen-support
-#
-# Revision 1.41  2007/10/02 12:16:02  marc
-# - cosmetic changes to prevent unnecesarry ugly FAILED
-#
-# Revision 1.40  2007/09/27 09:34:32  marc
-# - comment out copy_relevant_files because of problems with kudzu
-#
-# Revision 1.39  2007/09/26 11:56:02  marc
-# cosmetic changes
-#
-# Revision 1.38  2007/09/26 11:40:48  mark
-# moved network config before storage config
-#
-# Revision 1.37  2007/09/18 10:06:36  mark
-# removed unneeded code
-#
-# Revision 1.36  2007/09/14 13:28:54  marc
-# - Fixed Bug BZ#31
-#
-# Revision 1.35  2007/09/07 08:04:18  mark
-# added cleanup_initrd
-#
-# Revision 1.34  2007/08/06 15:56:14  mark
-# new chroot environment
-# bootimage release 1.3
-#
-# Revision 1.33  2007/05/23 09:15:35  mark
-# added support fur RHEL4u5
-#
-# Revision 1.32  2007/03/09 18:01:11  mark
-# added support for nash like switchRoot
-#
-# Revision 1.31  2007/02/09 11:06:16  marc
-# added nodeid and nodename
-#
-# Revision 1.30  2007/01/19 13:40:20  mark
-# init_cmd uses full cmdline /proc/cmdline like nash
-# fixes bug #21
-#
-# Revision 1.29  2006/11/10 11:37:10  mark
-# modified quorumack user input
-# added retry:3 waittime:5 to clusterfs_mount
-#
-# Revision 1.28  2006/10/06 08:35:15  marc
-# added quorumack functionality
-#
-# Revision 1.27  2006/07/19 15:12:26  marc
-# mulitpath dmapper bugfix with devices
-#
-# Revision 1.26  2006/07/13 14:14:57  marc
-# udev_start as function
-#
-# Revision 1.25  2006/07/03 08:32:03  marc
-# added step
-#
-# Revision 1.24  2006/06/19 15:56:13  marc
-# added devicemapper support
-#
-# Revision 1.23  2006/06/07 09:42:23  marc
-# *** empty log message ***
-#
-# Revision 1.22  2006/05/12 13:02:24  marc
-# Major changes for Version 1.0.
-# Loads of Bugfixes everywhere.
-#
-# Revision 1.21  2006/05/07 11:34:58  marc
-# major change to version 1.0.
-# Complete redesign.
-#
-# Revision 1.20  2006/05/03 12:46:24  marc
-# added documentation
-#
-# Revision 1.19  2006/01/28 15:10:23  marc
-# added cvs tags
-#
