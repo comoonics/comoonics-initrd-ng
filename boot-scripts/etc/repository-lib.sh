@@ -1,8 +1,4 @@
 #
-# $Id: repository-lib.sh,v 1.10 2011-02-11 11:13:55 marc Exp $
-#
-# @(#)$File$
-#
 # Copyright (c) 2001 ATIX GmbH, 2008 ATIX AG.
 # Einsteinstrasse 10, 85716 Unterschleissheim, Germany
 # All rights reserved.
@@ -33,7 +29,7 @@
 # Prefix for every variable found in the repository
 [ -z "$REPOSITORY_PREFIX" ] && REPOSITORY_PREFIX=""
 # Where to store the repository
-[ -z "$REPOSITORY_PATH" ] && REPOSITORY_PATH="/tmp"
+[ -z "$REPOSITORY_PATH" ] && REPOSITORY_PATH="/var/cache/comoonics-repository"
 # Repository name that is prefixed for any file used by the repository followed by a "."
 [ -z "$REPOSITORY_DEFAULT" ] && REPOSITORY_DEFAULT="comoonics"
 [ -z "$REPOSITORY_FS" ] && REPOSITORY_FS="_"
@@ -58,6 +54,23 @@ repository_load() {
 }
 #******* repository_load
 
+
+#****f* repository-lib.sh/repository_init
+#  NAME
+#    repository_init
+#  SYNOPSIS
+#    function repository_init(name)
+#  DESCRIPTION
+#    Initializes the repository into environment.
+#  IDEAS
+#  SOURCE
+#
+repository_init() {
+	local repository="$1"
+	[ -n "$REPOSITORY_PATH" ] && [ -d "$REPOSITORY_PATH" ] || mkdir -p "$REPOSITORY_PATH"
+	repository_store_value "repositoryinit" "1" "$repository" "" 1
+}
+#******* repository_init
 
 #****f* repository-lib.sh/repository_normalize_value
 #  NAME
@@ -88,11 +101,14 @@ repository_normalize_value() {
 #
 repository_store_value() {
 	local key=$(repository_normalize_value $1)
-	local value="__set__"
-	if [ $# -gt 1 ]; then
-		value="$2"
+	local default="__set__"
+	if [ $# -ge 4 ]; then
+		default=$4
 	fi
+	local value=${2:-$default}
 	local repository="$3"
+	local skipinit=$5
+	[ -n "$skipinit" ] || repository_has_key repositoryinit || repository_init $repository
 	[ -z "$repository" ] && repository=${REPOSITORY_DEFAULT}
 	#eval "${REPOSITORY_PREFIX}${repository}${REPOSITORY_FS}${key}=\"$value\""
 	echo -n "$value" > ${REPOSITORY_PATH}/${REPOSITORY_PREFIX}${repository}.$key
@@ -336,38 +352,3 @@ repository_del_parameters() {
     done
 }
 #******** repository_del_parameters
-
-#############
-# $Log: repository-lib.sh,v $
-# Revision 1.10  2011-02-11 11:13:55  marc
-# - repository_normalize_value
-#     - cosmetic change
-#
-# Revision 1.9  2010/07/08 08:11:39  marc
-# - added function repository_store_parameters and repository_del_parameters being used by exec_local
-# - removed that the repository_values are stored in the environment (obsolete and not used)
-#
-# Revision 1.8  2010/02/09 21:44:25  marc
-# typo
-#
-# Revision 1.7  2010/02/05 12:40:40  marc
-# - repository_load is obsolete
-#
-# Revision 1.6  2010/01/11 10:06:01  marc
-# bugfix for multiple attributes for attribute
-#
-# Revision 1.5  2010/01/04 13:14:42  marc
-# typos
-#
-# Revision 1.4  2009/09/28 13:05:29  marc
-# - backported repository-lib from osr-dracut
-# - moved to new implementation multiple files instead of one repository file
-#
-# Revision 1.1  2009/08/13 09:25:46  marc
-# initial revision
-#
-# Revision 1.3  2009/01/28 12:55:50  marc
-# - some bugfixes
-# - cleaned the code
-# - added functions to make better use of it (clean, del, append)
-#
