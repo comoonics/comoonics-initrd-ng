@@ -150,15 +150,12 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/std-lib.sh \
   boot-scripts/etc/syslog-lib.sh \
   boot-scripts/etc/xen-lib.sh \
-  boot-scripts/etc/rhel4/boot-lib.sh \
-  boot-scripts/etc/rhel4/gfs-lib.sh \
-  boot-scripts/etc/rhel4/hardware-lib.sh \
-  boot-scripts/etc/rhel4/network-lib.sh \
   boot-scripts/etc/rhel5/boot-lib.sh \
   boot-scripts/etc/rhel5/gfs-lib.sh \
   boot-scripts/etc/rhel5/hardware-lib.sh \
   boot-scripts/etc/rhel5/network-lib.sh \
   boot-scripts/etc/rhel5/nfs-lib.sh \
+  boot-scripts/etc/rhel5/selinux-lib.sh \
   boot-scripts/etc/rhel6/boot-lib.sh \
   boot-scripts/etc/rhel6/hardware-lib.sh \
   boot-scripts/etc/rhel6/network-lib.sh \
@@ -249,14 +246,13 @@ CFG_FILES=basefiles.list \
     files.initrd.d/rhel/grub.list \
     files.initrd.d/rhel/empty.list \
     files.initrd.d/rhel/network.list \
-	files.initrd.d/rhel4/configs.list \
-	files.initrd.d/rhel4/empty.list \
 	files.initrd.d/rhel5/configs.list \
 	files.initrd.d/rhel5/empty.list \
     files.initrd.d/rhel5/fence_vmware.list \
     files.initrd.d/rhel5/rhcs.list \
     files.initrd.d/rhel6/base.list \
     files.initrd.d/rhel6/configs.list \
+    files.initrd.d/rhel6/dm_multipath.list \
     files.initrd.d/rhel6/network.list \
     files.initrd.d/sles/base.list \
     files.initrd.d/sles/empty.list \
@@ -279,6 +275,7 @@ CFG_FILES=basefiles.list \
     rpms.initrd.d/ext2.list \
     rpms.initrd.d/fencexvm.list \
     rpms.initrd.d/fencedeps.list \
+    rpms.initrd.d/comoonics-flexd.list \
     rpms.initrd.d/xen.list \
     rpms.initrd.d/ocfs2.list \
     rpms.initrd.d/mdadm.list \
@@ -295,11 +292,6 @@ CFG_FILES=basefiles.list \
     rpms.initrd.d/rhel/nfs.list \
     rpms.initrd.d/rhel/python.list \
     rpms.initrd.d/rhel/selinux.list \
-	rpms.initrd.d/rhel4/empty.list \
-    rpms.initrd.d/rhel4/gfs1.list \
-    rpms.initrd.d/rhel4/hardware.list \
-    rpms.initrd.d/rhel4/nfs.list \
-    rpms.initrd.d/rhel4/rhcs.list \
     rpms.initrd.d/rhel5/base.list \
 	rpms.initrd.d/rhel5/empty.list \
 	rpms.initrd.d/rhel5/perl.list \
@@ -340,6 +332,7 @@ CFG_FILES=basefiles.list \
     pre.mkinitrd.d/20-clusterconf-validate.sh \
     pre.mkinitrd.d/30-rootfs-check.sh \
     pre.mkinitrd.d/35-rootdevice-check.sh \
+    pre.mkinitrd.d/50-bootimage-check.sh \
     pre.mkinitrd.d/50-cdsl-check.sh \
     pre.mkinitrd.d/60-osr-repository-generate.sh \
     post.mkinitrd.d/01-create-mapfiles.sh \
@@ -426,7 +419,7 @@ RPM_PACKAGE_SOURCE_DIR=$(RPM_PACKAGE_DIR)/SOURCES
 
 # Which directories are used for installation
 CHANNELBASEDIR=/atix/dist-mirrors
-DISTROS=rhel4 rhel5 rhel6 sles10 fedora sles11
+DISTROS=rhel5 rhel6 sles10 fedora sles11
 PRODUCTNAME=comoonics
 PRODUCTVERSION=5.0
 CHANNELNAMES=preview:base addons:extras
@@ -563,18 +556,9 @@ rpmbuild: archive
 	cp ../$(ARCHIVE_FILE) $(RPM_PACKAGE_SOURCE_DIR)/
 	rpmbuild -ba --target=noarch ./comoonics-bootimage.spec
 	
-	
-rpmbuild-listfiles-el4: archive
-	cp ../$(ARCHIVE_FILE) $(RPM_PACKAGE_SOURCE_DIR)/
-	rpmbuild -ba  --target=noarch ./comoonics-bootimage-listfiles-el4.spec
-
 rpmbuild-listfiles-el5: archive
 	cp ../$(ARCHIVE_FILE) $(RPM_PACKAGE_SOURCE_DIR)/
 	rpmbuild -ba  --target=noarch ./comoonics-bootimage-listfiles-el5.spec
-
-rpmbuild-initscripts-el4: archive
-	cp ../$(ARCHIVE_FILE_INITSCRIPTS) $(RPM_PACKAGE_SOURCE_DIR)/
-	rpmbuild -ba  --target=noarch ./comoonics-bootimage-initscripts-el4.spec
 
 rpmbuild-initscripts-el5: archive
 	cp ../$(ARCHIVE_FILE_INITSCRIPTS) $(RPM_PACKAGE_SOURCE_DIR)/
@@ -622,12 +606,12 @@ channelbuild:
 	@for channel in $(CHANNELNAMES); do \
         channelname=`echo $$channel | cut -f1 -d:`; \
 	    for distribution in $(DISTROS); do \
-              $(CHANNELBASEDIR)/updaterepositories -r $(PRODUCTNAME)/$(PRODUCTVERSION)/$$channelname/$$distribution; \
+              $(CHANNELBASEDIR)/updaterepositories -s -r $(PRODUCTNAME)/$(PRODUCTVERSION)/$$channelname/$$distribution; \
 	    done; \
 	 done 
 
 .PHONY:rpm	
-rpm: test rpmbuild rpmbuild-initscripts-el4 rpmbuild-initscripts-el5 rpmbuild-initscripts-rhel6 rpmbuild-initscripts-sles10 rpmbuild-initscripts-sles11 rpmbuild-initscripts-fedora rpmsign
+rpm: test rpmbuild rpmbuild-initscripts-el5 rpmbuild-initscripts-rhel6 rpmbuild-initscripts-sles10 rpmbuild-initscripts-sles11 rpmbuild-initscripts-fedora rpmsign
 
 .PHONY: channel
 channel: rpm channelcopy channelbuild
