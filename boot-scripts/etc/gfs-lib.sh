@@ -1,8 +1,4 @@
 #
-# $Id: gfs-lib.sh,v 1.80 2011-02-14 15:32:38 marc Exp $
-#
-# @(#)$File$
-#
 # Copyright (c) 2001 ATIX GmbH, 2007 ATIX AG.
 # Einsteinstrasse 10, 85716 Unterschleissheim, Germany
 # All rights reserved.
@@ -42,15 +38,16 @@
 
 [ -z "$default_lockmethod" ] && default_lockmethod="lock_dlm"
 [ -z "$default_mountopts" ] && default_mountopts="noatime"
-[ -z "$ccs_xml_query" ] && ccs_xml_query="/usr/bin/com-queryclusterconf"
-[ -z "$cl_check_nodes" ] &&cl_check_nodes="/usr/bin/cl_checknodes"
+repository_has_key ccs_xml_query || repository_store_value ccs_xml_query "/usr/bin/com-queryclusterconf"
+repository_has_key cl_check_nodes ||  repository_store_value cl_check_nodes "/usr/bin/cl_checknodes"
 
 #****d* boot-scripts/etc/gfs-lib.sh/cluster_conf
 #  NAME
 #    cluster_conf
 #  DESCRIPTION
 #    clusterconfig file defaults to /etc/cluster/cluster.conf
-[ -z "$cluster_conf" ] && cluster_conf="/etc/cluster/cluster.conf"
+#    will implicitly be stored in cluster_conf repository
+[ -z "$cluster_conf" ] && cluster_conf=$(getParameter cluster_conf "/etc/cluster/cluster.conf")
 #******** cluster_conf
 
 #if [ ! -e $cluster_conf ]; then
@@ -142,33 +139,41 @@ function gfs_getdefaults() {
 }
 #********** clusterfs_getdefaults
 
+# helper function to call the cluster query command
+# ccs_xml_query query
+function ccs_xml_query {
+   local cluster_conf=$(repository_get_value cluster_conf)
+   local query_map=$(repository_get_value osrquerymap)
+   local xml_cmd=$(repository_get_value ccs_xml_query)
+   local opts=
+   
+   [ -n "$cluster_conf" ] && opts="--filename $cluster_conf"
+   [ -n "$query_map" ] && opts="$opts --querymapfile $query_map"
+
+   $xml_cmd $opts $@
+}	
+
 #****f* clusterfs-lib.sh/gfs_validate
 #  NAME
 #    gfs_validate
 #  SYNOPSIS
-#    gfs_validate
+#    gfs_validate(xml_cmd)
 #  DESCRIPTION
-#    validates the cluster configuration. 
+#    validates the cluster configuration.
+#    Both cluster.conf and $ccs_xml_query are guessed from the repository. 
 #  SOURCE
 function gfs_validate() {
-  local cluster_conf=$1
-  local xml_cmd=$2
-  
-  [ -z "$cluster_conf" ] && cluster_conf="/etc/cluster/cluster.conf"
-  
+  local cluster_conf=$(repository_get_value cluster_conf /etc/cluster/cluster.conf)
   # either cluster_conf exists which should be default or it is pregenerated
   if [ -f "$cluster_conf" ]; then
-    [ -z "$xml_cmd" ] && xml_cmd="${ccs_xml_query} -f $cluster_conf"
-
-    errors=$($xml_cmd -q nodeids 2>&1 >/dev/null)
+    errors=$(ccs_xml_query -q nodeids 2>&1 >/dev/null)
     if [ -n "$errors" ]; then
   	  return 1
     else
       return 0
     fi
-  else
-    return $(osr_validate)
   fi
+  return 1
 }
 #*********** cc_validate
 
@@ -176,28 +181,13 @@ function gfs_validate() {
 #  NAME
 #    gfs_get
 #  SYNOPSIS
-#    gfs_get [cluster_conf] [querymap] opts
+#    gfs_get opts
 #  DESCRIPTTION
 #    returns the name of the cluster.
 #  SOURCE
 #
 gfs_get() {
-   local cluster_conf=$(repository_get_value cluster_conf)
-   local query_map=$(repository_get_value osrquerymap)
-   
-   if [ -f "$1" ]; then
-   	 cluster_conf=$1
-   	 shift
-   fi
-   if [ -f "$1" ]; then
-     query_map=$1
-     shift
-   fi
-   [ -n "$cluster_conf" ] && opts="--filename $cluster_conf"
-   [ -n "$query_map" ] && opts="$opts --querymapfile $query_map"
-
-   local xml_cmd="${ccs_xml_query} $opts"
-   $xml_cmd -q $@
+	ccs_xml_query -q "$@"
 }
 # *********** gfs_get
 
@@ -205,13 +195,13 @@ gfs_get() {
 #  NAME
 #    gfs_get_clustername
 #  SYNOPSIS
-#    gfs_get_clustername(cluster_conf)
+#    gfs_get_clustername()
 #  DESCRIPTTION
 #    returns the name of the cluster.
 #  SOURCE
 #
 gfs_get_clustername() {
-   gfs_get clustername_name $1	
+   gfs_get clustername_name	
 }
 # *********** gfs_get_clustername
 
@@ -219,24 +209,14 @@ gfs_get_clustername() {
 #  NAME
 #    gfs_convert
 #  SYNOPSIS
-#    gfs_convert(cluster_conf)
+#    gfs_convert(clustertype)
 #  DESCRIPTTION
-#    returns the name of the cluster.
+#    converts the current cluster configuration to the specified type.
+#    Currently only supported for ocfs2 cluster configuration.
 #  SOURCE
 #
 gfs_convert() {
-   local cluster_conf=$(repository_get_value cluster_conf)
-   local clustertype
-   if [ -f "$1" ]; then
-   	 cluster_conf="$1"
-   	 shift
-   fi
-   
-   [ -n "$1" ] && clustertype="$1"
-   [ -z "$clustertype" ] && clustertype=$(repository_get_value rootfs)
-
-   local xml_cmd="${ccs_xml_query} -f $cluster_conf"
-   $xml_cmd convert $clustertype
+   ccs_xml_query convert ${1:-$(repository_get_value rootfs)}
 }
 # *********** gfs_convert
 
@@ -244,18 +224,13 @@ gfs_convert() {
 #  NAME
 #    gfs_get_rootfs
 #  SYNOPSIS
-#    gfs_get_rootfs(cluster_conf, nodeid, nodename)
+#    gfs_get_rootfs(nodeidornodename)
 #  DESCRIPTTION
 #    returns the type of the root filesystem.
 #  SOURCE
 #
 function gfs_get_rootfs() {
-   local cluster_conf=$1
-   local nodeid=$2
-   local nodename=$3
-   [ -z "$nodename" ] && nodename=$(getParameter nodename)
-   local xml_cmd="${ccs_xml_query} -f $cluster_conf"
-   $xml_cmd -q rootfs $nodename
+   gfs_get rootvolume_fstype "$@"
 }
 #******** gfs_get_rootfs
 
@@ -270,13 +245,24 @@ function gfs_get_rootfs() {
 #  SOURCE
 #
 function gfs_get_rootvolume() {
-   local xml_file=$1
-   local hostname=$2
-   [ -z "$hostname" ] && hostname=$(gfs_get_nodename $xml_file)
-   local xml_cmd="${ccs_xml_query} -f $xml_file"
-   $xml_cmd -q rootvolume $hostname
+   gfs_get rootvolume_name "$@"
 }
 #************ gfs_get_rootvolume
+
+#****f* gfs-lib.sh/gfs_get_mountopts
+#  NAME
+#    gfs_get_mountopts
+#  SYNOPSIS
+#    gfs_get_mountopts(nodenameorid)
+#  DESCRIPTION
+#    Gets the mountopts for this node
+#  IDEAS
+#  SOURCE
+#
+function gfs_get_mountopts() {
+   gfs_get rootvolume_mountopts "$@"
+}
+#************ gfs_get_mountopts
 
 #****f* gfs-lib.sh/gfs_get_rootsource
 #  NAME
@@ -289,90 +275,9 @@ function gfs_get_rootvolume() {
 #  SOURCE
 #
 function gfs_get_rootsource() {
-   local xml_file=$1
-   local hostname=$2
-   [ -z "$hostname" ] && hostname=$(gfs_get_nodename $xml_file)
-   local xpath="/cluster/clusternodes/clusternode[@name=\"$hostname\"]/com_info/rootsource/@name"
-   local xml_cmd="${ccs_xml_query} -f $xml_file"
-   $xml_cmd -q query_value $xpath
+   gfs_get rootsource_name "$@"
 }
 #************ gfs_get_rootsource
-
-#****f* gfs-lib.sh/gfs_get_rootfs
-#  NAME
-#    gfs_get_rootfs
-#  SYNOPSIS
-#    gfs_get_rootfs(cluster_conf, nodename, [rootfs])
-#  DESCRIPTION
-#    Gets the root filesystem type for this node
-#    Default is ""
-#  IDEAS
-#  SOURCE
-#
-function gfs_get_rootfs() {
-   local xml_file=$1
-   local hostname=$2
-
-   [ -z "$hostname" ] && hostname=$(gfs_get_nodename $xml_file)
-   local xml_cmd="${ccs_xml_query} -f $xml_file"
-
-   local __rootfs=$($xml_cmd -q rootfs $hostname)
-
-   if [ -z "$__rootfs" ]; then
-     echo ""
-   else
-     echo $__rootfs
-   fi
-}
-#************ gfs_get_rootfs
-
-#****f* gfs-lib.sh/gfs_get_userspace_procs
-#  NAME
-#    gfs_get_userspace_procs
-#  SYNOPSIS
-#    gfs_get_userspace_procs(cluster_conf, nodename)
-#  DESCRIPTION
-#    gets userspace programs that are to be running dependent on rootfs
-#  SOURCE
-function gfs_get_userspace_procs() {
-  local clutype=$1
-  local rootfs=$2
-
-  echo -e "aisexec \n\
-ccsd \n\
-fenced \n\
-gfs_controld \n\
-dlm_controld \n\
-groupd \n\
-qdiskd \n\
-clvmd"
-}
-#******** gfs_get_userspace_procs
-
-
-#****f* gfs-lib.sh/gfs_get_mountopts
-#  NAME
-#    gfs_get_mountopts
-#  SYNOPSIS
-#    gfs_get_mountopts(cluster_conf, nodename)
-#  DESCRIPTION
-#    Gets the mountopts for this node
-#  IDEAS
-#  SOURCE
-#
-function gfs_get_mountopts() {
-   local xml_file=$1
-   local hostname=$2
-   [ -z "$hostname" ] && hostname=$(gfs_get_nodename $xml_file)
-   local xml_cmd="${ccs_xml_query} -f $xml_file"
-   _mount_opts=$($xml_cmd -q mountopts $hostname)
-   if [ -z "$_mount_opts" ]; then
-     echo $default_mountopts
-   else
-     echo $_mount_opts
-   fi
-}
-#************ gfs_get_mountopts
 
 #****f* gfs-lib.sh/gfs_get_chroot_mountpoint
 #  NAME
@@ -385,12 +290,7 @@ function gfs_get_mountopts() {
 #  SOURCE
 #
 function gfs_get_chroot_mountpoint() {
-   local xml_file=$1
-   local hostname=$2
-   [ -z "$hostname" ] && hostname=$(gfs_get_nodename $xml_file)
-   local xpath="/cluster/clusternodes/clusternode[@name=\"$hostname\"]/com_info/chrootenv/@mountpoint"
-   local xml_cmd="${ccs_xml_query} -f $xml_file"
-   $xml_cmd -q query_value $xpath
+   gfs_get chrootenv_mountpoint "$@"
 }
 #************ gfs_get_chroot_mountpoint
 
@@ -398,19 +298,14 @@ function gfs_get_chroot_mountpoint() {
 #  NAME
 #    gfs_get_chroot_fstype
 #  SYNOPSIS
-#    gfs_get_chroot_fstype(cluster_conf, nodename)
+#    gfs_get_chroot_fstype(nodename)
 #  DESCRIPTION
 #    Gets the filesystem type for the chroot environment of this node
 #  IDEAS
 #  SOURCE
 #
 function gfs_get_chroot_fstype() {
-   local xml_file=$1
-   local hostname=$2
-   [ -z "$hostname" ] && hostname=$(gfs_get_nodename $xml_file)
-   local xpath="/cluster/clusternodes/clusternode[@name=\"$hostname\"]/com_info/chrootenv/@fstype"
-   local xml_cmd="${ccs_xml_query} -f $xml_file"
-   $xml_cmd -q query_value $xpath
+   gfs_get chrootenv_fstype "$@"
 }
 #************ gfs_get_chroot_fstype
 
@@ -418,19 +313,14 @@ function gfs_get_chroot_fstype() {
 #  NAME
 #    gfs_get_chroot_device
 #  SYNOPSIS
-#    gfs_get_chroot_device(cluster_conf, nodename)
+#    gfs_get_chroot_device(nodenameorid)
 #  DESCRIPTION
 #    Gets the mountpoint for the chroot environment of this node
 #  IDEAS
 #  SOURCE
 #
 function gfs_get_chroot_device() {
-   local xml_file=$1
-   local hostname=$2
-   [ -z "$hostname" ] && hostname=$(gfs_get_nodename $xml_file)
-   local xpath="/cluster/clusternodes/clusternode[@name=\"$hostname\"]/com_info/chrootenv/@device"
-   local xml_cmd="${ccs_xml_query} -f $xml_file"
-   $xml_cmd -q query_value $xpath
+   gfs_get chrootenv_device "$@"
 }
 #************ gfs_get_chroot_device
 
@@ -438,19 +328,14 @@ function gfs_get_chroot_device() {
 #  NAME
 #    gfs_get_chroot_mountopts
 #  SYNOPSIS
-#    gfs_get_chroot_mountopts(cluster_conf, nodename)
+#    gfs_get_chroot_mountopts(nodenameorid)
 #  DESCRIPTION
 #    Gets the mount options for the chroot environment of this node
 #  IDEAS
 #  SOURCE
 #
 function gfs_get_chroot_mountopts() {
-   local xml_file=$1
-   local hostname=$2
-   [ -z "$hostname" ] && hostname=$(gfs_get_nodename $xml_file)
-   local xpath="/cluster/clusternodes/clusternode[@name=\"$hostname\"]/com_info/chrootenv/@mountoptions"
-   local xml_cmd="${ccs_xml_query} -f $xml_file"
-   $xml_cmd -q query_value $xpath
+   gfs_get chrootenv_mountopts "$@"
 }
 #************ gfs_get_chroot_mountopts
 
@@ -458,23 +343,16 @@ function gfs_get_chroot_mountopts() {
 #  NAME
 #    gfs_get_chroot_dir
 #  SYNOPSIS
-#    gfs_get_chroot_dir(cluster_conf, nodename)
+#    gfs_get_chroot_dir(nodename)
 #  DESCRIPTION
 #    Gets the directory for the chroot environment of this node
 #  IDEAS
 #  SOURCE
 #
 function gfs_get_chroot_dir() {
-   local xml_file=$1
-   local hostname=$2
-   [ -z "$hostname" ] && hostname=$(gfs_get_nodename $xml_file)
-   local xpath="/cluster/clusternodes/clusternode[@name=\"$hostname\"]/com_info/chrootenv/@chrootdir"
-   local xml_cmd="${ccs_xml_query} -f $xml_file"
-   $xml_cmd -q query_value $xpath
+   gfs_get chrootenv_chrootdir "$@"
 }
 #************ gfs_get_chroot_dir
-
-
 
 #****f* gfs-lib.sh/gfs_get_scsifailover
 #  NAME
@@ -487,55 +365,22 @@ function gfs_get_chroot_dir() {
 #  SOURCE
 #
 function gfs_get_scsifailover() {
-   local xml_file=$1
-   local nodename=$2
-   [ -z "$nodename" ] && nodename=$(getParameter nodename)
-   local xml_cmd="${ccs_xml_query} -f $xml_file"
-   local _scsifailover=$($xml_cmd -q scsifailover $nodename)
-   if [ -z "$_scsifailover" ]; then
-     echo ""
-   else
-     echo $_scsifailover
-   fi
+   gfs_get scsi_failover "$@"
 }
 #************ gfs_get_scsifailover
-
-#****f* gfs-lib.sh/gfs_get_node_hostname
-#  NAME
-#    gfs_get_node_hostname
-#  SYNOPSIS
-#    gfs_get_node_hostname(clusterconf, [nodename])
-#  DESCRIPTION
-#    returns the hostname for this node
-#  IDEAS
-#  SOURCE
-#
-function gfs_get_node_hostname() {
-   local xml_file=$1
-   local nodename=$2
-   [ -z "$nodename" ] && nodename=$(getParameter nodename)
-   local xml_cmd="${ccs_xml_query} -f $xml_file"
-   $xml_cmd -q hostname $nodename 2>/dev/null
-   return $?
-}
-#************ gfs_get_node_hostname
 
 #****f* gfs-lib.sh/gfs_get_nodename
 #  NAME
 #    gfs_get_nodename
 #  SYNOPSIS
-#    gfs_get_nodename(cluster_conf, netdev)
+#    gfs_get_nodename(hwid)
 #  DESCRIPTION
 #    gets for this very host the nodename (identified by the macaddress)
 #  IDEAS
 #  SOURCE
 #
 function gfs_get_nodename() {
-    local ccs_file=$1
-    local mac=$2
-
-    local xml_cmd="${ccs_xml_query}"
-    $xml_cmd -f $ccs_file -q nodename $mac
+	gfs_get nodename_by_hwid "$@"
 }
 #************ gfs_get_nodename
 
@@ -543,18 +388,14 @@ function gfs_get_nodename() {
 #  NAME
 #    gfs_get_nodename_by_id
 #  SYNOPSIS
-#    gfs_get_nodename_by_id(cluster_conf, id)
+#    gfs_get_nodename_by_id(id)
 #  DESCRIPTION
 #    gets for this very host the nodename (identified by the nodeid)
 #  IDEAS
 #  SOURCE
 #
 function gfs_get_nodename_by_id() {
-    local ccs_file=$1
-    local id=$2
-
-    local xml_cmd="${ccs_xml_query}"
-    $xml_cmd -f $ccs_file -q nodenamebyid $id
+	gfs_get nodename_by_id "$@"
 }
 #************ gfs_get_nodename
 
@@ -569,30 +410,22 @@ function gfs_get_nodename_by_id() {
 #  SOURCE
 #
 function gfs_get_nodeids() {
-    local ccs_file=$1
-    local mac=$2
-
-    local xml_cmd="${ccs_xml_query}"
-    $xml_cmd -f $ccs_file -q nodeids
+	gfs_get nodeids "$@" 
 }
 #************ gfs_get_nodeids
 
 #****f* gfs-lib.sh/gfs_get_macs
 #  NAME
-#    gfs_get_macs
+#    gfs_get_hwids
 #  SYNOPSIS
-#    gfs_get_macs(cluster_conf, mac)
+#    gfs_get_hwids()
 #  DESCRIPTION
-#    gets for this very host the nodeid (identified by the macaddress)
+#    gets all hwids addresses found in the cluster configuration
 #  IDEAS
 #  SOURCE
 #
-function gfs_get_macs() {
-    local ccs_file=$1
-    local mac=$2
-
-    local xml_cmd="${ccs_xml_query}"
-    $xml_cmd -f $ccs_file -q macs
+function gfs_get_hwids() {
+	get_gfs hwids "$@"
 }
 #************ gfs_get_macs
 
@@ -607,11 +440,7 @@ function gfs_get_macs() {
 #  SOURCE
 #
 function gfs_get_nodeid() {
-    local ccs_file=$1
-    local mac=$2
-
-    local xml_cmd="${ccs_xml_query}"
-    $xml_cmd -f $ccs_file -q nodeid $mac
+	gfs_get nodeid_by_hwid "$@"
 }
 #************ gfs_get_nodeid
 
@@ -619,7 +448,7 @@ function gfs_get_nodeid() {
 #  NAME
 #    gfs_get_netdevs
 #  SYNOPSIS
-#    gfs_get_netdevs(cluster_conf, nodename)
+#    gfs_get_netdevs(nodenameorid)
 #  DESCRIPTION
 #    returns all configured networkdevices from the cluster.conf xml file
 #    seperated by " "
@@ -627,15 +456,7 @@ function gfs_get_nodeid() {
 #  SOURCE
 #
 function gfs_get_netdevs() {
-#	if [ -n "$debug" ]; then set -x; fi
-  local xml_cmd="${ccs_xml_query}"
-  local xmlfile=$1
-  local nodename=$2
-
-  local netdevs=$($xml_cmd -f $xmlfile -q netdevs $nodename " ");
-  echo $netdevs
-#	if [ -n "$debug" ]; then set +x; fi
-  return 0
+  gfs_get eth_name "$@"
 }
 #********* gfs_get_netdevs
 
@@ -643,20 +464,18 @@ function gfs_get_netdevs() {
 #  NAME
 #    gfs_auto_hosts
 #  SYNOPSIS
-#    gfs_auto_hosts(cluster_conf)
+#    gfs_auto_hosts(hostsfile)
 #  DESCRIPTION
 #    Generates a hostsfile of all hosts in the cluster configuration
 #  IDEAS
 #  SOURCE
 #
 function gfs_auto_hosts() {
-    local xml_cmd="${ccs_xml_query}"
-    local xmlfile=$1
-    local hostsfile=$2
+    local hostsfile=$1
 
 #    if [ -n "$debug" ]; then set -x; fi
 #    cp -f $hostsfile $hostsfile.bak
-    $xml_cmd -f $xmlfile -q hosts
+    ccs_xml_query -f $xmlfile -q hosts
     cat $hostsfile
     ret=$?
 #    if [ -n "$debug" ]; then set +x; fi
@@ -668,17 +487,14 @@ function gfs_auto_hosts() {
 #  NAME
 #    gfs_get_syslogserver
 #  SYNOPSIS
-#    gfs_get_syslogserver(cluster_conf)
+#    gfs_get_syslogserver(nodeidornodename)
 #  DESCRIPTION
 #    This Function starts the syslog-server to log the gfs-bootprocess
 #  IDEAS
 #  SOURCE
 #
 function gfs_get_syslogserver() {
-  local xml_file=$1
-  local xml_cmd="${ccs_xml_query}"
-  local nodename=$2
-  $xml_cmd -f $xml_file -q syslog $nodename
+  gfs_get syslog_name "$@"
 }
 #************ gfs_get_syslogserver
 
@@ -693,61 +509,21 @@ function gfs_get_syslogserver() {
 #  SOURCE
 #
 function gfs_get_syslogfilter() {
-  local xml_file=$1
-  local xml_cmd="${ccs_xml_query}"
-  local nodename=$2
-  $xml_cmd -f $xml_file -q syslogfilter $nodename
+  gfs_get syslog_filter "$@"
 }
 #************ gfs_get_syslogfilter
-
-#****f* gfs-lib.sh/gfs_get_bridges
-#  NAME
-#    gfs_get_bridges
-#  SYNOPSIS
-#    gfs_get_bridges(cluster_conf)
-#  DESCRIPTION
-#    This Function returns all names of defined bridges
-#  IDEAS
-#  SOURCE
-#
-function gfs_get_bridges() {
-  local xml_file=$1
-  local nodename=$2
-  local xml_cmd="${ccs_xml_query}"
-  local out=$($xml_cmd -f $xml_file query_value '/cluster/clusternodes/clusternode[@name="'$nodename'"]/com_info/bridge/@name')
-  if [ -z "$out" ]; then
-    return 1
-  else
-    echo $out
-  fi
-}
-#************ gfs_get_bridges
-
-function gfs_get_bridge_param() {
-  local xml_file=$1
-  local nodename=$2
-  local bridge=$3
-  local param=$4
-  local xml_cmd="${ccs_xml_query}"
-  local out=$($xml_cmd -f $xml_file query_value '/cluster/clusternodes/clusternode[@name="'$nodename'"]/com_info/bridge[@name="'$bridge'"]/@'$param'')
-  if [ -z "$out" ]; then
-    return 1
-  else
-    echo $out
-  fi
-}
 
 #****f* gfs-lib.sh/gfs_get_nic_names
 #  NAME
 #    gfs_get_nic_names
 #  SYNOPSIS
-#    gfs_get_nic_names(nodeid, nodename, nic, clusterconf)
+#    gfs_get_nic_names(nodeidornodename,)
 #  DESCRIPTION
 #    Returns the nic drivers for the given node if specified in cluster configuration.
 #    If node is left out all drivers will be returned. 
 #  SOURCE
 function gfs_get_nic_names() {
-	gfs_get_node_attrs "name" "eth" "$1" "$2" "$3" "$4"
+	gfs_get_node_attrs "name" "eth" "$@"
 }
 #*********** gfs_get_nic_names
 
@@ -761,7 +537,7 @@ function gfs_get_nic_names() {
 #    If node is left out all drivers will be returned. 
 #  SOURCE
 function gfs_get_nic_drivers() {
-	gfs_get_node_attrs "driver" "eth" "$1" "$2" "$3" "$4"
+	gfs_get_node_attrs "driver" "eth" "$@"
 }
 #*********** gfs_get_nic_drivers
 
@@ -775,7 +551,7 @@ function gfs_get_nic_drivers() {
 #    If node is left out all drivers will be returned. 
 #  SOURCE
 function gfs_get_all_drivers() {
-	gfs_get_node_attrs "driver" "" "$1" "$2" "$3" "$4"
+	gfs_get_node_attrs "driver" "eth" "$@"
 }
 #*********** gfs_get_nic_drivers
 
@@ -783,7 +559,7 @@ function gfs_get_all_drivers() {
 #  NAME
 #    gfs_get_node_attrs
 #  SYNOPSIS
-#    gfs_get_node_attrs(attr, subpath, nodeid, nodename, name, clusterconf)
+#    gfs_get_node_attrs(attr, subpath, nodeidornodename, name)
 #  DESCRIPTION
 #    Returns the drivers for the given node if specified in cluster configuration.
 #    If node is left out all drivers will be returned. 
@@ -792,23 +568,20 @@ function gfs_get_node_attrs() {
   local attr=$1
   local subpath=$2
   local nodeid=$3
-  local nodename=$4
-  local name=$5
-  local xml_file=$6
+  local name=$4
   
-  local xml_cmd="${ccs_xml_query}"
   local query=""
   if [ -n "$name" ]; then
   	subquery="[@name=\"$name\"]"
   fi
-  local xml_cmd_opts="--filename=$xml_file --queriesfile=- --suffix=;"
+  local xml_cmd_opts="--queriesfile=- --suffix=;"
   local out=$(
-  if [ -z "$nodeid" ] && [ -z "$nodename" ]; then
+  if [ -z "$nodeid" ]; then
     echo "query=query_value /cluster/clusternodes/clusternode/com_info/${subpath}$subquery/@$attr"
   else
     echo "query=query_value /cluster/clusternodes/clusternode[@nodeid=\"$nodeid\"]/com_info/${subpath}$subquery/@$attr"
-    echo "query=query_value /cluster/clusternodes/clusternode[@name=\"$nodename\"]/com_info/${subpath}$subquery/@$attr"
-  fi | $xml_cmd $xml_cmd_opts | cut -f1 -d';')
+    echo "query=query_value /cluster/clusternodes/clusternode[@name=\"$nodeid\"]/com_info/${subpath}$subquery/@$attr"
+  fi | ccs_xml_cmd $xml_cmd_opts | cut -f1 -d';')
   if [ -z "$out" ]; then
   	return 1
   else
@@ -816,6 +589,26 @@ function gfs_get_node_attrs() {
   fi
 }
 #*********** gfs_get_node_attrs
+
+#****f* gfs-lib.sh/gfs_get_userspace_procs
+#  NAME
+#    gfs_get_userspace_procs
+#  SYNOPSIS
+#    gfs_get_userspace_procs()
+#  DESCRIPTION
+#    gets userspace programs that are to be running dependent on rootfs
+#  SOURCE
+function gfs_get_userspace_procs() {
+  echo -e "aisexec \n\
+ccsd \n\
+fenced \n\
+gfs_controld \n\
+dlm_controld \n\
+groupd \n\
+qdiskd \n\
+clvmd"
+}
+#******** gfs_get_userspace_procs
 
 #****f* gfs-lib.sh/gfs_get_drivers
 #  NAME
@@ -945,36 +738,6 @@ function gfs_services_restart() {
 }
 #************ gfs_services_restart
 
-#****f* gfs-lib.sh/gfs_start_lock_gulm
-#  NAME
-#    gfs_start_lock_gulm
-#  SYNOPSIS
-#    gfs_start_lock_gulm
-#  DESCRIPTION
-#    Function starts the lock_gulm in a changeroot environment
-#  IDEAS
-#  SOURCE
-#
-function gfs_start_lock_gulm() {
-  local chroot_path=$1
-  start_service_chroot $chroot_path '/sbin/lock_gulmd'
-  touch $chroot_path/var/lock/lockgulmd
-  sts=1
-  if [ $? -eq 0 ]; then
-    echo_local -n "   check Lockgulmd.."
-    for i in $(seq 1 10); do
-      sleep 1
-      echo_local -n "."
-      if gulm_tool getstats localhost:ltpx &> /dev/null; then
-	sts=0
-	break
-      fi
-    done
-  fi
-  if [ $sts -eq 0 ]; then return 0; else return 1; fi
-}
-#************ gfs_start_lock_gulmd
-
 #****f* gfs-lib.sh/gfs_start_lock_dlm
 #  NAME
 #    gfs_start_lock_dlm
@@ -986,7 +749,6 @@ function gfs_start_lock_gulm() {
 #  SOURCE
 #
 function gfs_start_lock_dlm() {
-  udev_start
   return 0
 }
 #************ gfs_start_lock_dlm
@@ -1146,6 +908,7 @@ function gfs_restart_ccsd() {
 #  IDEAS
 #  SOURCE
 #
+#TODO: Remove the hotspots
 function gfs_start_clvmd() {
    local chroot_path=$1
    local volumegroup=$(lvm_get_vg $(repository_get_value root))
@@ -1203,6 +966,7 @@ function gfs_stop_clvmd() {
 #  IDEAS
 #  SOURCE
 #
+#TODO: Remove the hostspots
 function gfs_restart_clvmd() {
    local old_root=$1
    local new_root=$2
@@ -1388,13 +1152,7 @@ function gfs_start_gfs_controld() {
 #  SOURCE
 #
 function gfs_checkhosts_alive() {
-#   local xml_file=/etc/cluster/cluster.conf
-#   local twonodes=$($ccs_xml_query -f $xml_file -q query_value cluster/cman/@two_node 2>/dev/null) || local twonodes=0
-#   if [ $twonodes -eq 1 ]; then
-    $cl_check_nodes
-#   else
-#      /bin/true
-#   fi
+    $(repository_get_value cl_check_nodes)
 }
 #********* gfs_checkhosts_alive
 
@@ -1467,282 +1225,3 @@ function gfs_fsck() {
 function gfs_chroot_needed() {
 	return 0
 }
-
-# $Log: gfs-lib.sh,v $
-# Revision 1.80  2011-02-14 15:32:38  marc
-# - fixed bug with correct call of stop_service qdiskd.
-#
-# Revision 1.79  2011/02/11 15:09:36  marc
-# added gfs_qdiskd_stop function to stop qdisk as required.
-#
-# Revision 1.78  2010/09/01 09:48:44  marc
-#   - gfs_getdefaults
-#     - added localflocks to standard gfs mountoptions
-#
-# Revision 1.77  2010/08/19 07:41:11  marc
-# moved setHWClock to gfs_services_start in gfs-lib.sh
-#
-# Revision 1.76  2010/08/06 13:32:13  marc
-# - force the creation of /var/run/lvm needed since RHEL5.5
-#
-# Revision 1.75  2010/05/27 09:43:31  marc
-# - only active the volumegroup needed for rootfs
-# - fixed bug that vgchange fails after restart
-#
-# Revision 1.74  2010/03/29 19:48:12  marc
-# fixed gfs_get_clustername
-#
-# Revision 1.73  2010/02/17 09:48:06  marc
-# typos
-#
-# Revision 1.72  2010/02/16 10:05:15  marc
-# added cman_tool leave force if leave did not work
-#
-# Revision 1.71  2010/02/15 14:06:17  marc
-# added chroot_needed
-#
-# Revision 1.70  2010/02/05 12:35:30  marc
-# - moved functionality from bootsr to here
-#
-# Revision 1.69  2010/01/11 10:04:38  marc
-# removed gfs_auto_netconfig cc_auto_netconfig does this now.
-#
-# Revision 1.68  2010/01/04 13:12:13  marc
-# global variables will only be set if not already set anywhere else
-# gfs_validate: support for osr generated configuration
-# gfs_get: implementation will also support querymap
-# gfs_get_clu_nodename: obsolete, removed
-#
-# Revision 1.67  2009/09/28 12:59:28  marc
-# - added functions
-#   gfs_get
-#   gfs_get_syslog*
-# - changed and implemented syslog functionality to support different types of syslog (rsyslogd, syslog-ng, syslogd)
-# - some typos
-#
-# Revision 1.66  2009/04/20 20:18:56  marc
-# - removed nodiratime option
-#
-# Revision 1.65  2009/04/20 07:41:56  marc
-# - fixed bug in restarting clvmd
-#
-# Revision 1.64  2009/04/20 07:09:05  marc
-# - added lockfiles although senseless
-#
-# Revision 1.63  2009/04/14 14:55:06  marc
-# - added gfs2 module
-# - added gfs_get_userspace_procs
-#
-# Revision 1.62  2009/03/25 13:51:47  marc
-# - added get_drivers functions to return modules in more general
-# - implemented function to get drivers specified in initrd in more general
-#
-# Revision 1.61  2009/02/24 20:37:20  marc
-# rollback to older version
-#
-# Revision 1.60  2009/02/24 11:59:21  marc
-# added gfs_get_nic_drives
-#
-# Revision 1.59  2009/02/18 18:01:52  marc
-# added driver for nic
-#
-# Revision 1.58  2009/01/29 15:57:30  marc
-# Upstream with new HW Detection see bug#325
-#
-# Revision 1.57  2009/01/28 12:53:53  marc
-# Many changes:
-# - moved some functions to std-lib.sh
-# - no "global" variables but repository
-# - bugfixes
-# - support for step with breakpoints
-# - errorhandling
-# - little clean up
-# - better seperation from cc and rootfs functions
-#
-# Revision 1.56  2008/12/01 11:22:47  marc
-# fixed Bug #300 that clutype is setup where it should not
-#
-# Revision 1.55  2008/12/01 09:52:33  marc
-# cosmetic.
-#
-# Revision 1.54  2008/10/28 12:52:07  marc
-# fixed bug#288 where default mountoptions would always include noatime,nodiratime
-#
-# Revision 1.53  2008/10/14 10:57:07  marc
-# Enhancement #273 and dependencies implemented (flexible boot of local fs systems)
-#
-# Revision 1.52  2008/08/14 14:32:45  marc
-# - added get_defaults
-# - added bridging
-# - fixed an bug with lvm_sup (cosmetic)
-#
-# Revision 1.51  2008/07/03 12:42:36  mark
-# use new getParameter method
-# add support for votes parameter
-#
-# Revision 1.50  2008/06/20 15:50:11  mark
-# get defaukt mount opts right
-#
-# Revision 1.49  2008/06/10 09:57:05  marc
-# - added empty gfs_init
-# - rewrote gfs_get_rootfs
-#
-# Revision 1.48  2008/05/28 10:12:27  mark
-# added exec_local_stabilized
-# fix for bz 193
-#
-# Revision 1.47  2008/05/17 08:30:52  marc
-# changed the way the /etc/hosts is created a little bit.
-#
-# Revision 1.46  2008/04/03 15:57:21  mark
-# Workaround bz# 193
-#
-# Revision 1.45  2008/01/24 13:30:04  marc
-# - RFE#145 macaddress will be generated in configuration files
-#
-# Revision 1.44  2007/12/07 16:39:59  reiner
-# Added GPL license and changed ATIX GmbH to AG.
-#
-# Revision 1.43  2007/10/18 08:03:37  mark
-# added some fancy qdisk messages
-#
-# Revision 1.42  2007/10/16 08:01:24  marc
-# - added get_rootsource
-# - fixed BUG 142
-# - lvm switch support
-#
-# Revision 1.41  2007/10/09 16:47:44  mark
-# added gfs_services_restart_newroot
-#
-# Revision 1.40  2007/10/05 09:02:40  mark
-# added stop methods
-#
-# Revision 1.39  2007/10/02 11:53:11  mark
-# add another vgscan to source /dev
-#
-# Revision 1.38  2007/09/27 12:01:29  marc
-# cosmetic change
-#
-# Revision 1.37  2007/09/27 09:32:11  marc
-# - BUG 125: made qdiskd only to be started only when configured in cluster.conf
-#
-# Revision 1.36  2007/09/19 08:57:20  mark
-# overwrite start_fenced for rhel5
-#
-# Revision 1.35  2007/09/18 10:10:25  mark
-# removed duplicate start of fenced
-#
-# Revision 1.34  2007/09/07 08:01:12  mark
-# bug fixes
-# added some start methods
-#
-# Revision 1.33  2007/08/06 15:50:11  mark
-# reorganized libraries
-# added methods for chroot management
-# fits for bootimage release 1.3
-#
-# Revision 1.32  2007/08/06 09:14:48  mark
-# Fixed BZ #76
-#
-# Revision 1.31  2007/03/09 18:01:44  mark
-# separated fstype and clutype
-#
-# Revision 1.30  2006/11/10 11:36:26  mark
-# - modified gfs_start_fenced: added fence_tool wait, removed undefined -w option from fenced
-#
-# Revision 1.29  2006/10/06 08:32:57  marc
-# added cl_checknodes as variable
-#
-# Revision 1.28  2006/08/28 16:06:45  marc
-# bugfixes
-# new version of start_service
-#
-# Revision 1.27  2006/08/08 08:31:52  marc
-# changed path to new version
-#
-# Revision 1.26  2006/07/03 08:33:05  marc
-# bugfix in hostsgeneration
-#
-# Revision 1.25  2006/06/19 15:55:45  marc
-# added device mapper support
-#
-# Revision 1.24  2006/05/12 13:06:41  marc
-# First stable Version 1.0 for initrd.
-#
-# Revision 1.23  2006/05/07 11:35:20  marc
-# major change to version 1.0.
-# Complete redesign.
-#
-# Revision 1.22  2006/05/03 12:45:20  marc
-# added documentation
-#
-# Revision 1.21  2006/04/13 18:49:51  marc
-# better errorhandling on fence_tool chroot
-#
-# Revision 1.20  2006/04/09 16:33:15  marc
-# changed fencing from fence_tool join to fenced. Because fence_tool returns 1
-#
-# Revision 1.19  2006/04/08 18:00:19  marc
-# added nodename and hostname as hostname
-#
-# Revision 1.18  2006/02/16 13:59:30  marc
-# minor changes
-#   copy configs
-#
-# Revision 1.17  2006/02/03 12:40:13  marc
-# small change in copying files
-#
-# Revision 1.16  2006/01/28 15:10:53  marc
-# reenabled the restart of fenced in ccsd in initrd
-# removing files in initrd
-#
-# Revision 1.15  2006/01/25 14:49:19  marc
-# new i/o redirection
-# new switchroot
-# bugfixes
-# new stepmode
-#
-# Revision 1.14  2006/01/23 14:12:24  mark
-# ...
-#
-# Revision 1.13  2005/07/08 13:00:34  mark
-# added devfs support
-#
-# Revision 1.11  2005/06/08 13:35:26  marc
-# added chroot_syslog
-#
-# Revision 1.10  2005/01/05 10:53:33  marc
-# moved syslog and ccsd in chroot to /var/lib/lock_gulmd
-# added function gfs_start_service
-#
-# Revision 1.9  2005/01/03 08:30:43  marc
-# first offical rpm version
-# - major changes in way of starting lock_gulmd. Is started now in a change root
-# - logs are also written to a started syslogd
-# - cca-param support for com_syslog_server
-# - minor changes
-#
-# Revision 1.8  2004/09/29 14:32:16  marc
-# vacation checkin, stable version
-#
-# Revision 1.7  2004/09/26 14:57:42  marc
-# cosmetic change
-#
-# Revision 1.6  2004/09/26 14:25:50  marc
-# update in copy_config_files
-#
-# Revision 1.5  2004/09/26 14:08:38  marc
-# added copy_relevant_files
-#
-# Revision 1.4  2004/09/12 11:11:06  marc
-# added generation of hosts file from cca
-#
-# Revision 1.3  2004/09/08 16:13:30  marc
-# first stable version for autoconfigure from cca
-#
-# Revision 1.2  2004/08/11 16:53:52  marc
-# major enhancements concerning the cca-autoconfiguration
-#
-# Revision 1.1  2004/07/31 11:24:44  marc
-# initial revision
-#
