@@ -1,8 +1,4 @@
 #
-# $Id: hardware-lib.sh,v 1.52 2010-08-12 09:54:51 marc Exp $
-#
-# @(#)$File$
-#
 # Copyright (c) 2001 ATIX GmbH, 2007 ATIX AG.
 # Einsteinstrasse 10, 85716 Unterschleissheim, Germany
 # All rights reserved.
@@ -223,30 +219,30 @@ function scsi_start() {
   fi
 
   if [ $_xen -ne 0 ]; then
-    if [ -x "/opt/atix/comoonics_cs/rescan_scsi" ]; then
-      /opt/atix/comoonics_cs/rescan_scsi -a
-    elif [ -z "$scsifailover" ] || [ "$scsifailover" != "rdac" ]; then
-      echo_local -n "Importing unconfigured scsi-devices..."
-      devs=$(find /proc/scsi -name "[0-9]*" 2> /dev/null)
-      channels=0
-      for dev in $devs; do
-        for channel in $channels; do
-          id=$(basename $dev)
-          echo_local -N -n "$dev On id $id and channel $channel"
-          add_scsi_device $id $channel $dev
-          return_code
-        done
-      done
-    fi
+#    if [ -x "/opt/atix/comoonics_cs/rescan_scsi" ]; then
+#      /opt/atix/comoonics_cs/rescan_scsi -a
+#    elif [ -z "$scsifailover" ] || [ "$scsifailover" != "rdac" ]; then
+#      echo_local -n "Importing unconfigured scsi-devices..."
+#      devs=$(find /proc/scsi -name "[0-9]*" 2> /dev/null)
+#      channels=0
+#      for dev in $devs; do
+#        for channel in $channels; do
+#          id=$(basename $dev)
+#          echo_local -N -n "$dev On id $id and channel $channel"
+#          add_scsi_device $id $channel $dev
+#          return_code
+#        done
+#      done
+#    fi
 
     # start iscsi if apropriate
     typeset -f is_iscsi_rootsource >/dev/null 2>&1 && is_iscsi_rootsource $rootsource
     if [ $? -eq 0 ]; then
 	  load_iscsi
 	  start_iscsi $rootsource
+      stabilized -g 5 -t hash /proc/scsi/scsi
     fi
 
-    stabilized -g 5 -t hash /proc/scsi/scsi
     echo_local_debug "Configured SCSI-Devices:"
     exec_local_debug /bin/cat /proc/scsi/scsi
   fi
@@ -303,11 +299,12 @@ function dm_mp_start() {
   return_code
   [ -e /proc/partitions ] && stabilized --type=hash --interval=600 --good=5 /proc/partitions
 
-  echo_local -n "Setting up devicemapper partitions"
-  if [ -x /sbin/kpartx ]; then
-    /sbin/dmsetup ls --target multipath --exec "/sbin/kpartx -a"
-  fi
-  [ -e /proc/partitions ] && stabilized --type=hash --interval=600 --good=5 /proc/partitions
+  # Those devices should have been created by udev at this time. This why we leave them out.
+#  echo_local -n "Setting up devicemapper partitions"
+#  if [ -x /sbin/kpartx ]; then
+#    /sbin/dmsetup ls --target multipath --exec "/sbin/kpartx -a"
+#  fi
+#  [ -e /proc/partitions ] && stabilized --type=hash --interval=600 --good=5 /proc/partitions
   return_code
 }
 #************ dm_mp_start
@@ -814,14 +811,20 @@ unload_module() {
 #  NAME
 #    hardware_ids
 #  SYNOPSIS
-#    function hardware_ids()
+#    function hardware_ids(silent=0)
 #  DESCRIPTION
-#    lists all names of loaded modules
+#    lists all macaddresses.
+#    Default is format: {resource}: {id}, means implicitly {nic}: {mac} or 
+#    if silent=1 a list of ids, which means implicictly
+#     {mac}
+#     {mac}
+#     ..
 #  SOURCE
 #
 function hardware_ids {
   local link_was_up=0
-  for nic in $(ls /sys/class/net); do
+  local silent=${1}
+  for nic in $(found_nics); do
   	if test "$(cat /sys/class/net/${nic}/carrier 2>/dev/null)" = "1"; then
   	  link_was_up=1
   	fi
@@ -829,7 +832,7 @@ function hardware_ids {
   	test $link_was_up -eq 0 && ip link set $nic up &>/dev/null
   	
     if [ -f /sys/class/net/${nic}/address ] && [ -f /sys/class/net/${nic}/type ] && [ "$(cat /sys/class/net/${nic}/type)" -lt 256 ]; then
-  	  echo -n "${nic}:" 
+  	  [ -n "$silent" ] && echo -n "${nic}:" 
   	  cat /sys/class/net/${nic}/address | tr [a-f] [A-F]
     fi
   	test $link_was_up -eq 0 && ip link set $nic down &>/dev/null
@@ -960,189 +963,3 @@ stabilized() {
   test -x /usr/bin/stabilized && /usr/bin/stabilized $* || /bin/true
 }
 #***************** stabilized
-
-#############
-# $Log: hardware-lib.sh,v $
-# Revision 1.52  2010-08-12 09:54:51  marc
-# fixed bug with mksock query
-#
-# Revision 1.51  2010/08/12 07:35:33  marc
-# lvm_check():
-#   fixed bug with error message when there is no lvm device
-#
-# Revision 1.50  2010/08/11 09:41:44  marc
-# be quite when loading usb modules
-#
-# Revision 1.49  2010/07/12 14:19:53  marc
-# typo in modprobe
-#
-# Revision 1.48  2010/07/08 13:16:46  marc
-# typo
-#
-# Revision 1.47  2010/07/08 08:10:08  marc
-# - dev_start: moved the creation of fd devices up
-#
-# Revision 1.46  2010/06/17 08:17:28  marc
-# - lvm_check: more stable
-# - lvm_get_vg: detection of vg more generic
-#
-# Revision 1.45  2010/05/27 09:47:37  marc
-# scsi_start:
-#    - added rootsource as second paramter for iscsi to be started here
-#    - added starting of iscsi
-# scsi_restart_newroot:
-#    - for services to be restarted in newroot (e.g. iscsid)
-# usb_get_drivers
-#    - added driver hp_ilo for ILO remote consoles not over serial
-# lvm_start
-#    - added parameter rootsource
-#    - only activate the volumegroup found in rootsource or activate all
-# lvm_get_vg (new)
-#    - returns the vg of the given device
-#
-# Revision 1.44  2010/04/23 10:12:39  marc
-# fixed bug with starting of udevd.
-#
-# Revision 1.43  2010/04/13 14:07:22  marc
-# - fixed rdac implementation
-#
-# Revision 1.42  2010/03/08 13:09:40  marc
-# dm_start might take scsi_failover as param
-#
-# Revision 1.41  2010/02/05 12:35:58  marc
-# - some typos
-#
-# Revision 1.40  2010/01/11 10:05:08  marc
-# added function stabilized to also work without
-#
-# Revision 1.39  2009/12/09 10:57:15  marc
-# cosmetics
-# no removement of modules with xen
-#
-# Revision 1.38  2009/10/07 12:03:35  marc
-# - Fixes bug 365 where the bootprocess might hang while booting a clusternode
-#
-# Revision 1.37  2009/09/28 13:01:50  marc
-# moved devices from boot-lib.sh/initEnv to dev_start
-#
-# Revision 1.36  2009/08/11 09:54:58  marc
-# - latest mdadm fixes (Gordan Bobic)
-# - Moved dm_get_drivers to be called in xen and others
-#
-# Revision 1.35  2009/06/04 15:18:54  reiner
-# Modified usbLoad function. Now it works again and it is used to add USB keyboard support during boot process.
-#
-# Revision 1.34  2009/04/22 11:37:33  marc
-# - fixed small bug in modules loading
-# - introduced a file /etc/xmodules that will not be removed if loaded
-#
-# Revision 1.33  2009/04/20 12:23:55  marc
-# added dm_multipath modules needed with rhel5
-#
-# Revision 1.32  2009/04/16 12:04:06  reiner
-# Fixed typo in usbLoad function that prohibited proper usb keyboard detection. See bz341.
-#
-# Revision 1.31  2009/04/14 14:56:04  marc
-# - extended storage_get_drivers to work with drbd, iscsi and xen
-# - more modules for dm_multipath and ..
-#
-# Revision 1.30  2009/03/25 13:52:14  marc
-# - added get_drivers functions to return modules in more general
-#
-# Revision 1.29  2009/03/06 13:22:47  marc
-# always call modprunload_moduleead of anything else
-#
-# Revision 1.28  2009/02/27 10:33:51  marc
-# changed the calling of modprobe to use the function
-#
-# Revision 1.27  2009/02/25 10:36:39  marc
-# fixed bug with xennet hardware_detection
-#
-# Revision 1.26  2009/02/24 12:01:05  marc
-# * added function modprobe to overwrite command.
-# * added restricted hardwaredetection when drivers are specified
-#
-# Revision 1.25  2009/02/08 14:23:37  marc
-# added md
-#
-# Revision 1.24  2009/02/08 13:14:29  marc
-# stable module removement
-#
-# Revision 1.23  2009/02/02 20:12:25  marc
-# - Bugfix in Hardwaredetection
-#
-# Revision 1.22  2009/01/29 15:58:06  marc
-# Upstream with new HW Detection see bug#325
-#
-# Revision 1.21  2009/01/28 12:54:18  marc
-# Many changes:
-# - moved some functions to std-lib.sh
-# - no "global" variables but repository
-# - bugfixes
-# - support for step with breakpoints
-# - errorhandling
-# - little clean up
-# - better seperation from cc and rootfs functions
-#
-# Revision 1.20  2008/11/18 08:48:28  marc
-# - implemented RFE-BUG 289
-#   - possiblilty to execute initrd from shell or insite initrd to analyse behaviour
-#
-# Revision 1.19  2008/11/05 16:01:48  reiner
-# Fixed small typo.
-#
-# Revision 1.18  2008/08/14 14:33:27  marc
-# - remove debug output of modules.conf which is not needed any more
-#
-# Revision 1.17  2008/06/10 09:57:50  marc
-# - added xen major for lvm_check
-#
-# Revision 1.16  2008/01/24 13:31:46  marc
-# - BUG#170, udev with dm-multipath and RHEL5 is not working. reviewed the udev and stabilized more often
-#
-# Revision 1.15  2007/12/07 16:39:59  reiner
-# Added GPL license and changed ATIX GmbH to AG.
-#
-# Revision 1.14  2007/10/16 08:02:00  marc
-# - lvm switch support (lvm_check)
-#
-# Revision 1.13  2007/10/09 14:24:15  marc
-# usbLoad fixed and more stabilized
-#
-# Revision 1.12  2007/10/05 10:07:07  marc
-# - added xen-support
-#
-# Revision 1.11  2007/10/02 12:14:49  marc
-# - adding a sleep before lvm starts (did not work without, udev is to slow)
-# - cosmetic changes
-#
-# Revision 1.10  2007/09/26 11:40:18  mark
-# removed udev_start from hardware detection
-#
-# Revision 1.9  2007/09/17 09:27:01  marc
-# - added another dep needed with #116
-#
-# Revision 1.8  2007/09/14 13:27:38  marc
-# - Feature add rdac support (scsifailover=rdac)
-#
-# Revision 1.7  2007/09/07 08:02:30  mark
-# made udev_start distro dependend
-#
-# Revision 1.6  2007/02/23 16:42:01  mark
-# modified dm_mp_start to recognize all partitions
-#
-# Revision 1.5  2006/07/19 15:12:55  marc
-# added another udev restart
-#
-# Revision 1.4  2006/07/13 11:36:34  marc
-# added udev_start as function
-#
-# Revision 1.3  2006/06/19 15:55:45  marc
-# added device mapper support
-#
-# Revision 1.2  2006/06/07 09:42:23  marc
-# *** empty log message ***
-#
-# Revision 1.1  2006/05/07 11:33:40  marc
-# initial revision
-#
