@@ -4,6 +4,7 @@ expat
 comoonics-base-py
 comoonics-cluster-py
 comoonics-tools-py
+comoonics-release
 #comoonics-cs-xml
 #######
 # $Log$
