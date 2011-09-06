@@ -1,8 +1,4 @@
 #
-# $Id: osr-lib.sh,v 1.6 2010-07-08 08:16:57 marc Exp $
-#
-# @(#)$File$
-#
 # Copyright (c) 2001 ATIX GmbH, 2007 ATIX AG.
 # Einsteinstrasse 10, 85716 Unterschleissheim, Germany
 # All rights reserved.
@@ -23,6 +19,30 @@
 
 # Library to collect all clusterrelevant functions
 
+#
+# Generate nodeids and hwaddrs.
+# osr_create_nodeids_attrs clustertype clusterconf querymap nodeids
+osr_create_nodeids_attrs() {
+	local clustertype=$1
+	shift
+	local cluster_conf=$1
+	shift
+	local querymap=$1
+	shift
+	local none="none"
+	local nodeid=
+	local nodeids=$*
+	[ -z "$nodeids" ] && return 1
+	repository_store_value nodeids "$nodeids"
+	repository_store_value cluster_conf $cluster_conf
+	repository_store_value osrquerymap $querymap
+    for nodeid in $nodeids; do
+      mac=$(${clustertype}_get hwids_by_nodeid $nodeid 2>/dev/null)
+      [ -z "$mac" ] && mac="$none"
+      repository_store_value "${nodeid}_hwaddr" "$mac"
+    done
+}  
+
 osr_generate_nodevalues() {
 	local nodeid=$1
 	local osr_querymap="$2"
@@ -32,17 +52,19 @@ osr_generate_nodevalues() {
 		local keyname=$(osr_get_cluster_element_key $element)    # e.g. name
 		error_local_debug "osr_generate_nodevalues nodeid: $nodeid element: $element, keyname: $keyname"
 		if [ -n "$keyname" ]; then
-			local keys=$(cc_get $element"_"$keyname $nodeid)
-			echo $element"_"$keyname"='"$keys"'"
+			local keys=$(echo $(cc_get "${element}_$keyname" $nodeid))
+			repository_store_value "${nodeid}_${element}_$keyname" "$keys" "" ""
 			for key in $keys; do
 				key2=$(osr_quote_or_remove $key)
 				for attribute in $(osr_get_cluster_attributes $element); do  # e.g. ip
-					echo $element"_"$key2"_"$attribute="'"$(cc_get $element"_"$keyname"_"$attribute $nodeid $key)"'"
+					# echo $element"_"$key2"_"$attribute="'"$(cc_get $element"_"$keyname"_"$attribute $nodeid $key)"'"
+					repository_store_value "${nodeid}_${element}_${key2}_$attribute" "$(echo $(cc_get ${element}_${keyname}_$attribute $nodeid $key))" "" ""
 				done
 			done
 		else
 			for attribute in $(osr_get_cluster_attributes $element); do  # e.g. ip
-				echo $element"_"$attribute="'"$(cc_get $element"_"$attribute $nodeid $key)"'"
+#				echo $element"_"$attribute="'"$(cc_get $element"_"$attribute $nodeid $key)"'"
+				repository_store_value "${nodeid}_${element}_$attribute" "$(echo $(cc_get ${element}_${attribute} $nodeid $key))" "" ""
 			done
 		fi
 	done
@@ -91,7 +113,7 @@ osr_get_cluster_attributes() {
 # variables: ip gw mask dev
 osr_set_nodeconfig_net() {
 	local nodeid=$1
-	. /etc/conf.d/osr-nodeidvalues-${nodeid}.conf
+	. $(repository_get_value confdir "/etc/conf.d")/osr-nodeidvalues-${nodeid}.conf
 	for nic in $eth_name; do
 		for attribute in $(osr_get_cluster_attributes eth); do
 			case $attribute in
@@ -121,7 +143,7 @@ osr_set_nodeconfig_root() {
 	local temproot
 	local temprootfstype
 
-	. /etc/conf.d/osr-nodeidvalues-${nodeid}.conf
+	. $(repository_get_value confdir "/etc/conf.d")/osr-nodeidvalues-${nodeid}.conf
 	for attribute in $(osr_get_cluster_attributes rootvolume); do
 		case $attribute in
 			"name"|"root") temproot=$rootvolume_name ;;
@@ -173,37 +195,6 @@ osr_parse_root_name() {
 }
 
 #
-# Returns the nodeids file
-osr_nodeids_file() {
-	echo "/tmp/osr-nodeids"
-}
-
-# 
-# Return the nodeid file
-osr_nodeid_file() {
-	echo "/etc/conf.d/osr-nodeidvalues-$1.conf"
-}
-
-#
-# Generate nodeids file
-# osr_create_nodeids_file clustertype clusterconf querymap nodeids
-osr_create_nodeids_file() {
-	local clustertype=$1
-	shift
-	local cluster_conf=$1
-	shift
-	local querymap=$1
-	shift
-	local none="none"
-	
-    for nodeid in $*; do
-      mac=$(${clustertype}_get $cluster_conf $querymap macs $nodeid 2>/dev/null)
-      [ -z "$mac" ] && mac="$none"
-      echo "$nodeid $mac"
-    done
-}  
-
-#
 # osr_resolve_element_alias(elements)
 #  Will resolve an alias query.
 #    ip => eth_name_ip
@@ -216,41 +207,6 @@ osr_resolve_element_alias() {
 }
 
 #
-# Clusterlib derived functions
-
-#
-# osr_get_clustername nodeid [nodes_conf] [node_conf]
-osr_get_clustername() {
-   local nodeconf=$3
-   local nodeid=$1
-   if [ -z "$nodeconf" ]; then
-     local nodeconf=$(osr_nodeid_file $nodeid)
-   fi
-   osr_get_node_attrs "name" "clustername" "$nodeid" "" "" "$2" "$nodeconf"
-}
-
-#
-# convert to other format
-#  NOT supported and not sensible.
-osr_convert() {
-  return 0
-}
-
-#
-# osr_get_nicnames(nodeid, nodename, nicname, [nodesconf], [nodeconf])
-osr_get_nic_names() {
-   osr_get_node_attrs "name" "eth" "$1" "$2" "$3" "$4" "$5"
-}
-
-osr_get_nic_drivers() {
-   osr_get_node_attrs "driver" "eth" "$1" "$2" "$3" "$4" "$5"
-}
-
-osr_get_all_drivers() {
-   osr_get_node_attrs "driver" "" "$1" "$2" "$3" "$4" "$5"
-}
-
-#
 # osr_quote_or_remove keyname [symbolstoacceptasstring=[:alnum:]]
 # removes unusable strings from key. Note that this could lead to not unique keys if they are having 
 # special characters
@@ -260,16 +216,15 @@ osr_quote_or_remove() {
   [ -n "$2" ] && acceptedsyms="$2"
   echo "$attr" | tr -c -d "$acceptedsyms"
 }
+
 #
-# osr_get_node_attrs(attr subpath nodeid nodename name [nodesconf] [nodeconf])
+# osr_get_node_attrs(attr subpath nodeid nodename name)
 osr_get_node_attrs() {
   local attr=$(osr_quote_or_remove $1)
   local elements=$2
   local nodeid=$3
   local nodename=$4
   local name=$(osr_quote_or_remove $5)
-  local nodesconf=$6
-  local nodeconf=$7
   local element=""
   local value=""
   local values=""
@@ -277,19 +232,14 @@ osr_get_node_attrs() {
   local keyname=""
   local key=""
   
-  [ -z "$nodeconf" ] && nodeconf=$(repository_get_value nodeconf $(osr_nodeid_file $nodeid))
-  
-  test -f "$nodeconf" || return 2
   test -n "$attr"     || return 3 
-  
-  . $nodeconf
-  
+    
   elements=$(osr_resolve_element_alias $elements)
   
   # if either no nodename and nodeid is given use all available nodeids
   if [ -z "$nodeid" ] && [ -z "$nodename" ]; then
      for nodeid in $(osr_get_nodeids); do
-       osr_get_node_attrs "$attr" "$elements" "$nodeid" "$nodename" "$name" "$nodesconf" "$nodeconf"
+       osr_get_node_attrs "$attr" "$elements" "$nodeid" "$nodename" "$name"
      done
      return
   fi
@@ -299,14 +249,14 @@ osr_get_node_attrs() {
   for element in $elements; do
     keyname=$(osr_get_cluster_element_key $element)    # e.g. name
   	if [ -n "$name" ]; then
-      eval value=\$${element}_${name}_${attr}
+      value=$(repository_get_value "${nodeid}_${element}_${name}_${attr}")
       test -n "$value" && values="${values}${delim}${value}"
     else
-      eval value=\$${element}_${attr}
+      value=$(repository_get_value ${nodeid}_${element}_${attr})
       if [ -z "$value" ] && [ -n "$keyname" ] && [ "$keyname" != "$attr" ]; then
       	for key in $(osr_get_node_attrs "$keyname" "$element" "$nodeid" "$nodename" "" "$nodesconf" "$nodeconf"); do 
       	  key=$(osr_quote_or_remove "$key")
-      	  eval value=\$${element}_${key}_${attr}
+      	  value=$(repository_get_value ${nodeid}_${element}_${key}_${attr})
       	  test -n "$value" && values="${values}${delim}${value}"
         done
       else
@@ -319,8 +269,14 @@ osr_get_node_attrs() {
   return $?
 }
 
-osr_get_drivers() {
-   echo ""
+#
+# Clusterlib derived functions
+
+#
+# convert to other format
+#  NOT supported and not sensible.
+osr_convert() {
+  return 0
 }
 
 #
@@ -353,35 +309,42 @@ osr_getdefaults() {
 # osr_get_nodeids
 #  returns all nodeids
 osr_get_nodeids() {
-  local nodeids_file=""
-  if [ -f "$1" ]; then
-    nodeids_file=$1
-    shift
-  fi
   local nodeid=""
   local mac=""
   local delim=" "
   local nodeids=""
   
-  [ -z "$nodeids_file" ] && nodeids_file=$(osr_nodeids_file)
-  test -f "$nodeids_file" || return 1
-  while read nodeid mac; do
-    nodeids=${nodeids}${delim}$nodeid
-  done < $nodeids_file
+  for nodeid in $(repository_get_value nodeids); do
+  	nodeids=${nodeids}${delim}$nodeid
+  done
   [ -n "$nodeids" ] && echo $nodeids
   [ -n "$nodeids" ]
   return $?
 }
 
 #
+# osr_get query nodeid attrs
+# Examples:
+#   osr_get eth_name_name nodeid attr  
+osr_get() {
+  local query=$(osr_resolve_element_alias $1)
+  local nodeid=${2:-1}
+  local key=$3
+  local element=$(echo $query | cut -f1 -d_)
+  local keyname=$(osr_get_cluster_element_key $element)
+  
+  if [ -n "$keyname" ] && [ -n "$key" ]; then
+    query=$(echo $query | cut -f3- -d_)
+  else
+    query=$(echo $query | cut -f2- -d_)
+  fi
+  osr_get_node_attrs "$query" "$element" $nodeid "" "$key"
+}
+
+#
 # osr_get_macs
 #  returns all macs
 osr_get_macs() {
-  local nodeids_file=""
-  if [ -f "$1" ]; then
-    nodeids_file=$1
-    shift
-  fi
   local nodeid=""
   local mac=""
   local _mac=""
@@ -389,9 +352,8 @@ osr_get_macs() {
   local macs=""
   local none="none"
   
-  [ -z "$nodeids_file" ] && nodeids_file=$(osr_nodeids_file)
-  test -f "$nodeids_file" || return 1
-  while read nodeid mac; do
+  for nodeid in $(repository_get_value nodeids); do
+  	mac=$(repository_get_value ${nodeid}_hwaddr)
   	if [ -z "$mac" ]; then
   	  continue
   	fi
@@ -401,21 +363,17 @@ osr_get_macs() {
   	  fi
       macs=${macs}${delim}$_mac
   	done
-  done < $nodeids_file
+  done
   [ -n "$macs" ] && echo $macs
   [ -n "$macs" ]
   return $?
 }
 
 #
-# osr_get_nodeid([nodeids_file], mac) nodeidsfile macaddress
+# osr_get_nodeid(hwaddr)
+#   hwaddr=macaddress
 #   returns the nodeid of this macaddress
 osr_get_nodeid() {
-  local nodeids_file=""
-  if [ -f "$1" ]; then
-    nodeids_file=$1
-    shift
-  fi
   local _mac=$1
   local mac=""
   local macs=""
@@ -423,9 +381,8 @@ osr_get_nodeid() {
   local nodeid=""
   local delim=" "
   
-  [ -z "$nodeids_file" ] && nodeids_file=$(osr_nodeids_file)
-  test -f "$nodeids_file" || return 1
-  while read nodeid macs; do
+  for nodeid in $(repository_get_value nodeids); do
+    macs=$(repository_get_value ${nodeid}_hwaddr)
   	if [ -z "$macs" ]; then
   	  continue
   	fi
@@ -435,233 +392,67 @@ osr_get_nodeid() {
   	    return 0
   	  fi
   	done
-  done < $nodeids_file
+  done
   return 1
 }
 
-#
-# osr_get_nodename_by_id nodesconf nodeid nodeconf
-#   Returns the nodename of this nodeid
-osr_get_nodename_by_id() {
-  local nodes_conf=""
-  if [ -f "$1" ]; then
-    nodes_conf=$1
-    shift
-  fi
-  local nodeid=$1
-  local nodeconf=$2
-  [ -z $nodeconf ] && nodeconf=$(osr_nodeid_file $nodeid)
-
-  osr_get_node_attrs "name" "name" "$nodeid" "" "" $nodes_conf "$nodeconf"
+osr_get_drivers() {
+   echo ""
 }
-
-#
-# osr_get_rootvolume nodesconf nodeid nodeconf
-#   Returns the nodename of this nodeid
-osr_get_rootvolume() {
-  local nodes_conf=""
-  if [ -f "$1" ]; then
-  	nodes_conf="$1"
-  	shift
-  fi
-  local nodeid=$1
-  local nodeconf=$2
-
-  osr_get_node_attrs "name" "rootvolume" "$nodeid" "" "" $nodes_conf "$nodeconf"
-}
-
-#
-# osr_get_rootsource nodesconf nodeid nodeconf
-#   Returns the nodename of this nodeid
-osr_get_rootsource() {
-  local nodes_conf=""
-  if [ -f "$1" ]; then
-  	nodes_conf="$1"
-  	shift
-  fi
-  local nodeid=$1
-  local nodeconf=$2
-
-  osr_get_node_attrs "name" "rootsource" "$nodeid" "" "" $nodes_conf "$nodeconf"
-}
-
-#
-# osr_get_rootfs nodesconf nodeid nodeconf
-#   Returns the nodename of this nodeid
-osr_get_rootfs() {
-  local nodes_conf=""
-  if [ -f "$1" ]; then
-  	nodes_conf="$1"
-  	shift
-  fi
-  local nodeid=$1
-  local nodeconf=$2
-
-  osr_get_node_attrs "fstype" "rootvolume" "$nodeid" "" "" $nodes_conf "$nodeconf"
-}
-
-#
-# osr_get_userspace_procs nodesconf nodeid nodename
 osr_get_userspace_procs() {
   echo
 }
 
-#
-# osr_get_mountopts nodesconf nodeid
+osr_get_clustername() {
+   osr_get_node_attrs "name" "clustername" "$@"
+}
+osr_get_nic_names() {
+   osr_get_node_attrs "name" "eth" "$@"
+}
+osr_get_nic_drivers() {
+   osr_get_node_attrs "driver" "eth" "$@"
+}
+osr_get_all_drivers() {
+   osr_get_node_attrs "driver" "" "$@"
+}
+osr_get_nodename_by_id() {
+  osr_get_node_attrs "name" "name" "$@"
+}
+osr_get_rootvolume() {
+  osr_get_node_attrs "name" "rootvolume" "$@"
+}
+osr_get_rootsource() {
+  osr_get_node_attrs "name" "rootsource" "$@"
+}
+osr_get_rootfs() {
+  osr_get_node_attrs "fstype" "rootvolume" "$@"
+}
 osr_get_mountopts() {
-  local nodes_conf=""
-  if [ -f "$1" ]; then
-  	nodes_conf="$1"
-  	shift
-  fi
-  local nodeid=$1
-  local nodeconf=$2
-
-  osr_get_node_attrs "mountopts" "rootvolume" "$nodeid" "" "" $nodes_conf "$nodeconf"
+  osr_get_node_attrs "mountopts" "rootvolume" "$@"
 }
-
-#
-# osr_get_chroot_mountpoint nodesconf nodeid
 osr_get_chroot_mountpoint() {
-  local nodes_conf=""
-  if [ -f "$1" ]; then
-  	nodes_conf="$1"
-  	shift
-  fi
-  local nodeid=$1
-  local nodeconf=$2
-
-  osr_get_node_attrs "mountpoint" "chrootenv" "$nodeid" "" "" $nodes_conf "$nodeconf"
+  osr_get_node_attrs "mountpoint" "chrootenv" "$@"
 }
-
-#
-# osr_get_chroot_fstype nodesconf nodeid
 osr_get_chroot_fstype() {
-  local nodes_conf=""
-  if [ -f "$1" ]; then
-  	nodes_conf="$1"
-  	shift
-  fi
-  local nodeid=$1
-  local nodeconf=$2
-
-  osr_get_node_attrs "fstype" "chrootenv" "$nodeid" "" "" $nodes_conf "$nodeconf"
+  osr_get_node_attrs "fstype" "chrootenv" "$@"
 }
-
-#
-# osr_get_chroot_device nodes_conf nodeid
 osr_get_chroot_device() {
-  local nodes_conf=""
-  if [ -f "$1" ]; then
-  	nodes_conf="$1"
-  	shift
-  fi
-  local nodeid=$1
-  local nodeconf=$2
-
-  osr_get_node_attrs "device" "chrootenv" "$nodeid" "" "" $nodes_conf "$nodeconf"
+  osr_get_node_attrs "device" "chrootenv" "$@"
 }
-
-#
-# osr_get_chroot_mountopts nodes_conf nodeid
 osr_get_chroot_mountopts() {
-  local nodes_conf=""
-  if [ -f "$1" ]; then
-  	nodes_conf="$1"
-  	shift
-  fi
-  local nodeid=$1
-  local nodeconf=$2
-
-  osr_get_node_attrs "mountopts" "chrootenv" "$nodeid" "" "" $nodes_conf "$nodeconf"
+  osr_get_node_attrs "mountopts" "chrootenv" "$@"
 }
-
-#
-# osr_get_syslogserver nodes_conf nodeid
 osr_get_syslogserver() {
-  local nodes_conf=""
-  if [ -f "$1" ]; then
-  	nodes_conf="$1"
-  	shift
-  fi
-  local nodeid=$1
-  local nodeconf=$2
-
-  osr_get_node_attrs "name" "syslog" "$nodeid" "" "" $nodes_conf "$nodeconf"
+  osr_get_node_attrs "name" "syslog" "$@"
 }
-
-#
-# osr_get_syslogfilter nodes_conf nodeid
 osr_get_syslogfilter() {
-  local nodes_conf=""
-  if [ -f "$1" ]; then
-  	nodes_conf="$1"
-  	shift
-  fi
-  local nodeid=$1
-  local nodeconf=$2
-
-  osr_get_node_attrs "filter" "syslog" "$nodeid" "" "" $nodes_conf "$nodeconf"
+  osr_get_node_attrs "filter" "syslog" "$@"
 }
-
-#
-# osr_get_scsifailover nodes_conf nodeid
 osr_get_scsifailover() {
-  local nodes_conf=""
-  if [ -f "$1" ]; then
-  	nodes_conf="$1"
-  	shift
-  fi
-  local nodeid=$1
-  local nodeconf=$2
-
-  osr_get_node_attrs "failover" "scsi" "$nodeid" "" "" $nodes_conf "$nodeconf"
+  osr_get_node_attrs "failover" "scsi" "$@"
 }
-
-#
-# osr_get_netdevs nodes_conf nodeid
 osr_get_netdevs() {
-  local nodes_conf=""
-  if [ -f "$1" ]; then
-  	nodes_conf="$1"
-  	shift
-  fi
-  local nodeid=$1
-  local nodeconf=$2
-
-  osr_get_node_attrs "name" "eth" "$nodeid" "" "" $nodes_conf "$nodeconf"
-}
-
-#
-# osr_get [nodes_conf] query nodeid attrs
-# Examples:
-#   osr_get eth_name_name nodeid attr  
-osr_get() {
-  local nodesconf=""
-  if [ -f "$1" ]; then
-  	nodesconf="$1"
-  	shift
-  fi
-  local query=$(osr_resolve_element_alias $1)
-  local nodeid=${2:-1}
-  local key=$3
-  if [ -f "$4" ]; then
-    local nodeconf="$4"
-    shift
-  fi 
-  if [ -z "$nodeconf" ]; then
-  	local nodeconf=$(osr_nodeid_file $nodeid)
-  fi
-  
-  local element=$(echo $query | cut -f1 -d_)
-  local keyname=$(osr_get_cluster_element_key $element)
-  
-  if [ -n "$keyname" ] && [ -n "$key" ]; then
-    query=$(echo $query | cut -f3- -d_)
-  else
-    query=$(echo $query | cut -f2- -d_)
-  fi
-  osr_get_node_attrs "$query" "$element" $nodeid "" "$key" $nodesconf $nodeconf
+  osr_get_node_attrs "name" "eth" "$@"
 }
 
 #
@@ -685,35 +476,20 @@ osr_validate() {
 #
 # osr_auto_hosts
 osr_auto_hosts() {
-  local nodesconf=""
   local nodeid=""
   local netdev=""
   local nodename=""
   local ip=""
-  local nodeconf=""
   
-  if [ -f "$1" ]; then
-  	nodesconf="$1"
-  	shift
-  fi
-  local nodeconfpath=$1
-  if [ -z "$nodeconfpath" ]; then
-    nodeconfpath=$(dirname $(osr_nodeid_file 1))
-  fi
-  [ -z "$nodesconf" ] && nodesconf=$(osr_nodeids_file)
-  
-  for nodeid in $(osr_get_nodeids "$nodesconf"); do
-    nodeconf=${nodeconfpath}/$(basename $(osr_nodeid_file $nodeid))
-    nodename=$(osr_get "$nodesconf" name $nodeid "" "$nodeconf")
-    for netdev in $(osr_get "$nodesconf" eth_name $nodeid ""); do
+  for nodeid in $(osr_get_nodeids); do
+    nodename=$(osr_get name "$nodeid")
+    for netdev in $(osr_get eth_name "$nodeid"); do
       if [ -n "$ip" ]; then
       	continue
       else
-        ip=$(osr_get "$nodesconf" eth_name_ip $nodeid $netdev "$nodeconf")
+        ip=$(osr_get eth_name_ip "$nodeid" $netdev)
         [ -n "$ip" ] && [ -n "$nodename" ] && echo "$ip $nodename"
       fi
     done  
   done 
 }
-
-[ -z "$cluster_conf" ] && [ -f $(osr_nodeids_file) ] && cluster_conf=$(osr_nodeids_file)
