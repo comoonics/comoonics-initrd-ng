@@ -46,7 +46,6 @@ repository_clear
 sourceLibs $(dirname $0)/boot-scripts
 clutype=$(repository_get_value clutype)
 rootfs=$(get_mounted_rootfs)
-repository_store_value cluster_conf /etc/cluster/cluster.conf
 repository_store_value rootfs $rootfs
 sourceRootfsLibs $(dirname $0)/boot-scripts
 distribution=$(repository_get_value distribution)
@@ -88,7 +87,6 @@ UMOUNTFS="/dev/pts /dev /proc /sys"
 cfg_file=/etc/comoonics/comoonics-bootimage.cfg
 source ${cfg_file}
 
-repository_store_value cluster_conf $cluconf
 repository_store_value hardwareids "$(hardware_ids)"
 
 function usage() {
@@ -157,7 +155,7 @@ function mount_chroot() {
 	# We end up in this clause only if we need a chroot but there is none yet.
 	if [ -z "$chrootdir" ]; then
   		echo_local -n "Building comoonics chroot environment \"$chrootdir\" "
-  		res=( $(build_chroot $(repository_get_value cluster_conf) $(repository_get_value nodename)) )
+  		res=( $(build_chroot $(repository_get_value nodeid)) )
   		retc=$?
   		repository_store_value chroot_mount ${res[0]}
   		#FIXME: chroot_path should be the same as chrootdir but what to do here? How to decide?
@@ -168,7 +166,7 @@ function mount_chroot() {
 	# chrootdir is mounted but not written to /etc/mtab
 	if [ ! -L /etc/mtab ] && ! MOUNTS=$(cat /etc/mtab) is_mounted $chrootdir && is_mounted $chrootdir && repository_has_key nodename; then
 		echo_local -N -n "persist "
-		res=( $(build_chroot_fake $(repository_get_value cluster_conf) $(repository_get_value nodename)) )
+		res=( $(build_chroot_fake $(repository_get_value nodeid)) )
   		retc=$?
   		repository_store_value chroot_mount ${res[0]}
   		#FIXME: chroot_path should be the same as chrootdir but what to do here? How to decide?
