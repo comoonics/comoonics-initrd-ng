@@ -1,8 +1,4 @@
 #
-# $Id: std-lib.sh,v 1.26 2011-01-28 12:59:20 marc Exp $
-#
-# @(#)$File$
-#
 # Copyright (c) 2001 ATIX GmbH, 2007 ATIX AG.
 # Einsteinstrasse 10, 85716 Unterschleissheim, Germany
 # All rights reserved.
@@ -89,6 +85,7 @@ function sourceLibs() {
       [ -e ${predir}/etc/${_distribution}/xen-lib.sh ] && source ${predir}/etc/${_distribution}/xen-lib.sh
       [ -e ${predir}/etc/${_distribution}/iscsi-lib.sh ] && source ${predir}/etc/${_distribution}/iscsi-lib.sh
       [ -e ${predir}/etc/${_distribution}/drbd-lib.sh ] && source ${predir}/etc/${_distribution}/drbd-lib.sh
+      [ -e ${predir}/etc/${_distribution}/selinux-lib.sh ] && source ${predir}/etc/${_distribution}/selinux-lib.sh
     done
     unset _distribution
     
@@ -598,9 +595,9 @@ function exec_local() {
 Output: $outmsg
 Errors: $errormsg
 "
-        repository_store_value exec_local_lastcmd "$*"
-        repository_store_value exec_local_lasterror "$errormsg"
-        repository_store_value exec_local_lastout "$outmsg"
+        repository_store_value exec_local_lastcmd "$*" "" ""
+        repository_store_value exec_local_lasterror "$errormsg" "" ""
+        repository_store_value exec_local_lastout "$outmsg" "" ""
   		echo_local_debug "Error in cmd: $*"
 		echo_local_debug "Output: $outmsg"
   		echo_local_debug "Errors: $errormsg"
@@ -1183,94 +1180,3 @@ exec_ordered_scripts_in() {
    return $return_C
 }
 #************ exec_ordered_skripts_in
-
-#################
-# $Log: std-lib.sh,v $
-# Revision 1.26  2011-01-28 12:59:20  marc
-# Bug #396 added lock-lib.sh to be autoincluded.
-#
-# Revision 1.25  2010/12/07 13:27:29  marc
-# fixed typo in getInList
-#
-# Revision 1.24  2010/08/11 09:43:32  marc
-# exec_ordered_skripts: return with error if error occures during execution of skript
-#
-# Revision 1.23  2010/08/06 13:32:27  marc
-# - removed some unsuccessful experiments in exec_local
-#
-# Revision 1.22  2010/07/12 14:20:10  marc
-# removed error and outlog for exec_local
-#
-# Revision 1.21  2010/07/09 13:33:01  marc
-# - reverted redirection back to using exec
-#
-# Revision 1.20  2010/07/08 08:12:57  marc
-# - exec_local: better output redirection and storage of command outputs to be used later by user
-#
-# Revision 1.19  2010/06/29 18:58:14  marc
-# - getParameters: changed default from rootfs to cluster query
-#
-# Revision 1.18  2010/06/25 14:36:50  marc
-# fixed bug in getParameter
-#
-# Revision 1.17  2010/06/25 12:28:42  marc
-# - sourceLibs: taking predefined clutype in repository also into account.
-#
-# Revision 1.16  2010/05/27 09:53:13  marc
-# cpio_and_zip_initrd:
-#   - create tmp file in TMPDIR(/tmp) and not where initrd should be created
-#
-# Revision 1.15  2010/03/08 13:14:27  marc
-# - new functionset get/setPosFromList
-# - fixed bug in exec_local_stabilized that would not use exec_local.
-#
-# Revision 1.14  2010/02/05 12:43:50  marc
-# return_code: removed obsolete code
-# action: added
-# failure,warning,passed,success: no new line in the end
-# echo_base: base function for echo_local, ..
-# echo_local, echo_local_debug,..: use echo_base
-# listBreakpoints: will be sorted
-# exec_ordered_skripts_in: silently skip directories, use echo_local -N
-#
-# Revision 1.13  2010/01/04 13:21:43  marc
-# sourceLibs:
-#    * osr-lib.sh will always be included
-#    * accepting clutype, distributions and shortdistribution as parameter
-# sourceRootfsLibs:
-#    * accepting clutype, distributions, shortdistribution and rootfs as parameter
-# success,failure,warning,passed,echo_local,echo_local_debug,error_out,warn,error_local_debug:
-#    * output to /dev/kmsg if KMSG is set
-# exec_ordered_skripts_in:
-#   * executable files will be executed
-#   * .sh files will be sources
-#
-# Revision 1.12  2009/12/09 09:27:18  marc
-# logging
-#
-# Revision 1.11  2009/10/08 08:01:52  marc
-# no more default output only with help
-#
-# Revision 1.10  2009/09/28 13:07:55  marc
-# - reimplemented debug and log functions to also write to /dev/kmsg
-# - removed deps to output fd 3,4
-#
-# Revision 1.9  2009/06/04 06:32:05  reiner
-# Modified step function so that valid step commands are recognized in uppercase and when abbreviated.
-#
-# Revision 1.8  2009/04/14 14:57:35  marc
-# added functions to unpack the initrd and find newer files
-#
-# Revision 1.7  2009/02/27 08:38:59  marc
-# fixed bash strangeness with rhel4
-#
-# Revision 1.6  2009/01/28 12:56:01  marc
-# Many changes:
-# - moved some functions to std-lib.sh
-# - no "global" variables but repository
-# - bugfixes
-# - support for step with breakpoints
-# - errorhandling
-# - little clean up
-# - better seperation from cc and rootfs functions
-#
