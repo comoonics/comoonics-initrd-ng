@@ -1,8 +1,4 @@
 #
-# $Id: boot-lib.sh,v 1.89 2010/12/07 13:27:13 marc Exp $
-#
-# @(#)$File$
-#
 # Copyright (c) 2001 ATIX GmbH, 2007 ATIX AG.
 # Einsteinstrasse 10, 85716 Unterschleissheim, Germany
 # All rights reserved.
@@ -26,57 +22,74 @@ function selinux_load_policy() {
     local NEWROOT=$1
     local permissive=0
 	# If SELinux is disabled exit now 
-    local selinuxparam=$(getParameter "selinux" 0)
-    SELINUX="disabled"
+    local selinuxparam=$(getParameter "selinux")
+    local ret=0
+    if [ "$selinuxparam" == "0" ]; then
+    	echo_local_debug "SELinux parameter selinux=0 detected disabling SELinux."
+    	return 0
+    fi
+    
+    SELINUX="enforcing"
     [ -e "$NEWROOT/etc/selinux/config" ] && . "$NEWROOT/etc/selinux/config"
+    
+    local enforcing=$(getParameter enforcing)
+    if [ "$enforcing" = 0 ] || [ "$SELINUX" = "permissive" ]; then
+        permissive=1
+    fi
 
-    if [ "$SELINUX" != "disabled" ] && [ "$selinuxparam" != "0" ]; then
-    	# We end up here only if we are enforcing or permissive
-        # Check whether SELinux is in permissive mode
-        if [ $(getParameter "enforcing" 1) = "0" ] || [ "$SELINUX" = "permissive" ]; then
-           permissive=1
-        fi
+    # Attempt to load SELinux Policy
+    if [ -x "$NEWROOT/usr/sbin/load_policy" -o -x "$NEWROOT/sbin/load_policy" ]; then
 
-        # Attempt to load SELinux Policy
-        if [ -x "$NEWROOT/usr/sbin/load_policy" -o -x "$NEWROOT/sbin/load_policy" ]; then
-          local ret=0
-          local out
-          echo_local -n "Loading SELinux policy ($SELINUX/$selinuxparam/$permissive)"
-          # load_policy does mount /proc and /selinux in 
-          # libselinux,selinux_init_load_policy()
-          if [ -x "$NEWROOT/sbin/load_policy" ]; then
-            out=$(chroot "$NEWROOT" /sbin/load_policy -i 2>&1)
-            ret=$?
-            echo_local $out
-          else
-            out=$(chroot "$NEWROOT" /usr/sbin/load_policy -i 2>&1)
-            ret=$?
-            echo_local $out
-          fi
+       if [ "$SELINUX" = "disabled" ]; then
+          return 0;
+       fi
+       
+       selinux_exec_load_policy "$SELINUX" "$selinuxparam" "$permissive" "$NEWROOT"
+       ret=$?
 
-          if [ "$SELINUX" = "disabled" ]; then
-            return 0;
-          fi
-
-          if [ $ret -eq 0 -o $ret -eq 2 ]; then
-            # If machine requires a relabel, force to permissive mode
-            [ -e "$NEWROOT"/.autorelabel ] && ( echo 0 > "$NEWROOT"/selinux/enforce )
-            chroot "$NEWROOT" /sbin/restorecon -R /dev
-            return 0
-          fi
-
-          error_local "Initial SELinux policy load failed."
-          if [ $ret -eq 3 -o $permissive -eq 0 ]; then
-            error_local "Machine in enforcing mode."
-            error_local "Not continuing"
-            return 1
-          fi
+       if [ $ret -eq 0 -o $ret -eq 2 ]; then
+          # If machine requires a relabel, force to permissive mode
+          [ -e "$NEWROOT"/.autorelabel ] && ( echo 0 > "$NEWROOT"/selinux/enforce )
+          chroot "$NEWROOT" /sbin/restorecon -R /dev
           return 0
-        elif [ $permissive -eq 0 -a "$SELINUX" != "disabled" ]; then
-          error_local "Machine in enforcing mode and cannot execute load_policy."
-          error_local "To disable selinux, add selinux=0 to the kernel command line."
+       fi
+
+       error_local "Initial SELinux policy load failed."
+       if [ $ret -eq 3 -o $permissive -eq 0 ]; then
+          error_local "Machine in enforcing mode."
           error_local "Not continuing"
           return 1
-        fi
+       fi
+       return 0
+    elif [ $permissive -eq 0 -a "$SELINUX" != "disabled" ]; then
+       error_local "Machine in enforcing mode and cannot execute load_policy."
+       error_local "To disable selinux, add selinux=0 to the kernel command line."
+       error_local "Not continuing"
+       return 1
+    fi
+}
+
+# Load the policy might be overwritten if necessary by the distributions
+# selinux_exec_local_policy SELINUX selinuxparam permissive NEWROOT
+# Might be overwritten in distribution!
+function selinux_exec_load_policy() {
+   local SELINUX=${1:-enforcing}
+   local selinuxparam=${2}
+   local permissive=${3:-0}
+   local NEWROOT=${4:-/mnt/newroot}
+   local ret=0
+   local out=
+   echo_local -n "Loading SELinux policy ($SELINUX/$selinuxparam/$permissive)"
+   # load_policy does mount /proc and /selinux in 
+   # libselinux,selinux_init_load_policy()
+   if [ -x "$NEWROOT/sbin/load_policy" ]; then
+      out=$(chroot "$NEWROOT" /sbin/load_policy -i 2>&1)
+      ret=$?
+      echo_local $out
+   else
+      out=$(chroot "$NEWROOT" /usr/sbin/load_policy -i 2>&1)
+      ret=$?
+      echo_local $out
    fi
+   return $ret
 }
