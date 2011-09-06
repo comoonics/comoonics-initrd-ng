@@ -1,0 +1,3 @@
+/etc/multipath/bindings
+/etc/multipath/wwids
+/etc/multipath.conf

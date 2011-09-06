@@ -1,0 +1,40 @@
+# Create the links for multipath devices if there are any stops if the multipath device is matched
+# First create the link for the disk itself
+# Rule for udev on SLES11
+ENV{DM_UUID}=="mpath-*", IMPORT{file}=="/etc/sysconfig/comoonics-flexd"
+ENV{DM_UUID}=="mpath-*", \
+    PROGRAM="/bin/bash -c 'for flexdexp in $env{FLEXD_MPATH_PREFIX}; do [[ $env{DM_NAME} =~ $$flexdexp ]] && exit 0; done; exit 1'", \
+    SYMLINK+="$env{DM_NAME}", \
+    GOTO="comoonics_flexd_end"
+# Now also create /dev/flexda[1-9] links
+ENV{DM_PART}=="?*", \
+    GOTO="comoonics_flexd_part_detect"
+ENV{DM_UUDI}=="part[0-9]-mpath-*", \
+    GOTO="comoonics_flexd_part_detect"
+
+LABEL="comoonics_flexd_part_detect"
+IMPORT{file}=="/etc/sysconfig/comoonics-flexd"
+PROGRAM="/bin/bash -c 'for flexdexp in $env{FLEXD_MPATH_PREFIX}; do [[ $env{DM_NAME} =~ $$flexdexp ]] && echo $env{DM_NAME}$env{DM_PART} | sed -e s/p\\\([1-9]\\\)/\\\1/ | sed -e s/part\\\([1-9]\\\)/\\\1/ && exit 0; done; exit 1'", \
+    SYMLINK+="%c"
+ENV{DM_ACTION}=="PATH_FAILED|PATH_REINSTATED", GOTO="comoonics_flexd_end"
+
+# Creates the links for scsi disks. Stops if either disk or partition found
+# If the disk is held by something else (device-mapper-multipath) we skip (correspondent multipath device matched above)
+# Rule for udev on SLES11
+ENV{DEVTYPE}=="disk", \
+    PROGRAM="/bin/bash -c 'test `ls /sys/block/$kernel/holders/ | wc -l` -gt 0'", GOTO="comoonics_flexd_end"
+ENV{DEVTYPE}=="disk", IMPORT{file}=="/etc/sysconfig/comoonics-flexd"
+ENV{DEVTYPE}=="disk", \
+    PROGRAM="/bin/bash -c 'for flexdexp in $env{FLEXD_NON_MPATH_PREFIX}; do [[ %k =~ $$flexdexp ]] && echo %k | sed -e s/$$flexdexp/flexd/ && exit 0; done; exit 1'", \
+    SYMLINK+="%c", \
+    GOTO="comoonics_flexd_end"
+ENV{DEVTYPE}=="partition", \
+    PROGRAM="/bin/bash -c 'test `/bin/ls /sys/block/$parent/holders/ | wc -l` -gt 0'", \
+    GOTO="comoonics_flexd_end"
+ENV{DEVTYPE}=="partition", IMPORT{file}=="/etc/sysconfig/comoonics-flexd"
+ENV{DEVTYPE}=="partition", \
+    PROGRAM="/bin/bash -c 'for flexdexp in $env{FLEXD_NON_MPATH_PREFIX}; do [[ %k =~ $$flexdexp ]] && echo %k | sed -e s/$$flexdexp/flexd/ && exit 0; done; exit 1'", \
+    SYMLINK+="%c", \
+    GOTO="comoonics_flexd_end"
+
+LABEL="comoonics_flexd_end"

@@ -1,0 +1,12 @@
+#
+# This variable matches all device mapper multipath devices that will be used as flexdisks.
+# Multiple regular expressions should be seperated by a blank
+# @default: FLEXD_MPATH_PREFIX="flexd[a-z][a-z]*" which means all device mapper multipath devices named /dev/mapper/flexd[a-z][a-z]*
+FLEXD_MPATH_PREFIX="flexd[a-z][a-z]*"
+
+#
+# This variable matches all non device mapper multipath devices that will be used as flexdisks.
+# Multiple regular expressions should be seperated by a blank
+# @default: FLEXD_NON_MPATH_PREFIX="sd[a-z][a-z]* vd[a-z][a-z]* xvd[a-z][a-z]* hd[a-z][a-z]*" which means all devices named e.g. /dev/sd[a-z][a-z]*
+# WARNING: DON'T CHANGE THIS ENTRY UNLESS YOU UNDERSTAND THE SIDE EFFECTS IT TRIGGERS!!
+FLEXD_NON_MPATH_PREFIX="^sd ^vd ^xvd ^hd"

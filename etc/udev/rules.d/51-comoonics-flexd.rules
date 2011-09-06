@@ -1,0 +1,18 @@
+# Creates the links for scsi disks. Stops if either disk or partition found
+# If the disk is held by something else (device-mapper-multipath) we skip (correspondent multipath device matched above)
+# Rule for udev on RHEL5
+KERNEL=="vd*", \
+    GOTO="comoonics_flexd_detect_disk"
+ENV{ID_TYPE}=="disk", \
+    PROGRAM="/bin/bash -c 'test `ls /sys/block/$kernel/holders/ 2>/dev/null | wc -l` -gt 0 || test `/bin/ls /sys/block/$parent/holders/ | wc -l 2>/dev/null` -gt 0'", GOTO="comoonics_flexd_end"
+ENV{ID_TYPE}=="disk", \
+    GOTO="comoonics_flexd_detect_disk"
+GOTO="comoonics_flexd_end"
+
+LABEL="comoonics_flexd_detect_disk"
+IMPORT{file}=="/etc/sysconfig/comoonics-flexd"
+PROGRAM="/bin/bash -c 'for flexdexp in $env{FLEXD_NON_MPATH_PREFIX}; do [[ %k =~ $$flexdexp ]] && echo %k | sed -e s/$$flexdexp/flexd/ && exit 0; done; exit 1'", \
+    SYMLINK+="%c", \
+    GOTO="comoonics_flexd_end"
+
+LABEL="comoonics_flexd_end"

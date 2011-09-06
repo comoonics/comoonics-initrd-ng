@@ -1,0 +1,27 @@
+# Create the links for multipath devices if there are any stops if the multipath device is matched
+# First create the link for the disk itself
+# Rule for udev on RHEL5
+SUBSYSTEM!="block", GOTO="end_old_mpath"
+KERNEL!="dm-[0-9]*", GOTO="end_old_mpath"
+PROGRAM!="/sbin/mpath_wait %M %m", GOTO="end_old_mpath"
+PROGRAM!="/sbin/dmsetup info -c --noheadings -j %M -m %m", GOTO="end_old_mpath"
+RESULT!="*:*:*:*:*:*:*:mpath-*", GOTO="kpartx_old_check"
+IMPORT{file}=="/etc/sysconfig/comoonics-flexd"
+PROGRAM=="/sbin/dmsetup info -c --noheadings -o name -j %M -m %m", RESULT=="?*", \ 
+    PROGRAM="/bin/bash -c 'for flexdexp in $env{FLEXD_MPATH_PREFIX}; do [[ %c =~ $$flexdexp ]] && echo %c && exit 0; done; exit 1'", \
+    SYMLINK+="%c", \
+	OPTIONS="last_rule", \
+    GOTO="comoonics_flexd_end"
+GOTO="comoonics_flex_end"
+
+LABEL="kpartx_old_check"
+RESULT!="*:*:*:*:*:*:*:part*-mpath-*", GOTO="end_old_mpath"
+IMPORT{file}=="/etc/sysconfig/comoonics-flexd"
+PROGRAM=="/sbin/dmsetup info -c --noheadings -o name -j %M -m %m", RESULT=="?*", \ 
+    PROGRAM="/bin/bash -c 'for flexdexp in $env{FLEXD_MPATH_PREFIX}; do [[ %c =~ $$flexdexp ]] && echo %c | sed -e s/p\\\([1-9]\\\)/\\\1/ && exit 0; done; exit 1'", \
+    SYMLINK+="%c", \
+	OPTIONS="last_rule", \
+    GOTO="comoonics_flexd_end"
+GOTO="comoonics_flex_end"
+LABEL=="end_old_mpath"
+LABEL="comoonics_flexd_end"
