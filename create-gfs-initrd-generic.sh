@@ -407,6 +407,11 @@ if [ -z "$update" ] || [ -n "$kernel" ]; then
       mkdir -p ${mountpoint}/lib/modules
     fi
 
+	if [ ! -d /lib/modules/$_kernel ]; then
+		echo "Could not find the kernel $_kernel."
+		failure && rm $lockfile && exit $?
+	fi
+
     if [ -n "$light" ] && [ $light -eq 1 ]; then
 	  # Only copy modules that are currently used or are specified in /etc/modprobe.conf
 	  modules="true"
