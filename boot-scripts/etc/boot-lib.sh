@@ -232,7 +232,7 @@ function getDistributionList {
 #
 function getParameter() {
 	local name=$1
-	local default=$2
+	local default=${2:-__set__}
 	local out=""
 	
 	# check if parameter is already in repository
@@ -249,8 +249,8 @@ function getParameter() {
 	# then we try to find a method to query the cluster configuration
 	elif out=$(getClusterParameter $name); then
         # set __set__ for parameters given as 
-		[ -z "$out" ] && out="__set__"
-    elif [ -n "$default" ]; then
+		[ -z "$out" ] && out="$default"
+    elif [ -n "$default" ] && [ -n "$2" ]; then
         out=$default
     fi
     if [ -n "$out" ]; then
@@ -262,40 +262,6 @@ function getParameter() {
     fi
 }
 #************ getParameter
-
-#****f* boot-lib.sh/getBootParameters
-#  NAME
-#    getBootParameters
-#  SYNOPSIS
-#    function getBootParameters() {
-#  DESCRIPTION
-#    sets all clusterfs relevant parameters given by the bootloader
-#    via /proc/cmdline as global variables.
-#    The following global variables are set
-#      * debug: debug mode (bootparm com-debug unset)
-#      * stepmode: step mode (bootparm com-step unset)
-#      * mountopts: mountopts (bootparm mountopts defaults)
-#      * tmpfix: mount tmp as ramfs (bootparm tmpfix unset)
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function getBootParameters() {
-    getBootParm com-debug
-    echo -n ":"
-    getBootParm com-step
-    echo -n ":"
-    getBootParm mountopt
-    echo -n ":"
-    getBootParm tmpfix
-    echo -n ":"
-    getBootParm scsifailover
-    echo -n ":"
-    getBootParm com-dstep
-    echo -n ":"
-    getBootParm nousb
-}
-#************ getBootParameters
 
 #****f* boot-lib.sh/welcome
 #  NAME
