@@ -67,9 +67,6 @@ getNetParameters
 # gfs parameters
 # getGFSParameters
 
-# boot parameters
-getBootParameters
-
 check_cmd_params $*
 shift $(($? - 1))
 
