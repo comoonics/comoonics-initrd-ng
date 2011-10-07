@@ -114,6 +114,7 @@ function nicConfig {
 #
 function nicAutoUp() {
    local _err=0
+   local ipconfig=$1
    local onboot=$(getPosFromIPString 10, $ipconfig)
    if [ "$onboot" = "yes" ]; then
    	return 0
