@@ -40,15 +40,7 @@
 [ -z "$default_mountopts" ] && default_mountopts="noatime"
 repository_has_key ccs_xml_query || repository_store_value ccs_xml_query "/usr/bin/com-queryclusterconf"
 repository_has_key cl_check_nodes ||  repository_store_value cl_check_nodes "/usr/bin/cl_checknodes"
-
-#****d* boot-scripts/etc/gfs-lib.sh/cluster_conf
-#  NAME
-#    cluster_conf
-#  DESCRIPTION
-#    clusterconfig file defaults to /etc/cluster/cluster.conf
-#    will implicitly be stored in cluster_conf repository
-[ -z "$cluster_conf" ] && cluster_conf=$(getParameter cluster_conf "/etc/cluster/cluster.conf")
-#******** cluster_conf
+repository_has_key osrquerymap || repository_store_value osrquerymap /etc/comoonics/querymap.cfg 
 
 #if [ ! -e $cluster_conf ]; then
 #  error_local "Critical error could not find cluster configuration."
@@ -475,7 +467,7 @@ function gfs_auto_hosts() {
 
 #    if [ -n "$debug" ]; then set -x; fi
 #    cp -f $hostsfile $hostsfile.bak
-    ccs_xml_query -f $xmlfile -q hosts
+    ccs_xml_query -q hosts
     cat $hostsfile
     ret=$?
 #    if [ -n "$debug" ]; then set +x; fi
@@ -581,7 +573,7 @@ function gfs_get_node_attrs() {
   else
     echo "query=query_value /cluster/clusternodes/clusternode[@nodeid=\"$nodeid\"]/com_info/${subpath}$subquery/@$attr"
     echo "query=query_value /cluster/clusternodes/clusternode[@name=\"$nodeid\"]/com_info/${subpath}$subquery/@$attr"
-  fi | ccs_xml_cmd $xml_cmd_opts | cut -f1 -d';')
+  fi | ccs_xml_query $xml_cmd_opts | cut -f1 -d';')
   if [ -z "$out" ]; then
   	return 1
   else
@@ -1225,3 +1217,14 @@ function gfs_fsck() {
 function gfs_chroot_needed() {
 	return 0
 }
+#******* gfs_chroot_needed
+
+#****d* boot-scripts/etc/gfs-lib.sh/cluster_conf
+#  NAME
+#    cluster_conf
+#  DESCRIPTION
+#    clusterconfig file defaults to /etc/cluster/cluster.conf
+#    will implicitly be stored in cluster_conf repository
+[ -z "$cluster_conf" ] && cluster_conf=$(getParameter cluster_conf "/etc/cluster/cluster.conf")
+#******** cluster_conf
+
