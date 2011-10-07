@@ -50,6 +50,11 @@ function sourceLibs() {
     . ${predir}/etc/hardware-lib.sh
     . ${predir}/etc/network-lib.sh
     . ${predir}/etc/clusterfs-lib.sh
+	
+	[ -n "$2" ] && clutype="$2"
+	repository_has_key clutype && clutype=$(repository_get_value clutype)
+    [ -z "$clutype" ] && clutype=$(getCluType)
+
     . ${predir}/etc/stdfs-lib.sh
     [ -e ${predir}/etc/plymouth-lib.sh ] && . ${predir}/etc/plymouth-lib.sh
     [ -e ${predir}/etc/selinux-lib.sh ] && . ${predir}/etc/selinux-lib.sh
@@ -60,10 +65,6 @@ function sourceLibs() {
     [ -e ${predir}/etc/drbd-lib.sh ] && source ${predir}/etc/drbd-lib.sh
     [ -e ${predir}/etc/syslog-lib.sh ] && source ${predir}/etc/syslog-lib.sh
 
-	
-	[ -n "$2" ] && clutype="$2"
-	repository_has_key clutype && clutype=$(repository_get_value clutype)
-    [ -z "$clutype" ] && clutype=$(getCluType)
     . ${predir}/etc/${clutype}-lib.sh
 
     # including all distribution dependent files
@@ -92,7 +93,6 @@ function sourceLibs() {
     # store the data to repository
     repository_store_value distribution $distribution
     repository_store_value shortdistribution $shortdistribution
-    repository_store_value clutype $clutype 
 }
 #********** sourceLibs
 #****f* boot-lib.sh/sourceRootfsLibs
@@ -558,9 +558,9 @@ function exec_local() {
   repository_del_value exec_local_lastout
   if [ -n "$(repository_get_value dstep)" ]; then
   	echo -n "$* (Y|n|c)? " >&2
-  	read dstep_ans
+  	read -t$step_timeout dstep_ans
   	[ "$dstep_ans" == "n" ] && do_exec=0
-  	[ "$dstep_ans" == "c" ] && dstepmode=""
+  	[ "$dstep_ans" == "c" ] && repository_del_value dstep
   fi
   if [ $do_exec -eq 1 ]; then
   	if [ -n "$tmpfile_out" ] && [ -n "$tmpfile_err" ]; then
@@ -744,12 +744,12 @@ function step() {
        echo
      fi
      if [ -n "$__the_step" ] && [ "$__the_step" != "$(repository_get_value step)" ]; then
-       repository_store_value step "$__stepmode"
+       repository_store_value step "$__stepmode" "" ""
      fi
    elif [ -n "$__stepmode" ] && [ -n "$__name" ] && [ "$__name" == "$__stepmode" ]; then
      # reseting if came from a breakpoint.
      __stepmode="__set__"
-     repository_store_value step "$__stepmode"
+     repository_store_value step "$__stepmode" "" ""
      echo_local "Breakpoint \"$__name\" detected forking a shell"
      breakp
    else
