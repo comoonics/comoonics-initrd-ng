@@ -40,7 +40,6 @@ echo_local "All output is directed to $outlog"
 initEnv
 
 # boot parameters
-#bootparms=$(getBootParameters)
 #debug=$(getParm ${bootparms} 1)
 #stepmode=$(getParm ${bootparms} 2)
 
