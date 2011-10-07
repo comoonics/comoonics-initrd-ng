@@ -309,17 +309,21 @@ osr_getdefaults() {
 # osr_get_nodeids
 #  returns all nodeids
 osr_get_nodeids() {
-  local nodeid=""
-  local mac=""
-  local delim=" "
-  local nodeids=""
-  
-  for nodeid in $(repository_get_value nodeids); do
-  	nodeids=${nodeids}${delim}$nodeid
-  done
-  [ -n "$nodeids" ] && echo $nodeids
-  [ -n "$nodeids" ]
-  return $?
+  if ! repository_has_key nodeids; then
+  	# Let's guess from cdsl if available from either cdsl repo or from cdsltree dir
+    local cdslmanage=$(repository_get_value cdslmanage /usr/bin/com-mkcdslinfrastructure)
+    local nodeids=$($cdslmanage --get maxnodeidnum)
+    if [ $? -eq 0 ]; then
+      echo "$(seq 1 $nodeids)"
+    else
+      nodeids=$(ls -1 /$($cdslmanage --get tree) | grep "[0-9][0-9]*")
+      if [ $? -eq 0 ]; then
+        echo "$nodeids"
+      fi
+    fi
+  else
+     repository_get_value nodeids
+  fi
 }
 
 #
