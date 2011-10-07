@@ -34,7 +34,7 @@
 #    cdsl_local_dir
 #  DESCRIPTION
 #    where the local dir for cdsls can be found
-repository_has_key cdsl_local_dir || repository_store_value cdsl_local_dir "/cdsl.local"
+repository_has_key cdsl_local_dir || repository_store_value cdsl_local_dir "/.cdsl.local"
 #******** cdsl_local_dir
 
 #****d* boot-scripts/etc/clusterfs-lib.sh/cdsl_prefix
@@ -42,94 +42,101 @@ repository_has_key cdsl_local_dir || repository_store_value cdsl_local_dir "/cds
 #    cdsl_prefix
 #  DESCRIPTION
 #    where the local dir for cdsls can be found
-repository_has_key cdsl_prefix || repository_store_value cdsl_prefix "/cluster/cdsl"
+repository_has_key cdsl_prefix || repository_store_value cdsl_prefix "/.cluster/cdsl"
 #******** cdsl_prefix
-
-repository_has_key osrquerymap || repository_store_value osrquerymap /etc/comoonics/querymap.cfg 
-
 repository_has_key confdir || repository_store_value confdir /etc/conf.d
-
-#****f* boot-scripts/etc/clusterfs-lib.sh/getClusterFSParameters
-#  NAME
-#    getClusterFSParameters
-#  SYNOPSIS
-#    function getClusterFSParameters() {
-#  DESCRIPTION
-#    sets all clusterfs relevant parameters given by the bootloader
-#    via /proc/cmdline as global variables.
-#    The following global variables are set
-#      * root: The rootdevice parameter
-#      * rootsource: The rootdevicesource (scsi|iscsi|gnbd)
-#      * lockmethod: If supported by the clusterfs implementation.
-#           Valid modes are (lock_gulm|lock_dlm)
-#      * sourceserver: Root source server if (iscsi|gnbd)
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function getClusterFSParameters() {
-  getBootParm rootsource
-  echo -n ":"
-  getBootParm root
-  echo -n ":"
-  getBootParm lockmethod $default_lockmethod
-  echo -n ":"
-  getBootParm sourceserver
-  echo -n ":"
-  getBootParm quorumack
-  echo -n ":"
-  getBootParm nodeid
-  echo -n ":"
-  getBootParm nodename
-  echo -n ":"
-  getBootParm fstype
-  echo -n ":"
-}
-#******** getClusterFSParameters
 
 #****f* boot-scripts/etc/clusterfs-lib.sh/getCluType
 #  NAME
 #    getCluType
 #  SYNOPSIS
-#    function getCluType()
+#    function getCluType(conf, dir)
 #  DESCRIPTTION
 #    returns the type of the cluster. Until now only "gfs"
 #    is returned.
 #  SOURCE
 #
 function getCluType {
-   local conf=${1:-$(repository_get_value cluster_conf)}
+   local conf=$1
    local clutype=""
    
+   if repository_has_key clutype; then
+   	  repository_get_value clutype
+   	  return 0
+   fi
    if [ -z "$conf" ]; then
-   	  conf=$cluster_conf
+   	  conf=$(repository_get_value cluster_conf /etc/cluster/cluster.conf)
    fi
-   
-   if [ -z "$conf" ] || [ ! -f "$conf" ] || [ -z "$ccs_xml_query" ]; then
-   	  echo "osr"
-   	  return 0
-   fi
+   repository_has_key ccs_xml_query || repository_store_value ccs_xml_query "/usr/bin/com-queryclusterconf"
 
-   # first test for gfs type
-   clutype=$(gfs_get clustertype 2>/dev/null)
-   if [ $? -eq 0 ] && [ -n "$clutype" ]; then
-   	  echo "$clutype"
-   	  return 0
+   if [ -z "$conf" ] || [ ! -f "$conf" ] || [ ! -e "$(repository_get_value ccs_xml_query)" ]; then
+   	  clutype="osr"
+   else
+     # first test for gfs type
+     clutype=$($(repository_get_value ccs_xml_query) --filename $conf -q clustertype 2>/dev/null) || clutype=$($(repository_get_value ccs_xml_query) --filename $conf -q query_value /cluster/@type 2>/dev/null)
+     if [ -z "$clutype" ] && $(repository_get_value ccs_xml_query) --filename $conf query_value /cluster/clusternodes/clusternode/com_info &>/dev/null; then
+   	    clutype="gfs"
+     fi
    fi
-   clutype=$(gfs_get query_value /cluster/@type 2>/dev/null)
-   if [ $? -eq 0 ] && [ -n "$clutype" ]; then
-   	  echo "$clutype"
-   	  return 0
-   fi
+   echo "$clutype"
+   repository_store_value clutype "$clutype" 
    
-   if gfs_get query_value /cluster/clusternodes/clusternode/com_info 2>/dev/null; then
-   	  echo "gfs"
-   	  return 0
-   fi
-   echo "osr"
    return 0
 }
 #******** getCluType
+
+#****f* boot-scripts/etc/clusterfs-lib.sh/getClusterParameter
+#  NAME
+#    getClusterParameter
+#  SYNOPSIS
+#    getClusterParameter(parametername, nodeid[, nodename])
+#  DESCRIPTION
+#    returns the parameter of the cluster configuration
+#  SOURCE
+function getClusterParameter() {
+	local name=$1
+	shift
+	local out=""
+	if [ -z $(repository_get_value clutype "") ]; then
+		return 0
+	fi
+	# first we need to find our nodeid
+	#maybe it is already in the repository
+	local nodeid=${1:-$(repository_get_value nodeid)}
+    local nodename=${2:-$(repository_get_value nodename)}
+    if [ -z "$nodeid" ]; then 
+		# we need to query it
+		nodeid=$(cc_find_nodeid)
+		if [ -n "$nodeid" ]; then
+			repository_store_value nodeid $nodeid
+		else
+			return 1
+		fi
+	fi	
+	if [ -z "$nodename" ]; then
+		nodename=$(cc_get_nodename_by_id $nodeid) 
+		if [ -n "$nodename" ]; then
+			repository_store_value nodename $nodename
+		fi
+	fi
+	# maybe we can find the value in the repository
+	if repository_has_key $name; then
+		out=$(repository_get_value $name)
+	elif clusterfs_is_valid_param $name; then
+		out=$(clusterfs_get_$name $nodeid 2>/dev/null)
+		[ $? -eq 0 ] && [ -n "$out" ] || out=$(clusterfs_get $name $nodeid 2>/dev/null)
+		[ $? -eq 0 ] && [ -n "$out" ] && [ -z "$nodename" ] || out=$(clusterfs_get_$name $nodename 2>/dev/null)
+		[ $? -eq 0 ] && [ -n "$out" ] && [ -z "$nodename" ] || out=$(clusterfs_get $name $nodename 2>/dev/null)
+	else
+		out=$(cc_get_$name $nodeid 2>/dev/null)
+		[ $? -eq 0 ] && [ -n "$out" ] || out=$(cc_get $name $nodeid 2>/dev/null)
+		[ $? -eq 0 ] && [ -n "$out" ] && [ -z "$nodename" ] || out=$(cc_get_$name $nodename 2>/dev/null)
+		[ $? -eq 0 ] && [ -n "$out" ] && [ -z "$nodename" ] || out=$(cc_get $name $nodename 2>/dev/null)
+	fi
+	[ -n "$out" ] && echo -n $out
+	test -n "$out"
+}
+#****** getClusterFSParameters
 
 #****f* boot-scripts/etc/clusterfs-lib.sh/getRootFS
 #  NAME
@@ -173,55 +180,6 @@ $2 == "'$root'" { print $3 }
 }
 #************ get_rootfs
 
-#****f* boot-scripts/etc/clusterfs-lib.sh/getClusterParameter
-#  NAME
-#    getClusterParameter
-#  SYNOPSIS
-#    getClusterParameter(parametername, nodeid[, nodename])
-#  DESCRIPTION
-#    returns the parameter of the cluster configuration
-#  SOURCE
-function getClusterParameter() {
-	local name=$1
-	shift
-	local out=""
-	# first we need to find our nodeid
-	#maybe it is already in the repository
-	local nodeid=${1:-$(repository_get_value nodeid)}
-    local nodename=${2:-$(repository_get_value nodename)}
-    if [ -z "$nodeid" ]; then 
-		# we need to query it
-		nodeid=$(cc_find_nodeid)
-		if [ -n "$nodeid" ]; then
-			repository_store_value nodeid $nodeid
-		else
-			return 1
-		fi
-	fi	
-	if [ -z "$nodename" ]; then
-		nodename=$(cc_get_nodename_by_id $nodeid) 
-		if [ -n "$nodename" ]; then
-			repository_store_value nodename $nodename
-		fi
-	fi
-	# maybe we can find the value in the repository
-	if repository_has_key $name; then
-		out=$(repository_get_value $name)
-	elif clusterfs_is_valid_param $name; then
-		out=$(clusterfs_get_$name $nodeid 2>/dev/null)
-		[ $? -eq 0 ] && [ -n "$out" ] || out=$(clusterfs_get $name $nodeid 2>/dev/null)
-		[ $? -eq 0 ] && [ -n "$out" ] && [ -z "$nodename" ] || out=$(clusterfs_get_$name $nodename 2>/dev/null)
-		[ $? -eq 0 ] && [ -n "$out" ] && [ -z "$nodename" ] || out=$(clusterfs_get $name $nodename 2>/dev/null)
-	else
-		out=$(cc_get_$name $nodeid 2>/dev/null)
-		[ $? -eq 0 ] && [ -n "$out" ] || out=$(cc_get $name $nodeid 2>/dev/null)
-		[ $? -eq 0 ] && [ -n "$out" ] && [ -z "$nodename" ] || out=$(cc_get_$name $nodename 2>/dev/null)
-		[ $? -eq 0 ] && [ -n "$out" ] && [ -z "$nodename" ] || out=$(cc_get $name $nodename 2>/dev/null)
-	fi
-	[ -n "$out" ] && echo -n $out
-	test -n "$out"
-}
-
 #****f* boot-scripts/etc/clusterfs-lib.sh/cluster_ip_config
 #  NAME
 #    cluster_ip_config
@@ -232,14 +190,19 @@ function getClusterParameter() {
 #      * ipConfig: the ipConfiguration used to do locking
 #  SOURCE
 function cluster_ip_config {
-  local nodenameorid=$2
+  local nodenameorid=$1
   local distro=$(repository_get_value distribution)
   local networkdir=$(repository_get_value confdir)/network
+  local ifcfgfile=
+  local ifcfgfile2=
 
   if [ -d $networkdir ]; then
     for ifcfgfile in $(ls -1 $networkdir/ifcfg-*.$nodenameorid); do
   	  [ -d $(${distro}_get_networkpath) ] || mkdir $(${distro}_get_networkpath)
-  	  cp $networkdir/$ifcfgfile $(${distro}_get_networkpath)/
+      ifcfgfile2=$(echo $(basename $ifcfgfile) | sed -e 's/\.'$nodenameorid'$//')
+  	  cp $ifcfgfile $(${distro}_get_networkpath)/$ifcfgfile2
+  	  source $(${distro}_get_networkpath)/$ifcfgfile2
+  	  echo $DEVICE
     done
   fi
   for _dev in $(cc_get_netdevs $nodenameorid); do
@@ -854,15 +817,15 @@ function cc_auto_hosts {
 #  SOURCE
 function cc_auto_syslogconfig {
   local nodenameorid=$1
-  local chroot_path=$3
-  local local_log=$4
-  local syslog_logfile=$5
+  local chroot_path=$2
+  local local_log=$3
+  local syslog_logfile=$4
   local clutype=$(repository_get_value clutype)
   local syslog_type=$(repository_get_value syslog_type)
   local syslog_template=
-  local syslog_server=$6
+  local syslog_server=$5
   local syslog_filter=
-  local no_klog=$7
+  local no_klog=$6
 
   if [ -z "$syslog_type" ]; then
   	syslog_type=$(detect_syslog 2>/dev/null)
@@ -1059,7 +1022,7 @@ function clusterfs_services_restart {
 #
 function clusterfs_services_restart_newroot {
   local rootfs=$(repository_get_value rootfs)
-  ${rootfs}_services_restart_newroot "@"
+  ${rootfs}_services_restart_newroot "$@"
 }
 #***** clusterfs_services_restart_newroot
 
