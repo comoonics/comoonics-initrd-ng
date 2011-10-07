@@ -108,8 +108,8 @@ fi
 echo_local -n "Scanning for Bootparameters..."
 getParameter newroot "/mnt/newroot" &>/dev/null
 getParameter debug $debug &>/dev/null
-getParameter step $stepmode &>/dev/null
-getParameter dstep $dstepmode &>/dev/null
+getParameter step "$stepmode" &>/dev/null
+getParameter dstep "$dstepmode" &>/dev/null
 getParameter nousb &>/dev/null
 return_code 0
 
@@ -273,20 +273,27 @@ _ipconfig=""
 __ipconfig=""
 for ipconfig in $(repository_get_value ipConfig); do
   dev=$(getPosFromIPString 6, $ipconfig)
-  hwids=$(repository_get_value hardwareids)
-  echo_local -n "Creating network configuration for $dev"
-  __ipconfig=$(nicConfig $ipconfig "$hwids")
-  _type=$(getPosFromIPString 8, $ipconfig)
-  _bridge=$(getPosFromIPString 9, $ipconfig)
-  if [ "$_type" = "bridge" ]; then
-    bridgeipconfig="$bridgeipconfig $__ipconfig"
-  elif [[ "$dev" =~ "[a-z]+[0-9]+\.[0-9]+" ]]; then
-    vlanipconfig="$vlanipconfig $__ipconfig"
-  elif [[ "$dev" =~ "^bond" ]]; then
-    bondipconfig="$bondipconfig $__ipconfig" 
-    networkipconfig="$networkipconfig $__ipconfig"
+  if [ -z "$dev" ]; then
+  	# If only the device is given as ipconfig parameter we suppose there is already
+    # a configuration existant in /etc/sysconfig/network-scripts
+  	dev=$ipconfig
+    networkipconfig="$networkipconfig $dev"
   else
-    networkipconfig="$networkipconfig $__ipconfig"
+    hwids=$(repository_get_value hardwareids)
+    echo_local -n "Creating network configuration for $dev"
+    __ipconfig=$(nicConfig $ipconfig "$hwids")
+    _type=$(getPosFromIPString 8, $ipconfig)
+    _bridge=$(getPosFromIPString 9, $ipconfig)
+    if [ "$_type" = "bridge" ]; then
+      bridgeipconfig="$bridgeipconfig $__ipconfig"
+    elif [[ "$dev" =~ "[a-z]+[0-9]+\.[0-9]+" ]]; then
+      vlanipconfig="$vlanipconfig $__ipconfig"
+    elif [[ "$dev" =~ "^bond" ]]; then
+      bondipconfig="$bondipconfig $__ipconfig" 
+      networkipconfig="$networkipconfig $__ipconfig"
+    else
+      networkipconfig="$networkipconfig $__ipconfig"
+    fi
   fi
   if [ $? -ne 0 ]; then
 	breakp $(err_nic_config)
@@ -305,9 +312,10 @@ step "Network configuration finished" "netconfig"
 
 for ipconfig in $networkipconfig $vlanipconfig $bridgeipconfig $restartipconfig; do
   dev=$(getPosFromIPString 6, $ipconfig)
-  driver=$(getPosFromIPString 11, $ipconfig)
+   driver=$(getPosFromIPString 11, $ipconfig)
   nicAutoUp $ipconfig
-  if [ $? -eq 0 ]; then
+  if [ $? -eq 0 ] || [ -z "$dev" ]; then
+  	[ -z "$dev" ] && dev=$ipconfig
   	if [ -n "$driver" ]; then
   		echo_local -n "Loading driver $driver for nic $dev.."
   		exec_local modprobe $driver
