@@ -6,10 +6,6 @@
 #    Library for the creating of initrds for sharedroot
 #*******
 #
-# $Id: create-gfs-initrd-lib.sh,v 1.15 2009-04-14 15:05:47 marc Exp $
-#
-# @(#)$File$
-#
 # Copyright (c) 2001 ATIX GmbH, 2007 ATIX AG.
 # Einsteinstrasse 10, 85716 Unterschleissheim, Germany
 # All rights reserved.
@@ -29,10 +25,6 @@
 #
 
 #
-
-# TODO
-# source boot-scripts/etc/chroot-lib.sh
-# source boot-scripts/etc/stdfs-lib.sh
 
 #****f* create-gfs-initrd-lib.sh/perlcc_file
 #  NAME
@@ -118,37 +110,4 @@ function umount_and_zip_initrd() {
    mv $filename ${filename}.tmp && \
    $compression_cmd $compression_opts $opts ${filename}.tmp > $filename && rm ${filename}.tmp) || (fuser -mv "$mountpoint" && exit 1)
 }
-
-######################
-# $Log: create-gfs-initrd-lib.sh,v $
-# Revision 1.15  2009-04-14 15:05:47  marc
-# clean up
-#
-# Revision 1.14  2009/02/17 20:04:46  marc
-# bug 330 fixed (compression_cmd & compression_opts).
-#
-# Revision 1.13  2007/12/07 16:39:59  reiner
-# Added GPL license and changed ATIX GmbH to AG.
-#
-# Revision 1.12  2007/08/06 16:02:17  mark
-# reorganized files
-# added rpm filter support
-#
-# Revision 1.11  2007/03/09 18:04:54  mark
-# moved function to boot-lib.sh
-#
-# Revision 1.10  2007/02/09 11:09:31  marc
-# cosmetic changes.
-#
-# Revision 1.9  2006/08/28 16:01:57  marc
-# support for rpm-lists and includes of new lists
-#
-# Revision 1.8  2006/06/19 15:55:28  marc
-# rewriten and debuged parts of generating deps. Added @include tag for depfiles.
-#
-# Revision 1.7  2006/06/07 09:42:23  marc
-# *** empty log message ***
-#
-# Revision 1.6  2006/05/03 12:46:45  marc
-# added documentation
-#
+#****** umount_and_zip_initrd
