@@ -8,7 +8,6 @@
 #    Marc Grimme
 #
 #*******
-# @(#)$File:$
 #
 # Copyright (c) 2001 ATIX GmbH, 2007 ATIX AG.
 # Einsteinstrasse 10, 85716 Unterschleissheim, Germany
@@ -71,32 +70,33 @@
 %define GROUPCHILDRHEL6 RHEL6
 %define GROUPCHILDFEDORA Fedora
 
-Name: comoonics-bootimage
-Summary: Scripts for creating an initrd in a OSR Cluster environment
-Version: 1.4
-BuildArch: noarch
-Requires: comoonics-cluster-py >= 0.1-21
-Requires: comoonics-bootimage-initscripts >= 1.4 
-Requires: comoonics-bootimage-listfiles-all
-Requires: comoonics-tools-py
+Name:          comoonics-bootimage
+Summary:       Scripts for creating an initrd in a OSR Cluster environment
+Version:       1.4
+BuildArch:     noarch
+Requires:      comoonics-cluster-py >= 0.1-21
+Requires:      comoonics-bootimage-initscripts >= 1.4 
+Requires:      comoonics-bootimage-listfiles-all
+Requires:      comoonics-tools-py
+Requires:      comoonics-release >= 5.0
 #Conflicts:
-Release: 86
-Vendor: ATIX AG
-Packager: ATIX AG <http://bugzilla.atix.de>
+Release:       89
+Vendor:        ATIX AG
+Packager:      ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
-URL:     http://www.atix.de/
-Source:  http://www.atix.de/software/downloads/comoonics/comoonics-bootimage-%{version}.tar.gz
-License: GPL
-Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
-Distribution: %{DISTRIBUTIONBASE}
-BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+URL:           http://www.atix.de/
+Source:        http://www.atix.de/software/downloads/comoonics/comoonics-bootimage-%{version}.tar.gz
+License:       GPLv2+
+Group:         %{GROUPPARENT}/%{GROUPCHILDBASE}
+Distribution:  %{DISTRIBUTIONBASE}
+BuildRoot:     %{_tmppath}/%{name}-%{version}-buildroot
 
 %description
 Scripts for creating an initrd in a OSR cluster environment
 
 %package extras-osr
 Version: 0.1
-Release: 6
+Release: 7
 Requires: comoonics-bootimage >= 1.3-1
 Summary: Extra for cluster configuration via osr
 Group:   %{GROUPPARENT}/%{GROUPCHILDEXTRAS}
@@ -119,7 +119,7 @@ Extra listfiles for special network configurations
 
 %package extras-nfs
 Version: 0.1
-Release: 21
+Release: 22
 Requires: comoonics-bootimage >= 1.4-81
 Summary: Listfiles for nfs sharedroot configurations
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
@@ -132,7 +132,7 @@ Extra listfiles for nfs sharedroot configurations
 
 %package extras-ocfs2
 Version: 0.1
-Release: 10
+Release: 12
 Requires: comoonics-bootimage >= 1.4
 Summary: Listfiles for ocfs2 sharedroot configurations
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
@@ -155,23 +155,6 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 %description extras-md
 Extra listfiles for md in OSR configurations
 
-%package extras-dm-multipath-rhel4
-Version: 0.1
-Release: 1
-Requires: comoonics-bootimage >= 1.4-82
-Requires: /etc/redhat-release
-Requires: comoonics-bootimage-listfiles-rhel4
-Summary: Listfiles for device mapper multipath OSR configurations for RHEL4
-Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDRHEL4}
-Distribution: %{DISTRIBUTIONBASE}
-BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
-Conflicts: comoonics-bootimage-extras-rdac-multipath
-Obsoletes: comoonics-bootimage-extras-dm-multipath
-Obsoletes: comoonics-bootimage-extras-dm-multipath-rhel
-
-%description extras-dm-multipath-rhel4
-Extra listfiles for device mapper multipath OSR configurations for RHEL4
-
 %package extras-dm-multipath-rhel5
 Version: 0.1
 Release: 1
@@ -191,7 +174,7 @@ Extra listfiles for device mapper multipath OSR configurations for RHEL5
 
 %package extras-dm-multipath-rhel6
 Version: 0.1
-Release: 1
+Release: 2
 Requires: comoonics-bootimage >= 1.4-82
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-rhel6
@@ -302,7 +285,7 @@ DRBD support in the OSR cluster
 
 %package extras-glusterfs
 Version: 0.1
-Release: 4
+Release: 5
 Requires: comoonics-bootimage >= 1.3-44
 Summary: Extras for glusterfs support in the open-sharedroot cluster
 Group:   %{GROUPPARENT}/%{GROUPCHILDEXTRAS}
@@ -334,6 +317,48 @@ Distribution: %{DISTRIBUTIONBASE}
 
 %description extras-syslog
 Syslog implementation for osr. Supports syslog classic, syslog-ng, rsyslog (See listfiles-syslog)
+
+%package extras-flexd-rhel5
+Version: 0.1
+Release: 3
+Summary: Flexdisk implementation for com.oonics flexboot for RHEL5
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
+Distribution: %{DISTRIBUTIONBASE}
+Obsoletes: comoonics-bootimage-extras-flexd
+Conflicts: comoonics-bootimage-extras-flexd-rhel6
+#Conflicts: comoonics-bootimage-extras-flexd-sles10
+Conflicts: comoonics-bootimage-extras-flexd-sles11
+
+%description extras-flexd-rhel5
+Flexdisk implementation for com.oonics flexboot for RHEL5
+
+%package extras-flexd-rhel6
+Version: 0.1
+Release: 3
+Summary: Flexdisk implementation for com.oonics flexboot for RHEL6
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
+Distribution: %{DISTRIBUTIONBASE}
+Obsoletes: comoonics-bootimage-extras-flexd
+Conflicts: comoonics-bootimage-extras-flexd-rhel5
+#Conflicts: comoonics-bootimage-extras-flexd-sles10
+Conflicts: comoonics-bootimage-extras-flexd-sles11
+
+%description extras-flexd-rhel6
+Flexdisk implementation for com.oonics flexboot for RHEL6
+
+%package extras-flexd-sles11
+Version: 0.1
+Release: 3
+Summary: Flexdisk implementation for com.oonics flexboot for SLES11
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
+Distribution: %{DISTRIBUTIONBASE}
+Obsoletes: comoonics-bootimage-extras-flexd
+Conflicts: comoonics-bootimage-extras-flexd-rhel5
+#Conflicts: comoonics-bootimage-extras-flexd-sles10
+Conflicts: comoonics-bootimage-extras-flexd-rhel6
+
+%description extras-flexd-sles11
+Flexdisk implementation for com.oonics flexboot for SLES11
 
 %package listfiles-selinux-rhel5
 Version: 0.1
@@ -381,7 +406,7 @@ Vi includes for comoonics-bootimage (takes vim)
 
 %package listfiles-all
 Version: 0.1
-Release: 17
+Release: 19
 Requires: comoonics-bootimage >= 1.4-81
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
 Distribution: %{DISTRIBUTIONBASE}
@@ -391,24 +416,9 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 %description listfiles-all
 OSR Listfiles that are only relevant for all linux distributions
 
-%package listfiles-rhel4
-Version: 0.1
-Release: 5
-Requires: comoonics-bootimage >= 1.4-81
-Requires: /etc/redhat-release
-Requires: comoonics-bootimage-listfiles-rhel4
-Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDRHEL4}
-Summary: Extrafiles for RedHat Enterprise Linux Version 4 
-BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
-Conflicts: comoonics-bootimage-listfiles-rhel5 
-Obsoletes: comoonics-bootimage-listfiles-rhel
-
-%description listfiles-rhel4
-OSR extra files that are only relevant for RHEL4
-
 %package listfiles-rhel5
 Version: 0.1
-Release: 10
+Release: 11
 Requires: comoonics-bootimage >= 1.4-82
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-all
@@ -423,7 +433,7 @@ OSR extra files that are only relevant for RHEL Versions
 
 %package listfiles-rhel6
 Version: 0.1
-Release: 10
+Release: 4
 Requires: comoonics-bootimage >= 1.4-82
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-all
@@ -457,7 +467,6 @@ Requires: /etc/SuSE-release
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDSLES10}
 Summary: Extrafiles for Novell SuSE Enterprise Server 10
 Conflicts: comoonics-bootimage-listfiles-sles11
-Conflicts: comoonics-bootimage-listfiles-rhel4 
 Conflicts: comoonics-bootimage-listfiles-rhel5 
 Conflicts: comoonics-bootimage-listfiles-rhel6 
 Conflicts: comoonics-bootimage-listfiles-fedora 
@@ -475,7 +484,6 @@ Requires: /etc/SuSE-release
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDSLES11}
 Summary: Extrafiles for Novell SuSE Enterprise Server
 Conflicts: comoonics-bootimage-listfiles-sles10
-Conflicts: comoonics-bootimage-listfiles-rhel4 
 Conflicts: comoonics-bootimage-listfiles-rhel5 
 Conflicts: comoonics-bootimage-listfiles-rhel6 
 Conflicts: comoonics-bootimage-listfiles-fedora 
@@ -540,6 +548,7 @@ Release: 1
 Requires: comoonics-bootimage >= 1.4-81
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-rhel5
+Requires: SysVinit-comoonics
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDRHEL5}
 Summary: Extrafiles for RedHat Enterprise Linux Version 5 and GFS
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
@@ -560,6 +569,7 @@ Release: 1
 Requires: comoonics-bootimage >= 1.4-81
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-rhel5
+Requires: SysVinit-comoonics
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDRHEL5}
 Summary: Extrafiles for RedHat Enterprise Linux Version 5 and GFS2
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
@@ -587,18 +597,24 @@ Conflicts: comoonics-bootimage-extras-ocfs2
 %description listfiles-rhel5-nfs
 OSR extra files that are only relevant for RHEL5 Versions and nfs support
 
-%package listfiles-rhel4-nfs
+%package listfiles-rhel5-ocfs2
 Version: 0.1
-Release: 2
-Requires: comoonics-bootimage-extras-nfs
-Requires: comoonics-bootimage-listfiles-rhel4
-Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDRHEL4}
-Summary: Extrafiles for RHEL4 NFS support 
+Release: 1
+Requires: comoonics-bootimage >= 1.4-81
+Requires: /etc/redhat-release
+Requires: comoonics-bootimage-listfiles-rhel5
+Requires: SysVinit-comoonics
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDRHEL5}
+Summary: Extrafiles for RedHat Enterprise Linux Version 5 and OCFS2
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
-Conflicts: comoonics-bootimage-extras-ocfs2
+Conflicts: comoonics-bootimage-listfiles-rhel5-ext3
+Conflicts: comoonics-bootimage-listfiles-rhel5-ext4
+Conflicts: comoonics-bootimage-listfiles-rhel5-nfs
+Conflicts: comoonics-bootimage-listfiles-rhel5-gfs
+Conflicts: comoonics-bootimage-listfiles-rhel5-gfs2
 
-%description listfiles-rhel4-nfs
-OSR extra files that are only relevant for RHEL4 Versions and nfs support
+%description listfiles-rhel5-ocfs2
+OSR extra files that are only relevant for RHEL5 and OCFS2
 
 %package listfiles-rhel6-ext3
 Version: 0.1
@@ -656,6 +672,25 @@ Conflicts: comoonics-bootimage-extras-ocfs2
 %description listfiles-rhel6-nfs
 OSR extra files that are only relevant for RHEL6 Versions and nfs support
 
+%package listfiles-rhel6-ocfs2
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage >= 1.4-81
+Requires: /etc/redhat-release
+Requires: comoonics-bootimage-listfiles-rhel6
+Requires: SysVinit-comoonics
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDRHEL5}
+Summary: Extrafiles for RedHat Enterprise Linux Version 6 and OCFS2
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Conflicts: comoonics-bootimage-listfiles-rhel6-ext3
+Conflicts: comoonics-bootimage-listfiles-rhel6-ext4
+Conflicts: comoonics-bootimage-listfiles-rhel6-nfs
+Conflicts: comoonics-bootimage-listfiles-rhel6-gfs
+Conflicts: comoonics-bootimage-listfiles-rhel6-gfs2
+
+%description listfiles-rhel6-ocfs2
+OSR extra files that are only relevant for RHEL6 and OCFS2
+
 %package listfiles-sles10-nfs
 Version: 0.1
 Release: 2
@@ -665,9 +700,25 @@ Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDSLES10}
 Summary: Extrafiles for SLES10 NFS support 
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 Conflicts: comoonics-bootimage-extras-ocfs2
+Conflicts: comoonics-bootimage-listfiles-sles10-ocfs2
 
 %description listfiles-sles10-nfs
 OSR extra files that are only relevant for SLES10 Versions and nfs support
+
+%package listfiles-sles10-ocfs2
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage-listfiles-sles10
+Requires: comoonics-bootimage-extras-ocfs2
+Requires: sysvinit-comoonics
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDSLES10}
+Summary: Extrafiles for SLES10 OCFS2 support 
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Conflicts: comoonics-bootimage-extras-nfs
+Conflicts: comoonics-bootimage-listfiles-sles10-nfs
+
+%description listfiles-sles10-ocfs2
+OSR extra files that are only relevant for SLES10 Versions and OCFS2 support
 
 %package listfiles-sles11-nfs
 Version: 0.1
@@ -678,9 +729,25 @@ Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDSLES11}
 Summary: Extrafiles for SLES11 NFS support 
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 Conflicts: comoonics-bootimage-extras-ocfs2
+Conflicts: comoonics-bootimage-listfiles-sles11-ocfs2
 
 %description listfiles-sles11-nfs
 OSR extra files that are only relevant for SLES11 Versions and nfs support
+
+%package listfiles-sles11-ocfs2
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage-extras-ocfs2
+Requires: comoonics-bootimage-listfiles-sles11
+Requires: sysvinit-comoonics
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDSLES11}
+Summary: Extrafiles for SLES11 OCFS2 support 
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Conflicts: comoonics-bootimage-extras-nfs
+Conflicts: comoonics-bootimage-listfiles-sles11-nfs
+
+%description listfiles-sles11-ocfs2
+OSR extra files that are only relevant for SLES11 Versions and OCFS2 support
 
 %package listfiles-imsd-plugins
 Version: 0.1
@@ -875,6 +942,12 @@ install -d -m 755 $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/pre.mkinitrd.d
 install -d -m 755 $RPM_BUILD_ROOT/%{CONFIGDIR}/bootimage/post.mkinitrd.d
 install -d -m 755 $RPM_BUILD_ROOT/%{CACHEDIR}/comoonics-bootimage
 
+# install the udev rules
+install -m644 -D etc/udev/rules.d/39-comoonics-flexd.rules $RPM_BUILD_ROOT/etc/udev/rules.d/39-comoonics-flexd.rules 
+install -m644 -D etc/udev/rules.d/51-comoonics-flexd.rules $RPM_BUILD_ROOT/etc/udev/rules.d/51-comoonics-flexd.rules 
+install -m644 -D etc/udev/rules.d/99-comoonics-flexd.rules $RPM_BUILD_ROOT/etc/udev/rules.d/99-comoonics-flexd.rules 
+install -m644 -D etc/sysconfig/comoonics-flexd $RPM_BUILD_ROOT/etc/sysconfig/comoonics-flexd
+
 %postun
 
 if [ "$1" -eq 0 ]; then
@@ -991,7 +1064,6 @@ echo "End of environment."
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/boot-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/chroot-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/clusterfs-lib.sh
-%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/comoonics-release
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/defaults.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/errors.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/ext3-lib.sh
@@ -1007,14 +1079,11 @@ echo "End of environment."
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/xen-lib.sh
 #%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/passwd
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/selinux-lib.sh
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel5/selinux-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/stdfs-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/stdlib.py
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/std-lib.sh
 #%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/sysconfig/comoonics
-%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel4/boot-lib.sh
-%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel4/gfs-lib.sh
-%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel4/hardware-lib.sh
-%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel4/network-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel5/boot-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel5/gfs-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel5/hardware-lib.sh
@@ -1022,8 +1091,6 @@ echo "End of environment."
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel6/boot-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel6/hardware-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel6/network-lib.sh
-%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/sles8/hardware-lib.sh
-%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/sles8/network-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/sles10/boot-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/sles10/hardware-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/sles10/network-lib.sh
@@ -1046,7 +1113,7 @@ echo "End of environment."
 %dir %{CONFIGDIR}/bootimage/post.mkinitrd.d
 %dir %{CACHEDIR}/comoonics-bootimage
 %attr(0755, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/20-clusterconf-validate.sh
-%attr(0755, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/30-bootimage-check.sh
+%attr(0755, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/50-bootimage-check.sh
 %attr(0755, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/50-cdsl-check.sh
 %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/02-create-cdsl-repository.sh
 
@@ -1063,7 +1130,6 @@ echo "End of environment."
 %attr(0644, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/30-rootfs-check.sh
 %attr(0644, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/35-rootdevice-check.sh
 %attr(0644, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/60-osr-repository-generate.sh
-%attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/01-create-mapfiles.sh
 
 %files extras-network
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/vlan.list
@@ -1077,21 +1143,17 @@ echo "End of environment."
 
 %files extras-ocfs2
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/ocfs2-lib.sh
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/ocfs2.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/ocfs2.list
 
 %files extras-md
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/mdadm.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/mdadm.list
 
-%files extras-dm-multipath-rhel4
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/dm_multipath.list
-
 %files extras-dm-multipath-rhel5
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/dm_multipath.list
 
 %files extras-dm-multipath-rhel6
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/dm_multipath.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel6/dm_multipath.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel6/dm_multipath.list
 
 %files extras-dm-multipath-sles10
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/sles/dm_multipath.list
@@ -1105,9 +1167,6 @@ echo "End of environment."
 
 %files extras-dm-multipath-fedora
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fedora/dm_multipath.list
-
-%files extras-dm-multipath-rhel6
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel6/dm_multipath.list
 
 %files extras-rdac-multipath
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rdac_multipath.list
@@ -1148,6 +1207,22 @@ echo "End of environment."
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/templates/rsyslogd.conf
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/templates/syslog-ng.conf
 
+%files extras-flexd-rhel5
+%attr(0644, root, root) %{_sysconfdir}/udev/rules.d/39-comoonics-flexd.rules
+%attr(0644, root, root) %{_sysconfdir}/udev/rules.d/51-comoonics-flexd.rules
+%attr(0644, root, root) %{SYSCONFIGDIR}/comoonics-flexd
+%attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/comoonics-flexd.list
+
+%files extras-flexd-rhel6
+%attr(0644, root, root) %{_sysconfdir}/udev/rules.d/99-comoonics-flexd.rules
+%attr(0644, root, root) %{SYSCONFIGDIR}/comoonics-flexd
+%attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel6/comoonics-flexd.list
+
+%files extras-flexd-sles11
+%attr(0644, root, root) %{_sysconfdir}/udev/rules.d/99-comoonics-flexd.rules
+%attr(0644, root, root) %{SYSCONFIGDIR}/comoonics-flexd
+%attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles11/comoonics-flexd.list
+
 %files listfiles-all
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/basefiles.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.list
@@ -1173,28 +1248,6 @@ echo "End of environment."
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/filters.initrd.d/empty.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/filters.initrd.d/kernel.list
 %config(noreplace) %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/user_edit.list
-
-%files listfiles-rhel4
-%dir %{CONFIGDIR}/bootimage/files.initrd.d/rhel
-%dir %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/empty.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/base.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/configs.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/gfs.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/grub.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/network.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/base.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/empty.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/hardware.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/python.list
-%dir %{CONFIGDIR}/bootimage/files.initrd.d/rhel4
-%dir %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel4
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel4/empty.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel4/configs.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel4/empty.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel4/hardware.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel4/gfs1.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel4/rhcs.list
 
 %files listfiles-rhel5
 %dir %{CONFIGDIR}/bootimage/files.initrd.d/rhel
@@ -1308,13 +1361,6 @@ echo "End of environment."
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/nfs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/03-nfs-deps.sh
 
-%files listfiles-rhel4-nfs
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/nfs.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/nfs.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel4/nfs.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/nfs.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/03-nfs-deps.sh
-
 %files listfiles-rhel6-ext3
 
 %files listfiles-rhel6-ext4
@@ -1333,11 +1379,19 @@ echo "End of environment."
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/nfs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/03-nfs-deps.sh
 
+%files listfiles-sles10-ocfs2
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/ocfs2.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/ocfs2.list
+
 %files listfiles-sles11-nfs
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/nfs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/nfs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/nfs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/03-nfs-deps.sh
+
+%files listfiles-sles11-ocfs2
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/ocfs2.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/ocfs2.list
 
 %files listfiles-selinux-rhel5
 %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/selinux.list
@@ -1393,7 +1447,221 @@ echo "End of environment."
 rm -rf %{buildroot}
 
 %changelog
-* Thu Aug 04 2011 Marc Grimme <grimme@atix.de> 1.4-86
+* Mon Oct 10 2011 Marc Grimme <grimme( at )atix.de> 1.4-89
+  * initscripts/rhel4/bootsr, initscripts/rhel4/ccsd-chroot,
+    initscripts/rhel4/fenced-chroot, initscripts/rhel4/halt-overwrite.sh,
+    .../post.mkinitrd.d/01-create-mapfiles.sh,
+    .../rpms.initrd.d/comoonics-flexd.list: 
+    - removed rhel4 deps 
+    - removed distroundep comoonics-flexd.list file
+  * Makefile: 
+    - removed cvs tags 
+    - added distribution dependent comoonics-flexd.list files
+  * manage_chroot.sh: - removed setting of cluster_conf
+  * create-gfs-initrd-lib.sh: 
+    - removed cvs tags 
+    - clean up a bit
+  * create-gfs-initrd-generic.sh: 
+    - removed cvs tags 
+    - added a predir for calling the scripts (for debug and devel purposes) 
+    - added functionality that cleans up on signals (TERM, INT) or crash 
+      - clean_up function added 
+      - set_verbose function added
+  * .../rpms.initrd.d/rhel5/comoonics-flexd.list: flexd name with rhel5
+  * .../pre.mkinitrd.d/60-osr-repository-generate.sh: 
+    - create repository only for the right cluster type (gfs)
+  * .../pre.mkinitrd.d/20-clusterconf-validate.sh: removed log for cc_validate
+  * system-cfg-files/files.initrd.d/comoonics.list: 
+    - cluster.conf and querymap are now optional
+  * boot-scripts/linuxrc.sim.sh: removed getBootParameters
+  * boot-scripts/linuxrc.generic.sh: 
+    - change ip configuration according to no network devices being needed and
+      configuration files already being available
+  * boot-scripts/exec_part_from_bash.sh: removed getBootParameters
+  * boot-scripts/etc/std-lib.sh: 
+    - sourceLibs 
+    - autodetect clutype if need be earlier and store in repo 
+    - exec_local 
+    - dstep with autotimeout if queried 
+    - step: reset stepmode according to current api
+  * boot-scripts/etc/osr-lib.sh: 
+    - osr_get_nodeids 
+    - either goes from nodeis in cdsl 
+    - or use pregenerated from boot
+  * boot-scripts/etc/network-lib.sh: 
+    - nicAutoUp: accept ipconfig string as $1
+  * boot-scripts/etc/gfs-lib.sh: 
+    - default osrquerymap from osr-lib - no cluster_conf 
+    - gfs_auto_hosts calls ccs_xml_query without xmlfile as already set within 
+    - gfs_get_node_attrs call ccs_xml_query instead of ccs_xml_cmd that does not exist
+  * boot-scripts/etc/clusterfs-lib.sh: 
+    - cdsl_local_dir defaults to /.cdsl.local - cdsl_prefix defaults 
+      to /.cluster/cdsl 
+    - getCluType - does not always default to /etc/cluster/cluster.conf 
+    - will now return gfs only if /etc/cluster/cluster.conf is available 
+    - otherwise osr 
+    - getClusterParameter
+      - return if clutype is not set. 
+    - cluster_ip_config 
+      - will now also work if templates exist in $confdir/network - or use the old way 
+    - cc_auto_syslogconfig - changed call ordering / parameters 
+    - clusterfs_services_restart_newroot - fix typo
+  * boot-scripts/etc/boot-lib.sh: 
+    - getBootParameters: obsolete 
+    - getParameter: fixed bug with empty parameter handling and default
+
+* Tue Sep 06 2011 Marc Grimme <grimme( at )atix.de> 1.4-88
+  * manage_chroot.sh: removed cluster_conf tests
+
+  * querymap.cfg: new queries to be complete.
+
+  * create-gfs-initrd-generic.sh: bail out if kernel could not be found.
+
+  * tests/do_testing.sh, tests/gfs/test_gfs_validate.sh,
+  tests/test-clusterfslib.sh, tests/test-clusterlib.sh, tests/test-errors.sh,
+  tests/test-osrlib1.sh, tests/test-osrlib2.sh, tests/test-repository.sh,
+  tests/test/osr-nodeids, tests/test/osr-nodeidvalues-1.conf: moved tests to
+  new interfaces
+
+  * system-cfg-files/rpms.initrd.d/comoonics.list: added comoonics-release.
+
+  * .../rpms.initrd.d/rhel6/dm_multipath.list: added deps for rhel6
+
+  * boot-scripts/linuxrc.generic.sh: removed old cvs tags removed cluster_conf
+  dependencies
+
+  * boot-scripts/com-halt.sh: removed cluster_conf call. This is done
+  implicitly.
+
+  * boot-scripts/etc/gfs-lib.sh: 
+    - removed obsolete cvs tags ccs_xml_query,
+    - cl_check_nodes will be stored in repository not in environment cluster_conf
+      will be queried by the cluster (getParameter) 
+    - ccs_xml_query new command to query the cluster configuration 
+    - gfs_validate - cluster_conf, querymap from
+      repository 
+    - gfs_get - just calls ccs_xml_query gfs_get_* 
+      call gfs_get/ccs_xml_query implicitly 
+      no cluster_conf dependency gfs_start_lock_gulm
+      obsolete/removed 
+    - gfs_checkhosts_alive - command will be
+      called from repository cl_check_nodes
+
+  * boot-scripts/etc/osr-lib.sh: removed obsolete cvs tags
+    - osr_create_nodeids_attrs new function derived from osr_create_nodeids_file
+    - osr_create_nodeids_file removed osr_generate_nodevalues - all values will now
+        be stored in the repository - format is <nodeid>_<parametername>
+    - osr_set_nodeconfig_net, osr_set_nodeconfig_root, - confdir is now got from
+      repository 
+    - osr_nodeids_file, osr_nodeid_file - obsolete osr_get_node_attrs,
+      osr_get_nodeids,  osr_get_macs, osr_get_nodeid, osr_get*, osr_auto_hosts 
+      now nodesconf, nodeconf necessary (repository)
+      all values will be read from repository 
+    - osr_get - rewrite - read from repository
+
+  * boot-scripts/etc/selinux-lib.sh: removed obsolete cvs tags
+  selinux_load_policy - now calls selinux_exec_load_policy in order to be
+  distribution dependent - bug fixes
+
+  * boot-scripts/etc/repository-lib.sh: removed obsolete cvs tags moved default
+  REPOSITORY_PATH to /var/cache/comoonics-repository repository_init: new
+  function repository_store_value: - added parameter default (#4) that sets the
+  default if no value given defaults to __set__ - will implicitly call
+  repository_init if not already done
+
+  * boot-scripts/etc/plymouth-lib.sh: removed obsolete cvs tags plymouth_start
+  - removed error message when plymouth could not be found.
+
+  * boot-scripts/etc/network-lib.sh: removed obsolete cvs tags
+  network_setup_bridge* - removed as it is obsolete found_nics - will now
+  output the nics found in this system - returns 0 if found otherwise != 0
+
+  * boot-scripts/etc/hardware-lib.sh: removed obsolete cvs tags. scsi_start: -
+  speed up by removing scsi scan that should have been triggered implicitly -
+  speed up by removing obsolete stabilized call dm_mp_start - speed up by
+  removing setting up devicemapper partitions should have been done implicitly
+  hardware_ids - added parameter silent that will only allow output of the
+  hwids - list of available nics through found_nics function from
+  network-lib.sh
+
+  * boot-scripts/etc/clusterfs-lib.sh: - removed old cvs tags - complete
+  rewrite where the usage of cluster_conf is removed here wherever possible. -
+  cluster_conf will be stored in repository cluster_conf - querymap is stored
+  in repository osrquerymap. - new repository parameter confdir where other
+  configurations will be stored (defaults to /etc/conf.d). - getCluType: -
+  reflect changes from osr-lib.sh - first query for gfs if not found return osr
+  as type. - getRootFS, getClusterParameter, cluster_ip_config,
+  cc_get_cluster_drivers, cc_find_nodeid, cc_get_nodeids, cc_get_macs,
+  cc_get_nodename_by_id, cc_get_rootvolume, cc_get_rootsource, cc_get_rootfs,
+  cc_get_mountopts, cc_get_chrootmountpoint, cc_get_chrootfstype,
+  cc_get_chrootdevice, cc_get_chrootmountopts, cc_get_chroot_dir,
+  cc_get_syslogserver, cc_get_scsifailover, cc_get_netdevs, cc_auto_netconfig,
+  cc_auto_hosts, cc_auto_syslogconfig, - removed deps to cluster_conf - removed
+  deps to nodename in favour to nodeid only. - cc_validate, cc_get_clustername,
+  cc_convert, cc_get_nic_names, cc_get_nic_drivers, cc_get_all_drivers,
+  cc_getdefaults, cc_get, cc_get_nodeid, cc_get_syslogfilter, cc_init,
+  cc_syslog_start, clusterfs_get, clusterfs_getdefaults, clusterfs_load,
+  clusterfs_services_start, clusterfs_services_stop,
+  clusterfs_services_restart, clusterfs_services_restart_newroot,
+  clusterfs_get_userspace_procs, clusterfs_init,
+  cluster_restart_cluster_services, clusterfs_chroot_needed,
+  clusterfs_fsck_needed, clusterfs_blkstorage_needed, clusterfs_fsck, -
+  function clean up - cc_get_userspace_procs - dependent o rootfs not on
+  clutype - cc_auto_getbridges, cc_get_bridge* - obsolete removed. 
+  - clusterfs_mount_cdsl - default prefix is now /.cluster/cdsl not
+    /cluster/cdsl.
+
+  * boot-scripts/etc/std-lib.sh: - sourceLibs: added sourceing of
+  selinux-lib.sh - exec_loacl: storage of error that defaults to "" if no
+    errormessage - removed old cvs tags
+
+  * boot-scripts/etc/boot-lib.sh, boot-scripts/etc/chroot-lib.sh,
+  boot-scripts/etc/errors.sh, boot-scripts/etc/ext3-lib.sh,
+  boot-scripts/etc/ext4-lib.sh, boot-scripts/etc/fedora/nfs-lib.sh,
+  boot-scripts/etc/glusterfs-lib.sh, boot-scripts/etc/nfs-lib.sh,
+  boot-scripts/etc/ocfs2-lib.sh, boot-scripts/etc/rhel5/gfs-lib.sh,
+  boot-scripts/etc/rhel5/network-lib.sh, boot-scripts/etc/rhel5/nfs-lib.sh,
+  boot-scripts/etc/rhel6/network-lib.sh, boot-scripts/etc/rhel6/nfs-lib.sh,
+  boot-scripts/etc/sles10/network-lib.sh,
+  boot-scripts/etc/sles11/network-lib.sh: - clean up of cluster_conf appearance
+  - removed old cvs logs.
+
+* Tue Aug 23 2011 Marc Grimme <grimme( at )atix.de> 1.4-87
+  - added dependency to comoonics-release
+* Fri Aug 05 2011 Marc Grimme <grimme@atix.de> 1.4-86
+  - manage_chroot.sh: patching of initscripts is done by copying the
+    initscripts not by patching. This is much more reliable.
+  - system-cfg-files/rpms.initrd.d/rhel5/base.list,
+    system-cfg-files/rpms.initrd.d/rhel6/base.list: added mktemp as dep for
+    dhclient.
+  - .../pre.mkinitrd.d/20-clusterconf-validate.sh,
+    system-cfg-files/pre.mkinitrd.d/30-rootfs-check.sh,
+    .../pre.mkinitrd.d/35-rootdevice-check.sh,
+    .../pre.mkinitrd.d/60-osr-repository-generate.sh: new and renamed files for
+    pre.mkinitrd.d. Basically the auto generation of root and rootfs if no
+    cluster configuration is available will be automatically done.
+  - .../post.mkinitrd.d/02-create-cdsl-repository.sh: removed DEST_PATH setting
+    and REPOSITORY_PATH change.
+  - .../post.mkinitrd.d/01-create-mapfiles.sh: node ids file creation is moved
+    to pre.mkinitrd.d/60-osr-repository-generate.sh
+  - initscripts/rhel5/halt, initscripts/rhel5/halt.orig,
+    initscripts/rhel5/netfs, initscripts/rhel5/netfs-comoonics.patch,
+    initscripts/rhel5/netfs-tabs.patch, initscripts/rhel5/netfs-xtab.patch,
+    initscripts/rhel5/netfs.orig, initscripts/rhel5/netfs.patch,
+    initscripts/rhel5/network, initscripts/rhel5/network.orig: initscript updates
+    for RHEL5.7
+  - initscripts/bootsr: fixed bug where reload would lead to an unexpected
+    behavior when using local filesystems.
+  - boot-scripts/linuxrc.generic.sh: Implemented behavior of empty nodes and
+    single nodeid.
+  - boot-scripts/etc/std-lib.sh: exec_ordered_scripts: - move repository path
+    to destpath - create environment variable DEST_PATH for source scripts
+  - boot-scripts/etc/osr-lib.sh: osr_get_node_attrs: - fixed bug with recursion
+    error that lead to a endless recursion
+  - boot-scripts/etc/hardware-lib.sh: hardware_ids: - fixed multiple bugs in
+    hardware id detection
+  - boot-scripts/etc/clusterfs-lib.sh: getCluType: - better readable
+
 * Mon Jul 21 2011 Marc Grimme <grimme@atix.de> 1.4-85
   - boot-scripts/usr/share/hwdata/CardMonitorCombos,
     boot-scripts/usr/share/hwdata/Cards,
@@ -2173,6 +2441,22 @@ rm -rf %{buildroot}
 - first offical rpm version
 
 %changelog extras-osr
+* Tue Sep 06 2011 Marc Grimme <grimme( at )atix.de> 0.1-7
+  - removed 01-create-mapfiles.sh from post.mkinitrd.d 
+    (will be done in pre.mkinitrd.d 60-osr-repository-generate.sh).
+  - removed obsolete cvs tags
+  - osr_create_nodeids_attrs new function derived from osr_create_nodeids_file
+  - osr_create_nodeids_file removed osr_generate_nodevalues - all values will now
+    be stored in the repository - format is <nodeid>_<parametername>
+  - osr_set_nodeconfig_net, osr_set_nodeconfig_root, - confdir is now got from
+    repository osr_nodeids_file, osr_nodeid_file - obsolete osr_get_node_attrs,
+  - osr_get_nodeids,  osr_get_macs, osr_get_nodeid, osr_get*, osr_auto_hosts -
+    now nodesconf, nodeconf necessary (repository) - all values will be read from
+    repository 
+  - osr_get - rewrite - read from repository
+
+* Fri Aug 05 2011 Marc Grimme <grimme@atix.de> 0.1-6
+- added feature to also work without cluster configuration.
 * Wed Jul 07 2010 Marc Grimme <grimme@atix.de> 0.1-4
 - added GPL License
 * Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-3
@@ -2289,6 +2573,8 @@ rm -rf %{buildroot}
 - added nfs-lib.sh file
 
 %changelog extras-ocfs2
+* Fri Aug 05 2011 Marc Grimme <grimme@atix.de> 0.1-11
+- moved listfiles into the filesystem rpms.
 * Thu Aug 26 2010 Marc Grimme <grimme@atix.de> 0.1-10
 - boot-scripts/etc/ocfs2-lib.sh ocfs2_init be sure to 
      mount /sys/kernel/config only if it is not already mounted.
@@ -2330,6 +2616,8 @@ rm -rf %{buildroot}
 - introduced instead of rhel
 
 %changelog extras-dm-multipath-rhel6
+* Tue Aug 23 2011 Marc Grimme <grimme( at )atix.de> 0.1-2
+- added new depfiles to /etc/comoonics/bootimage/files.initrd.d/rhel6
 * Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 0.1-1
 - introduced instead of rhel
 
@@ -2396,6 +2684,30 @@ rm -rf %{buildroot}
 * Wed Sep 09 2009 Marc Grimme <grimme@atix.de> - 0.1-1
 - initial revision
 
+%changelog extras-flexd-rhel5
+* Wed Sep 07 2011 Marc Grimme <grimme( at )atix.de> 0.1-3
+  - listfiles end up in distro dir.
+* Tue Aug 23 2011 Marc Grimme <grimme@atix.de> 0.1-2
+  - reworked for RHEL5
+* Fri Aug 05 2011 Marc Grimme <grimme@atix.de> 0.1-1
+  - initial revision
+
+%changelog extras-flexd-rhel6
+* Wed Sep 07 2011 Marc Grimme <grimme( at )atix.de> 0.1-3
+  - listfiles end up in distro dir.
+* Tue Aug 23 2011 Marc Grimme <grimme@atix.de> 0.1-2
+  - reworked for RHEL5
+* Fri Aug 05 2011 Marc Grimme <grimme@atix.de> 0.1-1
+  - initial revision
+
+%changelog extras-flexd-sles11
+* Wed Sep 07 2011 Marc Grimme <grimme( at )atix.de> 0.1-3
+  - listfiles end up in distro dir.
+* Tue Aug 23 2011 Marc Grimme <grimme@atix.de> 0.1-2
+  - reworked for SLES11
+* Fri Aug 05 2011 Marc Grimme <grimme@atix.de> 0.1-1
+  - initial revision
+
 %changelog listfiles-selinux-rhel5
 * Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 0.1-1
   - initial revision
@@ -2405,6 +2717,8 @@ rm -rf %{buildroot}
   - initial revision
 
 %changelog listfiles-all
+* Tue Aug 09 2011 Marc Grimme <grimme@atix.de> 0.1-18
+- removed pre/post.initrd.d files to other dependent rpms.
 * Wed Mar 02 2011 Marc Grimme <grimme@atix.de> 0.1-17
 - files.initrd.d/configs.list/base.list/locales.list: added optionals and removed distro dependencies
 - filters.initrd.d/kernel.list: added more modules that are not needed
@@ -2440,20 +2754,9 @@ rm -rf %{buildroot}
 * Thu Aug 14 2008 Marc Grimme <grimme@atix.de - 0.1-1
   - initial revision 
 
-%changelog listfiles-rhel4
-* Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 0.1-5
-  - moved files from rhel here
-* Wed Mar 02 2011 Marc Grimme <grimme@atix.de> 0.1-4
-- files.initrd.d/rhel5/configs.list: added configs.list as file for kudzu in here
-- files.initrd.d/rhel5/hardware.list: added kudzu here
-* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-3
-- first version for comoonics-4.6-rc1 
-* Fri Dec 05 2008 Marc Grimme <grimme@atix.de> - 0.1-2
-- First version on the way to rpmlint BUG#290
-* Thu Aug 14 2008 Marc Grimme <grimme@atix.de> - 0.1-1
-  - initial revision 
-
 %changelog listfiles-rhel5
+* Fri Aug 05 2011 Marc Grimme <grimme@atix.de> 0.1-11
+  - added mktemp to rpms.mkinitrd.d/rhel5/base.list
 * Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 0.1-10
   - moved files from rhel here
   - moved rhcs-files to listfiles-gfs1-rhel5
@@ -2479,6 +2782,8 @@ rm -rf %{buildroot}
   - initial revision 
 
 %changelog listfiles-rhel6
+* Fri Aug 05 2011 Marc Grimme <grimme@atix.de> 0.1-3
+  - added mktemp to rpms.mkinitrd.d/rhel5/base.list
 * Wed Mar 02 2011 Marc Grimme <grimme@atix.de> 0.1-2
 - added optionals
 * Mon Feb 28 2011 Marc Grimme <grimme@atix.de> 0.1-1
@@ -2552,16 +2857,6 @@ rm -rf %{buildroot}
 * Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-3
 - introduced the changelog
 
-%changelog listfiles-rhel4-nfs
-* Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 0.1-3
-- new version for comoonics-5.0-pre with post script
-* Tue Mar 08 2011 Marc Grimme <grimme@atix.de> 0.1-2
-- first version for comoonics-5.0-pre
-- added post.mkinitrd.d/03-nfs-deps.sh (setup of /etc/passwd for nfs if need be)
-- added files.mkinitrd.d/nfs.list (/etc/rpc)
-* Mon Feb 28 2011 Marc Grimme <grimme@atix.de> 0.1-1
-- first version for comoonics-5.0-pre
-
 %changelog listfiles-rhel5-nfs
 * Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 0.1-3
 - new version for comoonics-5.0-pre with post script
@@ -2571,6 +2866,10 @@ rm -rf %{buildroot}
 - added files.mkinitrd.d/nfs.list (/etc/rpc)
 * Mon Feb 28 2011 Marc Grimme <grimme@atix.de> 0.1-1
 - first version for comoonics-5.0-pre
+
+%changelog listfiles-rhel5-ocfs2
+* Fri Aug 05 2011 Marc Grimme <grimme@atix.de> 0.1-1
+  initial revision
 
 %changelog listfiles-rhel6-nfs
 * Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 0.1-4
@@ -2583,17 +2882,29 @@ rm -rf %{buildroot}
 * Mon Feb 28 2011 Marc Grimme <grimme@atix.de> 0.1-1
 - first version for comoonics-5.0-pre
 
+%changelog listfiles-rhel5-ocfs2
+* Fri Aug 05 2011 Marc Grimme <grimme@atix.de> 0.1-1
+  initial revision
+
 %changelog listfiles-sles10-nfs
 * Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 0.1-2
 - new version for comoonics-5.0-pre with post script
 * Mon Feb 28 2011 Marc Grimme <grimme@atix.de> 0.1-1
 - first version for comoonics-5.0-pre
 
+%changelog listfiles-sles10-ocfs2
+* Fri Aug 05 2011 Marc Grimme <grimme@atix.de> 0.1-1
+  initial revision
+
 %changelog listfiles-sles11-nfs
 * Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 0.1-2
 - new version for comoonics-5.0-pre with post script
 * Mon Feb 28 2011 Marc Grimme <grimme@atix.de> 0.1-1
 - first version for comoonics-5.0-pre
+
+%changelog listfiles-sles11-ocfs2
+* Fri Aug 05 2011 Marc Grimme <grimme@atix.de> 0.1-1
+  initial revision
 
 %changelog listfiles-syslogd
 * Mon Feb 14 2011 Marc Grimme <grimme@atix.de> 0.1-4
