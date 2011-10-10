@@ -78,9 +78,6 @@ pre_updatechroot_path=/etc/comoonics/bootimage-chroot/pre.updatechroot.d
 post_updatechroot_path=/etc/comoonics/bootimage-chroot/post.updatechroot.d
 # where save the cachefiles
 cachedir=/var/cache/comoonics-bootimage
-
-# cluster.conf
-cluconf=/etc/cluster/cluster.conf
 # filesystems
 UMOUNTFS="/dev/pts /dev /proc /sys"
 
