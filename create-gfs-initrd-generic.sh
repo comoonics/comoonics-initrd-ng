@@ -6,10 +6,6 @@
 #  DESCRIPTION
 #*******
 #
-# $Id: create-gfs-initrd-generic.sh,v 1.34 2011/02/11 11:30:25 marc Exp $
-#
-# @(#)$File$
-#
 # Copyright (c) 2001 ATIX GmbH, 2007 ATIX AG.
 # Einsteinstrasse 10, 85716 Unterschleissheim, Germany
 # All rights reserved.
@@ -28,11 +24,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-exec 3>/dev/null
-exec 4>/dev/null 5>/dev/null
-
 predir=$(dirname $0)/boot-scripts
-
 NOKMSG=1
 
 source $predir/etc/std-lib.sh
@@ -40,6 +32,7 @@ sourceLibs $predir
 sourceRootfsLibs $predir
 source $(dirname $0)/create-gfs-initrd-lib.sh
 
+repository_store_value predir $predir 
 lockfile=/var/lock/mkinitrd
 
 cfg_file=/etc/comoonics/comoonics-bootimage.cfg
@@ -62,6 +55,8 @@ modules=""
 pre_do=1
 post_do=1
 use_cachefile=1
+# triggers the removement of the cachefile if interrupted during cachefile generation..
+cachefileinuse=
 
 initEnv
 
@@ -154,8 +149,7 @@ function getoptions() {
 		build_file="$OPTARG"
 		;;
         V) # verbose mode
-        verbose=1
-        debug=1
+        set_verbose
         ;;
         F) # ignore locks
         Force=1
@@ -212,6 +206,23 @@ function getoptions() {
 }
 #************ getoptions
 
+function clean_up() {
+   local errorcode=${1:-100}
+   unlock_rpm
+#   set -x
+   echo_local_debug "Cleaning up from signal.."
+   [ -n "$mountpoint" ] && [ -d "${mountpoint}" ] && rm -rf ${mountpoint}
+   [ -n "$lockfile" ] && [ -f $lockfile ] && rm $lockfile
+   [ -n "$cachefileinuse" ] && [ "$cachedir/$indexfile" != "/" ] && [ -f "$cachedir/$indexfile" ] && rm $cachedir/$indexfile*
+#   set +x
+   exit $errorcode
+}
+
+function set_verbose() {
+  verbose=1
+  debug=1
+}
+
 #************ main
 #****f* create-gfs-initrd-generic.sh/main
 #  NAME
@@ -252,6 +263,8 @@ if [ -e $lockfile ] && [ -z "$Force" ]; then
 fi
 touch $lockfile
 
+trap "failure; clean_up" SIGKILL SIGTERM SIGINT
+
 kernelmajor=`echo ${kernel[0]} | cut -d . -f 1,2`
 
 if [ "$kernelmajor" == "2.4" ] || [ "$initramfs" -eq 0 ]; then
@@ -271,8 +284,7 @@ if [ -z "$dep_filename" ] || [ ! -e "$dep_filename" ]; then
   echo "No depfile given. A dep_file is required." >&2
   echo "Hint: Is the package comoonics-bootimage-listfiles-<distro> installed ?" >&2
   usage
-  rm $lockfile
-  exit 1
+  clean_up 1
 fi
 
 #if [ -z "$update" ] && ( [ -n "$kernel" ] || [ -n "$del_kernels" ] ); then
@@ -290,29 +302,26 @@ fi
 if [ -z "$initramfs" ] || [ $initramfs -eq 0 ] && [ -n "$update" ]; then
 	echo "You selected updatemode with old initrd method <ramfs>." >&2
 	echo "This is not supported." >&2
-    rm $lockfile
-	exit 3
+    clean_up 3
 fi
 
 if [ ! -e "$(dirname $initrdname)" ]; then
 	echo "Path for initrd \"$initrdname\" does not exist. Please create path or validate the initrdname." >&2
-    rm $lockfile
-	exit 4
+	clean_up 4
 fi
 
 if [ ! -e "$initrdname" ] && [ -n "$update" ]; then
 	echo "You selected update but initrd \"$initrdname\" does not exist. Please fix." >&2
-    rm $lockfile
-	exit 5
+	clean_up 5
 fi
 
 if [ -z "$initramfs" ] || [ $initramfs -eq 0 ]; then
   echo_local -N -n "Makeing initrd ..."
-  make_initrd $initrdname $size || (failure && rm $lockfile && exit $?)
+  make_initrd $initrdname $size || (failure && clean_up $?)
   success
 
   echo_local -N -n "Mounting initrd ..."
-  mount_initrd $initrdname $mountpoint || (failure && rm $lockfile && exit $?)
+  mount_initrd $initrdname $mountpoint || (failure && clean_up $?)
   success
 fi
 
@@ -329,6 +338,7 @@ if [ -n "$update" ]; then
     success
   fi
   echo_local -n -N "Copying files ${predir}/etc .. "
+  cachefileinuse=1
   PYTHONPATH=${predir}/etc python -c '
 import stdlib
 stdlib.get_files_newer(open("'$index_list'"), 
@@ -336,11 +346,10 @@ stdlib.get_files_newer(open("'$index_list'"),
           	 "/":"/"} )' | copy_filelist $mountpoint > $cachedir/$indexfile
   if [ $? -ne 0 ]; then
     failure
-    rm -rf ${mountpoint}
-    rm $lockfile
-    exit 11
+    clean_up 11
   fi
   success
+  cachefileinuse=
 fi
 
 if [ -d "$pre_mkinitrd_path" ] && [ -n "$pre_do" ] && [ $pre_do -eq 1 ]; then
@@ -350,14 +359,14 @@ if [ -d "$pre_mkinitrd_path" ] && [ -n "$pre_do" ] && [ $pre_do -eq 1 ]; then
   if [ $? -ne 0 ]; then
   	echo_local -N "Could not execute files before mkinitrd." 
   	unset prgdir
-  	rm $lockfile
-  	exit $return_C
+  	clean_up $return_C
   fi
   unset prgdir
 fi
 
 if [ -z "$update" ]; then
   if [ $use_cachefile -ne 1 ] || [ ! -e "$cachedir/$indexfile" ]; then
+    cachefileinuse=1
     # extracting rpms
     if [ -n "$rpm_filename" ] && [ -e "$rpm_filename" ]; then
       echo_local -N -n "Extracting rpms..."
@@ -369,22 +378,21 @@ if [ -z "$update" ]; then
     get_all_files_dependent $dep_filename $verbose | tr ' ' '\n'| sort -u | grep -v "^.$" | grep -v "^..$" >> $cachedir/$indexfile
     if [ $? -ne 0 ]; then
       failure
-      rm -rf ${mountpoint}
-      rm $lockfile
-      exit 12
+      clean_up 12
     fi
     success
+    cachefileinuse=
   fi
   echo_local -n -N "Copying files.. "
+  cachefileinuse=1
   cat $cachedir/$indexfile | copy_filelist $mountpoint > $cachedir/${indexfile}.tmp
   rm -f $cachedir/${indexfile}
   mv -f $cachedir/${indexfile}.tmp $cachedir/${indexfile}
   if [ $? -ne 0 ]; then
     failure
-    rm -rf ${mountpoint}
-    rm $lockfile
-    exit 11
+    clean_up 11
   fi
+  cachefileinuse=
   success
 fi
 
@@ -409,7 +417,7 @@ if [ -z "$update" ] || [ -n "$kernel" ]; then
 
 	if [ ! -d /lib/modules/$_kernel ]; then
 		echo "Could not find the kernel $_kernel."
-		failure && rm $lockfile && exit $?
+		failure && clean_up $?
 	fi
 
     if [ -n "$light" ] && [ $light -eq 1 ]; then
@@ -435,7 +443,7 @@ if [ -z "$update" ] || [ -n "$kernel" ]; then
     if [ $? -eq 0 ]; then
       success
     else
-      failure && rm $lockfile && exit $?
+      failure && clean_up $?
     fi
   done
 fi
@@ -471,8 +479,7 @@ if [ -d "$post_mkinitrd_path" ] && [ -n "$post_do" ] && [ $post_do -eq 1 ]; then
   exec_ordered_scripts_in $post_mkinitrd_path $mountpoint
   if [ $? -ne 0 ]; then
 	unset prgdir
-  	rm $lockfile
-  	exit $return_c
+  	clean_up $return_c
   fi
   unset prgdir
 fi
@@ -487,11 +494,11 @@ if [ -z "$initramfs" ] || [ $initramfs -eq 0 ]; then
   cd $pwd
   echo_local -N -n "Unmounting and compressing.."
   (umount_and_zip_initrd $mountpoint $initrdname $force && \
-   rm $lockfile) || (failure && rm $lockfile && exit $?)
+   rm $lockfile) || (failure && clean_up $?)
 else
   echo_local -N -n "Cpio and compress.."
   (cpio_and_zip_initrd $mountpoint $initrdname "$force" "$TMPDIR" && \
-   rm $lockfile) || (failure && rm $lockfile && exit $?)
+   rm $lockfile) || (failure && clean_up $?)
 fi
 success
 
@@ -505,103 +512,3 @@ else
 fi
 ls -lk $initrdname
 #************ main
-
-##########################################
-# $Log: create-gfs-initrd-generic.sh,v $
-# Revision 1.34  2011/02/11 11:30:25  marc
-# - fixed bug that with update mode relative files to initrd would not work.
-#
-# Revision 1.33  2010/12/07 13:30:28  marc
-# moved a line
-#
-# Revision 1.32  2010/08/11 09:44:50  marc
-# honor errors caused by exec_orderered_skripts in pre and post execution
-#
-# Revision 1.31  2010/07/08 08:39:24  marc
-# speed up copy of kernel modules in one run using cpio --pass-through instead of tar and for clause
-#
-# Revision 1.30  2010/06/29 19:01:25  marc
-# long options to tar
-#
-# Revision 1.29  2010/05/27 09:54:52  marc
-# add TMPDIR as parameter to cpio_and_zip_initrd
-#
-# Revision 1.28  2010/02/21 12:09:32  marc
-# fixed bug in copy of kernel modules were linked modules would not be copied.
-#
-# Revision 1.27  2010/02/05 12:52:52  marc
-# - added pre and postdo functionality where skripts/programs might be executed before or after building initrd
-# - -p/-P toggles if pre and postscripts should be executed or not.
-# - added -N to echo_local, echo_local_debug where appropriate
-# - filtering kernel modules if filters are specified
-#
-# Revision 1.26  2009/09/28 14:22:13  marc
-# - added way to execute commands in $pre/post_mkinitrd_path
-#
-# Revision 1.25  2009/06/05 07:29:06  marc
-# - fixed bug #347 where the -M option would not work
-#
-# Revision 1.24  2009/04/20 07:42:54  marc
-# - fixed error detection
-#
-# Revision 1.23  2009/04/14 15:05:24  marc
-# bugfix for Bug#343
-#
-# Revision 1.22  2009/04/03 17:30:43  marc
-# - added usage
-# - added update feature
-#
-# Revision 1.21  2009/03/25 13:55:20  marc
-# - added global filters to filter files from initrd
-#
-# Revision 1.20  2009/02/24 12:10:44  marc
-# moved default lockfile
-# multiple kernel modules in initrd
-#
-# Revision 1.19  2009/02/17 20:05:44  marc
-# small typo
-#
-# Revision 1.18  2009/02/08 14:22:22  marc
-# added the diet patch from gordan
-#
-# Revision 1.17  2009/01/28 13:07:21  marc
-# - use load std-lib.sh the helperfunctions sourceLibs sourceRootfsLibs to load libraries
-#
-# Revision 1.16  2007/12/07 16:39:59  reiner
-# Added GPL license and changed ATIX GmbH to AG.
-#
-# Revision 1.15  2007/09/13 08:36:08  mark
-# added fancy error help message
-#
-# Revision 1.14  2007/09/07 07:57:06  mark
-# removed bug, that liks to directories where not copied
-#
-# Revision 1.13  2007/08/06 16:02:17  mark
-# reorganized files
-# added rpm filter support
-#
-# Revision 1.12  2007/02/09 11:08:53  marc
-# creating builddate_file with predefined function
-#
-# Revision 1.11  2006/08/28 16:01:45  marc
-# support for rpm-lists and includes of new lists
-#
-# Revision 1.10  2006/07/13 11:35:36  marc
-# new version changing file xtensions
-#
-# Revision 1.9  2006/06/19 15:55:28  marc
-# rewriten and debuged parts of generating deps. Added @include tag for depfiles.
-#
-# Revision 1.8  2006/06/07 09:42:23  marc
-# *** empty log message ***
-#
-# Revision 1.7  2006/05/03 12:47:10  marc
-# added documentation
-#
-# Revision 1.6  2006/02/03 12:39:27  marc
-# preset includes.
-# Changed bug for build initrd with loopfs
-#
-# Revision 1.5  2006/01/25 14:57:42  marc
-# new build process bugfixes
-#
