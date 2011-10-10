@@ -67,9 +67,8 @@ Version: 1.4
 BuildArch: noarch
 Requires: comoonics-bootimage >= 1.4-82
 Requires: comoonics-bootimage-listfiles-sles11
-Requires: sysvinit-comoonics
 #Conflicts:
-Release: 12.sles11
+Release: 13.sles11
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -82,7 +81,6 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description
 Initscripts used by the OSR cluster environment. These are for Novell SLES11.
-
 
 %prep
 %setup -n comoonics-bootimage-%{version}
@@ -130,6 +128,9 @@ true
 %attr(755, root, root) %{INITDIR}/halt.local
 
 %changelog
+* Fri Aug 05 2011 Marc Grimme <grimme@atix.de> 1.4-13.sles11
+- removed dep to SysVInit-comooics (will be found if the filesystem 
+  - comoonics-bootimage-listfiles-<dist>-<filesystem> - rpm).
 * Tue Mar 22 2011 Marc Grimme <grimme@atix.de> 1.4-12.sles11
 - Rebase
 * Tue Feb 22 2011 Marc Grimme <grimme@atix.de> 1.4-11.sles11

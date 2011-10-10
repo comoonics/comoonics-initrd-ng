@@ -67,9 +67,8 @@ Version: 1.4
 BuildArch: noarch
 Requires: comoonics-bootimage >= 1.4-82
 Requires: comoonics-bootimage-listfiles-sles10
-Requires: sysvinit-comoonics
 #Conflicts:
-Release: 12.sles10
+Release: 13.sles10
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -136,6 +135,9 @@ true
 %attr(755, root, root) %{INITDIR}/halt.local
 
 %changelog
+* Fri Aug 05 2011 Marc Grimme <grimme@atix.de> 1.4-13.sles10
+- removed dep to SysVInit-comooics (will be found if the filesystem 
+  - comoonics-bootimage-listfiles-<dist>-<filesystem> - rpm).
 * Tue Mar 22 2011 Marc Grimme <grimme@atix.de> 1.4-12.sles10
 - Rebase
 * Mon Feb 28 2011 Marc Grimme <grimme@atix.de> 1.4-11.sles10

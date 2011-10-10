@@ -68,12 +68,10 @@ Summary: Initscripts used by the OSR cluster environment.
 Version: 1.4
 BuildArch: noarch
 Requires: comoonics-bootimage >= 1.4-82
-Requires: SysVinit-comoonics
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-rhel5
-Requires: initscripts >= 8.45.38-2.el5
 #Conflicts: 
-Release: 24.rhel5
+Release: 25.rhel5
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -119,46 +117,7 @@ if [ "$1" -eq 0 ]; then
   echo "Preuninstalling comoonics-bootimage-initscripts"
   /sbin/chkconfig --del bootsr
   # we patch all versions here
-  for initscript in halt network netfs; do
-	if grep "comoonics patch " /etc/init.d/$initscript > /dev/null; then
-		# the old way
-		if [ -e /opt/atix/comoonics-bootimage/patches/${initscript}.patch ]; then
-		   patchfile="/opt/atix/comoonics-bootimage/patches/${initscript}.patch"
-		   echo -n "Unpatching initscript($patchfile)"
-		   cd /etc/init.d/ && patch -R -f -r /tmp/$(basename ${patchfile}).patch.rej > /dev/null < $patchfile
-		   if [ $? -ne 0 ]; then
-		      echo >&2
-		      echo >&2
-		      echo "FAILURE!!!!" >&2
-		      echo "Patching $initscript with patch $patchfile" >&2
-		      echo "You might want to consider restoring the original initscript and the patch again by:" >&2
-		      echo "cp /opt/atix/comoonics-bootimage/patches/${initscript}.orig /etc/init.d/${initscript}"
-		      echo "/opt/atix/comoonics-bootimage/manage_chroot.sh -a patch_files ${initscript}"
-		      echo >&2
-		   fi
-		   echo
-		else
-		   echo -n "Unpatching $initscript ("
-		   for patchfile in $(ls -1 /opt/atix/comoonics-bootimage/patches/${initscript}-*.patch | sort -r); do
-			  echo -n $(basename $patchfile)", "
-			  cd /etc/init.d/ && patch -R -f -r /tmp/$(basename ${patchfile}).patch.rej > /dev/null < $patchfile
-		      if [ $? -ne 0 ]; then
-		      echo >&2
-		      echo >&2
-		      echo "FAILURE!!!!" >&2
-		      echo "Patching $initscript with patch $patchfile" >&2
-		      echo "You might want to consider restoring the original initscript and the patch again by:" >&2
-		      echo "cp /opt/atix/comoonics-bootimage/patches/${initscript}.orig /etc/init.d/${initscript}"
-		      echo "/opt/atix/comoonics-bootimage/manage_chroot.sh -a patch_files ${initscript}"
-		      echo >&2
-		      fi
-		   done
-		   echo ")"
-		fi
-	fi
-  done
 fi
-
 
 %pre
 
@@ -257,6 +216,10 @@ fi
 rm -rf %{buildroot}
 
 %changelog
+* Fri Aug 05 2011 Marc Grimme <grimme@atix.de> 1.4-25.rhel5
+- removed dep to SysVInit-comooics (will be found if the filesystem 
+  - comoonics-bootimage-listfiles-<dist>-<filesystem> - rpm).
+- Compatible with RHEL5.7 and below
 * Thu Jul 28 2011 Marc Grimme <grimme@atix.de> 1.4-24.rhel5
 - upstream patches for RHEL5.7
 * Tue May 03 2011 Marc Grimme <grimme@atix.de> 1.4-23.rhel5
