@@ -1,15 +1,11 @@
 #****h* comoonics-bootimage/Makefile
 #  NAME
 #    Makefile
-#    $id$
 #  DESCRIPTION
 #    Makefile for the comoonics-bootimage
 #*******
 
 # Project: Makefile for projects documentations
-# $Id: Makefile,v 1.71 2011/02/14 16:43:46 marc Exp $
-#
-# @(#)$file$
 #
 # Copyright (c) 2001 ATIX GmbH, 2007 ATIX AG.
 # Einsteinstrasse 10, 85716 Unterschleissheim, Germany
@@ -275,7 +271,6 @@ CFG_FILES=basefiles.list \
     rpms.initrd.d/ext2.list \
     rpms.initrd.d/fencexvm.list \
     rpms.initrd.d/fencedeps.list \
-    rpms.initrd.d/comoonics-flexd.list \
     rpms.initrd.d/xen.list \
     rpms.initrd.d/ocfs2.list \
     rpms.initrd.d/mdadm.list \
@@ -293,6 +288,7 @@ CFG_FILES=basefiles.list \
     rpms.initrd.d/rhel/python.list \
     rpms.initrd.d/rhel/selinux.list \
     rpms.initrd.d/rhel5/base.list \
+    rpms.initrd.d/rhel5/comoonics-flexd.list \
 	rpms.initrd.d/rhel5/empty.list \
 	rpms.initrd.d/rhel5/perl.list \
     rpms.initrd.d/rhel5/gfs1.list \
@@ -301,6 +297,7 @@ CFG_FILES=basefiles.list \
     rpms.initrd.d/rhel5/python.list \
     rpms.initrd.d/rhel5/rhcs.list \
     rpms.initrd.d/rhel6/base.list \
+    rpms.initrd.d/rhel6/comoonics-flexd.list \
     rpms.initrd.d/rhel6/dm_multipath.list \
     rpms.initrd.d/rhel6/hardware.list \
     rpms.initrd.d/rhel6/network.list \
@@ -318,6 +315,7 @@ CFG_FILES=basefiles.list \
     rpms.initrd.d/sles10/base.list \
     rpms.initrd.d/sles10/python.list \
     rpms.initrd.d/sles11/base.list \
+    rpms.initrd.d/sles11/comoonics-flexd.list \
     rpms.initrd.d/sles11/dm_multipath.list \
     rpms.initrd.d/sles11/python.list \
     rpms.initrd.d/fedora/base.list \
