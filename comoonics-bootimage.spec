@@ -59,7 +59,7 @@ Requires: comoonics-bootimage-initscripts >= 1.4
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-tools-py
 #Conflicts:
-Release: 79_6
+Release: 79_7
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -1027,6 +1027,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Mon Jul 21 2011 Marc Grimme <grimme@atix.de> 1.4-79_7
+- fixed bug #431 where network detection could mix up network configuration with servers with multiple
+  different nics.
 * Mon Jul 18 2011 Marc Grimme <grimme@atix.de> 1.4-79_6
 - fixed bug #430 where multiple properties per network interface would not be detected in the initrd.
 * Tue Mar 15 2011 Marc Grimme <grimme@atix.de> 1.4-79_5
