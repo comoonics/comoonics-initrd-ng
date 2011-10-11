@@ -308,6 +308,9 @@ for ipconfig in $networkipconfig $vlanipconfig $bridgeipconfig $restartipconfig;
   		echo_local -n "Loading driver $driver for nic $dev.."
   		exec_local modprobe $driver
   		return_code $?
+  	elif [ ! -d /sys/class/net/${dev} ]; then
+  	    # trigger harware detection if nic is not available
+        udev_start
   	fi
     echo_local -n "Powering up $dev.."
     exec_local nicUp $dev boot >/dev/null 2>&1 || breakp "$(errormsg err_nic_ifup $dev)"
