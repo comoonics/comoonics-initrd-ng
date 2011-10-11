@@ -48,7 +48,8 @@ function rhel5_hardware_detect() {
   exec_local $KUDZU -t 30 -c USB -q
 #  mv ${modules_conf} ${modules_conf}.usb
 #  cp ${modules_conf}.tmpl ${modules_conf}
-  exec_local $KUDZU -t 30 -c NETWORK -q
+#  the network konfiguration will be created manually so we skip it here!
+#  exec_local $KUDZU -t 30 -c NETWORK -q
 #  cat ${modules_conf}.scsi >> ${modules_conf}
   #	cat ${modules_conf}.raid >> ${modules_conf}
 #  cat ${modules_conf}.usb >> ${modules_conf}
