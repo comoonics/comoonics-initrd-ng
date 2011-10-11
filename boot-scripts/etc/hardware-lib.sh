@@ -558,7 +558,6 @@ function setHWClock() {
 function hardware_detect() {
   local drivers=$*
   local distribution=$(repository_get_value distribution)
-  local remove_times=4
   local driver=""
   
   /sbin/depmod -a &>/dev/null
@@ -569,7 +568,6 @@ function hardware_detect() {
   echo_local -n "Detecting Hardware "
   echo_local_debug -N -n "..(saving modules).."
   local modules=$( (listmodules; echo -e "$xmodules") | sort)
-  local allowedunloadmodules=$(find /lib/modules/$(uname -r)/kernel/drivers -path "*/net/*" -or -path "*/scsi/*" -type f -printf "%f\n")
   # detecting xen
   xen_domx_detect
   if [ $? -eq 0 ]; then
@@ -590,11 +588,25 @@ function hardware_detect() {
   repository_append_value hardwareids " $hwids"
   return_code $return_c
   
+  unload_modules ${modules[@]}
+
+  echo_local_debug "Loaded modules"
+  exec_local_debug cat /proc/modules 
+
+  return $return_c
+}
+
+unload_modules() {
+  local modules=$@
+  local allowedunloadmodules=$(find /lib/modules/$(uname -r)/kernel/drivers \( -path "*/net/*" -type f -or -type l \) -printf "%f\n")
+  local remove_times=4
   local _modules=""
   local _xclude=0
+  local i=0
   echo_local -n "Removing loaded modules"
-  for i in $(seq 0 $remove_times); do
-    for _module in $(listmodules); do
+  _modules=$(listmodules | sort)
+  while [ -n "$(unused_modules)" ] && [ $i -le $remove_times ] && [ "$modules" != "$_modules" ]; do
+    for _module in $(unused_modules); do
       _xclude=0
 	  if [ -n "$modules" ]; then
 	    for _smodule in $modules; do
@@ -610,18 +622,10 @@ function hardware_detect() {
       fi
     done
     _modules=$(listmodules | sort)
-    if [ "$modules" = "$_modules" ]; then
-      break
-    fi
+    i=$(($i + 1))
   done
   [ -e /proc/modules ] && stabilized --type=hash --interval=600 --good=5 /proc/modules
   return_code
-  local exitc=$return_c
-
-  echo_local_debug "Loaded modules"
-  exec_local_debug cat /proc/modules 
-
-  return $exitc
 }
 #************ hardware_detect
 
@@ -655,6 +659,46 @@ modprobe() {
 }
 #************ modprobe
 
+#****f* hardware-lib.sh/used_modules
+#  NAME
+#    used_modules
+#  SYNOPSIS
+#    function used_modules( module)
+#  DESCRIPTION
+#    lists all names of modules that are used by this module
+#    return 0 if modules used found else return 1.
+#  SOURCE
+#
+used_modules() {
+	local module=$1
+	if [ -z "$loadedmodules" ]; then
+		cat /proc/modules
+	else
+		echo "$loadedmodules"
+	fi | awk -v module="$module" '
+$1==module && $3>0 && $5=="Live" { 
+  print $4;
+  exit 0; 
+}
+END {
+	exit 1;
+}
+'
+}
+#************ used_modules
+
+unused_modules() {
+	if [ -z "$loadedmodules" ]; then
+		cat /proc/modules
+	else
+		echo "$loadedmodules"
+	fi | awk '
+$3==0 && $5=="Live" {
+	print $1;
+}
+'
+}
+
 #****f* hardware-lib.sh/unload_module
 #  NAME
 #    unload_module
@@ -676,6 +720,8 @@ unload_module() {
 			ret=$?
 		else
 		    for _module in $allowedmodules; do
+		    	# remove .ko from the end of the module (might be there)
+		    	_module=${_module%.ko}
 		    	if [ "$module" = "$_module" ]; then
 		    		modprobe -q -r $module
 		    		ret=$?
