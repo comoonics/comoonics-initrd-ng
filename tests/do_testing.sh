@@ -12,7 +12,7 @@ libdir=$(dirname $0)/../boot-scripts
 testdir=$(dirname $0)
 echo "Testdir: $testdir"
 
-root_filesystems="gfs ocfs2 ext3 nfs"
+root_filesystems="gfs ocfs2 ext3 ext4 nfs"
 cluster_types="gfs osr"
 distributions="rhel5 sles10 sles11"
 

@@ -132,6 +132,7 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/drbd-lib.sh \
   boot-scripts/etc/defaults.sh \
   boot-scripts/etc/ext3-lib.sh \
+  boot-scripts/etc/ext4-lib.sh \
   boot-scripts/etc/errors.sh \
   boot-scripts/etc/gfs-lib.sh \
   boot-scripts/etc/glusterfs-lib.sh \
@@ -176,7 +177,8 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/templates/rsyslogd.conf \
   boot-scripts/etc/templates/syslog-ng.conf \
   boot-scripts/etc/templates/syslog.conf
-#************ LIB_FILES 
+#************ LIB_FILES
+ 
 #****d* Makefile/SYSTEM_CFG_DIR
 #  NAME
 #    SYSTEM_CFG_DIR
@@ -186,6 +188,7 @@ LIB_FILES=create-gfs-initrd-lib.sh \
 #
 SYSTEM_CFG_DIR=/etc/comoonics
 #************ SYSTEM_CFG_DIR 
+
 #****d* Makefile/SYSTEM_CFG_FILES
 #  NAME
 #    SYSTEM_CFG_FILES
@@ -274,6 +277,7 @@ CFG_FILES=basefiles.list \
     rpms.initrd.d/rsyslogd.list \
     rpms.initrd.d/syslog-ng.list \
     rpms.initrd.d/syslogd.list \
+    rpms.initrd.d/ext4.list \
     rpms.initrd.d/rhel/base.list \
     rpms.initrd.d/rhel/dm_multipath.list \
     rpms.initrd.d/rhel/comoonics.list \

@@ -838,26 +838,26 @@ function cc_auto_netconfig {
     if [ -z "$netdev" ]; then netdev="eth0"; fi
 
     local ip_addr=$(cc_get $cluster_conf ip $nodeid $netdev 2>/dev/null)
-    local mac_addr=$(cc_get $cluster_conf eth_name_mac $nodeid $netdev 2>/dev/null)
+    local mac_addr=$(cc_get $cluster_conf eth_name_mac $nodeid $netdev 2>/dev/null | tr [a-f] [A-F])
     local type=$(cc_get $cluster_conf eth_name_type $nodeid $netdev 2>/dev/null)
     local bridge=$(cc_get $cluster_conf eth_name_bridge $nodeid $netdev 2>/dev/null)
     local onboot=$(cc_get $cluster_conf eth_name_onboot $nodeid $netdev 2>/dev/null)
     local driver=$(cc_get $cluster_conf eth_name_driver $nodeid $netdev 2>/dev/null)
-    local properties=$(cc_get $cluster_conf eth_name_properties $nodeid $netdev 2>/dev/null | tr " " ":")
+    local properties=$(cc_get $cluster_conf eth_name_properties $nodeid $netdev 2>/dev/null | tr --delete '\n' | tr " " ":")
+    local master=$(cc_get $cluster_conf eth_name_master $nodeid $netdev 2>/dev/null)
+    local slave=$(cc_get $cluster_conf eth_name_slave $nodeid $netdev 2>/dev/null)
+    local gateway=$(cc_get $cluster_conf eth_name_gateway $nodeid $netdev 2>/dev/null) || local gateway=""
+    local netmask=$(cc_get $cluster_conf eth_name_mask $nodeid $netdev 2>/dev/null)
     if [ -z "$onboot" ]; then
   	  onboot="yes"
     fi 
     if [ -z "$mac_addr" ]; then
-  	  local mac_addr=$(ip addr show $netdev scope link 2>/dev/null | grep link/ether | awk '{print $2;}')
+  	  mac_addr=$(ip addr show $netdev scope link 2>/dev/null | grep link/ether | awk '{print $2;}')
     fi
     mac_addr=${mac_addr//:/-}
     if [ "$ip_addr" != "" ]; then
-      local gateway=$(cc_get $cluster_conf eth_name_gateway $nodeid $netdev 2>/dev/null) || local gateway=""
-      local netmask=$(cc_get $cluster_conf eth_name_mask $nodeid $netdev 2>/dev/null)
       echo ${ip_addr}"::"${gateway}":"${netmask}"::"$netdev":"$mac_addr":"$type":"$bridge":"$onboot":"$driver":"$properties
     else
-      local master=$(cc_get $cluster_conf eth_name_master $nodeid $netdev 2>/dev/null)
-      local slave=$(cc_get $cluster_conf eth_name_slave $nodeid $netdev 2>/dev/null)
       echo ":"${master}":"${slave}":::"${netdev}":"${mac_addr}":"${type}":"${bridge}":"$onboot":"$driver":"$properties
     fi
   fi

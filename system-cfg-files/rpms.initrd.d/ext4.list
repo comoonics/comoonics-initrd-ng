@@ -1,0 +1,3 @@
+# rpm list for ext4 filesystem as root filesystem
+# name          include          exclude            required
+e4fsprogs		^/sbin

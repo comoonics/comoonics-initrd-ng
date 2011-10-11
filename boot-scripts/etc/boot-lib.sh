@@ -70,30 +70,17 @@ atixlogofile="/etc/atix-logo.txt"
 #  SOURCE
 #
 function exit_linuxrc() {
-    error_code=$1
-    if [ -n "$2" ]; then
-      init_cmd=$2
-    fi
-    if [ -n "$3" ]; then
-      newroot=$3
-    fi
-    echo_local_debug "exit_linuxrc($error_code)"
+    local error_code=$1
+    local init_cmd=$2
+    local newroot=$3
+    local chrootneeded=$4
+    echo_local_debug "exit_linuxrc($error_code, $initcmd, $newroot, $chrootneeded)"
     if [ -z "$error_code" ]; then
 	error_code=0
     fi
     echo $error_code > $error_code_file
-    # FIXME: remove commented lines
-    #if [ -n "$error_code" ] && [ $error_code -eq 2 ]; then
-    #    echo_local "Userquit falling back to bash.."
-	#exec 5>&1 6>&2 1>/dev/console 2>/dev/console
-    #    /bin/bash
-	#exec 1>&5 2>&6
-    #else
-	#echo_local "Writing $init_cmd $newroot => $init_cmd_file"
-	#echo "$init_cmd" > $init_cmd_file
-	#echo "$newroot" > $init_chroot_file
+    repository_store_value chrootneeded "$chrootneeded"
 	exit $error_code
-    #fi
 }
 #************ exit_linuxrc
 
@@ -612,16 +599,17 @@ function prepare_newroot() {
 function switchRoot() {
   local skipfiles="rm mount chroot find"
   local newroot=$1
+  local chrootneeded=$2
   local cominit="/usr/comoonics/sbin/init"
   if [ -z "$new_root" ]; then
      newroot="/mnt/newroot"
   fi
 
   echo "**********************************************************************"
-  echo " comoonics generic switchroot"
+  echo " comoonics generic switchroot ($newroot, $chrootneeded)"
 
   #get init_cmd from /proc
-  if [ -e "$newroot/$cominit" ]; then
+  if [ -n "$chrootneeded" ] && [ "$chrootneeded" -eq 0 ] && [ -e "$newroot/$cominit" ]; then
   	init_cmd="$cominit $(cat /proc/cmdline)"
   	echo_local_debug "found init in $init_cmd"
   else
@@ -740,15 +728,29 @@ function createTemp {
 #  NAME
 #    restart_init
 #  SYNOPSIS
-#    function restart_init {
+#    function restart_init(tries=5, timeout=5) {
 #  MODIFICATION HISTORY
 #  IDEAS
 #  SOURCE
 #
 function restart_init {
-	exec_local telinit u
+	local restarts=${1:-5}
+	local timeout=${2:-5}
+	exec_local __restart_init $restarts $timeout
 }
 #************ restart_init
+
+__restart_init() {
+  local restarts=${1:-5}
+  local timeout=${2:-5}
+  local restarts_done=0
+  
+  while [ $restarts_done -lt $restarts ]; do
+    telinit u && return 0
+    sleep $timeout
+  done
+  return 1
+}
 
 #****f* boot-lib.sh/stop_service
 #  NAME

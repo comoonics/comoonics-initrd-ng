@@ -4,3 +4,4 @@ krb5-libs		\.so
 nss_db			\.so
 nss_ldap		\.so
 MAKEDEV
+mktemp
