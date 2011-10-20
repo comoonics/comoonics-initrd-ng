@@ -27,9 +27,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Id: comoonics-bootimage.spec,v 1.151 2011/02/28 14:27:29 marc Exp $
-#
-##
 ##
 
 %define _user root
@@ -80,7 +77,7 @@ Requires:      comoonics-bootimage-listfiles-all
 Requires:      comoonics-tools-py
 Requires:      comoonics-release >= 5.0
 #Conflicts:
-Release:       89
+Release:       90
 Vendor:        ATIX AG
 Packager:      ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -566,7 +563,7 @@ OSR extra files that are only relevant for RHEL5 and GFS
 %package listfiles-rhel5-gfs2
 Version: 0.1
 Release: 1
-Requires: comoonics-bootimage >= 1.4-81
+Requires: comoonics-bootimage >= 1.4-89
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-rhel5
 Requires: SysVinit-comoonics
@@ -675,7 +672,7 @@ OSR extra files that are only relevant for RHEL6 Versions and nfs support
 %package listfiles-rhel6-ocfs2
 Version: 0.1
 Release: 1
-Requires: comoonics-bootimage >= 1.4-81
+Requires: comoonics-bootimage >= 1.4-89
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-rhel6
 Requires: SysVinit-comoonics
@@ -690,6 +687,25 @@ Conflicts: comoonics-bootimage-listfiles-rhel6-gfs2
 
 %description listfiles-rhel6-ocfs2
 OSR extra files that are only relevant for RHEL6 and OCFS2
+
+%package listfiles-rhel6-gfs2
+Version: 0.1
+Release: 1
+Requires: comoonics-bootimage >= 1.4-89
+Requires: /etc/redhat-release
+Requires: comoonics-bootimage-listfiles-rhel6
+Requires: SysVinit-comoonics
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}/%{GROUPCHILDRHEL5}
+Summary: Extrafiles for RedHat Enterprise Linux Version 6 and OCFS2
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Conflicts: comoonics-bootimage-listfiles-rhel6-ext3
+Conflicts: comoonics-bootimage-listfiles-rhel6-ext4
+Conflicts: comoonics-bootimage-listfiles-rhel6-nfs
+Conflicts: comoonics-bootimage-listfiles-rhel6-gfs
+Conflicts: comoonics-bootimage-listfiles-rhel6-ocfs2
+
+%description listfiles-rhel6-gfs2
+OSR extra files that are only relevant for RHEL6 and GFS2
 
 %package listfiles-sles10-nfs
 Version: 0.1
@@ -1069,6 +1085,7 @@ echo "End of environment."
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/ext3-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/ext4-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/gfs-lib.sh
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/gfs2-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/hardware-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/inittab
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/issue
@@ -1353,6 +1370,11 @@ echo "End of environment."
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/gfs1.list
 
 %files listfiles-rhel5-gfs2
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/comoonics.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/gfs.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel5/rhcs.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/rhcs.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/gfs2.list
 
 %files listfiles-rhel5-nfs
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/nfs.list
@@ -1360,6 +1382,10 @@ echo "End of environment."
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/nfs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/nfs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/03-nfs-deps.sh
+
+%files listfiles-rhel5-ocfs2
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/ocfs2.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/ocfs2.list
 
 %files listfiles-rhel6-ext3
 
@@ -1372,6 +1398,17 @@ echo "End of environment."
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel6/network.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/nfs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/03-nfs-deps.sh
+
+%files listfiles-rhel6-gfs2
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/comoonics.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/gfs.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel6/rhcs.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel6/rhcs.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel6/gfs2.list
+
+%files listfiles-rhel6-ocfs2
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/ocfs2.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/ocfs2.list
 
 %files listfiles-sles10-nfs
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/nfs.list
@@ -1447,6 +1484,9 @@ echo "End of environment."
 rm -rf %{buildroot}
 
 %changelog
+* Tue Oct 20 2011 Marc Grimme <grimme( at )atix.de> 1.4-90
+  * boot-scripts/etc/gfs2-lib.sh: initial revision
+  * added listfiles-rhel5-gfs2, listfiles-rhel6-gfs2, listfiles-rhel5-ocfs2, listfiles-rhel6-ocfs2
 * Mon Oct 10 2011 Marc Grimme <grimme( at )atix.de> 1.4-89
   * initscripts/rhel4/bootsr, initscripts/rhel4/ccsd-chroot,
     initscripts/rhel4/fenced-chroot, initscripts/rhel4/halt-overwrite.sh,
@@ -2841,6 +2881,10 @@ rm -rf %{buildroot}
 * Mon Feb 28 2011 Marc Grimme <grimme@atix.de> 0.1-1
 - first version for comoonics-5.0-pre
 
+%changelog listfiles-rhel5-gfs2
+* Thu Oct 20 2011 Marc Grimme <grimme@atix.de> 0.1-1
+- first version for comoonics-5.0-pre
+
 %changelog listfiles-fedora-nfs
 * Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 0.1-8
 - new version for comoonics-5.0-pre with post script
@@ -2882,8 +2926,12 @@ rm -rf %{buildroot}
 * Mon Feb 28 2011 Marc Grimme <grimme@atix.de> 0.1-1
 - first version for comoonics-5.0-pre
 
-%changelog listfiles-rhel5-ocfs2
-* Fri Aug 05 2011 Marc Grimme <grimme@atix.de> 0.1-1
+%changelog listfiles-rhel6-ocfs2
+* Thu Oct 20 2011 Marc Grimme <grimme@atix.de> 0.1-1
+  initial revision
+
+%changelog listfiles-rhel6-gfs2
+* Thu Oct 20 2011 Marc Grimme <grimme@atix.de> 0.1-1
   initial revision
 
 %changelog listfiles-sles10-nfs

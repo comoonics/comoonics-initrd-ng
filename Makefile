@@ -131,6 +131,7 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/ext4-lib.sh \
   boot-scripts/etc/errors.sh \
   boot-scripts/etc/gfs-lib.sh \
+  boot-scripts/etc/gfs2-lib.sh \
   boot-scripts/etc/glusterfs-lib.sh \
   boot-scripts/etc/hardware-lib.sh \
   boot-scripts/etc/iscsi-lib.sh \
@@ -250,6 +251,7 @@ CFG_FILES=basefiles.list \
     files.initrd.d/rhel6/configs.list \
     files.initrd.d/rhel6/dm_multipath.list \
     files.initrd.d/rhel6/network.list \
+    files.initrd.d/rhel6/rhcs.list \
     files.initrd.d/sles/base.list \
     files.initrd.d/sles/empty.list \
     files.initrd.d/sles/network.list \
@@ -292,6 +294,7 @@ CFG_FILES=basefiles.list \
 	rpms.initrd.d/rhel5/empty.list \
 	rpms.initrd.d/rhel5/perl.list \
     rpms.initrd.d/rhel5/gfs1.list \
+    rpms.initrd.d/rhel5/gfs2.list \
     rpms.initrd.d/rhel5/hardware.list \
     rpms.initrd.d/rhel5/nfs.list \
     rpms.initrd.d/rhel5/python.list \
@@ -299,10 +302,12 @@ CFG_FILES=basefiles.list \
     rpms.initrd.d/rhel6/base.list \
     rpms.initrd.d/rhel6/comoonics-flexd.list \
     rpms.initrd.d/rhel6/dm_multipath.list \
+    rpms.initrd.d/rhel6/gfs2.list \
     rpms.initrd.d/rhel6/hardware.list \
     rpms.initrd.d/rhel6/network.list \
     rpms.initrd.d/rhel6/nfs.list \
     rpms.initrd.d/rhel6/python.list \
+    rpms.initrd.d/rhel6/rhcs.list \
     rpms.initrd.d/sles/python.list \
     rpms.initrd.d/sles/base.list \
     rpms.initrd.d/sles/hardware.list \
