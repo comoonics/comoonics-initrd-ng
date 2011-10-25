@@ -311,7 +311,7 @@ osr_getdefaults() {
 osr_get_nodeids() {
   if ! repository_has_key nodeids; then
   	# Let's guess from cdsl if available from either cdsl repo or from cdsltree dir
-    local cdslmanage=$(repository_get_value cdslmanage /usr/bin/com-mkcdslinfrastructure)
+    local cdslmanage=$(repository_get_value cdslmanage /usr/bin/com-cdslinvadm)
     local nodeids=$($cdslmanage --get maxnodeidnum)
     if [ $? -eq 0 ]; then
       echo "$(seq 1 $nodeids)"
