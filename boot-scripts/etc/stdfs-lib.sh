@@ -409,31 +409,112 @@ function umount_filesystem {
     umount $_filesystem
 }
 #************ umount_filesystem
-######################
-# $Log: stdfs-lib.sh,v $
-# Revision 1.11  2010-07-08 08:12:37  marc
-# - is_same_inode: dropping error messages
+
+#****f* std-lib.sh/parse_cdsltab
+#  NAME
+#    parse_cdsltab
+#  SYNOPSIS
+#    function parse_cdsltab(filterfunc="exclude_initrd_mountpoints") {
+#  DESCRIPTION
+#    Parses the cdsltab (from stdin) for mounting filesystems that cannot be represented by the /etc/fstab.
+#    Those filesystems might be cdslmounts or special filesystems that somehow hostdependent parts.
+#    With the __initrd mountoption this filesystem is mounted within the initrd and will be left out by default.
+#    This filtering can be overruled by specifying another filter function. 
+#    By default exclude_initrd_mountpoints will be used (see exclude_initrd_mountpoints, only_initrd_mountpoints).
+#    The /etc/cdsltab format is as follows
+#    cdsltab        ::= line+
+#    line           ::= cdslmountline|mountline
+#    cdslmountline  ::= cdslfsmountpoint [mountopts]
+#    mountline      ::= fstype source dest mountopts mounttimes mountwait
+#    mountopts      ::= [ allfsmountopts|"__initrd" ]*
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
 #
-# Revision 1.10  2010/06/08 13:45:15  marc
-# - is_mounted: trimming of mountpoint given
+function parse_cdsltab {
+    local filterfunc=${1:-exclude_initrd_mountpoints}
+    local newroot=${2:-/}
+    
+    while read line; do
+        if $filterfunc $line; then
+            # remove the __initrd mountoption if available
+            line=${line%,__initrd}
+            line=${line%__initrd,}
+            line=${line%__initrd}
+            line=$(echo "$line" | replace_param_in nodeid $(repository_get_value nodeid 1))
+            # if more then 2 arguments are read from line we suppose this is a filesystem to be mounted
+            opts=( $line )
+            if [ ${#opts[@]} -le 2 ]; then
+                clusterfs_mount_cdsl ${opts[@]} 
+            else
+                clusterfs_mount ${opts[@]}
+            fi
+        fi
+      done
+}
+#************ parse_cdsltab
+
+#****f* std-lib.sh/exclude_initrd_mountpoints
+#  NAME
+#    exclude_initrd_mountpoints
+#  SYNOPSIS
+#    function exclude_initrd_mountpoints(cdsltabline) {
+#  DESCRIPTION
+#    runs the filter over the cdsltabline that will return 1 if mountopts include __initrd or not (return 0)
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
 #
-# Revision 1.9  2010/03/29 18:36:28  marc
-# - change copy_filelist to only copy if file is changed.
+function exclude_initrd_mountpoints {
+    local mountopts=${4:-${2}}
+    
+    [ -z "$mountopts" ] || echo $mountopts | grep -v "__initrd" > /dev/null
+}
+#************ exclude_initrd_mountpoints
+
+#****f* std-lib.sh/only_initrd_mountpoints
+#  NAME
+#    only_initrd_mountpoints
+#  SYNOPSIS
+#    function only_initrd_mountpoints(cdsltabline) {
+#  DESCRIPTION
+#    runs the filter over the cdsltabline that will return 0 if mountopts include __initrd or not (return 1)
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
 #
-# Revision 1.8  2010/01/04 13:15:26  marc
-# get_dep_mountpoints and is_mounted may not point to /proc/mounts
+function only_initrd_mountpoints {
+    local mountopts=${4:-${2}}
+    
+    [ -n "$mountopts" ] && echo $mountopts | grep "__initrd" > /dev/null
+}
+#************ only_initrd_mountpoints
+
+#****f* std-lib.sh/replace_param_in
+#  NAME
+#    replace_param_in
+#  SYNOPSIS
+#    function replace_param_in(paramname, value, exp=%(paramname)s) {
+#  DESCRIPTION
+#    replaces all occurences of paramname in the format exp with string paramname replaced with 
+#    the value of paramname and output it to stdout.
+#    Read is from stdin.  
+#  MODIFICATION HISTORY
+#  IDEAS
+#  SOURCE
 #
-# Revision 1.7  2009/12/09 09:26:57  marc
-# fixed bug in get_dep_filesystems
-#
-# Revision 1.6  2009/10/08 08:00:05  marc
-# better clean up in get_dep_filesystems
-#
-# Revision 1.5  2009/09/28 13:06:16  marc
-# - implemented get_dep_filesystems
-# - defined is_mounted vars as local
-#
-# Revision 1.4  2008/11/18 08:48:28  marc
-# - implemented RFE-BUG 289
-#   - possiblilty to execute initrd from shell or insite initrd to analyse behaviour
-#
+function replace_param_in {
+    local paramname=$1
+    local value=$2
+    local exp=${3:-%(paramname)s}
+    
+    if [ -z "$paramname" ] || [ -z "$exp" ]; then
+        exp=""
+    else
+        exp=$(echo "$exp" | sed -e 's/paramname/'$paramname'/')
+    fi
+    while read line; do
+        echo "$line" | sed -e 's/'$exp'/'$value'/g'
+    done
+}
+#************ replace_param_in
