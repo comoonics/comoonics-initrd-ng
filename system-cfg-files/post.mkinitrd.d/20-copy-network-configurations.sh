@@ -7,7 +7,6 @@ sourceLibs ${prgdir}
 networkconfigdir=${networkconfigdir:-/etc/comoonics/bootimage/network}
 networkconfigfilter=${networkconfigfilter:-'ifcfg*'}
 CONFDIR=$(repository_get_value confdir)
-set -x
 for nodeid in $(cc_get_nodeids); do 
   if [ -d "${networkconfigdir}/${nodeid}" ]; then
     for nicconfig in ${networkconfigdir}/${nodeid}/${networkconfigfilter}; do
@@ -17,4 +16,3 @@ for nodeid in $(cc_get_nodeids); do
     done
   fi
 done
-set +x
