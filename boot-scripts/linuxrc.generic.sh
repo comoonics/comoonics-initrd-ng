@@ -469,6 +469,7 @@ step "CDSL tree mounted" "cdsl"
 # FIXME: Remove line
 #bootlog="/var/log/comoonics-boot.log"
 
+cdsltabfile=$(repository_get_value cdsltabfile /etc/cdsltab)
 filesystems=$(cc_get filesystem_dest $(repository_get_value nodeid))
 if [ $? -eq 0 ] && [ -n "$filesystems" ]; then
   for dest in $filesystems; do
@@ -500,6 +501,9 @@ if [ $? -eq 0 ] && [ -n "$filesystems" ]; then
       breakp "$(errormsg err_clusterfs_mount)"
     fi
   done
+  step "Additional filesystems $filesystems mounted." "fsmount"
+elif [ -n "$cdsltabfile" ] && [ -f "$cdsltabfile" ]; then
+  cat $cdsltabfile | parse_cdsltab "only_initrd_mountpoints" "$(repository_get_value newroot)"
   step "Additional filesystems $filesystems mounted." "fsmount"
 fi
 
