@@ -340,7 +340,10 @@ CFG_FILES=basefiles.list \
     pre.mkinitrd.d/60-osr-repository-generate.sh \
     post.mkinitrd.d/01-create-mapfiles.sh \
     post.mkinitrd.d/02-create-cdsl-repository.sh \
-    post.mkinitrd.d/03-nfs-deps.sh
+    post.mkinitrd.d/03-nfs-deps.sh \
+	post.mkinitrd.d/20-copy-network-configurations.sh \
+	post.mkinitrd.d/21-copy-cdsltab-configurations.sh \
+	post.mkinitrd.d/99-clean-repository.sh
 	
 #************ CFG_FILES 
 
