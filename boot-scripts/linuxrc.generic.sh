@@ -476,7 +476,8 @@ if [ $? -eq 0 ] && [ -n "$filesystems" ]; then
     fstype=$(cc_get filesystem_dest_fstype $(repository_get_value nodeid) $dest)
     source=$(cc_get filesystem_dest_source $(repository_get_value nodeid) $dest)
     [ "$fstype" = "bind" ] && source=$(repository_get_value newroot)/$source
-    mountopts=$(cc_get filesystem_dest_mountopts $(repository_get_value nodeid) $dest)
+    [ "$fstype" = "rbind" ] && source=$(repository_get_value newroot)/$source
+        mountopts=$(cc_get filesystem_dest_mountopts $(repository_get_value nodeid) $dest)
     mountwait=$(cc_get filesystem_dest_mountwait $(repository_get_value nodeid) $dest)
     mounttimes=$(cc_get filesystem_dest_mounttimes $(repository_get_value nodeid) $dest)
     dest=$(repository_get_value newroot)/$(cc_get filesystem_dest_dest $(repository_get_value nodeid) $dest)
