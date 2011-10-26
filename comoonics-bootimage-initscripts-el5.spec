@@ -71,7 +71,7 @@ Requires: comoonics-bootimage >= 1.4-82
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-rhel5
 #Conflicts: 
-Release: 25.rhel5
+Release: 26.rhel5
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -84,7 +84,6 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description
 Initscripts used by the OSR cluster environment.
- 
 
 %prep
 %setup -n comoonics-bootimage-%{version}
@@ -108,6 +107,9 @@ install -m600 initscripts/rhel5/network-comoonics.patch $RPM_BUILD_ROOT/%{APPDIR
 install -m600 initscripts/rhel5/halt.orig $RPM_BUILD_ROOT/%{APPDIR}/patches/halt.orig
 install -m600 initscripts/rhel5/network.orig $RPM_BUILD_ROOT/%{APPDIR}/patches/network.orig
 install -m600 initscripts/rhel5/netfs.orig $RPM_BUILD_ROOT/%{APPDIR}/patches/netfs.orig
+install -m600 initscripts/rhel5/halt $RPM_BUILD_ROOT/%{APPDIR}/patches/halt
+install -m600 initscripts/rhel5/network $RPM_BUILD_ROOT/%{APPDIR}/patches/network
+install -m600 initscripts/rhel5/netfs $RPM_BUILD_ROOT/%{APPDIR}/patches/netfs
 install -d $RPM_BUILD_ROOT/%{SBINDIR}
 install -m755 initscripts/halt.local $RPM_BUILD_ROOT/%{SBINDIR}/halt.local
 install -m600 initscripts/rhel5/new-kernel-pkg-update.sh $RPM_BUILD_ROOT/%{APPDIR}/patches/new-kernel-pkg-update.sh
@@ -182,7 +184,7 @@ for service in $services; do
    /sbin/chkconfig --del $service &> /dev/null
 done
 
-if ! grep "source %{COMOONICS_NEW_KERNEL_PKG_UPDATE}" "%{KERNEL_SYSCONFIG_FILE}"; then
+if ! grep "source %{COMOONICS_NEW_KERNEL_PKG_UPDATE}" "%{KERNEL_SYSCONFIG_FILE}" &>/dev/null; then
   echo "Adapting  %{KERNEL_SYSCONFIG_FILE} .."
   echo "test -e %{COMOONICS_NEW_KERNEL_PKG_UPDATE} && source %{COMOONICS_NEW_KERNEL_PKG_UPDATE}" >> %{KERNEL_SYSCONFIG_FILE}
 fi
@@ -198,24 +200,29 @@ fi
 
 %attr(755, root, root) %{INITDIR}/bootsr
 %attr(755, root, root) %{INITDIR}/mountcdsls
+%attr(755, root, root) %{APPDIR}/patches/halt
+%attr(755, root, root) %{APPDIR}/patches/halt.orig
 %attr(644, root, root) %{APPDIR}/patches/halt-comoonics.patch
 %attr(644, root, root) %{APPDIR}/patches/halt-killall.patch
 #%attr(644, root, root) %{APPDIR}/patches/halt-local.patch
 %attr(644, root, root) %{APPDIR}/patches/halt-xtab.patch
+%attr(755, root, root) %{APPDIR}/patches/netfs
+%attr(755, root, root) %{APPDIR}/patches/netfs.orig
 %attr(644, root, root) %{APPDIR}/patches/netfs-comoonics.patch
 %attr(644, root, root) %{APPDIR}/patches/netfs-xtab.patch
+%attr(755, root, root) %{APPDIR}/patches/network
+%attr(755, root, root) %{APPDIR}/patches/network.orig
 %attr(644, root, root) %{APPDIR}/patches/network-comoonics.patch
 %attr(644, root, root) %{APPDIR}/patches/network-xrootfs.patch
 %attr(644, root, root) %{APPDIR}/patches/new-kernel-pkg-update.sh
-%attr(755, root, root) %{APPDIR}/patches/halt.orig
-%attr(755, root, root) %{APPDIR}/patches/network.orig
-%attr(755, root, root) %{APPDIR}/patches/netfs.orig
 %attr(755, root, root) %{SBINDIR}/halt.local
 
 %clean
 rm -rf %{buildroot}
 
 %changelog
+* Tue Oct 25 2011 Marc Grimme <grimme( at )atix.de> 1.4-26.rhel5
+- added RHEL5.7 initscripts (patched and unpatched).
 * Fri Aug 05 2011 Marc Grimme <grimme@atix.de> 1.4-25.rhel5
 - removed dep to SysVInit-comooics (will be found if the filesystem 
   - comoonics-bootimage-listfiles-<dist>-<filesystem> - rpm).

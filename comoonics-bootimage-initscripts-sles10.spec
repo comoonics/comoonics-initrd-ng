@@ -68,7 +68,7 @@ BuildArch: noarch
 Requires: comoonics-bootimage >= 1.4-82
 Requires: comoonics-bootimage-listfiles-sles10
 #Conflicts:
-Release: 13.sles10
+Release: 14.sles10
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -90,7 +90,7 @@ Initscripts used by the OSR cluster environment. These are for Novell SLES10.
 
 %install
 install -d -m 755 $RPM_BUILD_ROOT/%{INITDIR}
-install -m755 initscripts/sles10/bootsr $RPM_BUILD_ROOT/%{INITDIR}/bootsr
+install -m755 initscripts/bootsr $RPM_BUILD_ROOT/%{INITDIR}/bootsr
 install -m755 initscripts/mountcdsls $RPM_BUILD_ROOT/%{INITDIR}/mountcdsls
 install -m755 initscripts/halt.local $RPM_BUILD_ROOT/%{INITDIR}/halt.local
 
@@ -135,6 +135,8 @@ true
 %attr(755, root, root) %{INITDIR}/halt.local
 
 %changelog
+* Tue Oct 25 2011 Marc Grimme <grimme( at )atix.de> 1.4-14.sles10
+- take bootsr from upstream.
 * Fri Aug 05 2011 Marc Grimme <grimme@atix.de> 1.4-13.sles10
 - removed dep to SysVInit-comooics (will be found if the filesystem 
   - comoonics-bootimage-listfiles-<dist>-<filesystem> - rpm).

@@ -71,13 +71,13 @@ Name:          comoonics-bootimage
 Summary:       Scripts for creating an initrd in a OSR Cluster environment
 Version:       1.4
 BuildArch:     noarch
-Requires:      comoonics-cluster-py >= 0.1-21
+Requires:      comoonics-cluster-py >= 0.1-38
 Requires:      comoonics-bootimage-initscripts >= 1.4 
 Requires:      comoonics-bootimage-listfiles-all
 Requires:      comoonics-tools-py
 Requires:      comoonics-release >= 5.0
 #Conflicts:
-Release:       90
+Release:       92
 Vendor:        ATIX AG
 Packager:      ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -93,8 +93,8 @@ Scripts for creating an initrd in a OSR cluster environment
 
 %package extras-osr
 Version: 0.1
-Release: 7
-Requires: comoonics-bootimage >= 1.3-1
+Release: 9
+Requires: comoonics-bootimage >= 1.4-91
 Summary: Extra for cluster configuration via osr
 Group:   %{GROUPPARENT}/%{GROUPCHILDEXTRAS}
 Distribution: %{DISTRIBUTIONEXTRAS}
@@ -1133,6 +1133,9 @@ echo "End of environment."
 %attr(0755, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/50-bootimage-check.sh
 %attr(0755, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/50-cdsl-check.sh
 %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/02-create-cdsl-repository.sh
+%attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/20-copy-network-configurations.sh
+%attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/21-copy-cdsltab-configurations.sh
+%attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/99-clean-repository.sh
 
 %config(noreplace) %attr(0644, root, root) %{CONFIGDIR}/comoonics-bootimage.cfg
 %config(noreplace) %attr(0644, root, root) %{CONFIGDIR}/querymap.cfg
@@ -1293,7 +1296,6 @@ echo "End of environment."
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/empty.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/base.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/configs.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/gfs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/grub.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/network.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/base.list
@@ -1484,6 +1486,33 @@ echo "End of environment."
 rm -rf %{buildroot}
 
 %changelog
+* Wed Oct 26 2011 Marc Grimme <grimme( at )atix.de> 1.4-92
+  * added post.mkinitrd.d/99-clean-repository.sh to clean repository data that
+    would lead to problems.
+* Tue Oct 25 2011 Marc Grimme <grimme( at )atix.de> 1.4-91
+  * manage_chroot.sh: moved call of com-mkcdslinfrastructure to com-cdslinvadm.
+  * tests/test-stdfs-lib.sh, tests/test/error/err_fs_mount_cdsl: new tests for
+    new functions (stdfs-lib.sh)
+  * .../20-copy-network-configurations.sh: removed debugging.
+  * .../post.mkinitrd.d/02-create-cdsl-repository.sh,
+    system-cfg-files/pre.mkinitrd.d/50-cdsl-check.sh: moved call of
+    com-mkcsdlinfrastructure to com-cdslinvadm.
+  * initscripts/mountcdsls: only mount filesystems not already mounted in
+    initrd.
+  * initscripts/bootsr: moved command call com-mkcdslinfrastructure to
+    com-cdslinvadm.
+  * initscripts/rhel5/new-kernel-pkg-update.sh,
+    initscripts/rhel6/new-kernel-pkg-update.sh: fixed error with no grub
+    configuration available (nfs, pxe, ..)
+  * boot-scripts/linuxrc.generic.sh: added implementation for /etc/cdsltab in
+    initrd.
+  * boot-scripts/etc/stdfs-lib.sh: added functions parse_cdsltab,
+    exclude_initrd_mountpoints, only_initrd_mountpoints, replace_parameter_in.
+  * boot-scripts/etc/osr-lib.sh: move call of com-mkcdslinfrastructure to
+    com-cdslinvadm.
+  * boot-scripts/etc/network-lib.sh: fixed typo in found_nics
+  * boot-scripts/etc/boot-lib.sh, boot-scripts/etc/errors.sh: moved
+    com-mkcdslinfrastructure command to com-cdslinvadm.
 * Tue Oct 20 2011 Marc Grimme <grimme( at )atix.de> 1.4-90
   * boot-scripts/etc/gfs2-lib.sh: initial revision
   * added listfiles-rhel5-gfs2, listfiles-rhel6-gfs2, listfiles-rhel5-ocfs2, listfiles-rhel6-ocfs2
@@ -2481,6 +2510,8 @@ rm -rf %{buildroot}
 - first offical rpm version
 
 %changelog extras-osr
+* Tue Oct 20 2011 Marc Grimme <grimme( at )atix.de> 0.1-8
+  - moved com-mkcdslinfrastructure calls to com-cdslinvadm.
 * Tue Sep 06 2011 Marc Grimme <grimme( at )atix.de> 0.1-7
   - removed 01-create-mapfiles.sh from post.mkinitrd.d 
     (will be done in pre.mkinitrd.d 60-osr-repository-generate.sh).
@@ -2822,6 +2853,9 @@ rm -rf %{buildroot}
   - initial revision 
 
 %changelog listfiles-rhel6
+* Wed Oct 26 2011 Marc Grimme <grimme( at )atix.de> 0.1-4
+  - finalized
+  - removed gfs.list depedency
 * Fri Aug 05 2011 Marc Grimme <grimme@atix.de> 0.1-3
   - added mktemp to rpms.mkinitrd.d/rhel5/base.list
 * Wed Mar 02 2011 Marc Grimme <grimme@atix.de> 0.1-2
