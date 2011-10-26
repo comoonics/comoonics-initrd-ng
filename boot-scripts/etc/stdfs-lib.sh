@@ -445,8 +445,17 @@ function parse_cdsltab {
             # if more then 2 arguments are read from line we suppose this is a filesystem to be mounted
             opts=( $line )
             if [ ${#opts[@]} -le 2 ]; then
+                if [ -n "$newroot" ] && [ "$newroot" != "/" ]; then
+                    opts[0]="${newroot}${opts[0]}"
+                fi
                 clusterfs_mount_cdsl ${opts[@]} 
             else
+                if [ -n "$newroot" ] && [ "$newroot" != "/" ]; then
+                    opts[2]="${newroot}${opts[2]}"
+                fi
+                if [ "${opts[0]}" = "bind" ] && [ -n "$newroot" ] && [ "$newroot" != "/" ]; then
+                    opts[1]="${newroot}${opts[1]}"
+                fi
                 clusterfs_mount ${opts[@]}
             fi
         fi
