@@ -172,7 +172,7 @@ fi
 nodename=$(getParameter nodename $(cc_getdefaults nodename))
 #[ -z "$nodename" ] && breakp "$(errormsg err_cc_nodename)"
 [ -z "$nodeid" ] && nodeid=$(repository_get_value nodeid)
-[ -z "$nodename" ] && nodeid=$(repository_get_value nodename)
+[ -z "$nodename" ] && nodename=$(repository_get_value nodename)
 echo_local -N -n "nodeid: $nodeid, nodename: $nodename "
 
 sourceRootfsLibs ${predir}
