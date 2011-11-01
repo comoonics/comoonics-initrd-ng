@@ -70,7 +70,7 @@ Requires: comoonics-bootimage >= 1.4-82
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-fedora
 #Conflicts: 
-Release: 18.fedora
+Release: 19.fedora
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -93,7 +93,7 @@ Initscripts used by the OSR cluster environment.
 %install
 # Files for compat
 install -d -m 755 $RPM_BUILD_ROOT/%{INITDIR}
-install -m755 initscripts/fedora/bootsr $RPM_BUILD_ROOT/%{INITDIR}/bootsr
+install -m755 initscripts/bootsr $RPM_BUILD_ROOT/%{INITDIR}/bootsr
 install -m755 initscripts/mountcdsls $RPM_BUILD_ROOT/%{INITDIR}/mountcdsls
 install -d -m 755 $RPM_BUILD_ROOT/%{APPDIR}/patches
 install -m600 initscripts/fedora/halt-xtab.patch $RPM_BUILD_ROOT/%{APPDIR}/patches/halt-xtab.patch
@@ -248,6 +248,8 @@ fi
 rm -rf %{buildroot}
 
 %changelog
+* Tue Oct 25 2011 Marc Grimme <grimme( at )atix.de> 1.4-19.fedora
+- take bootsr from upstream.
 * Tue Mar 22 2011 Marc Grimme <grimme@atix.de> 1.4-18.fedora
 - Rebase
 * Mon Feb 28 2011 Marc Grimme <grimme@atix.de> 1.4-17.fedora

@@ -167,7 +167,7 @@ Errors: $(repository_get_value exec_local_lasterror)\\n
 '
 
 err_fs_mount_cdsl='Could not mount the cdsl filesystem structure for the filesystem on "$(repository_get_value err_fs_mount_cdsl_param1)".\\n
-Usually this can only happen if you did not set it up - com-mkcdslinfrastructure.\\n
+Usually this can only happen if you did not set it up - com-cdslinvadm.\\n
 You should fix this and reboot this node.\\n
 '
 

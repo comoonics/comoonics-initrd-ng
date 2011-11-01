@@ -172,7 +172,7 @@ fi
 nodename=$(getParameter nodename $(cc_getdefaults nodename))
 #[ -z "$nodename" ] && breakp "$(errormsg err_cc_nodename)"
 [ -z "$nodeid" ] && nodeid=$(repository_get_value nodeid)
-[ -z "$nodename" ] && nodeid=$(repository_get_value nodename)
+[ -z "$nodename" ] && nodename=$(repository_get_value nodename)
 echo_local -N -n "nodeid: $nodeid, nodename: $nodename "
 
 sourceRootfsLibs ${predir}
@@ -469,13 +469,15 @@ step "CDSL tree mounted" "cdsl"
 # FIXME: Remove line
 #bootlog="/var/log/comoonics-boot.log"
 
+cdsltabfile=$(repository_get_value cdsltabfile /etc/cdsltab)
 filesystems=$(cc_get filesystem_dest $(repository_get_value nodeid))
 if [ $? -eq 0 ] && [ -n "$filesystems" ]; then
   for dest in $filesystems; do
     fstype=$(cc_get filesystem_dest_fstype $(repository_get_value nodeid) $dest)
     source=$(cc_get filesystem_dest_source $(repository_get_value nodeid) $dest)
     [ "$fstype" = "bind" ] && source=$(repository_get_value newroot)/$source
-    mountopts=$(cc_get filesystem_dest_mountopts $(repository_get_value nodeid) $dest)
+    [ "$fstype" = "rbind" ] && source=$(repository_get_value newroot)/$source
+        mountopts=$(cc_get filesystem_dest_mountopts $(repository_get_value nodeid) $dest)
     mountwait=$(cc_get filesystem_dest_mountwait $(repository_get_value nodeid) $dest)
     mounttimes=$(cc_get filesystem_dest_mounttimes $(repository_get_value nodeid) $dest)
     dest=$(repository_get_value newroot)/$(cc_get filesystem_dest_dest $(repository_get_value nodeid) $dest)
@@ -500,6 +502,9 @@ if [ $? -eq 0 ] && [ -n "$filesystems" ]; then
       breakp "$(errormsg err_clusterfs_mount)"
     fi
   done
+  step "Additional filesystems $filesystems mounted." "fsmount"
+elif [ -n "$cdsltabfile" ] && [ -f "$cdsltabfile" ]; then
+  cat $cdsltabfile | parse_cdsltab "only_initrd_mountpoints" "$(repository_get_value newroot)"
   step "Additional filesystems $filesystems mounted." "fsmount"
 fi
 

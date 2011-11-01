@@ -947,12 +947,12 @@ function check_mtab {
 	local cdslpath=$3
 	local cdsllink=$4
 	local root=$5
-    [ -z $MKCDSLINFRASTRUCTURE ] && MKCDSLINFRASTRUCTURE=com-mkcdslinfrastructure
+    [ -z "$CDSLINVADM" ] && CDSLINVADM=com-cdslinvadm
 	
 	[ -z "$root" ] && root="/"
 	[ -z "$mountpoint" ] && mountpoint="/"
-	[ -z "$cdslpath" ] && cdslpath=$($MKCDSLINFRASTRUCTURE --mountpoint=$mountpoint --root=$root --get=tree)
-	[ -z "$cdsllink" ] && cdsllink=$($MKCDSLINFRASTRUCTURE --mountpoint=$mountpoint --root=$root --get=link)
+	[ -z "$cdslpath" ] && cdslpath=$($CDSLINVADM --mountpoint=$mountpoint --root=$root --get=tree)
+	[ -z "$cdsllink" ] && cdsllink=$($CDSLINVADM --mountpoint=$mountpoint --root=$root --get=link)
 	
 	cdsllink=${mountpoint}/$cdsllink
 	cdsllink=${cdsllink//\/\//\/}

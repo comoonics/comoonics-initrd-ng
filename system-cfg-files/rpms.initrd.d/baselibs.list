@@ -1,9 +1,9 @@
 # rpms with base libraries
 # lib  			filter
-openssl			\.so
+openssl			\.so\.*
 glibc			^/lib
-expat			\.so
-zlib			\.so
-libxml2			\.so
+expat			\.so\.*
+zlib			\.so\.*
+libxml2			\.so\.*
 coreutils
 procps

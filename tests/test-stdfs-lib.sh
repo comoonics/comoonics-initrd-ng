@@ -70,5 +70,45 @@ EOF
   detecterror $? "get_filesystem: $out != $result"
   echo 
 
+  clusterfs_mount_cdsl() {
+      echo "clusterfs_mount $*"
+  }
+  clusterfs_mount() {
+      echo "mount_cdsl $*"
+  }
+  CDSLTABFILE=$(tempfile)
+  cat > $CDSLTABFILE <<EOF
+/cdslfilesystem
+/.cluster/cdsl/%(nodeid)s/var/run2 /var/run2 bind defaults,%(nodeid)s
+/cdslfilesysteminitrd __initrd
+/.cluster/cdsl/%(nodeid)s/var/run  /var/run bind defaults,__initrd
+EOF
+  result="mount_cdsl /cdslfilesystem
+clusterfs_mount /.cluster/cdsl/1/var/run2 /var/run2 bind defaults,1"
+  echo -n "Testing parse_cdsltab (1/2).."
+  out=$(cat $CDSLTABFILE | parse_cdsltab "exclude_initrd_mountpoints")
+  test $? -eq 0 && test "$out" = "$result"
+  detecterror $? "parse_cdsltab(1/2): \"$out\" != \"$result\""
+  echo
+      
+  result="mount_cdsl /cdslfilesysteminitrd
+clusterfs_mount /.cluster/cdsl/1/var/run /var/run bind defaults"
+  echo -n "Testing parse_cdsltab (2/2).."
+  out=$(cat $CDSLTABFILE | parse_cdsltab "only_initrd_mountpoints")
+  test $? -eq 0 && test "$out" = "$result"
+  detecterror $? "parse_cdsltab(2/2): \"$out\" != \"$result\""
+  echo
+
+  result="/cdslfilesystem
+/.cluster/cdsl/1/var/run2 /var/run2 bind defaults,1
+/cdslfilesysteminitrd __initrd
+/.cluster/cdsl/1/var/run  /var/run bind defaults,__initrd"
+  echo -n "Testing replace_param_in"
+  out=$(cat $CDSLTABFILE | replace_param_in nodeid 1)
+  test $? -eq 0 && test "$out" = "$result"
+  detecterror $? "replace_param_in: \"$out\" != \"$result\""
+  echo
+
+  rm -f $CDSLTABFILE
   rm -f $MOUNTSFILE
 fi

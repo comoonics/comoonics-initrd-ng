@@ -1,5 +1,5 @@
 #!/bin/sh
-MKCDSLINFRASTRUCTURE=${MKCDSLINFRASTRUCTURE:-"/usr/bin/com-mkcdslinfrastructure"}
+MKCDSLINFRASTRUCTURE=${MKCDSLINFRASTRUCTURE:-"/usr/bin/com-cdslinvadm"}
 
 NOCDSL="nocdsl"
 

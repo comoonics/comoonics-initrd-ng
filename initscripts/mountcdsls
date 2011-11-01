@@ -71,7 +71,7 @@ STATUS_CDSL="${BOOTIMAGE_PATH}/manage_chroot.sh -a status_cdsl"
 mode=$1
 shift
 if [ $# -eq 0 ] && [ -f /etc/cdsltab ]; then
-  mounts=$(cat /etc/cdsltab)
+  mounts=$(grep -v __initrd /etc/cdsltab)
 else
   mounts=$*
 fi

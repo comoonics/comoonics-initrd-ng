@@ -28,6 +28,8 @@
 #
 # Makefile for building the documentation
 
+include Makefile.inc
+
 #****d* Makefile/PREFIX
 #  NAME
 #    PREFIX
@@ -38,15 +40,6 @@
 PREFIX=/
 
 #************ PREFIX 
-#****d* Makefile/VERSION
-#  NAME
-#    VERSION
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-VERSION=1.4
-
 #************ VERSION 
 #****d* Makefile/PACKAGE_NAME
 #  NAME
@@ -58,34 +51,6 @@ VERSION=1.4
 PACKAGE_NAME=comoonics-bootimage
 
 #************ PACKAGE_NAME 
-#****d* Makefile/INSTALL_GRP
-#  NAME
-#    INSTALL_GRP
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-INSTALL_GRP="root"
-#************ INSTALL_GRP 
-#****d* Makefile/INSTALL_OWN
-#  NAME
-#    INSTALL_OWN
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-INSTALL_OWN="root"
-
-#************ INSTALL_OWN 
-#****d* Makefile/INSTALL_DIR
-#  NAME
-#    INSTALL_DIR
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-INSTALL_DIR=/opt/atix/comoonics_bootimage
-#************ INSTALL_DIR 
 #****d* Makefile/EXEC_FILES
 #  NAME
 #    EXEC_FILES
@@ -131,6 +96,7 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/ext4-lib.sh \
   boot-scripts/etc/errors.sh \
   boot-scripts/etc/gfs-lib.sh \
+  boot-scripts/etc/gfs2-lib.sh \
   boot-scripts/etc/glusterfs-lib.sh \
   boot-scripts/etc/hardware-lib.sh \
   boot-scripts/etc/iscsi-lib.sh \
@@ -250,6 +216,7 @@ CFG_FILES=basefiles.list \
     files.initrd.d/rhel6/configs.list \
     files.initrd.d/rhel6/dm_multipath.list \
     files.initrd.d/rhel6/network.list \
+    files.initrd.d/rhel6/rhcs.list \
     files.initrd.d/sles/base.list \
     files.initrd.d/sles/empty.list \
     files.initrd.d/sles/network.list \
@@ -292,6 +259,7 @@ CFG_FILES=basefiles.list \
 	rpms.initrd.d/rhel5/empty.list \
 	rpms.initrd.d/rhel5/perl.list \
     rpms.initrd.d/rhel5/gfs1.list \
+    rpms.initrd.d/rhel5/gfs2.list \
     rpms.initrd.d/rhel5/hardware.list \
     rpms.initrd.d/rhel5/nfs.list \
     rpms.initrd.d/rhel5/python.list \
@@ -299,10 +267,12 @@ CFG_FILES=basefiles.list \
     rpms.initrd.d/rhel6/base.list \
     rpms.initrd.d/rhel6/comoonics-flexd.list \
     rpms.initrd.d/rhel6/dm_multipath.list \
+    rpms.initrd.d/rhel6/gfs2.list \
     rpms.initrd.d/rhel6/hardware.list \
     rpms.initrd.d/rhel6/network.list \
     rpms.initrd.d/rhel6/nfs.list \
     rpms.initrd.d/rhel6/python.list \
+    rpms.initrd.d/rhel6/rhcs.list \
     rpms.initrd.d/sles/python.list \
     rpms.initrd.d/sles/base.list \
     rpms.initrd.d/sles/hardware.list \
@@ -335,7 +305,10 @@ CFG_FILES=basefiles.list \
     pre.mkinitrd.d/60-osr-repository-generate.sh \
     post.mkinitrd.d/01-create-mapfiles.sh \
     post.mkinitrd.d/02-create-cdsl-repository.sh \
-    post.mkinitrd.d/03-nfs-deps.sh
+    post.mkinitrd.d/03-nfs-deps.sh \
+	post.mkinitrd.d/20-copy-network-configurations.sh \
+	post.mkinitrd.d/21-copy-cdsltab-configurations.sh \
+	post.mkinitrd.d/99-clean-repository.sh
 	
 #************ CFG_FILES 
 
@@ -389,40 +362,6 @@ EMPTY_DIRS=boot-scripts/mnt \
 INIT_FILES=
 
 #************ INIT_FILES 
-#****d* Makefile/ARCHIVE_FILE
-#  NAME
-#    ARCHIVE_FILE
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-ARCHIVE_FILE=./$(PACKAGE_NAME)-$(VERSION).tar.gz
-ARCHIVE_FILE_INITSCRIPTS=./$(PACKAGE_NAME)-initscripts-$(VERSION).tar.gz
-#************ ARCHIVE_FILE 
-#****d* Makefile/TAR_PATH
-#  NAME
-#    TAR_PATH
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-TAR_PATH=$(PACKAGE_NAME)-$(VERSION)/*
-TAR_PATH_INITSCRIPTS=$(PACKAGE_NAME)-$(VERSION)/initscripts*
-#************ TAR_PATH 
-
-RPM_PACKAGE_DIR=$(shell rpmbuild --showrc | grep ": _topdir" | awk '{print $$3}')
-RPM_PACKAGE_BIN_DIR=$(RPM_PACKAGE_DIR)/RPMS/*
-RPM_PACKAGE_SRC_DIR=$(RPM_PACKAGE_DIR)/SRPMS
-RPM_PACKAGE_SOURCE_DIR=$(RPM_PACKAGE_DIR)/SOURCES
-
-# Which directories are used for installation
-CHANNELBASEDIR=/atix/dist-mirrors
-DISTROS=rhel5 rhel6 sles10 fedora sles11
-PRODUCTNAME=comoonics
-PRODUCTVERSION=5.0
-CHANNELNAMES=preview:base addons:extras
-CHANNELDIR=$(CHANNELBASEDIR)/$(PRODUCTNAME)/$(PRODUCTVERSION)
-ARCHITECTURES=i386 x86_64 noarch SRPMS
 
 TEST_DIR=tests
 
@@ -552,11 +491,27 @@ test:
 rpmbuild: archive
 	@echo -n "Creating RPM"
 	cp ../$(ARCHIVE_FILE) $(RPM_PACKAGE_SOURCE_DIR)/
-	rpmbuild -ba --target=noarch ./comoonics-bootimage.spec
-	
-rpmbuild-listfiles-el5: archive
+	rpmbuild -ba --target=noarch --define 'LINUXDISTROSHORT rhel5' ./comoonics-bootimage.spec
+
+rpmbuild-rhel5: archive
+	@echo -n "Creating RPM"
 	cp ../$(ARCHIVE_FILE) $(RPM_PACKAGE_SOURCE_DIR)/
-	rpmbuild -ba  --target=noarch ./comoonics-bootimage-listfiles-el5.spec
+	rpmbuild -ba --target=noarch --define 'LINUXDISTROSHORT rhel5' ./comoonics-bootimage.spec
+
+rpmbuild-rhel6: archive
+	@echo -n "Creating RPM"
+	cp ../$(ARCHIVE_FILE) $(RPM_PACKAGE_SOURCE_DIR)/
+	rpmbuild -ba --target=noarch --define 'LINUXDISTROSHORT rhel6' ./comoonics-bootimage.spec
+
+#rpmbuild-sles10: archive
+#	@echo -n "Creating RPM"
+#	cp ../$(ARCHIVE_FILE) $(RPM_PACKAGE_SOURCE_DIR)/
+#	rpmbuild -ba --target=noarch --define 'SHORTDISTRO sles10' ./comoonics-bootimage.spec
+
+rpmbuild-sles11: archive
+	@echo -n "Creating RPM"
+	cp ../$(ARCHIVE_FILE) $(RPM_PACKAGE_SOURCE_DIR)/
+	rpmbuild -ba --target=noarch --define 'LINUXDISTROSHORT sles11' ./comoonics-bootimage.spec
 
 rpmbuild-initscripts-el5: archive
 	cp ../$(ARCHIVE_FILE_INITSCRIPTS) $(RPM_PACKAGE_SOURCE_DIR)/
@@ -587,266 +542,50 @@ rpmsign:
 channelcopy:
 	# Create an array of all CHANNELDIRS distros (second dir in path) and one without numbers at the end ready to be feeded in find
 	@for channel in $(CHANNELNAMES); do \
-	    channelname=`echo $$channel | cut -f1 -d:`; \
-	    channelalias=`echo $$channel | cut -f2 -d:`; \
-	    for distribution in $(DISTROS); do \
-	       for architecture in $(ARCHITECTURES); do \
-		      echo -n "Copying rpms to channel $(CHANNELDIR)/$$channelname/$$distribution/$$architecture.."; \
-		      ./build/copy_rpms.sh $$distribution $(CHANNELDIR)/$$channelname $$channelalias $$architecture; \
-		      echo "(DONE)"; \
-		   done; \
-		done; \
+	   channelname=`echo $$channel | cut -f1 -d:`; \
+	   channelalias=`echo $$channel | cut -f2 -d:`; \
+       for architecture in $(ARCHITECTURES); do \
+	      echo -n "Copying rpms to channel $(CHANNELDIR)/$$channelname/$$distribution/$$architecture.."; \
+	      ./build/copy_rpms.sh $(SHORTDISTRO) $(CHANNELDIR)/$$channelname $$channelalias $$architecture; \
+	      echo "(DONE)"; \
+	   done; \
 	done;
 	
 .PHONY: channelbuild
 channelbuild:
 	@echo "Rebuilding channels.."
 	@for channel in $(CHANNELNAMES); do \
-        channelname=`echo $$channel | cut -f1 -d:`; \
-	    for distribution in $(DISTROS); do \
-              $(CHANNELBASEDIR)/updaterepositories -s -r $(PRODUCTNAME)/$(PRODUCTVERSION)/$$channelname/$$distribution; \
-	    done; \
-	 done 
+    	channelname=`echo $$channel | cut -f1 -d:`; \
+    	$(CHANNELBASEDIR)/updaterepositories -s -r $(PRODUCTNAME)/$(PRODUCTVERSION)/$$channelname/$(SHORTDISTRO); \
+		done 
 
 .PHONY:rpm	
-rpm: test rpmbuild rpmbuild-initscripts-el5 rpmbuild-initscripts-rhel6 rpmbuild-initscripts-sles10 rpmbuild-initscripts-sles11 rpmbuild-initscripts-fedora rpmsign
+rpm: test rpmbuild-$(SHORTDISTRO) rpmbuild-initscripts-el5 rpmbuild-initscripts-rhel6 rpmbuild-initscripts-sles10 rpmbuild-initscripts-sles11 rpmbuild-initscripts-fedora rpmsign
 
-.PHONY: channel
-channel: rpm channelcopy channelbuild
+.PHONY: rpm-rhel5
+rpm-rhel5:
+	make SHORTDISTRO=rhel5 rpm
 
-########################################
-# CVS-Log
-# $Log: Makefile,v $
-# Revision 1.71  2011/02/14 16:43:46  marc
-# *** empty log message ***
-#
-# Revision 1.70  2011/02/11 11:30:52  marc
-# added the new listfiles.
-#
-# Revision 1.69  2011/01/28 13:01:51  marc
-# added lock-lib.sh
-#
-# Revision 1.68  2011/01/18 09:23:41  marc
-# new versions for comoonics-bootimage-listfiles-rhel5
-#
-# Revision 1.67  2011/01/12 09:34:51  marc
-# added to execute tests
-#
-# Revision 1.66  2010/12/07 13:30:47  marc
-# added new files
-#
-# Revision 1.65  2010/08/12 13:04:05  marc
-# added base.list.
-#
-# Revision 1.64  2010/08/11 09:46:58  marc
-# - added files
-#
-# Revision 1.63  2010/07/08 08:39:37  marc
-# new versions
-#
-# Revision 1.62  2010/06/30 07:04:04  marc
-# new version
-#
-# Revision 1.61  2010/06/17 08:21:30  marc
-# replaced fencevirsh with fencedeps
-#
-# Revision 1.60  2010/06/09 08:23:08  marc
-# - initscripts archive introduced
-#
-# Revision 1.59  2010/02/21 12:10:13  marc
-# moved a comment
-#
-# Revision 1.58  2010/02/16 10:07:15  marc
-# new versions
-#
-# Revision 1.57  2010/02/09 21:45:19  marc
-# new versions
-#
-# Revision 1.56  2010/02/07 20:35:26  marc
-# - latest versions
-#
-# Revision 1.55  2009/10/07 12:08:58  marc
-# added com-chroot
-#
-# Revision 1.54  2009/09/28 14:51:19  marc
-# new versions
-#
-# Revision 1.53  2009/09/28 14:40:45  marc
-# new versions
-#
-# Revision 1.52  2009/08/11 12:17:10  marc
-# new versions
-#
-# Revision 1.51  2009/04/14 15:06:18  marc
-# new files
-#
-# Revision 1.50  2009/02/26 07:12:57  marc
-# added a sleep
-#
-# Revision 1.49  2009/02/25 13:44:16  marc
-# added rhel4
-#
-# Revision 1.48  2009/02/18 18:11:51  marc
-# new version of comoonics-bootimage
-#
-# Revision 1.47  2009/02/08 14:22:48  marc
-# added md
-#
-# Revision 1.46  2009/01/29 19:49:08  marc
-# added new files
-#
-# Revision 1.45  2008/12/01 12:30:41  marc
-# implemented test
-#
-# Revision 1.44  2008/11/18 14:28:36  marc
-# - implemented RFE-BUG 289 (level up/down)
-#
-# Revision 1.43  2008/09/24 08:21:40  marc
-# removed rhel4 as upstream
-#
-# Revision 1.42  2008/09/24 08:13:20  marc
-# upstream commit
-# - added sles deps
-#
-# Revision 1.41  2008/09/10 13:12:19  marc
-# Fixed bugs #267, #265, #264
-#
-# Revision 1.40  2008/08/14 14:40:41  marc
-# -added channel option which will build channel
-# - added new versions
-#
-# Revision 1.39  2008/07/03 12:47:47  mark
-# added repository-lib.sh
-#
-# Revision 1.38  2008/06/10 10:07:09  marc
-# -added ocfs2 files
-#
-# Revision 1.37  2007/12/07 16:39:59  reiner
-# Added GPL license and changed ATIX GmbH to AG.
-#
-# Revision 1.36  2007/10/16 08:04:13  marc
-# - added iscsi-support
-#
-# Revision 1.35  2007/10/08 16:14:55  mark
-# added distrodependent boot-lib.sh
-#
-# Revision 1.34  2007/10/05 13:38:35  mark
-# added com-halt.sh and com-realhalt.sh
-#
-# Revision 1.33  2007/10/05 10:10:24  marc
-# - added xen-support
-#
-# Revision 1.32  2007/09/27 11:56:29  marc
-# removed passwd file
-#
-# Revision 1.31  2007/09/15 14:49:38  mark
-# moved listfiles into extra rpms
-#
-# Revision 1.30  2007/09/14 13:35:28  marc
-# added rdac-files
-#
-# Revision 1.29  2007/09/14 08:32:40  mark
-# added initscripts-el5
-#
-# Revision 1.28  2007/09/13 09:07:07  mark
-# added rule for rpmbuild-initscripts-el4
-#
-# Revision 1.27  2007/09/10 14:55:48  marc
-# added rpmsign to rpm as in comoonics-cs
-#
-# Revision 1.26  2007/09/07 07:57:29  mark
-# added rhel5 libs
-#
-# Revision 1.25  2007/08/07 12:42:14  mark
-# added release 1.3.1
-# added extras-nfs
-# added extras-network
-#
-# Revision 1.24  2007/05/23 15:31:24  mark
-# set bootimage revision to 1.2
-# added multipath support
-# added support for ext3 and nfs
-#
-# Revision 1.23  2007/02/23 16:45:36  mark
-# added make rpm
-# added rpms.initrd.d/m_multipath.list
-#
-# Revision 1.22  2007/02/09 11:09:44  marc
-# added CHANGELOG
-#
-# Revision 1.21  2007/01/23 13:05:56  mark
-# added vlan.list
-#
-# Revision 1.20  2006/12/04 17:38:33  marc
-# lockgulm files removed
-# only fence_tool
-#
-# Revision 1.19  2006/10/19 10:08:07  marc
-# bootsr: reload add
-# ccsd-chroot: initial revision
-# Makefile: ccsd-chroot added
-# preccsd: support for cluster.conf moval
-#
-# Revision 1.18  2006/10/06 08:37:44  marc
-# minor changes
-#
-# Revision 1.17  2006/08/28 16:02:33  marc
-# very well tested version
-#
-# Revision 1.16  2006/08/02 12:24:59  marc
-# minor change
-#
-# Revision 1.15  2006/07/13 14:32:57  mark
-# added /dev
-#
-# Revision 1.14  2006/06/19 15:54:34  marc
-# added new files
-#
-# Revision 1.13  2006/06/07 09:42:23  marc
-# *** empty log message ***
-#
-# Revision 1.12  2006/05/07 12:06:56  marc
-# version 1.0 stable
-#
-# Revision 1.11  2006/05/03 12:46:51  marc
-# added documentation
-#
-# Revision 1.10  2006/04/13 18:46:11  marc
-# added fencefiles
-#
-# Revision 1.9  2006/04/11 13:42:58  marc
-# added x86_64 config file
-#
-# Revision 1.8  2006/02/16 13:59:15  marc
-# added preccsd
-#
-# Revision 1.7  2006/01/25 14:57:11  marc
-# new version for new files
-#
-# Revision 1.6  2006/01/23 14:02:49  mark
-# added bootsr
-#
-# Revision 1.5  2005/07/08 13:15:57  mark
-# added some files
-#
-# Revision 1.4  2005/06/27 14:24:20  mark
-# added gfs 61, rhel4 support
-#
-# Revision 1.3  2005/06/08 13:33:22  marc
-# new revision
-#
-# Revision 1.2  2005/01/05 10:54:53  marc
-# added the files for ccsd in chroot.
-#
-# Revision 1.1  2005/01/03 08:33:17  marc
-# first offical rpm version
-# - initial revision
-#
-# Revision 1.1  2004/09/29 14:36:46  marc
-# initial version
-#
-# Revision 1.1  2004/09/09 11:35:32  marc
-# com-rescan-scsi.sh: major changes
-#
-#
-########################################
+.PHONY: rpm-rhel6
+rpm-rhel6:
+	make SHORTDISTRO=rhel6 rpm
+
+.PHONY: rpm-sles11
+rpm-sles11:
+	make SHORTDISTRO=sles11 rpm
+
+.PHONY: channel-rhel5
+channel-rhel5: 
+	make SHORTDISTRO=rhel5 channelcopy channelbuild
+
+.PHONY: channel-rhel6
+channel-rhel6: 
+	make SHORTDISTRO=rhel6 channelcopy channelbuild
+
+.PHONY: channel-sles11
+channel-sles11:
+	make SHORTDISTRO=sles11 channelcopy channelbuild
+
+.PHONY: clean
+clean:
+	rm -f $(RPM_PACKAGE_BIN_DIR)/$(PACKAGE_NAME)-*.rpm $(RPM_PACKAGE_SRC_DIR)/$(PACKAGE_NAME)-*.src.rpm

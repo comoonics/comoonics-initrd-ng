@@ -246,7 +246,7 @@ function found_nics {
   	  nics=$(($nics + 1))
   	fi
   done
-  test $nics -gt 0
+  test -n "$nics" && test $nics -gt 0
   return $?
 }
 #******** found_nics
