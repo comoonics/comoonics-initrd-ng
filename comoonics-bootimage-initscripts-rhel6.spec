@@ -46,7 +46,7 @@
 
 %define RELEASENAME Gumpn
 %define PRODUCTNAME OpenSharedRoot
-%define PRODUCTVERSION 5.0 pre
+%define PRODUCTVERSION 5.0
 %define DISTRIBUTIONNAME %{PRODUCTNAME} %{PRODUCTVERSION} (%{RELEASENAME})
 %define DISTRIBUTIONBASE %{DISTRIBUTIONNAME} Base
 %define DISTRIBUTIONEXTRAS %{DISTRIBUTIONNAME} Extras
@@ -65,13 +65,13 @@
 
 Name: comoonics-bootimage-initscripts
 Summary: Initscripts used by the OSR cluster environment.
-Version: 1.4
+Version: 5.0
 BuildArch: noarch
-Requires: comoonics-bootimage >= 1.4-82
+Requires: comoonics-bootimage >= 5.0
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-rhel6
 #Conflicts: 
-Release: 3.rhel6
+Release: 1_rhel6
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -100,6 +100,10 @@ install -d -m 755 $RPM_BUILD_ROOT/%{APPDIR}/patches
 install -d $RPM_BUILD_ROOT/%{SBINDIR}
 install -m755 initscripts/halt.local $RPM_BUILD_ROOT/%{SBINDIR}/halt.local
 install -m600 initscripts/rhel6/new-kernel-pkg-update.sh $RPM_BUILD_ROOT/%{APPDIR}/patches/new-kernel-pkg-update.sh
+install -m755 initscripts/rhel6/netfs $RPM_BUILD_ROOT/%{APPDIR}/patches/netfs
+install -m755 initscripts/rhel6/network $RPM_BUILD_ROOT/%{APPDIR}/patches/network
+install -m755 initscripts/rhel6/netfs.orig $RPM_BUILD_ROOT/%{APPDIR}/patches/netfs.orig
+install -m755 initscripts/rhel6/network.orig $RPM_BUILD_ROOT/%{APPDIR}/patches/network.orig
 
 %preun
 if [ "$1" -eq 0 ]; then
@@ -148,11 +152,19 @@ fi
 %attr(755, root, root) %{INITDIR}/mountcdsls
 %attr(755, root, root) %{SBINDIR}/halt.local
 %attr(644, root, root) %{APPDIR}/patches/new-kernel-pkg-update.sh
+%attr(755, root, root) %{APPDIR}/patches/netfs
+%attr(755, root, root) %{APPDIR}/patches/network
+%attr(755, root, root) %{APPDIR}/patches/netfs.orig
+%attr(755, root, root) %{APPDIR}/patches/network.orig
 
 %clean
 rm -rf %{buildroot}
 
 %changelog
+* Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1_rhel5
+  * Rebase for Release 5.0
+* Wed Oct 26 2011 Marc Grimme <grimme( at )atix.de> 1.4-4.rhel6
+- added netfs and network initscript to be overwritten.
 * Tue May 10 2011 Marc Grimme <grimme@atix.de> 1.4-3.rhel6
 - introducing updated version to /sbin/new-kernel-pkg-update in order to allow autobuild of initrds 
   (requirement boot is mounted).

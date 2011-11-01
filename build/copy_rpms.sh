@@ -1,11 +1,11 @@
 #!/bin/bash
 # copies all relevant rpms to the specific channel
-RPMBUILDDIR=${RPMBUILDDIR:-$(rpmbuild --showrc | grep ": _topdir" | awk '{print $3}')}
 CHANNELDISTRIBUTION=${1}
 DESTDIR=$2
 CHANNELCLASS=${3:-extras}
-ARCH=${4:-noarch}
+arch=${4:-noarch}
 FILENAMEFILTER=${5:-comoonics-bootimage*}
+RPMBUILDDIR=$6
 
 is_newer() {
 	local file1=$1
@@ -47,18 +47,27 @@ if [ ! -d "$DESTDIR" ]; then
 	usage
 	exit 2
 fi
-if [ "$ARCH" = "SRPMS" ]; then
+if [ "$arch" = "SRPMS" ]; then
   QUERYFORMAT='%{NAME}-%{VERSION}-%{RELEASE}.src.rpm;%{DISTRIBUTION};%{GROUP}\n'
 else
-  QUERYFORMAT='%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}.rpm;%{DISTRIBUTION};%{GROUP}\n'
+  QUERYFORMAT='%{NAME}-%{VERSION}-%{RELEASE}.%{arch}.rpm;%{DISTRIBUTION};%{GROUP}\n'
 fi
 
-[ "$ARCH" = "SRPMS" ] || ARCH="RPMS/$ARCH"
-rpm -qp --queryformat=$QUERYFORMAT $RPMBUILDDIR/${ARCH}/$FILENAMEFILTER 2>/dev/null | while IFS=';' read filename distribution group; do
-  filename=${RPMBUILDDIR}/${ARCH}/$filename
+if [ "$arch" = "SRPMS" ]; then
+    ARCH=$arch
+    arch="src"
+else
+    ARCH="RPMS/$arch"
+fi
+   
+RPMBUILDDIR=${RPMBUILDDIR:-$(rpmbuild --showrc | grep ": _topdir" | awk '{print $3}')/${ARCH}}
+
+rpm -qp --queryformat=$QUERYFORMAT $RPMBUILDDIR/${FILENAMEFILTER}*${CHANNELDISTRIBUTION}.${arch}.rpm 2>/dev/null | while IFS=';' read filename distribution group; do
+  filename=${RPMBUILDDIR}/$filename
   subgroup=$(echo "$group" | cut -f 3 -d/)
-  echo "$distribution" | grep -i "${CHANNELCLASS}$" &>/dev/null
-  if [ $? -eq 0 ] && [ -e "$filename" ] && ( [ -z "$subgroup" ] || [ $(echo "$subgroup" | tr a-z A-Z) = $(echo "$CHANNELDISTRIBUTION" | tr a-z A-Z) ] ); then
+  group=$(echo "$group" | cut -f 2 -d/)
+  echo "$group" | grep -i "${CHANNELCLASS}$" &>/dev/null
+  if [ $? -eq 0 ] && [ -e "$filename" ]; then
     if is_newer $DESTDIR/$CHANNELDISTRIBUTION/$ARCH/$(basename $filename) $filename; then
       echo "$filename => $DESTDIR/$CHANNELDISTRIBUTION/$ARCH"
       cp $filename $DESTDIR/$CHANNELDISTRIBUTION/$ARCH
