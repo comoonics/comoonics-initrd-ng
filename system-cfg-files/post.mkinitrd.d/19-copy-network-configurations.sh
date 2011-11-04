@@ -40,3 +40,4 @@ if [ -d "${networkconfigdir}" ]; then
         fi
     done
 fi
+true

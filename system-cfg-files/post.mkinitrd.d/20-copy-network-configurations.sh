@@ -16,3 +16,4 @@ for nodeid in $(cc_get_nodeids); do
     done
   fi
 done
+true
