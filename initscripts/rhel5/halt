@@ -72,9 +72,15 @@ esac
 # Kill all processes.
 [ "${BASH+bash}" = bash ] && enable kill
 
-action $"Sending all processes the TERM signal..." /usr/comoonics/sbin/killall5 -15 ${KILLALL_OPTS}
-sleep 5
-action $"Sending all processes the KILL signal..."  /usr/comoonics/sbin/killall5 -9 ${KILLALL_OPTS}
+if [ -e "/usr/comoonics/sbin/killall5" ]; then
+	action $"Sending all processes the TERM signal..." /usr/comoonics/sbin/killall5 -15 ${KILLALL_OPTS}
+	sleep 5
+	action $"Sending all processes the KILL signal..."  /usr/comoonics/sbin/killall5 -9 ${KILLALL_OPTS}
+else
+	action $"Sending all processes the TERM signal..." /sbin/killall5 -15
+	sleep 5
+	action $"Sending all processes the KILL signal..."  /sbin/killall5 -9
+fi
 
 # Write to wtmp file before unmounting /var
 /sbin/halt -w
