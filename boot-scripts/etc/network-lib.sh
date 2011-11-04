@@ -134,7 +134,12 @@ function nicAutoUp() {
 #  SOURCE
 #
 function nicUp() {
+   local count=0
+   local maxcount=${timeout:-30}
+   local timeout=${timeout:-2}
    /sbin/ifup $*
+   while ! ip link show dev "$1" | grep "UP,LOWER_UP" &>/dev/null && [ "$count" -le $maxcount ]; do sleep $timeout; count=$(( $count + 1 )); done
+   ip link show dev "$1" | grep "UP,LOWER_UP" &>/dev/null
 }
 #************ ifup
 
