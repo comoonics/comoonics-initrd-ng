@@ -21,7 +21,7 @@ if [ -d "${networkconfigdir}" ]; then
                     . ${cdsltree}/${nodeid}/$nicconfig
                     if [ "${STARTMODE}" = "nfsroot" ]; then
                         echo_local_debug "Copying $nicconfig => ${DEST_PATH}/${CONFDIR}/network/${nicconfig}.${nodeid}"
-                        cp ${cdsltree}/${nodeid}/$nicconfig ${DEST_PATH}/${CONFDIR}/network/$(basename ${nicconfig}).${nodeid} 
+                        (cat ${cdsltree}/${nodeid}/$nicconfig | grep -v "^ONBOOT="; echo "ONBOOT=yes";) > ${DEST_PATH}/${CONFDIR}/network/$(basename ${nicconfig}).${nodeid}
                     fi
                     unset STARTMODE
                 fi
@@ -32,7 +32,7 @@ if [ -d "${networkconfigdir}" ]; then
                 for nodeid in $(cc_get_nodeids); do 
                     if [ -f "${nicconfig}" ]; then
                         echo_local_debug "Copying $nicconfig => ${DEST_PATH}/${CONFDIR}/network/${nicconfig}.${nodeid}"
-                        cp $nicconfig ${DEST_PATH}/${CONFDIR}/network/$(basename ${nicconfig}).${nodeid} 
+                        ( cat $nicconfig  | grep -v "^ONBOOT="; echo "ONBOOT=yes";) > ${DEST_PATH}/${CONFDIR}/network/$(basename ${nicconfig}).${nodeid} 
                     fi
                 done
             fi
