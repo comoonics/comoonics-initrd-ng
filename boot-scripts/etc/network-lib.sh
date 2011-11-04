@@ -138,8 +138,10 @@ function nicUp() {
    local maxcount=${timeout:-30}
    local timeout=${timeout:-2}
    /sbin/ifup $*
+   errorcode=$?
    while ! ip link show dev "$1" | grep "UP,LOWER_UP" &>/dev/null && [ "$count" -le $maxcount ]; do sleep $timeout; count=$(( $count + 1 )); done
    ip link show dev "$1" | grep "UP,LOWER_UP" &>/dev/null
+   return $?
 }
 #************ ifup
 

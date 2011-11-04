@@ -88,7 +88,7 @@ Scripts for creating an initrd in a OSR cluster environment
 Version: 5.0
 Release: 1_%{LINUXDISTROSHORT}
 Requires: comoonics-bootimage >= 5.0
-Obsoletes: comoonics-extras-osr
+Obsoletes: comoonics-bootimage-extras-osr
 Summary: Extra for cluster configuration via local files
 Group:   %{GROUPPARENT}/%{GROUPCHILDEXTRAS}
 Distribution: %{DISTRIBUTIONEXTRAS}
@@ -2524,7 +2524,7 @@ rm -rf %{buildroot}
 * Mon Jan  3 2005 Marc Grimme <grimme@atix.de> - 0.1-16
 - first offical rpm version
 
-%changelog extras-osr
+%changelog extras-localconfigs
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Tue Oct 20 2011 Marc Grimme <grimme( at )atix.de> 0.1-8
