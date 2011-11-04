@@ -70,7 +70,7 @@ Requires:      comoonics-bootimage-listfiles-all
 Requires:      comoonics-tools-py
 Requires:      comoonics-release >= 5.0
 #Conflicts:
-Release:       1_%{LINUXDISTROSHORT}
+Release:       3_%{LINUXDISTROSHORT}
 Vendor:        ATIX AG
 Packager:      ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -84,17 +84,18 @@ BuildRoot:     %{_tmppath}/%{name}-%{version}-buildroot
 %description
 Scripts for creating an initrd in a OSR cluster environment
 
-%package extras-osr
+%package extras-localconfigs
 Version: 5.0
 Release: 1_%{LINUXDISTROSHORT}
 Requires: comoonics-bootimage >= 5.0
-Summary: Extra for cluster configuration via osr
+Obsoletes: comoonics-extras-osr
+Summary: Extra for cluster configuration via local files
 Group:   %{GROUPPARENT}/%{GROUPCHILDEXTRAS}
 Distribution: %{DISTRIBUTIONEXTRAS}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
-%description extras-osr
-Extra for cluster configuration via osr.
+%description extras-localconfigs
+Extra for cluster configuration via local files instead of cluster.conf.
 
 %package extras-network
 Version: 5.0
@@ -1126,6 +1127,7 @@ fi
 %attr(0755, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/50-bootimage-check.sh
 %attr(0755, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/50-cdsl-check.sh
 %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/02-create-cdsl-repository.sh
+%attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/19-copy-network-configurations.sh
 %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/20-copy-network-configurations.sh
 %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/21-copy-cdsltab-configurations.sh
 %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/99-clean-repository.sh
@@ -1138,7 +1140,7 @@ fi
 %files compat
 %config(noreplace) %attr(0644, root, root) %{SYSCONFIGDIR}/comoonics-chroot
 
-%files extras-osr
+%files extras-localconfigs
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/osr-lib.sh
 %attr(0644, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/30-rootfs-check.sh
 %attr(0644, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/35-rootdevice-check.sh
@@ -1479,6 +1481,12 @@ fi
 rm -rf %{buildroot}
 
 %changelog
+* Fri Nov 04 2011 Marc Grimme <grimme( at )atix.de> 5.0-3
+  added post.mkinitrd.d/19-copy-network-configurations that copies relevant configs from 
+  /etc/sysconfig/network-scripts
+* Wed Nov 02 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  boot-scripts/etc/boot-lib.sh: getParameter
+  * Changed default behaviour of getParameter to first look for boot parameter and then in repository.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Wed Oct 26 2011 Marc Grimme <grimme( at )atix.de> 1.4-92
