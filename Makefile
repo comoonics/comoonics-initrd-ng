@@ -60,6 +60,7 @@ PACKAGE_NAME=comoonics-bootimage
 #
 EXEC_FILES=create-gfs-initrd-generic.sh \
   manage_chroot.sh \
+  manage_initrd_repository.sh \
   com-chroot \
   boot-scripts/com-halt.sh \
   boot-scripts/com-realhalt.sh \
@@ -300,6 +301,7 @@ CFG_FILES=basefiles.list \
     pre.mkinitrd.d/20-clusterconf-validate.sh \
     pre.mkinitrd.d/30-rootfs-check.sh \
     pre.mkinitrd.d/35-rootdevice-check.sh \
+    pre.mkinitrd.d/38-multipath-chech.sh \
     pre.mkinitrd.d/50-bootimage-check.sh \
     pre.mkinitrd.d/50-cdsl-check.sh \
     pre.mkinitrd.d/60-osr-repository-generate.sh \
@@ -309,6 +311,7 @@ CFG_FILES=basefiles.list \
 	post.mkinitrd.d/19-copy-network-configurations.sh \
 	post.mkinitrd.d/20-copy-network-configurations.sh \
 	post.mkinitrd.d/21-copy-cdsltab-configurations.sh \
+	post.mkinitrd.d/98-copy-template-repository.sh \
 	post.mkinitrd.d/99-clean-repository.sh
 	
 #************ CFG_FILES 
