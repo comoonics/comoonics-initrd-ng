@@ -208,7 +208,7 @@ function getoptions() {
 
 function clean_up() {
    local errorcode=${1:-100}
-   unlock_rpm
+   unlock_rpm &>/dev/null
 #   set -x
    echo_local_debug "Cleaning up from signal.."
    [ -n "$mountpoint" ] && [ -d "${mountpoint}" ] && rm -rf ${mountpoint}
@@ -315,6 +315,14 @@ if [ ! -e "$initrdname" ] && [ -n "$update" ]; then
 	clean_up 5
 fi
 
+for _kernel in ${kernel[@]}; do
+    if [ ! -d /lib/modules/$_kernel ]; then
+        echo "Could not find the kernel $_kernel." >&2
+        clean_up 6
+    fi
+done
+
+
 if [ -z "$initramfs" ] || [ $initramfs -eq 0 ]; then
   echo_local -N -n "Makeing initrd ..."
   make_initrd $initrdname $size || (failure && clean_up $?)
@@ -417,7 +425,8 @@ if [ -z "$update" ] || [ -n "$kernel" ]; then
 
 	if [ ! -d /lib/modules/$_kernel ]; then
 		echo "Could not find the kernel $_kernel."
-		failure && clean_up $?
+		failure
+		clean_up $?
 	fi
 
     if [ -n "$light" ] && [ $light -eq 1 ]; then
