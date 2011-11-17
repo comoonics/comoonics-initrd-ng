@@ -407,24 +407,17 @@ function md_start {
 #
 function device_mapper_check {
 	local device=$1
-	local valid_majors="fd fc"
-	local major=
 	# and if the device does not exist.
 	if ! [ -e "$device" ] && [ -z "$device_mapper_check_stat_output" ]; then
 		return 1
 	# so but if the device does exist and has a major of 253/0xfd which is the dm device
-	elif [ -b "$device" ] || [ -n "$device_mapper_check_stat_output" ]; then
-		if [ -n "$device_mapper_check_stat_output" ]; then
-			major=$(echo $device_mapper_check_stat_output)
+	elif [ -b "$device" ] || [ -n "$device_mapper_dmsetup_output" ]; then
+		if [ -n "$device_mapper_dmsetup_exit" ]; then
+		    return $device_mapper_dmsetup_exit
 		else
-			major=$(stat --dereference --format="%t" $device)
+		    dmsetup status $device &>/dev/null
+			return $?
 		fi
-		for _major in $valid_majors; do
-			if [ "$major" = "$_major" ]; then
-				return 0
-			fi
-		done
-	    return 1
     fi
 	return 1
 }
@@ -466,10 +459,7 @@ function device_mapper_multipath_check {
 #
 function lvm_check {
 	local device=$1
-	local invalid_majors="0 8 ca"
-	local valid_majors="fd fc"
 	local vg=$(lvm_get_vg $device)
-	local major=
 	# in this case no lvm devices exist. So we check if we can get a vg from this device
 	# and if the device does not exist.
 	if [ -z "$vg" ] && ! [ -e "$device" ]; then
@@ -477,29 +467,9 @@ function lvm_check {
 	# so but if the device does exist and has a major of 253/0xfd which is the dm device and a vg also
 	# we expect it to be lvm
 	elif [ -n "$vg" ] && [ -b "$device" ]; then
-		if [ -n "$lvm_check_stat_output" ]; then
-			major=$(echo $lvm_check_stat_output)
-		else
-			major=$(stat --dereference --format="%t" $device)
-		fi
-		for _major in $valid_majors; do
-			if [ "$major" = "$_major" ]; then
-				return 0
-			fi
-		done
-	    return 1
-	elif [ -e "$device" ]; then
-		if [ -n "$lvm_check_stat_output" ]; then
-			major=$(echo $lvm_check_stat_output)
-		else
-			major=$(stat --dereference --format="%t" $device)
-		fi
-		for _major in $invalid_majors; do
-			if [ "$major" = "$_major" ]; then
-				return 1
-			fi
-		done
-	elif [ ! -e "$device" ] && [ -n "$vg" ]; then
+	  device_mapper_check $device && lvm vgs $vg &>/dev/null
+	  return $?
+	elif [ -n "$vg" ]; then
 	  # This is the case where the device is not existant but could be that the vg was not yet activated
       lvm vgs $vg &>/dev/null
       return $?
