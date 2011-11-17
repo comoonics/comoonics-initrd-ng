@@ -5,8 +5,8 @@ source ${prgdir}/etc/std-lib.sh
 sourceLibs ${prgdir}
 
 cdslinvadm=${cdslinvadm:-"/usr/bin/com-cdslinvadm"}
-cdsltree="/"$($cdslinvadm get tree)
-cdsllink="/"$($cdslinvadm get link)
+cdsltree="/"$($cdslinvadm get tree 2>/dev/null)
+cdsllink="/"$($cdslinvadm get link 2>/dev/null)
 distro=${distro:-$(repository_get_value distribution)}
 networkconfigdir=${networkconfigdir:-$(${distro}_get_networkpath)}
 networkconfigfilter=${networkconfigfilter:-'ifcfg*'}
