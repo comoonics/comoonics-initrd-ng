@@ -197,7 +197,7 @@ function cluster_ip_config {
   local ifcfgfile2=
 
   if [ -d $networkdir ]; then
-    for ifcfgfile in $(ls -1 $networkdir/ifcfg-*.$nodenameorid); do
+    for ifcfgfile in $(ls -1 $networkdir/ifcfg-*.$nodenameorid 2>/dev/null); do
   	  [ -d $(${distro}_get_networkpath) ] || mkdir $(${distro}_get_networkpath)
       ifcfgfile2=$(echo $(basename $ifcfgfile) | sed -e 's/\.'$nodenameorid'$//')
   	  cp $ifcfgfile $(${distro}_get_networkpath)/$ifcfgfile2
