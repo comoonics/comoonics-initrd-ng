@@ -41,7 +41,7 @@ source ${cfg_file}
 
 usage() {
     cat <<EOF
-$0 get parameter|set parameter value+|list|delete parameter
+$0 get "parameter"|set "parameter" "value"+|list|delete parameter
 
 Manages a template repository that will be copied into the initrd and overwrite
 other parameters that are detected during boot up.
@@ -53,12 +53,15 @@ but does not rebuild the initrd.
 
 The following commands are available:
 
-get parameter:        gets a parameter from the repository.
-set parameter value+: sets the parameter with the given values.
-list:                 lists all paramters found in the repository
-delete parameter:     deletes the given parameter from the repository
-clear:                removes all parameters from the repository
+get "parameter":          gets a parameter from the repository.
+set "parameter" "value+": sets the parameter with the given values.
+list:                     lists all paramters found in the repository
+delete parameter:         deletes the given parameter from the repository
+clear:                    removes all parameters from the repository
  
+E.g. to set the parameter "scsi_failover" to value "mapper" call
+$0 set scsi_failover mapper 
+
 EOF
 }
 
