@@ -27,10 +27,5 @@ $2 == "/" {
         echo_local_debug " $root"
         repository_store_value root $root
     fi
-    if device_mapper_multipath_check $root; then
-        repository_store_value scsi_failover mapper
-    else
-        repository_store_value scsi_failover driver
-    fi
 fi
 	
