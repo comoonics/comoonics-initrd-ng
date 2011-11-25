@@ -80,8 +80,12 @@ done
 shift
 if [ -n "$repositorycommand" ]; then
     if ! $repositorycommand $@; then
-        echo "Failed to execute command $command $@."
+        echo "Failed to execute command $command $@." >&2
         usage
         exit 2
     fi
+else
+    echo "Wrong parameter "$command"." >&2
+    usage
+    exit 3
 fi
