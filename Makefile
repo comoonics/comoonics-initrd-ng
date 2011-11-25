@@ -60,7 +60,7 @@ PACKAGE_NAME=comoonics-bootimage
 #
 EXEC_FILES=create-gfs-initrd-generic.sh \
   manage_chroot.sh \
-  manage_initrd_repository.sh \
+  manage_initrd_repository \
   com-chroot \
   boot-scripts/com-halt.sh \
   boot-scripts/com-realhalt.sh \
@@ -301,7 +301,7 @@ CFG_FILES=basefiles.list \
     pre.mkinitrd.d/20-clusterconf-validate.sh \
     pre.mkinitrd.d/30-rootfs-check.sh \
     pre.mkinitrd.d/35-rootdevice-check.sh \
-    pre.mkinitrd.d/38-multipath-chech.sh \
+    pre.mkinitrd.d/38-multipath-check.sh \
     pre.mkinitrd.d/50-bootimage-check.sh \
     pre.mkinitrd.d/50-cdsl-check.sh \
     pre.mkinitrd.d/60-osr-repository-generate.sh \
@@ -507,10 +507,10 @@ rpmbuild-rhel6: archive
 	cp ../$(ARCHIVE_FILE) $(RPM_PACKAGE_SOURCE_DIR)/
 	rpmbuild -ba --target=noarch --define 'LINUXDISTROSHORT rhel6' ./comoonics-bootimage.spec
 
-#rpmbuild-sles10: archive
-#	@echo -n "Creating RPM"
-#	cp ../$(ARCHIVE_FILE) $(RPM_PACKAGE_SOURCE_DIR)/
-#	rpmbuild -ba --target=noarch --define 'SHORTDISTRO sles10' ./comoonics-bootimage.spec
+rpmbuild-sles10: archive
+	@echo -n "Creating RPM"
+	cp ../$(ARCHIVE_FILE) $(RPM_PACKAGE_SOURCE_DIR)/
+	rpmbuild -ba --target=noarch --define 'SHORTDISTRO sles10' ./comoonics-bootimage.spec
 
 rpmbuild-sles11: archive
 	@echo -n "Creating RPM"
@@ -525,9 +525,9 @@ rpmbuild-initscripts-rhel6: archive
 	cp ../$(ARCHIVE_FILE_INITSCRIPTS) $(RPM_PACKAGE_SOURCE_DIR)/
 	rpmbuild -ba  --target=noarch ./comoonics-bootimage-initscripts-rhel6.spec
 	
-rpmbuild-initscripts-sles10: archive
-	cp ../$(ARCHIVE_FILE_INITSCRIPTS) $(RPM_PACKAGE_SOURCE_DIR)/
-	rpmbuild -ba  --target=noarch ./comoonics-bootimage-initscripts-sles10.spec
+#rpmbuild-initscripts-sles10: archive
+#	cp ../$(ARCHIVE_FILE_INITSCRIPTS) $(RPM_PACKAGE_SOURCE_DIR)/
+#	rpmbuild -ba  --target=noarch ./comoonics-bootimage-initscripts-sles10.spec
 	
 rpmbuild-initscripts-sles11: archive
 	cp ../$(ARCHIVE_FILE_INITSCRIPTS) $(RPM_PACKAGE_SOURCE_DIR)/
@@ -564,7 +564,7 @@ channelbuild:
 		done 
 
 .PHONY:rpm	
-rpm: test rpmbuild-$(SHORTDISTRO) rpmbuild-initscripts-el5 rpmbuild-initscripts-rhel6 rpmbuild-initscripts-sles10 rpmbuild-initscripts-sles11 rpmbuild-initscripts-fedora rpmsign
+rpm: test rpmbuild-$(SHORTDISTRO) rpmbuild-initscripts-el5 rpmbuild-initscripts-rhel6 rpmbuild-initscripts-sles11 rpmsign
 
 .PHONY: rpm-rhel5
 rpm-rhel5:

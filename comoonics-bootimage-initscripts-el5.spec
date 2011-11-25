@@ -71,7 +71,7 @@ Requires: comoonics-bootimage >= 5.0
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-rhel5
 #Conflicts: 
-Release: 2_rhel5
+Release: 3_rhel5
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -221,9 +221,13 @@ fi
 rm -rf %{buildroot}
 
 %changelog
-* Thu Nov 03 2011 Marc Grimme <grimme( at )atix.de> 5.0-2_rhel5
+* Fri Nov 25 2011 Marc Grimme <grimme ( at )atix.de> - 5.0-3_rhel5
+  * initscripts/bootsr: - Added call to update the repository from initrd -
+    Only remount cdsl environment if it is not only in /etc/mtab existant - other
+    handling fixes with chrootneeded
+* Thu Nov 03 2011 Marc Grimme <grimme( at )atix.de> - 5.0-2_rhel5
   * If no comoonics killall5 is available fall back to old one and don't issue errors.
-* Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1_rhel5
+* Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> - 5.0-1_rhel5
   * Rebase for Release 5.0
 * Tue Oct 25 2011 Marc Grimme <grimme( at )atix.de> 1.4-26.rhel5
 - added RHEL5.7 initscripts (patched and unpatched).
