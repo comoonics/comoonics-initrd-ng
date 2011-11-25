@@ -32,6 +32,7 @@ CLEAN_START="${BOOTIMAGE_PATH}/manage_chroot.sh -a clean"
 PATCH_FILES="${BOOTIMAGE_PATH}/manage_chroot.sh -a patch_files"
 UNPATCH_FILES="${BOOTIMAGE_PATH}/manage_chroot.sh -a unpatch_files"
 CREATE_XFILES="${BOOTIMAGE_PATH}/manage_chroot.sh -a createxfiles"
+UPDATE_REPOSITORY="${BOOTIMAGE_PATH}/manage_chroot.sh -a update_repository"
 BUILD_FILE="/etc/comoonics-build.txt"
 
 RETVAL=0
@@ -114,6 +115,7 @@ chrootneeded=$(getParameter chrootneeded 2>/dev/null)
 # See how we were called.
 case "$1" in
   start)
+    action "updateing bootsr.." $UPDATE_REPOSITORY
   	# will do
   	# - update chroot environment for additional services (fence_ack_server)
 
@@ -125,18 +127,20 @@ case "$1" in
     	link=$(com-cdslinvadm --get link)
     	tree=$(com-cdslinvadm --get tree)
     	if [ -n "$link" ] && [ -n "$tree" ] && [ "$link" != "nocdsl" ] && [ "$tree" != "nocdsl" ]; then
-    	  mount -f "/"$(com-cdslinvadm --get tree)"/"$(repository_get_value nodeid) "/"$(com-cdslinvadm --get link)
-    	  action "Remounting cdsl environment." mount -o remount,rw "/"$(com-cdslinvadm --get link)
+    	    if [ ! -L /etc/mtab ] && ! MOUNTS=$(cat /etc/mtab) is_mounted "/"$(com-cdslinvadm --get link) && is_mounted "/"$(com-cdslinvadm --get link); then
+    	       mount -f "/"$(com-cdslinvadm --get tree)"/"$(repository_get_value nodeid) "/"$(com-cdslinvadm --get link)
+    	    fi
+    	    action "Remounting cdsl environment." mount -o remount,rw "/"$(com-cdslinvadm --get link)
     	fi
     fi
-    if  [ -n "$rootfs" ] && check_sharedroot $rootfs || ([ -n "$chrootneeded" ] && [ "$chrootneeded" -eq 0 ]); then
+    if  [ -n "$rootfs" ] && check_sharedroot $rootfs || ([ -n "$chrootneeded" ] && ( [ "$chrootneeded" = "0" ] || [ "$chrootneeded" = "__set__" ])); then
       touch /var/lock/subsys/bootsr
       if [ -z "$chrootneeded" ]; then
         clusterfs_chroot_needed init
         __default=$?
         chrootneeded=$(getParameter chroot $__default)
       fi
-	  if [ $chrootneeded -eq 0 ]; then
+	  if [ "$chrootneeded" = "0" ] || [ "$chrootneeded" = "__set__" ]; then
  	  	action "Mounting filesystems to chroot" $MOUNT_CHROOT
 	  	action "Updating chroot environment" $UPDATE_CHROOT
   	  fi 
@@ -185,105 +189,7 @@ case "$1" in
       ;;
   *)
         echo "Usage: bootsr {start|stop|status|restart|reload}"
-        exit 1
+        RETVAL=1
 esac
 exit $RETVAL
 #************ main
-###############
-# $Log: bootsr,v $
-# Revision 1.30  2011/02/16 14:32:23  marc
-# - implemented that it might also work without existant cdsl environment.
-#
-# Revision 1.29  2011/01/12 09:05:34  marc
-# typo
-#
-# Revision 1.28  2010/08/18 11:46:32  marc
-# - fixed bug #382 where the cdsl.local was not remounted in /etc/mtab on locally installed systems
-#
-# Revision 1.27  2010/07/08 08:35:25  marc
-# using bash as shell for bootsr initscript
-#
-# Revision 1.26  2010/06/08 13:50:45  marc
-# - bootsr:
-#       - removed check_mtab
-#       - removed remount of cdsl in / and other fs to mountcdsl initscript
-#
-# Revision 1.25  2010/03/08 13:17:08  marc
-# - support for different cdsl environments
-# - moved check_mtab to std-lib.sh
-#
-# Revision 1.24  2010/02/15 14:04:15  marc
-# fixed check_sharedroot
-#
-# Revision 1.23  2010/02/05 12:47:30  marc
-# - clean up
-# - moved functionality to libs
-# - RHEL4 support
-#
-# Revision 1.22  2009/04/20 07:18:08  marc
-# - got that xfiles and patching right
-#
-# Revision 1.21  2009/04/14 15:26:54  marc
-# synced fedora and rhel5 bootsr
-#
-# Revision 1.20  2009/04/14 15:01:27  marc
-# *** empty log message ***
-#
-# Revision 1.19  2009/02/25 10:34:11  marc
-# moved the rootfs/clutype for all
-#
-# Revision 1.18  2009/02/02 20:14:03  marc
-# - Bugfix to work with other rootfs except gfs
-#
-# Revision 1.17  2009/01/29 11:10:17  marc
-# make it work with new repository concept
-#
-# Revision 1.16  2009/01/28 12:59:25  marc
-# - use load std-lib.sh the helperfunctions sourceLibs sourceRootfsLibs to load libraries
-#
-# Revision 1.15  2008/11/18 14:19:58  marc
-# - implemented RFE-BUG 289
-#   - clear old repositoryfiles (/tmp/__repository__*)
-#
-# Revision 1.14  2008/10/29 14:54:32  mark
-# fix for bz #286
-#
-# Revision 1.13  2008/10/14 10:57:07  marc
-# Enhancement #273 and dependencies implemented (flexible boot of local fs systems)
-#
-# Revision 1.12  2008/09/10 12:55:31  marc
-# Fixed bug#265 where reload and restart will not work on rhels
-#
-# Revision 1.11  2008/06/24 12:31:01  mark
-# changed kill level fro bootsr initscript
-#
-# Revision 1.10  2008/06/23 22:12:06  mark
-# apply patches at install time
-#
-# Revision 1.9  2008/06/23 12:12:41  mark
-# fixes typo
-#
-# Revision 1.8  2008/06/20 16:02:03  mark
-# added netfs and network patch
-#
-# Revision 1.7  2008/06/10 10:00:37  marc
-# - rewrote files to be more filesystem independent
-#
-# Revision 1.6  2007/11/22 16:31:35  mark
-# added automatic mount for gfs filesystems, fixes bz #150
-#
-# Revisin 1.5  2007/10/05 13:38:09  mark
-# bug fixes
-#
-# Revision 1.4  2007/10/05 10:04:06  mark
-# patch halt more generic
-#
-# Revision 1.3  2007/09/25 11:54:50  mark
-# added functionality to create symlinks to /var/run/cman...
-#
-# Revision 1.2  2007/09/19 13:22:25  mark
-# added method to patch /etc/init.d/halt
-#
-# Revision 1.1  2007/09/14 08:33:09  mark
-# initial checkin
-#

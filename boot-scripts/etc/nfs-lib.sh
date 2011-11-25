@@ -305,9 +305,12 @@ function nfs_getdefaults {
 		mount_opts|mountopts)
 		    echo "nolock"
 		    ;;
-		mounttimes|mountwait)
-			echo "2"
+		mounttimes)
+			echo "30"
 			;;
+		mountwait)
+		    echo "10"
+		    ;;
 	    *)
 	        return 0
 	        ;;

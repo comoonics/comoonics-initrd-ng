@@ -70,7 +70,7 @@ Requires:      comoonics-bootimage-listfiles-all
 Requires:      comoonics-tools-py
 Requires:      comoonics-release >= 5.0
 #Conflicts:
-Release:       1_%{LINUXDISTROSHORT}
+Release:       6_%{LINUXDISTROSHORT}
 Vendor:        ATIX AG
 Packager:      ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -84,21 +84,22 @@ BuildRoot:     %{_tmppath}/%{name}-%{version}-buildroot
 %description
 Scripts for creating an initrd in a OSR cluster environment
 
-%package extras-osr
+%package extras-localconfigs
 Version: 5.0
-Release: 1_%{LINUXDISTROSHORT}
+Release: 3_%{LINUXDISTROSHORT}
 Requires: comoonics-bootimage >= 5.0
-Summary: Extra for cluster configuration via osr
-Group:   %{GROUPPARENT}/%{GROUPCHILDEXTRAS}
+Obsoletes: comoonics-bootimage-extras-osr
+Summary: Extra for cluster configuration via local files
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
 Distribution: %{DISTRIBUTIONEXTRAS}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
-%description extras-osr
-Extra for cluster configuration via osr.
+%description extras-localconfigs
+Extra for cluster configuration via local files instead of cluster.conf.
 
 %package extras-network
 Version: 5.0
-Release: 1_%{LINUXDISTROSHORT}
+Release: 2_%{LINUXDISTROSHORT}
 Requires: comoonics-bootimage >= 5.0
 Summary: Listfiles for special network configurations (vlan)
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
@@ -109,7 +110,7 @@ Extra listfiles for special network configurations
 
 %package extras-nfs
 Version: 5.0
-Release: 1_%{LINUXDISTROSHORT}
+Release: 2_%{LINUXDISTROSHORT}
 Requires: comoonics-bootimage >= 5.0
 Summary: Listfiles for nfs sharedroot configurations
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
@@ -122,7 +123,7 @@ Extra listfiles for nfs sharedroot configurations
 
 %package extras-ocfs2
 Version: 5.0
-Release: 1_%{LINUXDISTROSHORT}
+Release: 2_%{LINUXDISTROSHORT}
 Requires: comoonics-bootimage >= 5.0
 Summary: Listfiles for ocfs2 sharedroot configurations
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
@@ -135,7 +136,7 @@ Extra listfiles for ocfs2 sharedroot configurations
 
 %package extras-md
 Version: 5.0
-Release: 1_%{LINUXDISTROSHORT}
+Release: 2_%{LINUXDISTROSHORT}
 Requires: comoonics-bootimage >= 5.0
 Summary: Listfiles for md support
 Group:   %{GROUPPARENT}/%{GROUPCHILDEXTRAS}
@@ -147,7 +148,7 @@ Extra listfiles for md in OSR configurations
 
 %package extras-dm-multipath-rhel5
 Version: 5.0
-Release: 1_rhel5
+Release: 2_rhel5
 Requires: comoonics-bootimage >= 5.0
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-rhel5
@@ -164,7 +165,7 @@ Extra listfiles for device mapper multipath OSR configurations for RHEL5
 
 %package extras-dm-multipath-rhel6
 Version: 5.0
-Release: 1_rhel6
+Release: 2_rhel6
 Requires: comoonics-bootimage >= 5.0
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-rhel6
@@ -212,7 +213,7 @@ Extra listfiles for device mapper multipath OSR configurations for SLES
 
 %package extras-dm-multipath-sles11
 Version: 5.0
-Release: 1_sles11
+Release: 2_sles11
 Requires: comoonics-bootimage >= 5.0
 Summary: Listfiles for device mapper multipath OSR configurations for SLES11
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
@@ -227,7 +228,7 @@ Extra listfiles for device mapper multipath OSR configurations for SLES11
 
 %package extras-rdac-multipath
 Version: 5.0
-Release: 1_%{LINUXDISTROSHORT}
+Release: 2_%{LINUXDISTROSHORT}
 Requires: comoonics-bootimage >= 5.0
 Summary: Listfiles for rdac multipath sharedroot configurations
 Group:   %{GROUPPARENT}/%{GROUPCHILDEXTRAS}
@@ -239,7 +240,7 @@ Extra listfiles for rdac multipath OSR configurations
 
 %package extras-xen
 Version: 5.0
-Release: 1_%{LINUXDISTROSHORT}
+Release: 2_%{LINUXDISTROSHORT}
 Requires: comoonics-bootimage >= 5.0
 Summary: Listfiles for xen support in the open-sharedroot cluster
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
@@ -251,7 +252,7 @@ listfiles for xen support in the OSR cluster
 
 %package extras-iscsi
 Version: 5.0
-Release: 1_%{LINUXDISTROSHORT}
+Release: 2_%{LINUXDISTROSHORT}
 Requires: comoonics-bootimage >= 1.4-55
 Summary: Listfiles for iscsi support in the open-sharedroot cluster
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
@@ -263,7 +264,7 @@ ISCSI support in the OSR cluster
 
 %package extras-drbd
 Version: 5.0
-Release: 1_%{LINUXDISTROSHORT}
+Release: 2_%{LINUXDISTROSHORT}
 Requires: comoonics-bootimage >= 5.0
 Summary: Listfiles for drbd support in the open-sharedroot cluster
 Group:   %{GROUPPARENT}/%{GROUPCHILDEXTRAS}
@@ -275,7 +276,7 @@ DRBD support in the OSR cluster
 
 %package extras-glusterfs
 Version: 5.0
-Release: 1_%{LINUXDISTROSHORT}
+Release: 2_%{LINUXDISTROSHORT}
 Requires: comoonics-bootimage >= 5.0
 Summary: Extras for glusterfs support in the open-sharedroot cluster
 Group:   %{GROUPPARENT}/%{GROUPCHILDEXTRAS}
@@ -287,7 +288,7 @@ GlusterFS support in the OSR cluster
 
 %package extras-sysctl
 Version: 5.0
-Release: 1_%{LINUXDISTROSHORT}
+Release: 2_%{LINUXDISTROSHORT}
 Requires: comoonics-bootimage >= 5.0
 Summary: Extras for sysctl support in the open-sharedroot cluster
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
@@ -299,7 +300,7 @@ Sysctl support in the OSR cluster
 
 %package extras-syslog
 Version: 5.0
-Release: 1_%{LINUXDISTROSHORT}
+Release: 2_%{LINUXDISTROSHORT}
 Requires: comoonics-bootimage >= 5.0
 Summary: Syslog implementation for osr
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
@@ -310,7 +311,7 @@ Syslog implementation for osr. Supports syslog classic, syslog-ng, rsyslog (See 
 
 %package extras-flexd-rhel5
 Version: 5.0
-Release: 1_rhel5
+Release: 2_rhel5
 Summary: Flexdisk implementation for com.oonics flexboot for RHEL5
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
 Distribution: %{DISTRIBUTIONBASE}
@@ -324,7 +325,7 @@ Flexdisk implementation for com.oonics flexboot for RHEL5
 
 %package extras-flexd-rhel6
 Version: 5.0
-Release: 1_rhel6
+Release: 2_rhel6
 Summary: Flexdisk implementation for com.oonics flexboot for RHEL6
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
 Distribution: %{DISTRIBUTIONBASE}
@@ -338,7 +339,7 @@ Flexdisk implementation for com.oonics flexboot for RHEL6
 
 %package extras-flexd-sles11
 Version: 5.0
-Release: 1_sles11
+Release: 2_sles11
 Summary: Flexdisk implementation for com.oonics flexboot for SLES11
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
 Distribution: %{DISTRIBUTIONBASE}
@@ -352,7 +353,7 @@ Flexdisk implementation for com.oonics flexboot for SLES11
 
 %package listfiles-selinux-rhel5
 Version: 5.0
-Release: 1_rhel5
+Release: 2_rhel5
 Requires: comoonics-bootimage >= 5.0
 Summary: SELinux implementation for osr
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
@@ -363,7 +364,7 @@ SELinux implementation for osr. Supports only local filesystems and distribution
 
 %package listfiles-selinux-rhel6
 Version: 5.0
-Release: 1_rhel6
+Release: 2_rhel6
 Requires: comoonics-bootimage >= 5.0
 Summary: SELinux implementation for osr
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
@@ -385,7 +386,7 @@ Vi includes for comoonics-bootimage (takes vim)
 
 %package listfiles-vi-sles11
 Version: 5.0
-Release: 1_sles11
+Release: 2_sles11
 Requires: comoonics-bootimage >= 1.4
 Summary: Vim includes for comoonics-bootimage
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
@@ -396,7 +397,7 @@ Vi includes for comoonics-bootimage (takes vim)
 
 %package listfiles-all
 Version: 5.0
-Release: 1_%{LINUXDISTROSHORT}
+Release: 2_%{LINUXDISTROSHORT}
 Requires: comoonics-bootimage >= 5.0
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
 Distribution: %{DISTRIBUTIONBASE}
@@ -408,7 +409,7 @@ OSR Listfiles that are only relevant for all linux distributions
 
 %package listfiles-rhel5
 Version: 5.0
-Release: 1_rhel5
+Release: 2_rhel5
 Requires: comoonics-bootimage >= 5.0
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-all
@@ -423,7 +424,7 @@ OSR extra files that are only relevant for RHEL Versions
 
 %package listfiles-rhel6
 Version: 5.0
-Release: 1_rhel6
+Release: 2_rhel6
 Requires: comoonics-bootimage >= 5.0
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-all
@@ -468,7 +469,7 @@ OSR extra files that are only relevant for Novell SLES 10
 
 %package listfiles-sles11
 Version: 5.0
-Release: 1_sles11
+Release: 2_sles11
 Requires: comoonics-bootimage >= 5.0
 Requires: /etc/SuSE-release
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
@@ -496,7 +497,7 @@ OSR extra files that are only relevant for Fedora Versions and nfs support
 
 %package listfiles-rhel5-ext3
 Version: 5.0
-Release: 1_rhel5
+Release: 2_rhel5
 Requires: comoonics-bootimage >= 5.0
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-rhel5
@@ -515,7 +516,7 @@ OSR extra files that are only relevant for RHEL5 and EXT3
 
 %package listfiles-rhel5-ext4
 Version: 5.0
-Release: 1_rhel5
+Release: 2_rhel5
 Requires: comoonics-bootimage >= 5.0
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-rhel5
@@ -534,7 +535,7 @@ OSR extra files that are only relevant for RHEL5 and EXT4
 
 %package listfiles-rhel5-gfs
 Version: 5.0
-Release: 1_rhel5
+Release: 2_rhel5
 Requires: comoonics-bootimage >= 5.0
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-rhel5
@@ -555,7 +556,7 @@ OSR extra files that are only relevant for RHEL5 and GFS
 
 %package listfiles-rhel5-gfs2
 Version: 5.0
-Release: 1_rhel5
+Release: 2_rhel5
 Requires: comoonics-bootimage >= 5.0
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-rhel5
@@ -575,7 +576,7 @@ OSR extra files that are only relevant for RHEL5 and GFS2
 
 %package listfiles-rhel5-nfs
 Version: 5.0
-Release: 1_rhel5
+Release: 2_rhel5
 Requires: comoonics-bootimage-listfiles-rhel5
 Requires: comoonics-bootimage-extras-nfs
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
@@ -589,7 +590,7 @@ OSR extra files that are only relevant for RHEL5 Versions and nfs support
 
 %package listfiles-rhel5-ocfs2
 Version: 5.0
-Release: 1_rhel5
+Release: 2_rhel5
 Requires: comoonics-bootimage >= 1.4-81
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-rhel5
@@ -608,7 +609,7 @@ OSR extra files that are only relevant for RHEL5 and OCFS2
 
 %package listfiles-rhel6-ext3
 Version: 5.0
-Release: 1_rhel6
+Release: 2_rhel6
 Requires: comoonics-bootimage >= 5.0 
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-rhel6
@@ -627,7 +628,7 @@ OSR extra files that are only relevant for RHEL6 and EXT3
 
 %package listfiles-rhel6-ext4
 Version: 5.0
-Release: 1_rhel6
+Release: 2_rhel6
 Requires: comoonics-bootimage >= 5.0
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-rhel6
@@ -646,7 +647,7 @@ OSR extra files that are only relevant for RHEL6 and EXT4
 
 %package listfiles-rhel6-nfs
 Version: 5.0
-Release: 1_rhel6
+Release: 2_rhel6
 Requires: comoonics-bootimage-listfiles-rhel6
 Requires: comoonics-bootimage-extras-nfs
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
@@ -664,7 +665,7 @@ OSR extra files that are only relevant for RHEL6 Versions and nfs support
 
 %package listfiles-rhel6-ocfs2
 Version: 5.0
-Release: 1_rhel6
+Release: 2_rhel6
 Requires: comoonics-bootimage >= 5.0
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-rhel6
@@ -683,7 +684,7 @@ OSR extra files that are only relevant for RHEL6 and OCFS2
 
 %package listfiles-rhel6-gfs2
 Version: 5.0
-Release: 1_rhel6
+Release: 2_rhel6
 Requires: comoonics-bootimage >= 5.0
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-rhel6
@@ -731,7 +732,7 @@ OSR extra files that are only relevant for SLES10 Versions and OCFS2 support
 
 %package listfiles-sles11-nfs
 Version: 5.0
-Release: 1_sles11
+Release: 2_sles11
 Requires: comoonics-bootimage-extras-nfs
 Requires: comoonics-bootimage-listfiles-sles11
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
@@ -745,7 +746,7 @@ OSR extra files that are only relevant for SLES11 Versions and nfs support
 
 %package listfiles-sles11-ocfs2
 Version: 5.0
-Release: 1_sles11
+Release: 2_sles11
 Requires: comoonics-bootimage-extras-ocfs2
 Requires: comoonics-bootimage-listfiles-sles11
 Requires: sysvinit-comoonics
@@ -760,7 +761,7 @@ OSR extra files that are only relevant for SLES11 Versions and OCFS2 support
 
 %package listfiles-imsd-plugins
 Version: 5.0
-Release: 1_%{LINUXDISTROSHORT}
+Release: 2_%{LINUXDISTROSHORT}
 Obsoletes: comoonics-bootimage-listfiles-fenceacksv-plugins
 Requires: comoonics-bootimage >= 5.0
 Requires: comoonics-cs-sysreport-templates
@@ -775,7 +776,7 @@ OSR extrafiles for plugins in imsd.
 
 %package listfiles-syslogd
 Version: 5.0
-Release: 1_%{LINUXDISTROSHORT}
+Release: 2_%{LINUXDISTROSHORT}
 Requires: comoonics-bootimage-extras-syslog
 Summary: Syslog listfiles for syslog classic
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
@@ -789,7 +790,7 @@ Syslog listfiles for syslog classic
 
 %package listfiles-rsyslogd
 Version: 5.0
-Release: 1_%{LINUXDISTROSHORT}
+Release: 2_%{LINUXDISTROSHORT}
 Requires: comoonics-bootimage-extras-syslog
 Summary: Syslog listfiles for the rsyslog daemon
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
@@ -803,7 +804,7 @@ Syslog listfiles for rsyslog daemon
 
 %package listfiles-syslog-ng
 Version: 5.0
-Release: 1_%{LINUXDISTROSHORT}
+Release: 2_%{LINUXDISTROSHORT}
 Requires: comoonics-bootimage-extras-syslog
 Summary: Syslog listfiles for the syslog-ng daemon
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
@@ -817,7 +818,7 @@ Syslog listfiles for syslog-ng daemon
 
 %package listfiles-perl-rhel5
 Version: 5.0
-Release: 1_rhel5
+Release: 2_rhel5
 Requires: comoonics-bootimage
 Summary: Listfiles for perl in the chroot for RHEL5
 Group:   %{GROUPPARENT}/%{GROUPCHILDEXTRAS}
@@ -829,7 +830,7 @@ Listfiles for the perl to be imported in the bootimage.
 
 %package listfiles-fencelib
 Version: 5.0
-Release: 1_%{LINUXDISTROSHORT}
+Release: 2_%{LINUXDISTROSHORT}
 Requires: comoonics-bootimage
 Summary: Listfiles for Fencelibs
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
@@ -841,7 +842,7 @@ Listfiles for the fencelibs to be imported in the bootimage.
 
 %package listfiles-fencexvm
 Version: 5.0
-Release: 1_%{LINUXDISTROSHORT}
+Release: 2_%{LINUXDISTROSHORT}
 Requires: comoonics-bootimage
 Summary: Listfiles for fence_xvm
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
@@ -853,7 +854,7 @@ Listfiles for the fence_xvm agent to be imported in the bootimage.
 
 %package listfiles-fence_vmware-rhel5
 Version: 5.0
-Release: 1_rhel5
+Release: 2_rhel5
 Requires: comoonics-bootimage >= 5.0
 Requires: comoonics-bootimage-listfiles-perl-rhel5
 Summary: Files needed for fence_vmware in the kernel
@@ -866,19 +867,19 @@ Files needed for fence_vmware in the kernel
 
 %package listfiles-firmware
 Version: 5.0
-Release: 1_%{LINUXDISTROSHORT}
+Release: 2_%{LINUXDISTROSHORT}
 Requires: comoonics-bootimage >= 5.0
-Summary: Files needed for firmware in the kernel
+Summary: Listfiles for including firmware images into the initrd
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
 Distribution: %{DISTRIBUTIONBASE}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description listfiles-firmware
-Files needed for firmware in the kernel
+Listfiles for including firmware images into the initrd
 
 %package listfiles-plymouth
 Version: 5.0
-Release: 1_%{LINUXDISTROSHORT}
+Release: 2_%{LINUXDISTROSHORT}
 Requires: comoonics-bootimage >= 5.0
 Summary: Files needed for plymouth support in the initrd
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
@@ -890,7 +891,7 @@ Files needed for plymouth support in the initrd
 
 %package compat
 Version: 5.0
-Release: 1_%{LINUXDISTROSHORT}
+Release: 2_%{LINUXDISTROSHORT}
 Requires: comoonics-bootimage >= 5.0
 Summary: Files needed for compatibility to 1.2 releases
 Group:   %{GROUPPARENT}/%{GROUPCHILDEXTRAS}
@@ -902,7 +903,7 @@ OSR files needed for the compatibility to 1.2 releases
 
 %package imsd
 Version: 5.0
-Release: 1_%{LINUXDISTROSHORT}
+Release: 3_%{LINUXDISTROSHORT}
 Obsoletes: comoonics-bootimage-fenceacksv
 Requires: comoonics-imsd-py
 Requires: comoonics-bootimage >= 5.0
@@ -1010,8 +1011,161 @@ echo 'Information:
 Cluster services will be started in a chroot environment. Check out latest documentation
 on http://www.open-sharedroot.org
 '
+%post extras-localconfigs
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post extras-network
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post extras-nfs
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post extras-ocfs2
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post extras-md
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post extras-dm-multipath-rhel5
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post extras-dm-multipath-rhel6
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post extras-dm-multipath-sles11
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post extras-rdac-multipath
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post extras-xen
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post extras-iscsi
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post extras-drbd
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post extras-glusterfs
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post extras-sysctl
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post extras-syslog
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post extras-flexd-rhel5
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post extras-flexd-rhel6
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post extras-flexd-sles11
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post listfiles-selinux-rhel5
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post listfiles-selinux-rhel6
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post listfiles-vi-sles11
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post listfiles-all
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post listfiles-rhel5
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post listfiles-rhel6
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post listfiles-sles11
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post listfiles-rhel5-ext3
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post listfiles-rhel5-ext4
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post listfiles-rhel5-gfs
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post listfiles-rhel5-gfs2
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post listfiles-rhel5-nfs
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post listfiles-rhel5-ocfs2
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post listfiles-rhel6-ext3
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post listfiles-rhel6-ext4
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post listfiles-rhel6-nfs
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post listfiles-rhel6-ocfs2
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post listfiles-rhel6-gfs2
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post listfiles-sles10-nfs
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post listfiles-sles10-ocfs2
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post listfiles-sles11-nfs
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post listfiles-sles11-ocfs2
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post listfiles-imsd-plugins
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post listfiles-syslogd
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post listfiles-rsyslogd
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post listfiles-syslog-ng
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post listfiles-perl-rhel5
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post listfiles-fencelib
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post listfiles-fencexvm
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post listfiles-fence_vmware-rhel5
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post listfiles-firmware
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post listfiles-plymouth
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post compat
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
 
 %post imsd
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
 echo "Setting up imsd"
 chkconfig --add imsd &> /dev/null
 chkconfig --list imsd
@@ -1057,6 +1211,7 @@ fi
 %attr(0755, root, root) %{APPDIR}/com-chroot
 %attr(0644, root, root) %{APPDIR}/create-gfs-initrd-lib.sh
 %attr(0755, root, root) %{APPDIR}/manage_chroot.sh
+%attr(0755, root, root) %{APPDIR}/manage_initrd_repository
 %attr(0755, root, root) %{LIBDIR}/boot-scripts/com-halt.sh
 %attr(0755, root, root) %{LIBDIR}/boot-scripts/com-realhalt.sh
 %attr(0755, root, root) %{LIBDIR}/boot-scripts/linuxrc.generic.sh
@@ -1126,8 +1281,10 @@ fi
 %attr(0755, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/50-bootimage-check.sh
 %attr(0755, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/50-cdsl-check.sh
 %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/02-create-cdsl-repository.sh
+%attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/19-copy-network-configurations.sh
 %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/20-copy-network-configurations.sh
 %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/21-copy-cdsltab-configurations.sh
+%attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/98-copy-template-repository.sh
 %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/99-clean-repository.sh
 
 %config(noreplace) %attr(0644, root, root) %{CONFIGDIR}/comoonics-bootimage.cfg
@@ -1138,10 +1295,11 @@ fi
 %files compat
 %config(noreplace) %attr(0644, root, root) %{SYSCONFIGDIR}/comoonics-chroot
 
-%files extras-osr
+%files extras-localconfigs
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/osr-lib.sh
 %attr(0644, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/30-rootfs-check.sh
 %attr(0644, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/35-rootdevice-check.sh
+%attr(0644, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/38-multipath-check.sh
 %attr(0644, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/60-osr-repository-generate.sh
 
 %files extras-network
@@ -1479,6 +1637,40 @@ fi
 rm -rf %{buildroot}
 
 %changelog
+* Fri Nov 25 2011 Marc Grimme <grimme( at )atix.de> - 5.0-6
+  * manage_initrd_repository, manage_initrd_repository.sh: moved
+    manage_initrd_repository.sh => moved manage_initrd_repository fixed a bug
+    with unknown parameters that did not yield an error
+  * manage_chroot.sh: - added update_repository to copy the repository data
+    from initrd to local
+  * boot-scripts/linuxrc.generic.sh: repository values will now be moved
+    independently from root file system.
+  * boot-scripts/etc/stdfs-lib.sh: copy_file: removed comments copy_filelist:
+    removed error message and obsolete for clause.
+  * boot-scripts/etc/clusterfs-lib.sh: cc_get_chroot calls: implicitly call
+    ${clutype}_get chroot_..
+  * boot-scripts/etc/chroot-lib.sh: build_chroot(_fake): changed call to get
+    repository values build_chroot_fake: adapted to changes in create_fake_chroot
+    create_fake_chroot: fixed obsolete functions
+* Fri Nov 17 2011 Marc Grimme <grimme( at )atix.de> - 5.0-5
+  * create-gfs-initrd-generic.sh: suppress obsolete error messages fail if the
+  kernel to be copied does not exist.
+  * manage_initrd_repository.sh,
+  .../post.mkinitrd.d/98-copy-template-repository.sh: copies that template
+  repository for the initrd created by manage_initrd_repository.sh.
+  * boot-scripts/etc/hardware-lib.sh: device_mapper_check/lvm_check: don't use
+  major to check but use the commands (lvm vgs or dmsetup status).
+  * boot-scripts/etc/clusterfs-lib.sh: cluster_ip_config: suppress error
+  message when no network configuration files are available.
+  * boot-scripts/com-halt.sh: Fixed errormessage not needed to pop up.
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-4
+  Fixed errormessage if not having something in /etc/conf.d/network ..
+* Fri Nov 04 2011 Marc Grimme <grimme( at )atix.de> 5.0-3
+  added post.mkinitrd.d/19-copy-network-configurations that copies relevant configs from 
+  /etc/sysconfig/network-scripts
+* Wed Nov 02 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  boot-scripts/etc/boot-lib.sh: getParameter
+  * Changed default behaviour of getParameter to first look for boot parameter and then in repository.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Wed Oct 26 2011 Marc Grimme <grimme( at )atix.de> 1.4-92
@@ -2516,12 +2708,23 @@ rm -rf %{buildroot}
 * Mon Jan  3 2005 Marc Grimme <grimme@atix.de> - 0.1-16
 - first offical rpm version
 
-%changelog extras-osr
-* Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
+%changelog extras-localconfigs
+* Fri Nov 17 2011 Marc Grimme <grimme( at )atix.de> - 0.5-3
+  * .../19-copy-network-configurations.sh: suppress obsolete cdsl error
+  messages.
+  * boot-scripts/etc/osr-lib.sh: osr_get_nodeids: suppress error messages when
+  cdslmanage fails.
+  * system-cfg-files/pre.mkinitrd.d/30-rootfs-check.sh: rootfs will also be
+  checked first in /etc/fstab and then /etc/mtab.
+  * .../pre.mkinitrd.d/38-multipath-check.sh: first version to autodetect
+  device-mapper-multipath root devices.
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> - 5.0-2
+  - added post scripts.
+* Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> - 5.0-1
   * Rebase for Release 5.0
-* Tue Oct 20 2011 Marc Grimme <grimme( at )atix.de> 0.1-8
+* Tue Oct 20 2011 Marc Grimme <grimme( at )atix.de> - 0.1-8
   - moved com-mkcdslinfrastructure calls to com-cdslinvadm.
-* Tue Sep 06 2011 Marc Grimme <grimme( at )atix.de> 0.1-7
+* Tue Sep 06 2011 Marc Grimme <grimme( at )atix.de> - 0.1-7
   - removed 01-create-mapfiles.sh from post.mkinitrd.d 
     (will be done in pre.mkinitrd.d 60-osr-repository-generate.sh).
   - removed obsolete cvs tags
@@ -2548,6 +2751,8 @@ rm -rf %{buildroot}
 - first release
 
 %changelog extras-rdac-multipath
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-3
@@ -2558,6 +2763,8 @@ rm -rf %{buildroot}
 - first release
 
 %changelog extras-xen
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-6
@@ -2573,6 +2780,8 @@ rm -rf %{buildroot}
 - first release
 
 %changelog extras-iscsi
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Wed Jul 07 2010 Marc Grimme <grimme@atix.de> 0.1-11
@@ -2603,6 +2812,8 @@ rm -rf %{buildroot}
 - first release
 
 %changelog extras-drbd
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-6
@@ -2619,6 +2830,8 @@ rm -rf %{buildroot}
 - first release
 
 %changelog extras-nfs
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Mon Apr 18 2011 Marc Grimme <grimme@atix.de> 0.1-21
@@ -2663,6 +2876,8 @@ rm -rf %{buildroot}
 - added nfs-lib.sh file
 
 %changelog extras-ocfs2
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Fri Aug 05 2011 Marc Grimme <grimme@atix.de> 0.1-11
@@ -2688,6 +2903,8 @@ rm -rf %{buildroot}
 - Added ocfs2_get_drivers
 
 %changelog extras-md
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-2
@@ -2696,6 +2913,8 @@ rm -rf %{buildroot}
   initial revision (Thanks to Gordan)
   
 %changelog extras-dm-multipath
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-4
@@ -2704,12 +2923,16 @@ rm -rf %{buildroot}
 - introduced the changelog
 
 %changelog extras-dm-multipath-rhel5
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 0.1-1
 - introduced instead of rhel
 
 %changelog extras-dm-multipath-rhel6
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Tue Aug 23 2011 Marc Grimme <grimme( at )atix.de> 0.1-2
@@ -2722,6 +2945,8 @@ rm -rf %{buildroot}
 - initial revision
 
 %changelog extras-dm-multipath-sles11
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Tue Feb 09 2011 Marc Grimme <grimme@atix.de> - 0.1-1
@@ -2734,6 +2959,8 @@ rm -rf %{buildroot}
 - introduced the changelog
 
 %changelog extras-glusterfs
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Fri Jun 25 2010 Marc Grimme <grimme@atix.de> 0.1-6
@@ -2748,6 +2975,8 @@ rm -rf %{buildroot}
 - initial revision (thanks to Gordan)
 
 %changelog extras-sysctl
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-2
@@ -2756,6 +2985,8 @@ rm -rf %{buildroot}
 - initial revision
 
 %changelog extras-syslog
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Tue Jan 11 2011 Marc Grimme <grimme@atix.de> 0.1-10
@@ -2789,6 +3020,8 @@ rm -rf %{buildroot}
 - initial revision
 
 %changelog extras-flexd-rhel5
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Wed Sep 07 2011 Marc Grimme <grimme( at )atix.de> 0.1-3
@@ -2799,6 +3032,8 @@ rm -rf %{buildroot}
   - initial revision
 
 %changelog extras-flexd-rhel6
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Wed Sep 07 2011 Marc Grimme <grimme( at )atix.de> 0.1-3
@@ -2809,6 +3044,8 @@ rm -rf %{buildroot}
   - initial revision
 
 %changelog extras-flexd-sles11
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Wed Sep 07 2011 Marc Grimme <grimme( at )atix.de> 0.1-3
@@ -2819,18 +3056,24 @@ rm -rf %{buildroot}
   - initial revision
 
 %changelog listfiles-selinux-rhel5
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 0.1-1
   - initial revision
 
 %changelog listfiles-selinux-rhel6
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 0.1-1
   - initial revision
 
 %changelog listfiles-all
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Tue Aug 09 2011 Marc Grimme <grimme@atix.de> 0.1-18
@@ -2871,6 +3114,8 @@ rm -rf %{buildroot}
   - initial revision 
 
 %changelog listfiles-rhel5
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Fri Aug 05 2011 Marc Grimme <grimme@atix.de> 0.1-11
@@ -2900,6 +3145,8 @@ rm -rf %{buildroot}
   - initial revision 
 
 %changelog listfiles-rhel6
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Wed Oct 26 2011 Marc Grimme <grimme( at )atix.de> 0.1-4
@@ -2925,6 +3172,8 @@ rm -rf %{buildroot}
 - initial revision
 
 %changelog listfiles-sles11
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 0.1-9
@@ -2963,12 +3212,16 @@ rm -rf %{buildroot}
 - introduced the changelog
 
 %changelog listfiles-rhel5-gfs
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Mon Feb 28 2011 Marc Grimme <grimme@atix.de> 0.1-1
 - first version for comoonics-5.0-pre
 
 %changelog listfiles-rhel5-gfs2
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Thu Oct 20 2011 Marc Grimme <grimme@atix.de> 0.1-1
@@ -2991,6 +3244,8 @@ rm -rf %{buildroot}
 - introduced the changelog
 
 %changelog listfiles-rhel5-nfs
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 0.1-3
@@ -3003,12 +3258,16 @@ rm -rf %{buildroot}
 - first version for comoonics-5.0-pre
 
 %changelog listfiles-rhel5-ocfs2
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Fri Aug 05 2011 Marc Grimme <grimme@atix.de> 0.1-1
   initial revision
 
 %changelog listfiles-rhel6-nfs
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 0.1-4
@@ -3022,12 +3281,16 @@ rm -rf %{buildroot}
 - first version for comoonics-5.0-pre
 
 %changelog listfiles-rhel6-ocfs2
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Thu Oct 20 2011 Marc Grimme <grimme@atix.de> 0.1-1
   initial revision
 
 %changelog listfiles-rhel6-gfs2
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Thu Oct 20 2011 Marc Grimme <grimme@atix.de> 0.1-1
@@ -3044,6 +3307,8 @@ rm -rf %{buildroot}
   initial revision
 
 %changelog listfiles-sles11-nfs
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 0.1-2
@@ -3052,12 +3317,16 @@ rm -rf %{buildroot}
 - first version for comoonics-5.0-pre
 
 %changelog listfiles-sles11-ocfs2
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Fri Aug 05 2011 Marc Grimme <grimme@atix.de> 0.1-1
   initial revision
 
 %changelog listfiles-syslogd
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Mon Feb 14 2011 Marc Grimme <grimme@atix.de> 0.1-4
@@ -3070,6 +3339,8 @@ rm -rf %{buildroot}
 - initial revision
 
 %changelog listfiles-rsyslogd
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Wed Sep 01 2010 Marc Grimme <grimme@atix.de> 0.1-4
@@ -3084,6 +3355,8 @@ rm -rf %{buildroot}
 - initial revision
 
 %changelog listfiles-syslog-ng
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-2
@@ -3092,6 +3365,8 @@ rm -rf %{buildroot}
 - initial revision
 
 %changelog listfiles-imsd-plugins
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Mon Apr 18 2011 Marc Grimme <grimme@atix.de> 0.1-2
@@ -3100,6 +3375,8 @@ rm -rf %{buildroot}
 - renamed from listfiles-fenceacksv-plugins
 
 %changelog listfiles-fencelib
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Wed Jul 07 2010 Marc Grimme <grimme@atix.de> 0.1-1
@@ -3110,31 +3387,44 @@ rm -rf %{buildroot}
 - initial version 
 
 %changelog listfiles-perl-rhel5
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Mon Mar 07 2011 Marc Grimme <grimme@atix.de> 0.1-1
 - initial revision
 
 %changelog listfiles-fence_vmware-rhel5
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Mon Mar 07 2011 Marc Grimme <grimme@atix.de> 0.1-1
 - initial revision
 
 %changelog listfiles-firmware
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Mon Mar 07 2011 Marc Grimme <grimme@atix.de> 0.1-1
 - initial revision
 
 %changelog listfiles-plymouth
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Mon Mar 07 2011 Marc Grimme <grimme@atix.de> 0.1-1
 - initial revision
 
 %changelog imsd
-* Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
+* Fri Nov 25 2011 Marc Grimme <grimme( at )atix.de> - 5.0-3
+  * imsd/imsd.sh: - removed some obsolete errormessages - create /etc/ssh
+    before copying the keys
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> - 5.0-2
+  - added post scripts.
+* Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> - 5.0-1
   * Rebase for Release 5.0
 * Wed Apr 27 2011 Marc Grimme <grimme@atix.de> 0.1-3
   - imsd/shell.py: added basicConfig for logging

@@ -235,14 +235,14 @@ function getParameter() {
 	local default=${2:-__set__}
 	local out=""
 	
-	# check if parameter is already in repository
-	if repository_has_key $name; then
-		out=$(repository_get_value $name)
 	# first check for a boot parameter
-	elif out=$(getBootParm $name); then
+        if out=$(getBootParm $name); then
         # set __set__ for parameters given as 
 		[ -z "$out" ] && out="__set__"
-	# if we cannot find this one, try with a "com-"
+	# check if parameter is already in repository
+    elif repository_has_key $name; then
+        out=$(repository_get_value $name)
+    # if we cannot find this one, try with a "com-"
 	elif out=$(getBootParm com-$name); then
         # set __set__ for parameters given as 
 		[ -z "$out" ] && out="__set__"

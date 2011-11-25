@@ -35,7 +35,7 @@
 
 CHROOT_PATH=$(/opt/atix/comoonics-bootimage/manage_chroot.sh -p 2>/dev/null)
 
-if [ -n "$CHROOT_PATH" ] && [ -d $CHROOT_PATH/mnt/newroot ]; then
+if [ -n "$CHROOT_PATH" ] && [ -d "$CHROOT_PATH/mnt/newroot" ]; then
   # With SLES at this stage there might be /proc and /sys already umounted so we'll remount it
   mount 2>/dev/null | grep '[[:space:]]/proc[[:space:]]' > /dev/null
   if [ $? -ne 0 ]; then

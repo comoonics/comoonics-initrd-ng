@@ -84,8 +84,6 @@ UMOUNTFS="/dev/pts /dev /proc /sys"
 cfg_file=/etc/comoonics/comoonics-bootimage.cfg
 source ${cfg_file}
 
-repository_store_value hardwareids "$(hardware_ids)"
-
 function usage() {
 	cat<<EOF
 `basename $0` [ [-h] | [-v] ] -a action
@@ -107,6 +105,7 @@ function usage() {
      mount_cdsl mountpoint [root] [<cdslpath>] [<cdsllocal>] - mounts the cdsl environment [again]
      umount_cdsl mountpoint [root] - umounts the cdsl environment for the given mountpoint
      status_cdsl mountpoint [root] [<cdslpath>] [<cdsllocal>] - checks for status of cdsl environment of this mountpoint
+     update_repository REPOSITORY_PATH TMPPATH filter - update repository (repositorypath) from path (tmppath) with filter (filter). 
      clean - clean all cached items
      
 EOF
@@ -137,14 +136,21 @@ function umount_chroot() {
 	done
 }
 
+function update_repository() {
+    local file=
+    local repopath=${1:-${REPOSITORY_PATH}}
+    local tmppath=${2:-/dev/.initramfs}
+    local filter=${3:-comoonics}
+    for file in $(ls -1 ${tmppath}/${filter}* 2>/dev/null); do
+        cp $file $repopath
+    done
+}    
+
 function mount_chroot() {
 	local retc=0
 	local subdir fstype device
 	local i=
 	mounts=( "/dev/pts" "devpts" "none"  "/proc" "proc" "proc" "/sys" "sysfs" "sysfs" )
-	for file in /dev/.initramfs/comoonics.*; do
-		cp $file $REPOSITORY_PATH
-	done
 	chrootdir=${chrootdir:-$(repository_get_value chroot_path)}
 	if [ -z "$chrootdir" ]; then
 		return 1
@@ -161,14 +167,9 @@ function mount_chroot() {
 		return_code $retc 
 	fi
 	# chrootdir is mounted but not written to /etc/mtab
-	if [ ! -L /etc/mtab ] && ! MOUNTS=$(cat /etc/mtab) is_mounted $chrootdir && is_mounted $chrootdir && repository_has_key nodename; then
-		echo_local -N -n "persist "
-		res=( $(build_chroot_fake $(repository_get_value nodeid)) )
-  		retc=$?
-  		repository_store_value chroot_mount ${res[0]}
-  		#FIXME: chroot_path should be the same as chrootdir but what to do here? How to decide?
-  		repository_store_value chroot_path ${res[1]}
-  		echo_local_debug -N -n "chroot_mount: ${res[0]}, chroot_path: ${res[1]} res: ${res[@]} "
+	if [ ! -L /etc/mtab ] && ! MOUNTS=$(cat /etc/mtab) is_mounted $chrootdir && is_mounted $chrootdir; then
+		echo_local -N -n "persist $chrootdir"
+		build_chroot_fake $(repository_get_value nodeid)
 	fi 
 	echo_local -N -n "subdirs "
 	while [ ${#mounts} -gt 0 ]; do
@@ -176,15 +177,16 @@ function mount_chroot() {
 		local fstype=${mounts[1]}
 		local device=${mounts[2]}
 		mounts=( ${mounts[@]:3} )
-		if ! is_mounted "${chrootdir}${subdir}" && ! is_mounted $(repository_get_value cdsl_local_dir)${chrootdir}${subdir}; then
+        if [ ! -L /etc/mtab ] && is_mounted "${chrootdir}${subdir}" && ! MOUNTS=$(cat /etc/mtab) is_mounted "${chrootdir}${subdir}"; then
+            MOUNTS=
+            echo_local -N -n "fake ..$chrootdir${subdir}.."
+            mkdir -p $chrootdir${subdir} >/dev/null 2>&1
+            mount -f -t $fstype $device $chrootdir${subdir}
+	    elif ! is_mounted "${chrootdir}${subdir}" && ! is_mounted $(repository_get_value cdsl_local_dir)${chrootdir}${subdir}; then
 			echo_local -N -n "..$chrootdir${subdir}.."
 			#echo_local_debug -N -n ".. mount -t $fstype $device $chrootdir${subdir}.."
 			mkdir -p $chrootdir${subdir} >/dev/null 2>&1
 			mount -t $fstype $device $chrootdir${subdir}
-        elif ! MOUNTS=$(cat /etc/mtab) is_mounted "${chrootdir}${subdir}" && is_mounted "${chrootdir}${subdir}"; then
-            echo_local -N -n "..$chrootdir${subdir}.."
-            mkdir -p $chrootdir${subdir} >/dev/null 2>&1
-            mount -f -t $fstype $device $chrootdir${subdir}
 		fi
 	done
 	unset mounts
@@ -626,6 +628,9 @@ case "$action" in
 	 "createxfiles")
 		createxfiles
 		;;
+    "update_repository")
+        update_repository "$REPOSITORY_PATH" "/dev/.initramfs" "comoonics"
+        ;;
 	*)
 		usage
 		exit 1

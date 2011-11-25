@@ -17,6 +17,7 @@ RETVAL=0
 prog="sshd"
 
 # Some functions to make the below more readable
+IMSD="imsd"
 IMSDDIR="/opt/atix/comoonics-imsd"
 SSHDIR="/etc/ssh"
 IMSD_LOG="/var/log/imsd.log"
@@ -30,9 +31,9 @@ SSHD="chroot ${CHROOT_PATH} ${SSHD_BIN} -p $IMSD_PORT -e"
 RSA1_KEY=${SSHDIR}/ssh_host_key
 RSA_KEY=${SSHDIR}/ssh_host_rsa_key
 DSA_KEY=${SSHDIR}/ssh_host_dsa_key
-RSA1_KEY_CHROOT=${CHROOT_PATH}/etc/ssh/ssh_host_key
-RSA_KEY_CHROOT=${CHROOT_PATH}/etc/ssh/ssh_host_rsa_key
-DSA_KEY_CHROOT=${CHROOT_PATH}/etc/ssh/ssh_host_dsa_key
+RSA1_KEY_CHROOT=${CHROOT_PATH}${SSHDIR}/ssh_host_key
+RSA_KEY_CHROOT=${CHROOT_PATH}${SSHDIR}/ssh_host_rsa_key
+DSA_KEY_CHROOT=${CHROOT_PATH}${SSHDIR}/ssh_host_dsa_key
 PID_FILE=${CHROOT_PATH}/var/run/sshd.pid
 USE_SSHD=1
 
@@ -138,6 +139,7 @@ do_restart_sanity_check()
 start_sshd()
 {
 	# Create keys if necessary
+[ -d ${CHROOT_PATH}${SSHDIR} ] || mkdir -p ${CHROOT_PATH}${SSHDIR}
 	do_rsa1_keygen
 	do_rsa_keygen
 	do_dsa_keygen
@@ -173,7 +175,7 @@ stop_sshd()
 	if [ "x$runlevel" = x0 -o "x$runlevel" = x6 ] ; then
 	    killall $prog 2>/dev/null
 	fi
-	[ "$RETVAL" = 0 ] && rm -f /var/lock/subsys/imsd
+	[ "$RETVAL" = 0 ] && [ -f /var/lock/subsys/imsd ] && rm -f /var/lock/subsys/imsd
 	echo
 }
 

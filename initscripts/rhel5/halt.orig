@@ -8,10 +8,6 @@
 #               Modified for RHS Linux by Damien Neil
 #
 
-# Patched for comoonics patch 1.7
-
-KILLALL_OPTS=$(awk '{ printf "-x %s ", $0; }' /etc/xkillall_procs 2>/dev/null)
-
 NOLOCALE=1
 . /etc/init.d/functions
 
@@ -72,9 +68,9 @@ esac
 # Kill all processes.
 [ "${BASH+bash}" = bash ] && enable kill
 
-action $"Sending all processes the TERM signal..." /usr/comoonics/sbin/killall5 -15 ${KILLALL_OPTS}
+action $"Sending all processes the TERM signal..." /sbin/killall5 -15
 sleep 5
-action $"Sending all processes the KILL signal..."  /usr/comoonics/sbin/killall5 -9 ${KILLALL_OPTS}
+action $"Sending all processes the KILL signal..."  /sbin/killall5 -9
 
 # Write to wtmp file before unmounting /var
 /sbin/halt -w
@@ -192,7 +188,7 @@ awk '$2 !~ /\/(|dev|proc|selinux)$/ && $1 !~ /^\/dev\/ram/ { print $2 }' \
 done
 
 if [ -x /sbin/halt.local ]; then
-   /sbin/halt.local "$message" "$HALTARGS" "$kexec_command" "$command"
+   /sbin/halt.local
 fi
 
 # Remount read only anything that's left mounted.

@@ -71,7 +71,7 @@ Requires: comoonics-bootimage >= 5.0
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-rhel6
 #Conflicts: 
-Release: 1_rhel6
+Release: 2_rhel6
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -161,9 +161,13 @@ fi
 rm -rf %{buildroot}
 
 %changelog
-* Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1_rhel5
+* Fri Nov 25 2011 Marc Grimme <grimme( at )atix.de> - 5.0-2_rhel5
+  * initscripts/bootsr: - Added call to update the repository from initrd -
+    Only remount cdsl environment if it is not only in /etc/mtab existant - other
+    handling fixes with chrootneeded
+* Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> - 5.0-1_rhel5
   * Rebase for Release 5.0
-* Wed Oct 26 2011 Marc Grimme <grimme( at )atix.de> 1.4-4.rhel6
+* Wed Oct 26 2011 Marc Grimme <grimme( at )atix.de> - 1.4-4.rhel6
 - added netfs and network initscript to be overwritten.
 * Tue May 10 2011 Marc Grimme <grimme@atix.de> 1.4-3.rhel6
 - introducing updated version to /sbin/new-kernel-pkg-update in order to allow autobuild of initrds 

@@ -1,0 +1,94 @@
+#!/bin/bash
+#****h* comoonics-bootimage/create-gfs-initrd-generic.sh
+#  NAME
+#    create-gfs-initrd-generic.sh
+#    $id$
+#  DESCRIPTION
+#*******
+#
+# Copyright (c) 2001 ATIX GmbH, 2007 ATIX AG.
+# Einsteinstrasse 10, 85716 Unterschleissheim, Germany
+# All rights reserved.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+predir=$(dirname $0)/boot-scripts
+NOKMSG=1
+
+source $predir/etc/std-lib.sh
+source $predir/etc/repository-lib.sh
+
+repository_store_value predir $predir 
+
+TEMPLATE_REPOSITORY_PATH=/var/cache/comoonics-bootimage/repository
+
+validcommands=( "get" "set" "list" "delete" "clear" )
+repositorycommands=( "repository_get_value" "repository_store_value" "repository_list_items" "repository_del_value" "repository_clear" ) 
+cfg_file=/etc/comoonics/comoonics-bootimage.cfg
+source ${cfg_file}
+
+usage() {
+    cat <<EOF
+$0 get "parameter"|set "parameter" "value"+|list|delete parameter
+
+Manages a template repository that will be copied into the initrd and overwrite
+other parameters that are detected during boot up.
+
+This parameters are stored to a repository found in $TEMPLATE_REPOSITORY_PATH.
+
+Do not forget to rebuild the initrd as this command only changes the repository
+but does not rebuild the initrd.
+
+The following commands are available:
+
+get "parameter":          gets a parameter from the repository.
+set "parameter" "value+": sets the parameter with the given values.
+list:                     lists all paramters found in the repository
+delete parameter:         deletes the given parameter from the repository
+clear:                    removes all parameters from the repository
+ 
+E.g. to set the parameter "scsi_failover" to value "mapper" call
+$0 set scsi_failover mapper 
+
+EOF
+}
+
+if [ -z "$1" ]; then
+    usage
+    exit 1
+fi
+REPOSITORY_PATH=$TEMPLATE_REPOSITORY_PATH
+command=$1
+index=0
+repositorycommand=
+for validcommand in ${validcommands[@]}; do
+    if [ "$command" = "$validcommand" ]; then
+        repositorycommand=${repositorycommands[$index]}
+        break
+    fi
+    index=$(( $index + 1 ))
+done
+shift
+if [ -n "$repositorycommand" ]; then
+    if ! $repositorycommand $@; then
+        echo "Failed to execute command $command $@." >&2
+        usage
+        exit 2
+    fi
+else
+    echo "Wrong parameter "$command"." >&2
+    usage
+    exit 3
+fi
