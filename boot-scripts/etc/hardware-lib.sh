@@ -434,12 +434,15 @@ function device_mapper_check {
 #
 function device_mapper_multipath_check {
 	local device=$1
+    local partitionfilter='p[0-9][0-9]*'
+	local mpdev=
 	if device_mapper_check $device; then
 		if [ -n "$device_mapper_multipath_check_multipath_return" ]; then
 			return $device_mapper_multipath_check_multipath_return
 		else
 			multipathcmd=$(which multipath)
-			$multipathcmd -l $device 2>/dev/null
+			mpdev=$(basename $device | sed -e 's/'${partitionfilter}'$//')
+			$multipathcmd -l $mpdev 2>/dev/null
 			return $?
 		fi
 	else
