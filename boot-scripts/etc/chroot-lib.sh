@@ -584,15 +584,15 @@ function build_chroot () {
 	# --if not given: uses default values
 	else
 		# Filesystem type for the chroot device
-		chroot_fstype=$(cc_get_chroot_fstype $nodename)
+		chroot_fstype=$(cc_get chroot_fstype $nodename)
 		# chroot device name
-		chroot_dev=$(cc_get_chroot_device $nodename)
+		chroot_dev=$(cc_get chroot_device $nodename)
 		# Mountpoint for the chroot device
-		chroot_mount=$(cc_get_chroot_mountpoint $nodename)
+		chroot_mount=$(cc_get chroot_mountpoint $nodename)
 		# Path where the chroot environment should be build
-		chroot_path=$(cc_get_chroot_dir $nodename)
+		chroot_path=$(cc_get chroot_dir $nodename)
 		# Mount options for the chroot device
-		chroot_options=$(cc_get_chroot_mountopts $nodename)
+		chroot_options=$(cc_get chroot_mountopts $nodename)
 	fi
 
 	echo_out -n "Creating chroot environment"
@@ -649,15 +649,15 @@ function build_chroot_fake () {
 	# --if not given: uses default values
 	else
 		# Filesystem type for the chroot device
-		chroot_fstype=$(cc_get_chroot_fstype $nodename)
+		chroot_fstype=$(cc_get chroot_fstype $nodename)
 		# chroot device name
-		chroot_dev=$(cc_get_chroot_device $nodename)
+		chroot_dev=$(cc_get chroot_device $nodename)
 		# Mountpoint for the chroot device
-		chroot_mount=$(cc_get_chroot_mountpoint $nodename)
+		chroot_mount=$(cc_get chroot_mountpoint $nodename)
 		# Path where the chroot environment should be build
-		chroot_path=$(cc_get_chroot_dir $nodename)
+		chroot_path=$(cc_get chroot_dir $nodename)
 		# Mount options for the chroot device
-		chroot_options=$(cc_get_chroot_mountopts $nodename)
+		chroot_options=$(cc_get chroot_mountopts $nodename)
 	fi
 
 	[ -d $chroot_mountpoint ] || exec_local mkdir -p $chroot_mount
@@ -680,8 +680,7 @@ function build_chroot_fake () {
 		exec_local /bin/mount -t $chroot_fstype -f -o $chroot_options $chroot_dev $chroot_mount
 		return_code >/dev/null
 	fi
-	create_chroot_fake "/" $chroot_path
-	echo "$chroot_mount $chroot_path"
+	create_chroot_fake $chroot_path
 }
 #****** build_chroot_fake
 
@@ -689,7 +688,7 @@ function build_chroot_fake () {
 #  NAME
 #    create_chroot_fake build a chroot environment
 #  SYNOPSIS
-#    function create_chroot_fake($chroot_source $chroot_path) {
+#    function create_chroot_fake($chroot_path) {
 #  MODIFICATION HISTORY
 #  USAGE
 #  create_chroot
@@ -698,19 +697,14 @@ function build_chroot_fake () {
 #  SOURCE
 #
 function create_chroot_fake () {
-  chroot_source=$1
-  chroot_path=$2
+  local chroot_path=${1:-/var/comoonics/chroot}
 
 #  cp -axf $chroot_source $chroot_path 2>/dev/null
+  MOUNTS=$(cat /etc/mtab)
+  is_mounted $chroot_path || exec_local mount -f -t tmpfs none $chroot_path
   exec_local rm -rf $chroot_path/var/run/*
   exec_local mkdir -p $chroot_path/tmp
   exec_local chmod 755 $chroot_path
-  MOUNTS=$(cat /etc/mtab)
-  is_mounted $chroot_path/dev && exec_local mount -f -t tmpfs none $chroot_path/dev
-#  exec_local mount --bind /dev $chroot_path/dev
-#  exec_local cp -a /dev $chroot_path/
-  is_mounted $chroot_path/dev/pts && exec_local mount -f  -t devpts none $chroot_path/dev/pts
-  is_mounted $chroot_path/proc && exec_local mount -f -t proc proc $chroot_path/proc
-  is_mounted $chroot_path/sys && exec_local mount -f -t sysfs sysfs $chroot_path/sys
+  MOUNTS=
 }
 #************ create_chroot_fake
