@@ -131,13 +131,7 @@ function copy_file() {
   local filename=$1
   local dest=$2
   
-#  [ -n "$verbose" ] && echo "copying $filename to ${dest}..."
-#  if [ -d $dest ] && [ ! -d $filename ]; then
-#    dest="$dest/"$(basename $filename)
-#  fi
-#  if is_modified $source $dest then
-    cp -auf $filename ${dest}
-#  fi
+  cp -auf $filename ${dest}
 }
 #************ copy_file
 
@@ -173,9 +167,6 @@ function cp_file {
 }
 #************ cp_file
 
-
-
-
 #****f* std-lib.sh/copy_filelist
 #  NAME
 #    copy_filelist
@@ -210,9 +201,9 @@ function copy_filelist() {
       if [ -d $file ]; then
         echo_local_debug -N "Directory mapping $file => ${destdir}/$todir" >&2
         create_dir ${destdir}/$todir
-        for file2 in $(ls -1 $file/*); do
-          copy_file $file/\* ${destdir}/$todir/
-        done
+        if [ "$(ls -1 $file | wc -l)" -gt 0 ]; then 
+            copy_file $file/\* ${destdir}/$todir/
+        fi
       else
         dirname=`dirname $file`
         create_dir ${destdir}$todir
