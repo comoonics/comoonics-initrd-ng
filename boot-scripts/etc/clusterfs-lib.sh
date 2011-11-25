@@ -564,7 +564,7 @@ function cc_get_mountopts {
 function cc_get_chroot_mountpoint {
   local clutype=$(repository_get_value clutype)
 
-  local mp=$(${clutype}_get_chroot_mountpoint "$@")
+  local mp=$(${clutype}_get chroot_mountpoint "$@")
   if [ -n "$mp" ]; then
      echo $mp
   else
@@ -586,7 +586,7 @@ function cc_get_chroot_mountpoint {
 function cc_get_chroot_fstype {
   local clutype=$(repository_get_value clutype)
 
-  local fs=$(${clutype}_get_chroot_fstype "$@")
+  local fs=$(${clutype}_get chroot_fstype "$@")
   if [ -n "$fs" ]; then
      echo $fs
   else
@@ -607,7 +607,7 @@ function cc_get_chroot_fstype {
 function cc_get_chroot_device {
   local clutype=$(repository_get_value clutype)
 
-  local dev=$(${clutype}_get_chroot_device "$@")
+  local dev=$(${clutype}_get chroot_device "$@")
   if [ -n "$dev" ]; then
     echo $dev
   else
@@ -628,7 +628,7 @@ function cc_get_chroot_device {
 function cc_get_chroot_mountopts {
   local clutype=$(repository_get_value clutype)
 
-  local mo=$(${clutype}_get_chroot_mountopts "$@")
+  local mo=$(${clutype}_get chroot_mountopts "$@")
   if [ -n "$mo" ]; then
      echo $mo
   else
@@ -649,7 +649,7 @@ function cc_get_chroot_mountopts {
 function cc_get_chroot_dir {
   local clutype=$(repository_get_value clutype)
 
-  local dir=$(${clutype}_get_chroot_dir "$@")
+  local dir=$(${clutype}_get chroot_dir "$@")
   if [ -n "$dir" ]; then
      echo $dir
   else
