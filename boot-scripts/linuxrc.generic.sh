@@ -526,13 +526,6 @@ if [ $(repository_get_value chrootneeded) -eq 0 ]; then
   exec_local mkdir -p $(repository_get_value newroot)/var/comoonics
   echo $(repository_get_value chroot_path) > $(repository_get_value newroot)/var/comoonics/chrootpath 2>/dev/null
   return_code
-  
-  echo_local -n "Writing information to /dev/.initramfs ..."
-  [ -d /dev/.initramfs ] || mkdir /dev/.initramfs
-  for parameter in cluster_conf nodeid nodename chroot_path chrootneeded rootfs; do
-  	repository_get_value $parameter > /dev/.initramfs/comoonics.$parameter
-  done
-  return_code
   step "Moving chroot successfully done." "movechroot"
 else
   if [ -f $(repository_get_value newroot)/var/comoonics/chrootpath ] && [ -z "$(getPosFromList ro $(repository_get_value mountopts) ,)" ]; then
@@ -541,6 +534,13 @@ else
     return_code
   fi
 fi
+  
+echo_local -n "Writing information to /dev/.initramfs ..."
+[ -d /dev/.initramfs ] || mkdir /dev/.initramfs
+for parameter in cluster_conf nodeid nodename nodeids chroot_path chrootneeded rootfs; do
+  repository_get_value $parameter > /dev/.initramfs/comoonics.$parameter
+done
+return_code
 
 if [ -z "$(getPosInList ro $(repository_get_value mountopts) ,)" ]; then
   echo_local -n "Writing xtab.. "
