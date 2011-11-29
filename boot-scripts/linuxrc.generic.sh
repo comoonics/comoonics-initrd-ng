@@ -374,9 +374,7 @@ cc_auto_hosts
 
 if [ $(repository_get_value chrootneeded) -eq 0 ]; then
   echo_local -n "Building comoonics chroot environment"
-  res=( $(build_chroot $(repository_get_value nodeid)) )
-  repository_store_value chroot_mount ${res[0]}
-  repository_store_value chroot_path ${res[1]}
+  build_chroot $(repository_get_value nodeid)
   return_code $?
   echo_local_debug "res: $res -> chroot_mount="$(repository_get_value chroot_mount)", chroot_path="$(repository_get_value chroot_path)
   step "chroot environment created" "chroot"
