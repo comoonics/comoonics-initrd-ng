@@ -202,6 +202,11 @@ osr_resolve_element_alias() {
   local elements=$1
   case $elements in
     "ip") echo "eth_name_ip" ;;
+    "chroot_fstype") echo "chrootenv_fstype";;
+    "chroot_mountpoint") echo "chrootenv_mountpoint";;
+    "chroot_device") echo "chrootenv_device";;
+    "chroot_dir") echo "chrootenv_dir";;
+    "chroot_mountopts") echo "chrootenv_mountopts";;
     *)    echo "$elements" ;;
   esac
 }
