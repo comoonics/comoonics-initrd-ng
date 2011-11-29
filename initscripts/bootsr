@@ -20,8 +20,6 @@
 # /etc/rc.d/init.d/bootsr
 #
 
-. /etc/init.d/functions
-
 BOOTIMAGE_PATH=/opt/atix/comoonics-bootimage
 CHROOT_PATH=$(${BOOTIMAGE_PATH}/manage_chroot.sh -p) 
 UPDATE_CHROOT="${BOOTIMAGE_PATH}/manage_chroot.sh -a update"
@@ -44,6 +42,9 @@ fi
 . ${BOOTIMAGE_PATH}/boot-scripts/etc/std-lib.sh
 sourceLibs ${BOOTIMAGE_PATH}/boot-scripts
 sourceRootfsLibs ${BOOTIMAGE_PATH}/boot-scripts
+
+[ -f /etc/init.d/functions ] && . /etc/init.d/functions
+[ -f /etc/rc.status ] && . /etc/rc.status
 
 #****f* bootsr/clean_start
 #  NAME
