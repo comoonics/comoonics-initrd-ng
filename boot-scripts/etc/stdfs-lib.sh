@@ -86,7 +86,7 @@ function is_same_inode {
   	lsopt=""
   fi
   local dinode=$(/bin/ls $lsopt -i $dest 2>/dev/null | awk '{print $1}')
-  if [ $dinode -eq $sinode ]; then
+  if [ -n "$dinode" ] && [ -n "$sinode" ] && [ $dinode -eq $sinode ]; then
   	return 0
   else
   	return 1
