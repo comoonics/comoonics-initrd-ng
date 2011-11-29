@@ -71,7 +71,7 @@ Requires: comoonics-bootimage >= 5.0
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-rhel6
 #Conflicts: 
-Release: 2_rhel6
+Release: 3_rhel6
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -161,6 +161,10 @@ fi
 rm -rf %{buildroot}
 
 %changelog
+* Tue Nov 29 2011 Marc Grimme <grimme ( at )atix.de> - 5.0-3_rhel5
+  * initscripts/bootsr: moved inclusion of /etc/init.d/functions and
+    /etc/rc.status after inclusion of libs. Now all outputs should be seen at
+    console.
 * Fri Nov 25 2011 Marc Grimme <grimme( at )atix.de> - 5.0-2_rhel5
   * initscripts/bootsr: - Added call to update the repository from initrd -
     Only remount cdsl environment if it is not only in /etc/mtab existant - other

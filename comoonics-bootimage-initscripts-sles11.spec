@@ -68,7 +68,7 @@ BuildArch: noarch
 Requires: comoonics-bootimage >= 5.0
 Requires: comoonics-bootimage-listfiles-sles11
 #Conflicts:
-Release: 1_sles11
+Release: 2_sles11
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -128,6 +128,13 @@ true
 %attr(755, root, root) %{INITDIR}/halt.local
 
 %changelog
+* Tue Nov 29 2011 Marc Grimme <grimme ( at )atix.de> - 5.0-4_rhel5
+  * initscripts/bootsr: moved inclusion of /etc/init.d/functions and
+    /etc/rc.status after inclusion of libs. Now all outputs should be seen at
+    console.
+  * initscripts/bootsr: - Added call to update the repository from initrd -
+    Only remount cdsl environment if it is not only in /etc/mtab existant - other
+    handling fixes with chrootneeded
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1_sles11
   * Rebase for Release 5.0
 * Tue Oct 25 2011 Marc Grimme <grimme( at )atix.de> 1.4-14.sles11

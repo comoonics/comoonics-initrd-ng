@@ -70,7 +70,7 @@ Requires:      comoonics-bootimage-listfiles-all
 Requires:      comoonics-tools-py
 Requires:      comoonics-release >= 5.0
 #Conflicts:
-Release:       6_%{LINUXDISTROSHORT}
+Release:       8_%{LINUXDISTROSHORT}
 Vendor:        ATIX AG
 Packager:      ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -86,7 +86,7 @@ Scripts for creating an initrd in a OSR cluster environment
 
 %package extras-localconfigs
 Version: 5.0
-Release: 3_%{LINUXDISTROSHORT}
+Release: 5_%{LINUXDISTROSHORT}
 Requires: comoonics-bootimage >= 5.0
 Obsoletes: comoonics-bootimage-extras-osr
 Summary: Extra for cluster configuration via local files
@@ -1637,6 +1637,28 @@ fi
 rm -rf %{buildroot}
 
 %changelog
+* Tue Nov 29 2011 Marc Grimme <grimme( at )atix.de> - 5.0-8
+  * manage_chroot.sh: update_chroot: fixed bug with empty cache file.
+  * create-gfs-initrd-generic.sh: cachefile will be overwritten if size is 0 or
+    not existent. Instead of only checking for existence.
+  * boot-scripts/linuxrc.generic.sh: tidy up build_chroot to be better to
+    understand and reflect latest changes.
+  * boot-scripts/etc/stdfs-lib.sh: - is_same_inode: fixed typo
+  * boot-scripts/etc/hardware-lib.sh: - device-mapper-multipath-check: no
+    output from running multipath.
+  * boot-scripts/etc/chroot-lib.sh: - build_chroot: changed semantics so that
+    it will now detect non existant chroots and will be more robust -
+    build_chroot_fake: typo - create_chroot: moved from distribution dependency
+  * boot-scripts/etc/rhel5/boot-lib.sh, boot-scripts/etc/rhel6/boot-lib.sh,
+    boot-scripts/etc/sles11/boot-lib.sh: Moved the distribution dependent
+    function create_chroot to not being distribution dependent (not necessary any
+    more).
+* Fri Nov 25 2011 Marc Grimme <grimme( at )atix.de> - 5.0-7
+  * .../post.mkinitrd.d/98-copy-template-repository.sh: removed a error
+  message.
+  * boot-scripts/etc/hardware-lib.sh, .../pre.mkinitrd.d/38-multipath-check.sh:
+  device_mapper_multipath_check: changed check to be more flexible and also
+  detect partitioned devices.
 * Fri Nov 25 2011 Marc Grimme <grimme( at )atix.de> - 5.0-6
   * manage_initrd_repository, manage_initrd_repository.sh: moved
     manage_initrd_repository.sh => moved manage_initrd_repository fixed a bug
@@ -2709,6 +2731,12 @@ rm -rf %{buildroot}
 - first offical rpm version
 
 %changelog extras-localconfigs
+* Tue Nov 29 2011 Marc Grimme <grimme( at )atix.de> - 5.0-5
+  * boot-scripts/etc/osr-lib.sh: - osr_resolve_element_alias: added chroot
+  options
+* Fri Nov 25 2011 Marc Grimme <grimme( at )atix.de> - 5.0-4
+  * .../pre.mkinitrd.d/35-rootdevice-check.sh: removed multipath detection as
+    it is done in another script
 * Fri Nov 17 2011 Marc Grimme <grimme( at )atix.de> - 0.5-3
   * .../19-copy-network-configurations.sh: suppress obsolete cdsl error
   messages.
