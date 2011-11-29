@@ -442,7 +442,7 @@ function device_mapper_multipath_check {
 		else
 			multipathcmd=$(which multipath)
 			mpdev=$(basename $device | sed -e 's/'${partitionfilter}'$//')
-			$multipathcmd -l $mpdev 2>/dev/null
+			$multipathcmd -l $mpdev &>/dev/null
 			return $?
 		fi
 	else
