@@ -251,7 +251,8 @@ function update_chroot() {
       exec_ordered_scripts_in $pre_mkinitrd_path $chrootdir
       [ $rc -eq 0 ] && rc=$?
     fi
-    if [ -z "$cachedir" ] || [ ! -e "${cachedir}/$indexfile" ] ; then
+    
+    if [ -z "$cachedir" ] || [ ! -s "${cachedir}/$indexfile" ] ; then
 	  # extracting rpms
 	  if [ -n "$rpm_filename" ] && [ -e "$rpm_filename" ]; then
 		echo_local -N -n "rpmfiles.."
@@ -266,8 +267,10 @@ function update_chroot() {
       echo_local -N -n "copying ($chrootdir ${cachedir}/$indexfile)... "
       ( echo $rpmfilelist; echo $filelist ) | tr ' ' '\n'| sort -u | grep -v "^.$" | grep -v "^..$" | tr '&' '\n' | copy_filelist $chrootdir > ${cachedir}/$indexfile
       [ $rc -eq 0 ] && rc=$?
-	else
-	  cat ${cachedir}/$indexfile | copy_filelist $chrootdir > ${cachedir}/$indexfile
+	elif [ -n "${cachedir}" ] && [ -n "$chrootdir" ]; then
+	  cat ${cachedir}/$indexfile | copy_filelist $chrootdir > ${cachedir}/$indexfile.tmp
+      rm -f $cachedir/${indexfile}
+      mv -f $cachedir/${indexfile}.tmp $cachedir/${indexfile}
       [ $rc -eq 0 ] && rc=$?
     fi
 	
