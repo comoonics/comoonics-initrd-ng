@@ -19,7 +19,10 @@ import logging
 from comoonics import ComLog, ComSystem
 from comoonics import ComExceptions
 from comoonics.cluster.tools import pexpect
-from comoonics.tools.ComSystemInformation import SystemInformation
+try:
+    from comoonics.tools.ComSystemInformation import getSystemInformation as SystemInformation
+except ImportError:
+    from comoonics.ComSystemInformation import SystemInformation
 logger=ComLog.getLogger("comoonics.bootimage.imsd.shell")
 
 try:
