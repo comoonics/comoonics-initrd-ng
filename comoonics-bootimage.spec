@@ -903,7 +903,7 @@ OSR files needed for the compatibility to 1.2 releases
 
 %package imsd
 Version: 5.0
-Release: 3_%{LINUXDISTROSHORT}
+Release: 4_%{LINUXDISTROSHORT}
 Obsoletes: comoonics-bootimage-fenceacksv
 Requires: comoonics-imsd-py
 Requires: comoonics-bootimage >= 5.0
@@ -3447,6 +3447,8 @@ rm -rf %{buildroot}
 - initial revision
 
 %changelog imsd
+* Tue Nov 29 2011 Marc Grimme <grimme( at )atix.de> - 5.0-4
+  * imsd/imsd.sh: - changed shutdown level to 38 before bootsr.
 * Fri Nov 25 2011 Marc Grimme <grimme( at )atix.de> - 5.0-3
   * imsd/imsd.sh: - removed some obsolete errormessages - create /etc/ssh
     before copying the keys
