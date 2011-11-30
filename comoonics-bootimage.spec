@@ -70,7 +70,7 @@ Requires:      comoonics-bootimage-listfiles-all
 Requires:      comoonics-tools-py
 Requires:      comoonics-release >= 5.0
 #Conflicts:
-Release:       8_%{LINUXDISTROSHORT}
+Release:       9_%{LINUXDISTROSHORT}
 Vendor:        ATIX AG
 Packager:      ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -86,7 +86,7 @@ Scripts for creating an initrd in a OSR cluster environment
 
 %package extras-localconfigs
 Version: 5.0
-Release: 5_%{LINUXDISTROSHORT}
+Release: 6_%{LINUXDISTROSHORT}
 Requires: comoonics-bootimage >= 5.0
 Obsoletes: comoonics-bootimage-extras-osr
 Summary: Extra for cluster configuration via local files
@@ -1281,9 +1281,6 @@ fi
 %attr(0755, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/50-bootimage-check.sh
 %attr(0755, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/50-cdsl-check.sh
 %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/02-create-cdsl-repository.sh
-%attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/19-copy-network-configurations.sh
-%attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/20-copy-network-configurations.sh
-%attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/21-copy-cdsltab-configurations.sh
 %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/98-copy-template-repository.sh
 %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/99-clean-repository.sh
 
@@ -1301,6 +1298,9 @@ fi
 %attr(0644, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/35-rootdevice-check.sh
 %attr(0644, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/38-multipath-check.sh
 %attr(0644, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/60-osr-repository-generate.sh
+%attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/19-copy-network-configurations.sh
+%attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/20-copy-network-configurations.sh
+%attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/21-copy-cdsltab-configurations.sh
 
 %files extras-network
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/vlan.list
@@ -1637,6 +1637,9 @@ fi
 rm -rf %{buildroot}
 
 %changelog
+* Wed Nov 30 2011 Marc Grimme <grimme( at )atix.de> - 5.0-9
+  * moved 19/20-copy-network-configuration.. to localconfigs
+  * moved 21-copy-cdsltab.. to localconfigs
 * Tue Nov 29 2011 Marc Grimme <grimme( at )atix.de> - 5.0-8
   * manage_chroot.sh: update_chroot: fixed bug with empty cache file.
   * create-gfs-initrd-generic.sh: cachefile will be overwritten if size is 0 or
@@ -2731,6 +2734,11 @@ rm -rf %{buildroot}
 - first offical rpm version
 
 %changelog extras-localconfigs
+* Wed Nov 30 2011 Marc Grimme <grimme( at )atix.de> - 5.0-6  
+  * moved 19/20-copy-network-configuration.. to localconfigs
+  * moved 21-copy-cdsltab.. to localconfigs
+  * fixed bug in 19/20-copy-network-configuration where variable was already 
+    set by 19-copy.. and not overwritten by 20-copy..
 * Tue Nov 29 2011 Marc Grimme <grimme( at )atix.de> - 5.0-5
   * boot-scripts/etc/osr-lib.sh: - osr_resolve_element_alias: added chroot
   options
