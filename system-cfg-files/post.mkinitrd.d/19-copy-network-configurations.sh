@@ -40,4 +40,5 @@ if [ -d "${networkconfigdir}" ]; then
         fi
     done
 fi
+unset networkconfigdir networkconfigfilter
 true
