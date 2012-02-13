@@ -21,4 +21,5 @@ libcap                 \.so
 audit-libs
 upstart                ^/sbin/.*
 libgcc			       \.so
-mktemp
+kbd                    .*                   ^/usr/share/man       optional
+kbd-misc               .*                   ^/usr/share/man       optional
