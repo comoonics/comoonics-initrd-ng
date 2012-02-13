@@ -202,7 +202,9 @@ exec_local umount_filesystem  $_filesystem 1
 return_code
 step "halt: Umounting oldroot" "halt_umountoldroot"
 
-clusterfs_services_stop
+lvm_check $(repository_get_value root
+lvm_sup=$?
+clusterfs_services_stop "$lvm_sup"
 step "halt: Stopped clusterfs services" "halt_stopclusterfs"
 
 sleep 2
