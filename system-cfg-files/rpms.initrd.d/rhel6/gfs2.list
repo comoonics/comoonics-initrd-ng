@@ -1,2 +1,4 @@
 #rpm list for gfs2
 gfs2-utils
+comoonics-cluster-tools-py  ^/usr/bin/cl_checknodes
+# dbus
