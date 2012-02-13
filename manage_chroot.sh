@@ -286,7 +286,7 @@ function update_chroot() {
 function createxfiles {
 	repository_store_value xtabfile /etc/xtab
 	repository_store_value xrootfsfile /etc/xrootfs
-	repository_store_value xkillallprocsfile /etc/xkillall_procs
+	repository_store_value xkillallprocsfile /etc/xkillallprocs
 	clusterfs_chroot_needed initrd
 	__default=$?
 	getParameter chrootneeded $__default &>/dev/null
