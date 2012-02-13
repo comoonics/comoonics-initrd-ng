@@ -39,8 +39,9 @@
 /lib/modules/\.*/kernel/drivers/video\.*
 /lib/modules/\.*/kernel/drivers/watchdog\.*
 /lib/modules/\.*/kernel/drivers/xen/xenfs/\.*
-/lib/modules/\.*/kernel/net/802\.*
-/lib/modules/\.*/kernel/net/8021q\.*
+# Some driver still require modules from 8021q (see bz )
+#/lib/modules/\.*/kernel/net/802\.*
+#/lib/modules/\.*/kernel/net/8021q\.*
 /lib/modules/\.*/kernel/net/9p\.*
 /lib/modules/\.*/kernel/net/atm\.*
 /lib/modules/\.*/kernel/net/bluetooth\.*
