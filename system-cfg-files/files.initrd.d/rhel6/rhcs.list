@@ -2,3 +2,6 @@
 /etc/passwd
 /etc/group
 /etc/cluster/cluster.conf
+getopt
+/etc/sysconfig/cman       optional
+/etc/sysconfig/clvmd      optional
