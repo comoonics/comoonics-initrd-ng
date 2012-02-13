@@ -277,7 +277,11 @@ for ipconfig in $(repository_get_value ipConfig); do
   	# If only the device is given as ipconfig parameter we suppose there is already
     # a configuration existant in /etc/sysconfig/network-scripts
   	dev=$ipconfig
-    networkipconfig="$networkipconfig $dev"
+    networkipconfig="$dev $networkipconfig"
+    __ipconfig="$dev"
+    if [[ "$dev" =~ "^bond" ]]; then
+      bondipconfig="$bondipconfig $__ipconfig"
+    fi
   else
     hwids=$(repository_get_value hardwareids)
     echo_local -n "Creating network configuration for $dev"
@@ -312,7 +316,7 @@ step "Network configuration finished" "netconfig"
 
 for ipconfig in $networkipconfig $vlanipconfig $bridgeipconfig $restartipconfig; do
   dev=$(getPosFromIPString 6, $ipconfig)
-   driver=$(getPosFromIPString 11, $ipconfig)
+  driver=$(getPosFromIPString 11, $ipconfig)
   nicAutoUp $ipconfig
   if [ $? -eq 0 ] || [ -z "$dev" ]; then
   	[ -z "$dev" ] && dev=$ipconfig
