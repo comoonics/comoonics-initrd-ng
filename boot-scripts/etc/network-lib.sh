@@ -137,10 +137,20 @@ function nicUp() {
    local count=0
    local maxcount=${timeout:-30}
    local timeout=${timeout:-2}
-   /sbin/ifup $*
-   errorcode=$?
-   while ! ip link show dev "$1" | grep "UP,LOWER_UP" &>/dev/null && [ "$count" -le $maxcount ]; do sleep $timeout; count=$(( $count + 1 )); done
-   ip link show dev "$1" | grep "UP,LOWER_UP" &>/dev/null
+   local SLAVE=""
+   # ignore slaves
+   ifcfgfile=$($(repository_get_value distribution)_get_networkpath)/ifcfg-$1
+   if [ -n "$ifcfgfile" ] && [ -f "$ifcfgfile" ]; then
+     eval $(LANG=C grep "SLAVE=" $ifcfgfile)
+   fi
+   if [ "$SLAVE" != "yes" ]; then      
+     /sbin/ifup $*
+     errorcode=$?
+   else
+     true
+   fi
+   #   while ! ip link show dev "$1" | grep "UP,LOWER_UP" &>/dev/null && [ "$count" -le $maxcount ]; do sleep $timeout; count=$(( $count + 1 )); done
+   #ip link show dev "$1" | grep "UP,LOWER_UP" &>/dev/null
    return $?
 }
 #************ ifup
