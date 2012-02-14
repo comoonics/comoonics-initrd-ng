@@ -539,7 +539,7 @@ fi
   
 echo_local -n "Writing information to /dev/.initramfs ..."
 [ -d /dev/.initramfs ] || mkdir /dev/.initramfs
-for parameter in cluster_conf nodeid nodename nodeids chroot_path chrootneeded rootfs; do
+for parameter in cluster_conf nodeid nodename nodeids chroot_path chrootneeded rootfs root; do
   repository_get_value $parameter > /dev/.initramfs/comoonics.$parameter
 done
 return_code
