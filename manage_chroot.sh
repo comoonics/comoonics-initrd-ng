@@ -42,7 +42,7 @@ fi
 
 source $(dirname $0)/boot-scripts/etc/std-lib.sh
 source $(dirname $0)/boot-scripts/etc/repository-lib.sh
-repository_clear
+# repository_clear
 sourceLibs $(dirname $0)/boot-scripts
 clutype=$(repository_get_value clutype)
 rootfs=$(get_mounted_rootfs)
