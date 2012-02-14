@@ -10,7 +10,7 @@
 #
 #*******
 #
-# chkconfig: 345 11 40
+# chkconfig: 345 11 90
 # description: do the post settings for Comoonics Shared Root
 # Author: hlawatschek@atix.de
 #
@@ -46,20 +46,6 @@ sourceRootfsLibs ${BOOTIMAGE_PATH}/boot-scripts
 [ -f /etc/init.d/functions ] && . /etc/init.d/functions
 [ -f /etc/rc.status ] && . /etc/rc.status
 
-#****f* bootsr/clean_start
-#  NAME
-#    clean_start
-#  SYNOPSIS
-#    function clean_start
-#  MODIFICATION HISTORY
-#  IDEAS
-#  SOURCE
-#
-function clean_start {
-	$CLEAN_START
-}
-#************ clean_start
-
 #****f* bootsr/check_sharedroot
 #  NAME
 #    check_sharedroot
@@ -71,7 +57,7 @@ function clean_start {
 #
 function check_sharedroot {
   local root_fstype=$1
-  if [ "$root_fstype" = "gfs" ] || [ "$root_fstype" = "ocfs2" ] || [ "$root_fstype" = "nfs" ] || [ "$root_fstype" = "glusterfs" ]; then
+  if [ "${root_fstype:0:3}" = "gfs" ] || [ "$root_fstype" = "ocfs2" ] || [ "$root_fstype" = "nfs" ] || [ "$root_fstype" = "glusterfs" ]; then
     return 0
   else
     return 1
@@ -108,10 +94,13 @@ function umount_chroot {
 #************ get_runlevel
 
 rootfs=$(repository_get_value rootfs)
+root=$(repository_get_value root)
 clutype=$(repository_get_value clutype)
 # overwrite with bootparameter if need be
 chrootneeded=$(getParameter chrootneeded 2>/dev/null)
 [ "$(repository_get_value chrootneeded)" = "__set__" ] && repository_store_value chrootneeded 0 
+lvm_check $root
+lvm_sup=$?
 
 # See how we were called.
 case "$1" in
@@ -146,20 +135,16 @@ case "$1" in
 	  	action "Updating chroot environment" $UPDATE_CHROOT
   	  fi 
  	  
-   	  typeset -f cc_init >/dev/null && action "Starting ${clutype} dependent services" cc_init start "$CHROOT_PATH" "$rootfs"
- 	  if [ "${clutype}" != "${rootfs}" ]; then
- 	   	typeset -f clusterfs_init >/dev/null && action "Starting ${rootfs} dependent services" clusterfs_init start "$CHROOT_PATH" "$rootfs"
- 	  fi
+      typeset -f cc_init >/dev/null && action "Starting ${clutype} dependent services" cc_init start "$rootfs" "$CHROOT_PATH"
+   	  typeset -f clusterfs_init >/dev/null && action "Starting ${rootfs} dependent services" clusterfs_init start "$rootfs" "$CHROOT_PATH" "$lvm_sup" "$chrootneeded"
     fi
     ;;
   stop)
- 	  typeset -f cc_init >/dev/null && action "Stopping ${clutype} dependent services" cc_init stop "$CHROOT_PATH" "$rootfs"
- 	  if [ "${clutype}" != "${rootfs}" ]; then
-   	    typeset -f clusterfs_init >/dev/null && action "Stopping ${rootfs} dependent services" clusterfs_init stop "$CHROOT_PATH" "$rootfs"
- 	  fi 
+      typeset -f cc_init >/dev/null && action "Stopping ${clutype} dependent services" cc_init stop "$rootfs" "$CHROOT_PATH" "$CHROOT_PATH"
+      typeset -f clusterfs_init >/dev/null && action "Stopping ${rootfs} dependent services" clusterfs_init stop "$rootfs" "$CHROOT_PATH" "$lvm_sup" "$chrootneeded"
   	  [ -e /var/lock/subsys/bootsr ] && rm -f /var/lock/subsys/bootsr 
   	  # if this filesystem requires the chroot by itself let it live for reboot to being able to proceed otherwise umount
-	  typeset -f ${rootfs}_needed >/dev/null && ${rootfs}_chroot_needed init
+	  typeset -f ${rootfs}_chroot_needed >/dev/null && ${rootfs}_chroot_needed init
 	  if [ $? -ne 0 ] && is_mounted $CHROOT_PATH; then
 	    action "Cleaning up chroot environment" $UMOUNT_CHROOT
 	    action "Umount $CHROOT_PATH.." umount $CHROOT_PATH
