@@ -114,7 +114,7 @@ function gfs2_load() {
 #  NAME
 #    gfs_load
 #  SYNOPSIS
-#    gfs2_init(action, chroot_path, rootfs, lvmsup)
+#    gfs2_init(action, rootfs, chroot_path, lvmsup, chrootneeded)
 #  DESCRIPTION
 #    This Function does init functions dependent on root file system relative to given action.
 #    Actions might be start|stop called from bootsr.
@@ -125,24 +125,32 @@ function gfs2_load() {
 #    the volume group for the root filesystem.
 #
 #    For action start:
-#    Nothing to be done.
+#    Recreate the cman socket files if chroot is needed
 #  IDEAS
 #  SOURCE
 #
 function gfs2_init() {
    local action=$1
-   local chroot_path=$2
+   local chroot_path=$3
    local lvm_sup=$4
+   local chrootneeded=$5
+   local clusterfiles=${6-/var/run/cman_admin /var/run/cman_client}
    local precmd=""
+   local clusterfile=
    [ -n "$chroot_path" ] && precmd="chroot $chroot_path"
             
    case "$action" in
        start)
-              true
-              ;;
+        if [ -n "$chrootneeded" ] && [ $chrootneeded -eq 0 ] && [ -n "$lvm_sup" ] && [ $lvm_sup -eq 0 ]; then
+           for clusterfile in $clusterfiles; do
+              exec_local ln -sf ${chroot_path}/${clusterfile} ${clusterfile}
+           done            
+        fi
+        ;;
        stop)
-        if [ -n "$lvm_sup" ] && [ $lvm_sup -eq 0 ]; then
+        if [ -n "$chrootneeded" ] && [ $chrootneeded -eq 0 ] && [ -n "$lvm_sup" ] && [ $lvm_sup -eq 0 ]; then
             $precmd /etc/init.d/clvmd start
+            [ -f "${chroot_path}/var/run/clvmd.pid" ] && cat "${chroot_path}/var/run/clvmd.pid" >> $(repository_get_value xkillallprocsfile)
         fi
         ;;
        *)
@@ -168,16 +176,25 @@ function gfs2_services_start() {
         local chroot_path=$1
         local lock_method=$2
         local lvm_sup=$3
+        local clusterfiles=${4-/var/run/cman_admin /var/run/cman_client}
         local precmd=""
 
         setHWClock
         
         [ -n "$chroot_path" ] && precmd="chroot $chroot_path"
 
-        mount --rbind $chroot_path/var/run /var/run
         $precmd /etc/init.d/cman start setup
-        cp -a /dev/misc $chroot_path/dev/misc 
+        mv /dev/misc $chroot_path/dev/misc
+        ln -s $chroot_path/dev/misc /dev/misc 
         $precmd /etc/init.d/cman start
+        if [ -d "${chroot_path}" ]; then
+           echo_local -n "Creating clusterfiles ${clusterfiles}.."
+           for _clusterfile in $clusterfiles; do
+              exec_local ln -sf ${chroot_path}/${_clusterfile} ${_clusterfile}
+           done
+           success
+           echo
+        fi
         if [ -n "$lvm_sup" ] && [ $lvm_sup -eq 0 ]; then
         #        $precmd /etc/init.d/messagebus start
             /etc/init.d/clvmd start
@@ -200,10 +217,10 @@ function gfs2_services_stop {
   local lock_method=$2
   local lvm_sup=$3
 
-  /etc/init.d/cman stop
   if [ -n "$lvm_sup" ] && [ $lvm_sup -eq 0 ]; then
-     /etc/init.d/clvmd start
+     /etc/init.d/clvmd stop
   fi
+  /etc/init.d/cman stop
 }
 #************ gfs_services_stop
 
@@ -232,13 +249,14 @@ function gfs2_services_restart_newroot {
   local clusterfiles=${5-/var/run/cman_admin /var/run/cman_client}
 
   local services=""
-  if [ -d "${chroot_path}/${comoonicspath}" ]; then
-    echo_local -n "Creating clusterfiles ${clusterfiles}.."
-    for _clusterfile in $clusterfiles; do
-        exec_local chroot $chroot_path ln -sf ${comoonicspath}/${_clusterfile} ${_clusterfile}
-    done
-    success
-    echo
+  if [ -d "${new_root}/${comoonicspath}" ]; then
+     echo_local -n "Creating clusterfiles ${clusterfiles}.."
+     for _clusterfile in $clusterfiles; do
+        exec_local chroot $new_root ln -sf ${comoonicspath}/${_clusterfile} ${_clusterfile}
+     done
+     [ -L $new_root/dev/misc ] || exec_local chroot $new_root ln -s $comoonicspath/dev/misc /dev/misc 
+     success
+     echo
   fi
   if [ -n "$lvm_sup" ] && [ "$lvm_sup" -eq 0 ]; then
       /etc/init.d/clvmd stop
@@ -246,7 +264,7 @@ function gfs2_services_restart_newroot {
         return $?
       fi
   fi
-  for path in $new_root/proc /var/run; do
+  for path in $new_root/proc; do
      if is_mounted $path; then
         for deppath in $(get_dep_filesystems $deppath); do
            echo_local -n "Umounting filesystem $deppath"
