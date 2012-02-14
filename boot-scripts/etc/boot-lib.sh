@@ -716,7 +716,8 @@ function createTemp {
 #  SOURCE
 #
 function restart_init {
-	exec_local telinit u
+	exec_local telinit u || exec_local telinit u
+	sleep 4
 }
 #************ restart_init
 
