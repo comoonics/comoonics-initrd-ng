@@ -8,15 +8,3 @@
 # General Files
 @include $(ls -1 /etc/comoonics/bootimage-chroot/files.initrd.d/*.list 2>/dev/null)
 @include $(ls -1 /etc/comoonics/bootimage-chroot/files.initrd.d/*/*.list 2>/dev/null)
-#####################
-# $Log: files.list,v $
-# Revision 1.3  2008-08-14 14:40:15  marc
-# - added distro dirs
-#
-# Revision 1.2  2008/06/10 10:01:19  marc
-# - beautified
-#
-# Revision 1.1  2007/08/07 08:34:07  mark
-# initial check in
-#
-#

@@ -1,15 +1,3 @@
 # $Id: rpms.list,v 1.6 2008-08-14 14:40:04 marc Exp $
 @include $(ls -1 /etc/comoonics/bootimage/rpms.initrd.d/*.list 2>/dev/null)
 @include $(ls -1 /etc/comoonics/bootimage/rpms.initrd.d/*/*.list 2>/dev/null)
-#########
-# $Log: rpms.list,v $
-# Revision 1.6  2008-08-14 14:40:04  marc
-# - added distro dirs
-#
-# Revision 1.5  2008/06/10 10:01:07  marc
-# - beautified
-#
-# Revision 1.4  2007/08/06 16:00:16  mark
-# reorganized files
-# removed all libraries
-#
