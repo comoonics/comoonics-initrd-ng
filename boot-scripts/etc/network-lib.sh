@@ -145,7 +145,6 @@ function nicUp() {
    fi
    if [ "$SLAVE" != "yes" ]; then      
      /sbin/ifup $*
-     errorcode=$?
    else
      true
    fi
