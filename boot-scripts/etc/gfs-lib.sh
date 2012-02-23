@@ -468,6 +468,7 @@ function gfs_auto_hosts() {
 #    if [ -n "$debug" ]; then set -x; fi
 #    cp -f $hostsfile $hostsfile.bak
     ccs_xml_query -q hosts
+    echo
     cat $hostsfile
     ret=$?
 #    if [ -n "$debug" ]; then set +x; fi
