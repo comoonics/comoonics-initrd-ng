@@ -76,6 +76,8 @@ function getCluType {
      clutype=$($(repository_get_value ccs_xml_query) --filename $conf -q clustertype 2>/dev/null) || clutype=$($(repository_get_value ccs_xml_query) --filename $conf -q query_value /cluster/@type 2>/dev/null)
      if [ -z "$clutype" ] && $(repository_get_value ccs_xml_query) --filename $conf query_value /cluster/clusternodes/clusternode/com_info &>/dev/null; then
    	    clutype="gfs"
+     else
+        clutype="osr"
      fi
    fi
    echo "$clutype"
@@ -201,7 +203,7 @@ function cluster_ip_config {
   	  [ -d $(${distro}_get_networkpath) ] || mkdir $(${distro}_get_networkpath)
       ifcfgfile2=$(echo $(basename $ifcfgfile) | sed -e 's/\.'$nodenameorid'$//')
   	  cp $ifcfgfile $(${distro}_get_networkpath)/$ifcfgfile2
-  	  source $(${distro}_get_networkpath)/$ifcfgfile2
+  	  eval $(grep DEVICE $(${distro}_get_networkpath)/$ifcfgfile2)
   	  echo $DEVICE
     done
   fi
