@@ -5,3 +5,4 @@ OpenIPMI-tools              -                  -              optional
 pam
 corosync
 clusterlib
+libxml2                     -                  -              optional
