@@ -110,7 +110,7 @@ function gfs2_load() {
 #************ gfs2_load
 
 
-#****f* gfs2-lib.sh/gfs2_load
+#****f* gfs2-lib.sh/gfs2_init
 #  NAME
 #    gfs_load
 #  SYNOPSIS
@@ -125,7 +125,10 @@ function gfs2_load() {
 #    the volume group for the root filesystem.
 #
 #    For action start:
-#    Recreate the cman socket files if chroot is needed
+#     1. Recreate the cman socket files if chroot is needed
+#     2. Bind mount both /dev/shm and /etc/cluster to chroot 
+#        (needed for ccs and cman_tool version to work)
+#        Umount is left for init process
 #  IDEAS
 #  SOURCE
 #
@@ -135,16 +138,25 @@ function gfs2_init() {
    local lvm_sup=$4
    local chrootneeded=$5
    local clusterfiles=${6-/var/run/cman_admin /var/run/cman_client}
+   local bindmounts=${7:-/etc/cluster /dev/shm}
    local precmd=""
    local clusterfile=
+   local bindmount=
    [ -n "$chroot_path" ] && precmd="chroot $chroot_path"
             
    case "$action" in
        start)
+        echo_local -n "..socketfiles.. "
         if [ -n "$chrootneeded" ] && [ $chrootneeded -eq 0 ] && [ -n "$lvm_sup" ] && [ $lvm_sup -eq 0 ]; then
            for clusterfile in $clusterfiles; do
               exec_local ln -sf ${chroot_path}/${clusterfile} ${clusterfile}
            done            
+          echo_local -n "..bindmounts.. "
+          for bindmount in $bindmounts; do
+            if ! is_mounted ${chroot_path}/$bindmount; then
+               mount --bind $bindmount ${chroot_path}/${bindmount}
+            fi
+          done
         fi
         ;;
        stop)
@@ -152,6 +164,12 @@ function gfs2_init() {
             $precmd /etc/init.d/clvmd start
             [ -f "${chroot_path}/var/run/clvmd.pid" ] && cat "${chroot_path}/var/run/clvmd.pid" >> $(repository_get_value xkillallprocsfile)
         fi
+        echo_local -n "..bindmounts.. "
+        for bindmount in $bindmounts; do
+          if is_mounted ${chroot_path}/$bindmount; then
+             umount ${chroot_path}/${bindmount}
+          fi
+        done
         ;;
        *)
         ;;
@@ -183,9 +201,11 @@ function gfs2_services_start() {
         
         [ -n "$chroot_path" ] && precmd="chroot $chroot_path"
 
+        ln -s /bin/true /sbin/chkconfig
         $precmd /etc/init.d/cman start setup
         mv /dev/misc $chroot_path/dev/misc
-        ln -s $chroot_path/dev/misc /dev/misc 
+        ln -s $chroot_path/dev/misc /dev/misc
+        
         $precmd /etc/init.d/cman start
         if [ -d "${chroot_path}" ]; then
            echo_local -n "Creating clusterfiles ${clusterfiles}.."
