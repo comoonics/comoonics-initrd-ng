@@ -5,3 +5,4 @@
 getopt
 /etc/sysconfig/cman       optional
 /etc/sysconfig/clvmd      optional
+flock                     optional
