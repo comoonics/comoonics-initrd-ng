@@ -273,40 +273,44 @@ _ipconfig=""
 __ipconfig=""
 for ipconfig in $(repository_get_value ipConfig); do
   dev=$(getPosFromIPString 6, $ipconfig)
-  if [ -z "$dev" ]; then
+  networkdir=$($(repository_get_value distribution)_get_networkpath)
+  if [ -z "$dev" ] && [ -f "${networkdir}/ifcfg-${ipconfig}" ]; then
   	# If only the device is given as ipconfig parameter we suppose there is already
     # a configuration existant in /etc/sysconfig/network-scripts
   	dev=$ipconfig
     networkipconfig="$dev $networkipconfig"
     __ipconfig="$dev"
-    if [[ "$dev" =~ "^bond" ]]; then
-      bondipconfig="$bondipconfig $__ipconfig"
-    fi
+    eval $(grep TYPE $networkdir/ifcfg-$dev)
+    _type=$TYPE
+    unset TYPE
+    eval $(grep BRIDGE $networkdir/ifcfg-$dev)
+    _bridge=$BRIDGE
+    unset BRIDGE
   else
     hwids=$(repository_get_value hardwareids)
     echo_local -n "Creating network configuration for $dev"
     __ipconfig=$(nicConfig $ipconfig "$hwids")
+    if [ $? -ne 0 ]; then
+      breakp $(err_nic_config)
+    fi
+    return_code $?
     _type=$(getPosFromIPString 8, $ipconfig)
     _bridge=$(getPosFromIPString 9, $ipconfig)
-    if [ "$_type" = "bridge" ]; then
-      bridgeipconfig="$bridgeipconfig $__ipconfig"
-    elif [[ "$dev" =~ "[a-z]+[0-9]+\.[0-9]+" ]]; then
-      vlanipconfig="$vlanipconfig $__ipconfig"
-    elif [[ "$dev" =~ "^bond" ]]; then
-      bondipconfig="$bondipconfig $__ipconfig" 
-      networkipconfig="$networkipconfig $__ipconfig"
-    else
-      networkipconfig="$networkipconfig $__ipconfig"
-    fi
   fi
-  if [ $? -ne 0 ]; then
-	breakp $(err_nic_config)
+  if [ "$_type" = "bridge" ]; then
+    bridgeipconfig="$bridgeipconfig $__ipconfig"
+  elif [[ "$dev" =~ "[a-z]+[0-9]+\.[0-9]+" ]]; then
+    vlanipconfig="$vlanipconfig $__ipconfig"
+  elif [[ "$dev" =~ "^bond" ]]; then
+    bondipconfig="$bondipconfig $__ipconfig" 
+    networkipconfig="$networkipconfig $__ipconfig"
+  else
+    networkipconfig="$networkipconfig $__ipconfig"
   fi
   if [ -n "$_bridge" ]; then
     restartipconfig="$restartipconfig $__ipconfig"
   fi
   _ipconfig="$_ipconfig "$__ipconfig
-  return_code $?
 done
 unset _type
 unset __ipconfig
@@ -406,6 +410,7 @@ if [ -z "$(repository_get_value quorumack)" ]; then
   exec_local cluster_checkhosts_alive
   return_code
   if [ $return_c -ne 0 ]; then
+    usbLoad
   	echo_local ""
   	echo_local ""
   	echo_local "I couldn't talk to the required number of cluster nodes."
