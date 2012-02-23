@@ -120,6 +120,8 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/rhel5/nfs-lib.sh \
   boot-scripts/etc/rhel5/selinux-lib.sh \
   boot-scripts/etc/rhel6/boot-lib.sh \
+  boot-scripts/etc/rhel6/gfs-lib.sh \
+  boot-scripts/etc/rhel6/gfs2-lib.sh \
   boot-scripts/etc/rhel6/hardware-lib.sh \
   boot-scripts/etc/rhel6/network-lib.sh \
   boot-scripts/etc/rhel6/nfs-lib.sh \
@@ -256,6 +258,7 @@ CFG_FILES=basefiles.list \
     rpms.initrd.d/rhel/python.list \
     rpms.initrd.d/rhel/selinux.list \
     rpms.initrd.d/rhel5/base.list \
+    rpms.initrd.d/rhel5/comoonics.list \
     rpms.initrd.d/rhel5/comoonics-flexd.list \
 	rpms.initrd.d/rhel5/empty.list \
 	rpms.initrd.d/rhel5/perl.list \
@@ -268,6 +271,9 @@ CFG_FILES=basefiles.list \
     rpms.initrd.d/rhel6/base.list \
     rpms.initrd.d/rhel6/comoonics-flexd.list \
     rpms.initrd.d/rhel6/dm_multipath.list \
+    rpms.initrd.d/rhel6/fencedeps.list \
+    rpms.initrd.d/rhel6/fence_virt.list \
+    rpms.initrd.d/rhel6/fence_xvm.list \
     rpms.initrd.d/rhel6/gfs2.list \
     rpms.initrd.d/rhel6/hardware.list \
     rpms.initrd.d/rhel6/network.list \
@@ -334,6 +340,7 @@ CFG_DIR_CHROOT=$(SYSTEM_CFG_DIR)/bootimage-chroot
 #
 CFG_FILES_CHROOT=files.list \
 	rpms.list \
+	rpms.initrd.d/rhel6/fence_virt.list \
 	rpms.initrd.d/imsd-plugins.list
 	
 #************ CFG_FILES 
