@@ -503,7 +503,7 @@ function unpatch_files {
 #
 function check_sharedroot {
   local root_fstype=$1
-  if [ "$root_fstype" = "gfs" ] || [ "$root_fstype" = "ocfs2" ] || [ "$root_fstype" = "nfs" ] || [ "$root_fstype" = "glusterfs" ]; then
+  if [ "${root_fstype:0:3}" = "gfs" ] || [ "$root_fstype" = "ocfs2" ] || [ "$root_fstype" = "nfs" ] || [ "$root_fstype" = "glusterfs" ]; then
     return 1
   else
     return 0
