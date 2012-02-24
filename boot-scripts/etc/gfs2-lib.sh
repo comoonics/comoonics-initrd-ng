@@ -28,6 +28,10 @@
 [ -z "$default_lockmethod" ] && default_lockmethod="lock_dlm"
 [ -z "$default_mountopts" ] && default_mountopts="noatime"
 
+repository_has_key ccs_xml_query || repository_store_value ccs_xml_query "/usr/bin/com-queryclusterconf"
+repository_has_key cl_check_nodes ||  repository_store_value cl_check_nodes "/usr/bin/cl_checknodes"
+repository_has_key osrquerymap || repository_store_value osrquerymap /etc/comoonics/querymap.cfg 
+
 #****f* boot-scripts/etc/clusterfs-lib.sh/gfs2_getdefaults
 #  NAME
 #    gfs2_getdefaults
@@ -201,7 +205,8 @@ function gfs2_services_start() {
         
         [ -n "$chroot_path" ] && precmd="chroot $chroot_path"
 
-        ln -s /bin/true /sbin/chkconfig
+        ln -s /bin/false /sbin/chkconfig &>/dev/null
+        $precmd ln -s /bin/false /sbin/chkconfig &>/dev/null
         $precmd /etc/init.d/cman start setup
         mv /dev/misc $chroot_path/dev/misc
         ln -s $chroot_path/dev/misc /dev/misc
