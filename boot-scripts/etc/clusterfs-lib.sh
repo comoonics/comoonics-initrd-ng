@@ -828,6 +828,7 @@ function cc_auto_syslogconfig {
   local syslog_server=$5
   local syslog_filter=
   local no_klog=$6
+  local syslogdests=
 
   if [ -z "$syslog_type" ]; then
   	syslog_type=$(detect_syslog 2>/dev/null)
@@ -838,18 +839,15 @@ function cc_auto_syslogconfig {
   fi
   repository_store_value syslogtype "$syslog_type"
   
-  if [ -z "$syslog_logfile" ]; then
-    syslog_logfile=$(repository_get_value syslog_logfile)
-    if [ -z "$syslog_logfile" ]; then
-      syslog_logfile="/var/log/comoonics-boot.syslog"
-    fi
+  if [ -z "$syslog_logfile" ] && [ "$local_log" != "no" ]; then
+    syslog_logfile=$(repository_get_value syslog_logfile "/var/log/comoonics-boot.syslog")
   fi
+  syslog_filter=$(getParameter syslogfilter kern,daemon.info 2>/dev/null)
   if [ -n "$nodenameorid" ] && [ -z "$syslog_server" ]; then
-    syslog_server=$(getParameter syslogserver 2>/dev/null)
-    syslog_filter=$(getParameter syslogfilter 2>/dev/null)
+    syslog_server=$(getParameter syslogserver localhost 2>/dev/null)
   fi
-  [ -z "$syslog_filter" ] && syslog_filter="kern,daemon.info:$syslog_logfile"
-  repository_store_value syslogfilter "$syslog_filter"
+
+  [ -n "$syslog_filter" ] && repository_store_value syslogfilter "$syslog_filter"
 
   if [ -n "$syslog_type" ]; then
     syslog_template=$(getParameter syslogtemplate $(${clutype}_get_syslogtemplate "$@" 2>/dev/null) 2>/dev/null)
@@ -858,9 +856,13 @@ function cc_auto_syslogconfig {
 	fi
 	repository_store_value syslogtemplate $syslog_template
     
-    echo_local -n "Creating syslog config for syslog destinations: $syslog_filter server: $syslog_server"
+    echo_local -n "Creating syslog config for syslog destinations: $syslog_filter logfile: $syslog_logfile server: $syslog_server"
     mkdir -p ${chroot_path}/$(dirname $(repository_get_value syslogconf $(default_syslogconf $syslog_type)))
-    exec_local $(echo ${syslog_type} | tr '-' '_')_config $syslog_template "$no_klog" $syslog_filter $syslog_server > ${chroot_path}/$(repository_get_value syslogconf $(default_syslogconf $syslog_type))
+    [ -n "$syslog_logfile" ] && syslogdests="${syslog_filter}:${syslog_logfile}"
+    for server in $(echo "$syslog_server" | tr ',' ' '); do
+        syslogdests="${syslogdests} ${syslog_filter}:${server}"
+    done
+    exec_local $(echo ${syslog_type} | tr '-' '_')_config $syslog_template "$no_klog" $syslogdests > ${chroot_path}/$(repository_get_value syslogconf $(default_syslogconf $syslog_type))
     return_code
 
     local services=$(repository_get_value servicesfile "/etc/services")
