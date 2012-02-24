@@ -340,7 +340,7 @@ for ipconfig in $networkipconfig $vlanipconfig $bridgeipconfig $restartipconfig;
 done
 step "Network started" "netstart"
 
-cc_auto_syslogconfig "$(repository_get_value nodeid)" / "no" "$(repository_get_value syslog_logfile)"
+cc_auto_syslogconfig "$(repository_get_value nodeid)" / "" "$(repository_get_value syslog_logfile)"
 is_syslog=$?
 if [ $is_syslog -eq 0 ]; then
   cc_syslog_start
@@ -390,7 +390,7 @@ fi
 
 # but only if /dev is not the same inode as $chroot_path /dev
 if [ $is_syslog -eq 0 ] && ! is_same_inode /dev $(repository_get_value chroot_path)/dev; then
-  cc_auto_syslogconfig $(repository_get_value nodeid) $(repository_get_value chroot_path) "no" $(repository_get_value syslog_logfile)
+  cc_auto_syslogconfig $(repository_get_value nodeid) $(repository_get_value chroot_path) "" $(repository_get_value syslog_logfile)
   cc_syslog_start $(repository_get_value chroot_path) no_klog
   step "Syslog services started in chroot $(repository_get_value chroot_path)" "syslogchroot"
 fi
@@ -627,7 +627,7 @@ fi
 chrootneeded=$(repository_get_value chrootneeded)
 # Resetup syslog to forward messages to the localhost (whatever it does with those messages) but only if chroot is needed.
 if [ $chrootneeded -eq 0 ]; then
-  cc_auto_syslogconfig "" "" "$(repository_get_value newroot)/$(repository_get_value chroot_path)" "no" "localhost" "no_klog"
+  cc_auto_syslogconfig "$(repository_get_value nodeid)" "$(repository_get_value newroot)/$(repository_get_value chroot_path)" "no" "" "$(repository_get_value syslogserver)" "no_klog"
   cc_syslog_start "$(repository_get_value newroot)/$(repository_get_value chroot_path)" no_klog
 fi
 step "Restarted syslogd" "syslogrestart"
