@@ -304,6 +304,7 @@ CFG_FILES=basefiles.list \
     filters.list \
     filters.initrd.d/empty.list \
     filters.initrd.d/kernel.list \
+    pre.mkinitrd.d/01-clean-repository.sh \
     pre.mkinitrd.d/20-clusterconf-validate.sh \
     pre.mkinitrd.d/30-rootfs-check.sh \
     pre.mkinitrd.d/35-rootdevice-check.sh \
