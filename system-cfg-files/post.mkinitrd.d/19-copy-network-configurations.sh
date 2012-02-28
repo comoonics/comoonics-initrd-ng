@@ -26,7 +26,7 @@ if [ -d "${networkconfigdir}" ]; then
                     fi
                     if [ -n "$HWADDR" ]; then
                         HWADDR=$(echo $HWADDR | tr [A-Z] [a-z])
-                        repository_append_value ${nodeid}_hwaddr $HWADDR
+                        repository_append_value ${nodeid}_hwaddr " $HWADDR"
                     fi
                     unset STARTMODE HWADDR
                 fi
