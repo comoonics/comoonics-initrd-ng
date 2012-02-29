@@ -62,6 +62,7 @@ EXEC_FILES=create-gfs-initrd-generic.sh \
   manage_chroot.sh \
   manage_initrd_repository \
   com-chroot \
+  com-forcdsls \
   boot-scripts/com-halt.sh \
   boot-scripts/com-realhalt.sh \
   boot-scripts/linuxrc \
