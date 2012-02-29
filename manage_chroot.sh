@@ -511,12 +511,6 @@ function check_sharedroot {
 }
 #************ check_sharedroot
 
-#include /etc/sysconfig/cluster
-
-if [ -e /etc/sysconfig/cluster ]; then
-	. /etc/sysconfig/cluster
-fi
-
 # TO DO get chrootdir from cluster-lib.sh
 # - test chrootdir/
 # - fallback /comoonics
