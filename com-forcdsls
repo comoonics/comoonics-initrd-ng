@@ -19,11 +19,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-cdslinvadm=$(which com-cdslinvadm 2>/dev/null)
+cdslinvadm=${cdslinvadm:-$(which com-cdslinvadm 2>/dev/null)}
 cdslinvadm=${cdslinvadm:-/usr/bin/com-cdslinvadm}
 
 nodeids=
-exists=
+exists=1
 default=
 prefix=
 nodefault=
@@ -36,7 +36,7 @@ Will execute the cmdline. Before the cmdline is executed it is examined for
 files given as parameters. If a file is a cdsl it will be replaced by all 
 filespaths leading to the real cdsl (see examples below).
 
---exists: checks if the file (cdslfile) exists and will only add existent 
+--notexists: ignores the check if the file (cdslfile) exists and will only add existent 
      cdslfiles to the command. (Default: False: don't check for existence)
      
 --nodeid=nodeid: overwrites the automatically detected available nodeids. This
@@ -108,8 +108,8 @@ while [ -n "$1" ]; do
             fi
             nodeids="$nodeids $value"
             ;;
-        exists)
-            exists=1
+        notexists)
+            exists=
             ;;
         nodefault)
             nodefault=1
@@ -143,7 +143,7 @@ while [ -n "$1" ]; do
 done
 
 [ -z "$nodeids" ] && nodeids=$(find /$($cdslinvadm get tree)/[0-9]* -maxdepth 0 -type d -printf "%f ")
-[ -z "$default" ] && default="/$($cdslinvadm get tree)/$($cdslinvadm get default_dir)"
+[ -z "$default" ] && default="$($cdslinvadm get default_dir)"
 [ "$nodefault" = "1" ] && default=
 params=( )
 i=0
@@ -151,6 +151,7 @@ tree=$($cdslinvadm get tree)
 while [ -n "$1" ]; do
   param="$1"
   if ( [ "$exists" != "1" ] || [ -e "$param" ] ) && cdsl=$($cdslinvadm getcdsl $param 2>/dev/null); then
+    cdsl=${cdsl%% *}
     for nodeid in $(echo "$nodeids $default"); do
       cdslpath="/${tree}/${nodeid}"
       param="${prefix}${cdslpath}/$cdsl"
