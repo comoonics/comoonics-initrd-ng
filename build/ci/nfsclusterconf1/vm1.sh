@@ -1,0 +1,5 @@
+source virt.sh
+VM_SOURCE_NAME=OR_Template-02_RHEL5_x86
+VM_NAME=JENKINS-test1
+VM_NIC1_MAC=54:52:00:60:ac:a1
+VM_DISK1=${STORAGE_DIR}/${VM_NAME}.img
