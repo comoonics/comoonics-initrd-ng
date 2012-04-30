@@ -3,7 +3,7 @@ JOBNAME=${1:-"nfsclusterconf1"}
 source ${JOBNAME}/virt.sh
 source ${JOBNAME}/vm1.sh
 echo "First clean up old storage files.."
-virsh vol-delete $VM_DISK1
+virsh --connect $LIBVIRT_URL vol-delete $VM_DISK1
 echo "Ignore Error if disk does not exist."
 
 echo "First the template machine for installation has to be cloned.."
