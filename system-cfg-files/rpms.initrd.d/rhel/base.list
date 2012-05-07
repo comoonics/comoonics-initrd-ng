@@ -2,3 +2,4 @@
 libgcc			\.so
 SysVinit        ^/sbin             -                ignoremissing
 SysVinit        ^/bin              -                ignoremissing
+grep
