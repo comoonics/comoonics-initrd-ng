@@ -108,13 +108,13 @@ case "$1" in
         [ "$EUID" != "0" ] && exit 4
 	__umount_loopback_loop
   	if [ -n "$NETDEVMTAB" ]; then
-		__umount_loop '$4 ~ /_netdev/ && $2 != "/" {print $2}' \
+		__umount_loop '$4 ~ /_netdev/ && $2 != "/" && $2 !~ '$xtab' {print $2}' \
 			/etc/mtab \
 			$"Unmounting network block filesystems: " \
 			$"Unmounting network block filesystems (retry): "
 	fi
   	if [ -n "$NFSMTAB" ]; then
-		__umount_loop '$3 ~ /^nfs/ && $3 != "nfsd" && $2 != "/" {print $2}' \
+		__umount_loop '$3 ~ /^nfs/ && $3 != "nfsd" && $2 != "/" && $2 !~ '$xtab' {print $2}' \
 			/proc/mounts \
 			$"Unmounting NFS filesystems: " \
 			$"Unmounting NFS filesystems (retry): " \
