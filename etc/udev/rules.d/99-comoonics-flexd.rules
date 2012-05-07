@@ -1,6 +1,6 @@
 # Create the links for multipath devices if there are any stops if the multipath device is matched
 # First create the link for the disk itself
-# Rule for udev on SLES11
+# Rule for udev on SLES11/RHEL6
 ENV{DM_UUID}=="mpath-*", IMPORT{file}=="/etc/sysconfig/comoonics-flexd"
 ENV{DM_UUID}=="mpath-*", \
     PROGRAM="/bin/bash -c 'for flexdexp in $env{FLEXD_MPATH_PREFIX}; do [[ $env{DM_NAME} =~ $$flexdexp ]] && exit 0; done; exit 1'", \
