@@ -283,12 +283,9 @@ if [ ! -x $grubby ] ; then
 fi
 
 
-[ -n "$grubConfig" ] && [ -f "$grubConfig" ] && cfgGrub=1;
+[ -n "$grubConfig" ] && [ -f "$grubConfig" ] && cfgGrub=1 || cfgGrub=0;
 
-if [ "$cfgGrub" -ne 1 ]; then
-	echo "Could not find a valid boot loader configuration. Please adapt manually."
-	exit 0
-elif [ "$mode" == "--install" ] && [ $cfgGrub -eq 1 ]; then
+if [ "$mode" == "--install" ] && [ $cfgGrub -eq 1 ]; then
     install
     exit 0
 elif [ "$mode" == "--remove" ] && [ $cfgGrub -eq 1 ]; then
