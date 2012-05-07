@@ -31,9 +31,9 @@
 
 #****f* hardware-lib.sh/hardware_start_services
 #  NAME
-#    udev_start
+#    hardware_start_services
 #  SYNOPSIS
-#    function boot-lib.sh/udev_start
+#    function hardware-lib.sh/hardware_start_services
 #  MODIFICATION HISTORY
 #  IDEAS
 #  SOURCE
@@ -56,7 +56,7 @@ function hardware_start_services() {
 #
 function udev_start() {
   local distribution=$(repository_get_value distribution)
-  ${distribution}_udev_start
+  ${distribution}_udev_start $@
 }
 #************udev_start
 
