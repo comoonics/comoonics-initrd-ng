@@ -70,7 +70,7 @@ Requires:      comoonics-bootimage-listfiles-all
 Requires:      comoonics-tools-py
 Requires:      comoonics-release >= 5.0
 #Conflicts:
-Release:       9_%{LINUXDISTROSHORT}
+Release:       13_%{LINUXDISTROSHORT}
 Vendor:        ATIX AG
 Packager:      ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -86,7 +86,7 @@ Scripts for creating an initrd in a OSR cluster environment
 
 %package extras-localconfigs
 Version: 5.0
-Release: 6_%{LINUXDISTROSHORT}
+Release: 8_%{LINUXDISTROSHORT}
 Requires: comoonics-bootimage >= 5.0
 Obsoletes: comoonics-bootimage-extras-osr
 Summary: Extra for cluster configuration via local files
@@ -397,7 +397,7 @@ Vi includes for comoonics-bootimage (takes vim)
 
 %package listfiles-all
 Version: 5.0
-Release: 2_%{LINUXDISTROSHORT}
+Release: 3_%{LINUXDISTROSHORT}
 Requires: comoonics-bootimage >= 5.0
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
 Distribution: %{DISTRIBUTIONBASE}
@@ -409,7 +409,7 @@ OSR Listfiles that are only relevant for all linux distributions
 
 %package listfiles-rhel5
 Version: 5.0
-Release: 2_rhel5
+Release: 3_rhel5
 Requires: comoonics-bootimage >= 5.0
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-all
@@ -424,7 +424,7 @@ OSR extra files that are only relevant for RHEL Versions
 
 %package listfiles-rhel6
 Version: 5.0
-Release: 2_rhel6
+Release: 3_rhel6
 Requires: comoonics-bootimage >= 5.0
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-all
@@ -535,11 +535,12 @@ OSR extra files that are only relevant for RHEL5 and EXT4
 
 %package listfiles-rhel5-gfs
 Version: 5.0
-Release: 2_rhel5
+Release: 3_rhel5
 Requires: comoonics-bootimage >= 5.0
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-rhel5
 Requires: SysVinit-comoonics
+Requires: comoonics-bootimage-listfiles-rhel5-fencelib
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
 Summary: Extrafiles for RedHat Enterprise Linux Version 5 and GFS
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
@@ -556,11 +557,12 @@ OSR extra files that are only relevant for RHEL5 and GFS
 
 %package listfiles-rhel5-gfs2
 Version: 5.0
-Release: 2_rhel5
+Release: 3_rhel5
 Requires: comoonics-bootimage >= 5.0
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-rhel5
 Requires: SysVinit-comoonics
+Requires: comoonics-bootimage-listfiles-rhel5-fencelib
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
 Summary: Extrafiles for RedHat Enterprise Linux Version 5 and GFS2
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
@@ -665,11 +667,10 @@ OSR extra files that are only relevant for RHEL6 Versions and nfs support
 
 %package listfiles-rhel6-ocfs2
 Version: 5.0
-Release: 2_rhel6
+Release: 3_rhel6
 Requires: comoonics-bootimage >= 5.0
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-rhel6
-Requires: SysVinit-comoonics
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
 Summary: Extrafiles for RedHat Enterprise Linux Version 6 and OCFS2
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
@@ -684,11 +685,11 @@ OSR extra files that are only relevant for RHEL6 and OCFS2
 
 %package listfiles-rhel6-gfs2
 Version: 5.0
-Release: 2_rhel6
+Release: 3_rhel6
 Requires: comoonics-bootimage >= 5.0
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-rhel6
-Requires: SysVinit-comoonics
+Requires: comoonics-bootimage-listfiles-rhel6-fencelib
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
 Summary: Extrafiles for RedHat Enterprise Linux Version 6 and OCFS2
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
@@ -828,29 +829,59 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 %description listfiles-perl-rhel5
 Listfiles for the perl to be imported in the bootimage.
 
-%package listfiles-fencelib
+%package listfiles-rhel5-fencelib
 Version: 5.0
-Release: 2_%{LINUXDISTROSHORT}
+Release: 1_rhel5
 Requires: comoonics-bootimage
 Summary: Listfiles for Fencelibs
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
 Distribution: %{DISTRIBUTIONBASE}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Obsoletes: comoonics-bootimage-listfiles-fencelib
 
-%description listfiles-fencelib
+%description listfiles-rhel5-fencelib
 Listfiles for the fencelibs to be imported in the bootimage.
 
-%package listfiles-fencexvm
+%package listfiles-rhel6-fencelib
 Version: 5.0
-Release: 2_%{LINUXDISTROSHORT}
+Release: 1_rhel6
 Requires: comoonics-bootimage
-Summary: Listfiles for fence_xvm
+Summary: Listfiles for Fencelibs
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
 Distribution: %{DISTRIBUTIONBASE}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Obsoletes: comoonics-bootimage-listfiles-fencelib
 
-%description listfiles-fencexvm
-Listfiles for the fence_xvm agent to be imported in the bootimage.
+%description listfiles-rhel6-fencelib
+Listfiles for the fencelibs to be imported in the bootimage.
+
+%package listfiles-rhel5-fencevirt
+Version: 5.0
+Release: 3_rhel5
+Requires: comoonics-bootimage
+Requires: comoonics-bootimage-listfiles-rhel5-fencelib
+Summary: Listfiles for fence_xvm and fence_virt
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
+Distribution: %{DISTRIBUTIONBASE}
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Obsoletes: comoonics-bootimage-listfiles-fencexvm
+
+%description listfiles-rhel5-fencevirt
+Listfiles for the fence_xvm and fence_virt agent to be imported in the bootimage.
+
+%package listfiles-rhel6-fencevirt
+Version: 5.0
+Release: 3_rhel6
+Requires: comoonics-bootimage
+Requires: comoonics-bootimage-listfiles-rhel6-fencelib
+Summary: Listfiles for fence_xvm and fence_virt
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
+Distribution: %{DISTRIBUTIONBASE}
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Obsoletes: comoonics-bootimage-listfiles-fencexvm
+
+%description listfiles-rhel6-fencevirt
+Listfiles for the fence_xvm and fence_virt agent to be imported in the bootimage.
 
 %package listfiles-fence_vmware-rhel5
 Version: 5.0
@@ -903,7 +934,7 @@ OSR files needed for the compatibility to 1.2 releases
 
 %package imsd
 Version: 5.0
-Release: 4_%{LINUXDISTROSHORT}
+Release: 5_%{LINUXDISTROSHORT}
 Obsoletes: comoonics-bootimage-fenceacksv
 Requires: comoonics-imsd-py
 Requires: comoonics-bootimage >= 5.0
@@ -1146,10 +1177,16 @@ for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; don
 %post listfiles-perl-rhel5
 for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
 
-%post listfiles-fencelib
+%post listfiles-rhel5-fencelib
 for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
 
-%post listfiles-fencexvm
+%post listfiles-rhel6-fencelib
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post listfiles-rhel5-fencevirt
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post listfiles-rhel6-fencevirt
 for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
 
 %post listfiles-fence_vmware-rhel5
@@ -1209,6 +1246,7 @@ fi
 %dir %{LIBDIR}/boot-scripts/dev
 %attr(0755, root, root) %{APPDIR}/create-gfs-initrd-generic.sh
 %attr(0755, root, root) %{APPDIR}/com-chroot
+%attr(0755, root, root) %{APPDIR}/com-forcdsls
 %attr(0644, root, root) %{APPDIR}/create-gfs-initrd-lib.sh
 %attr(0755, root, root) %{APPDIR}/manage_chroot.sh
 %attr(0755, root, root) %{APPDIR}/manage_initrd_repository
@@ -1254,6 +1292,8 @@ fi
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel5/hardware-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel5/network-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel6/boot-lib.sh
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel6/gfs-lib.sh
+%attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel6/gfs2-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel6/hardware-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/rhel6/network-lib.sh
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/sles10/boot-lib.sh
@@ -1294,6 +1334,7 @@ fi
 
 %files extras-localconfigs
 %attr(0644, root, root) %{LIBDIR}/boot-scripts/etc/osr-lib.sh
+%attr(0644, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/01-clean-repository.sh
 %attr(0644, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/30-rootfs-check.sh
 %attr(0644, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/35-rootdevice-check.sh
 %attr(0644, root, root) %{CONFIGDIR}/bootimage/pre.mkinitrd.d/38-multipath-check.sh
@@ -1436,6 +1477,7 @@ fi
 %dir %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel5/empty.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel5/configs.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/comoonics.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/empty.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/base.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/hardware.list
@@ -1516,14 +1558,14 @@ fi
 %files listfiles-rhel5-ext4
 
 %files listfiles-rhel5-gfs
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/comoonics.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/comoonics.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/gfs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel5/rhcs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/rhcs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/gfs1.list
 
 %files listfiles-rhel5-gfs2
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/comoonics.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/comoonics.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/gfs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel5/rhcs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/rhcs.list
@@ -1553,7 +1595,6 @@ fi
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/post.mkinitrd.d/03-nfs-deps.sh
 
 %files listfiles-rhel6-gfs2
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/comoonics.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel/gfs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/rhel6/rhcs.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel6/rhcs.list
@@ -1601,11 +1642,19 @@ fi
 %files listfiles-syslog-ng
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/syslog-ng.list
 
-%files listfiles-fencelib
+%files listfiles-rhel5-fencelib
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fencedeps.list
 
-%files listfiles-fencexvm
+%files listfiles-rhel6-fencelib
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fencedeps.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel6/fencedeps.list
+
+%files listfiles-rhel5-fencevirt
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fencexvm.list
+
+%files listfiles-rhel6-fencevirt
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/fencexvm.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel6/fence_virt.list
 
 %files listfiles-perl-rhel5
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel5/perl.list
@@ -1637,6 +1686,62 @@ fi
 rm -rf %{buildroot}
 
 %changelog
+* Mon May 07 2012 Marc Grimme <grimme( at )atix.de> - 5.0-13
+  - system-cfg-files/rpms.initrd.d/rhel5/base.list: added zlib.
+  - system-cfg-files/rpms.initrd.d/rhel/base.list: added grep rpm for 
+        cosmetic warnings in ifup script if egrep was not existant.
+  - boot-scripts/linuxrc.generic.sh: fixed bug where bridged devices 
+        would not be successfully powered because of wrong order.
+  - boot-scripts/etc/network-lib.sh: 
+      nicConfig:
+       - removed old obsolete xen code from here.
+  - boot-scripts/etc/hardware-lib.sh
+      udev_start: pass parameters to distribution function.
+  - boot-scripts/etc/rhel6/hardware-lib.sh:
+      rhel6_udev_start:
+       - declare some variables as local
+  - std-lib.sh will know be sourceable from bash with posix mode enabled.
+    => Bug in auto initrd build called from kernel rpm will be fixed.
+* Fri Feb 24 2012 Marc Grimme <grimme( at )atix.de> - 5.0-12
+  - boot-scripts/linuxrc.generic.sh: pass proper parameters to cc_auto_syslog
+  - boot-scripts/etc/gfs2-lib.sh: gfs_start: - chkconfig will be linked to
+     /bin/false
+  - boot-scripts/etc/clusterfs-lib.sh: cc_auto_syslogconfig: - Fixed bugs that
+    lead to syslog file being written into chroot - Now multiple syslog
+    destinations can be given (syslogserver) - The syslogfilter specifies the
+    global syslog filter
+  - boot-scripts/etc/bashrc: added logger alias to log with daemon level.
+  - boot-scripts/etc/network-lib.sh: now return error if nicUp/ifup fails.
+  - querymap.cfg: removed wrong calls for hwids.
+  - manage_chroot.sh: check_sharedroot: added gfs2
+  - boot-scripts/linuxrc.generic.sh: changed the order of NIC power up to work
+    identically with cluster.conf or local configuration files (order VLAN after
+    physical NIC) (BZ: 460)
+  - boot-scripts/etc/gfs-lib.sh: gfs_auto_hosts: add a newline in the end.
+  - boot-scripts/etc/gfs2-lib.sh: gfs2_init: added bind mounts to /etc/cluster
+    and /dev/shm in chroot. gfs2_start: create link to /sbin/chkconfig
+  - boot-scripts/etc/clusterfs-lib.sh: getCluType: if cluster.conf exists but
+    no information can be found fall back to osr cluster type (BZ #461)
+  - manage_chroot.sh: removed obsolete repository clear for each call.
+  - system-cfg-files.chroot/files.list, system-cfg-files.chroot/rpms.list,
+    system-cfg-files/basefiles.list, system-cfg-files/rpms.list: 
+    removed cvs logs.
+  - boot-scripts/linuxrc.generic.sh: 
+      added root repository value to be copied to root filesystem.
+  - boot-scripts/com-realhalt.sh: 
+      fixed passing of parameters to clusterfs_services_stop
+  - boot-scripts/etc/gfs2-lib.sh: many bugfixes to work with RHEL6 and gfs2.
+  -  boot-scripts/etc/boot-lib.sh: added sleep for 4 seconds after telinit u.
+       Seems to make the reload more stable with rhel6.
+  - querymap.cfg: added legacy chroot queries.
+  - manage_chroot.sh: same default xkillallprocsfile as initrd.
+* Fri Feb 03 2012 Marc Grimme <grimme( at )atix.de> - 5.0-11
+  * Fixed bugs
+    * #459 - Power up of bond interfaces also powers up slaves also not necessary
+    * #458 - Boot fails with network adapters using 8021q drivers (be2net)
+* Mon Dec 05 2011 Marc Grimme <grimme( at )atix.de> - 5.0-10
+  * removed the link check in nicUp/etc/network-lib.sh as it did no good in 
+    some cases 
 * Wed Nov 30 2011 Marc Grimme <grimme( at )atix.de> - 5.0-9
   * moved 19/20-copy-network-configuration.. to localconfigs
   * moved 21-copy-cdsltab.. to localconfigs
@@ -2734,6 +2839,16 @@ rm -rf %{buildroot}
 - first offical rpm version
 
 %changelog extras-localconfigs
+* Tue Feb 28 2012 Marc Grimme <grimme( at )atix.de> - 5.0-7
+  - system-cfg-files/pre.mkinitrd.d/01-clean-repository
+    new dep script that cleans some settings that should be detected newly.
+* Tue Feb 23 2012 Marc Grimme <grimme( at )atix.de> - 5.0-7
+  - boot-scripts/etc/osr-lib.sh:
+    osr_get_nodeid hw/mac: take local configuration files into account
+    osr_auto_hosts: take /etc/hosts if available into account
+  - system-cfg-files/post.mkinitrd.d/19-copy-network-configurations.sh:
+    - only source relevant variables from network configuration files
+    - generate hw/mac address ids to be used later on by nodeid detection
 * Wed Nov 30 2011 Marc Grimme <grimme( at )atix.de> - 5.0-6  
   * moved 19/20-copy-network-configuration.. to localconfigs
   * moved 21-copy-cdsltab.. to localconfigs
@@ -3108,6 +3223,9 @@ rm -rf %{buildroot}
   - initial revision
 
 %changelog listfiles-all
+* Fri Feb 03 2012 Marc Grimme <grimme( at )atix.de> - 5.0-3
+  * Fixed bugs
+    * #458 - Boot fails with network adapters using 8021q drivers (be2net)
 * Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
   - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
@@ -3150,6 +3268,11 @@ rm -rf %{buildroot}
   - initial revision 
 
 %changelog listfiles-rhel5
+* Tue Feb 14 2012 Marc Grimme <grimme( at )atix.de> 5.0-3
+  - system-cfg-files/rpms.initrd.d/rhel/comoonics.list,
+    .../rpms.initrd.d/rhel5/comoonics.list: 
+      moved comoonics.list from rhel to rhel5 as SysVinit-comoonics is only 
+      required by rhel5 not rhel6 any more.   
 * Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
   - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
@@ -3181,6 +3304,13 @@ rm -rf %{buildroot}
   - initial revision 
 
 %changelog listfiles-rhel6
+* Tue Feb 14 2012 Marc Grimme <grimme( at )atix.de> 5.0-3
+  - system-cfg-files/rpms.initrd.d/rhel/comoonics.list,
+    .../rpms.initrd.d/rhel5/comoonics.list: 
+      moved comoonics.list from rhel to rhel5 as SysVinit-comoonics is only 
+      required by rhel5 not rhel6 any more.   
+  - system-cfg-files/rpms.initrd.d/rhel6/base.list: added kbd rpms to later
+    better support keyboard layouts.
 * Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
   - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
@@ -3248,6 +3378,8 @@ rm -rf %{buildroot}
 - introduced the changelog
 
 %changelog listfiles-rhel5-gfs
+* Mon Feb 13 2012 Marc Grimme <grimme( at )atix.de> 5.0-3
+  - moved comoonics.list to rhel5 directory. Not needed for RHEL6
 * Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
   - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
@@ -3256,6 +3388,8 @@ rm -rf %{buildroot}
 - first version for comoonics-5.0-pre
 
 %changelog listfiles-rhel5-gfs2
+* Mon Feb 13 2012 Marc Grimme <grimme( at )atix.de> 5.0-3
+  - moved comoonics.list to rhel5 directory. Not needed for RHEL6
 * Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
   - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
@@ -3317,6 +3451,8 @@ rm -rf %{buildroot}
 - first version for comoonics-5.0-pre
 
 %changelog listfiles-rhel6-ocfs2
+* Mon Feb 13 2012 Marc Grimme <grimme( at )atix.de> 5.0-3
+  - removed SysVinit-comoonics dependency (not needed for RHEL6)
 * Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
   - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
@@ -3325,6 +3461,18 @@ rm -rf %{buildroot}
   initial revision
 
 %changelog listfiles-rhel6-gfs2
+* Mon Feb 23 2012 Marc Grimme <grimme( at )atix.de> 5.0-3
+  - system-cfg-files/rpms.initrd.d/rhel6/rhcs.list: added libxml2 required by
+      cman initscript
+  - system-cfg-files/files.initrd.d/rhel6/rhcs.list: add flock command and
+      /etc/sysconfig/clvmd to initrd (needed by initscripts).
+  - system-cfg-files/rpms.initrd.d/rhel6/rhcs.list: 
+    added corosync and clusterlib as rpms needed by rhel6 and rhcs.
+  - system-cfg-files/rpms.initrd.d/rhel6/gfs2.list: 
+    added comoonics-cluster-tools-py for checking availability of nodes during boot up.
+  -  system-cfg-files/files.initrd.d/rhel6/rhcs.list: added getopt
+  - removed SysVinit-comoonics dependency (not needed for RHEL6)
+  - updated listfiles.
 * Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
   - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
@@ -3418,7 +3566,26 @@ rm -rf %{buildroot}
 * Wed Jul 07 2010 Marc Grimme <grimme@atix.de> 0.1-1
 - initial version 
 
-%changelog listfiles-fencexvm
+%changelog listfiles-fencelib-rhel5
+* Tue Feb 14 2012 Marc Grimme <grimme ( at )atix.de> 5.0-1
+  - initial revision obsoletes listfiles-fencelib
+
+%changelog listfiles-fencelib-rhel6
+* Tue Feb 14 2012 Marc Grimme <grimme ( at )atix.de> 5.0-1
+  - initial revision obsoletes listfiles-fencelib
+
+%changelog listfiles-rhel5-fencevirt
+* Thu Feb 23 2012 Marc Grimme <grimme( at )atix.de> 5.0-3
+  - system-cfg-files/rpms.initrd.d/fencexvm.list: removed CVS Tag
+* Wed Jul 07 2010 Marc Grimme <grimme@atix.de> 0.1-1
+- initial version 
+
+%changelog listfiles-rhel6-fencevirt
+* Thu Feb 23 2012 Marc Grimme <grimme( at )atix.de> 5.0-3
+  - .../rpms.initrd.d/rhel6/fence_virt.list,
+    .../rpms.initrd.d/rhel6/fence_xvm.list,
+    .../rpms.initrd.d/rhel6/fence_virt.list: list files for rhel6 and
+      fence_virt/fence_xvm
 * Wed Jul 07 2010 Marc Grimme <grimme@atix.de> 0.1-1
 - initial version 
 
@@ -3455,6 +3622,8 @@ rm -rf %{buildroot}
 - initial revision
 
 %changelog imsd
+* Wed Nov 30 2011 Marc Grimme <grimme( at )atix.de> - 5.0-5
+  * shell.py: use the right constructor to create a valid systeminformation
 * Tue Nov 29 2011 Marc Grimme <grimme( at )atix.de> - 5.0-4
   * imsd/imsd.sh: - changed shutdown level to 38 before bootsr.
 * Fri Nov 25 2011 Marc Grimme <grimme( at )atix.de> - 5.0-3

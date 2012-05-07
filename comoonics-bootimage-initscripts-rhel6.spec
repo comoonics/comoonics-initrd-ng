@@ -71,7 +71,7 @@ Requires: comoonics-bootimage >= 5.0
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-rhel6
 #Conflicts: 
-Release: 3_rhel6
+Release: 6_rhel6
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -102,6 +102,8 @@ install -m755 initscripts/halt.local $RPM_BUILD_ROOT/%{SBINDIR}/halt.local
 install -m600 initscripts/rhel6/new-kernel-pkg-update.sh $RPM_BUILD_ROOT/%{APPDIR}/patches/new-kernel-pkg-update.sh
 install -m755 initscripts/rhel6/netfs $RPM_BUILD_ROOT/%{APPDIR}/patches/netfs
 install -m755 initscripts/rhel6/network $RPM_BUILD_ROOT/%{APPDIR}/patches/network
+install -m755 initscripts/rhel6/halt $RPM_BUILD_ROOT/%{APPDIR}/patches/halt
+#install -m755 initscripts/rhel6/halt.orig $RPM_BUILD_ROOT/%{APPDIR}/patches/halt.orig
 install -m755 initscripts/rhel6/netfs.orig $RPM_BUILD_ROOT/%{APPDIR}/patches/netfs.orig
 install -m755 initscripts/rhel6/network.orig $RPM_BUILD_ROOT/%{APPDIR}/patches/network.orig
 
@@ -139,6 +141,8 @@ if ! grep "source %{COMOONICS_NEW_KERNEL_PKG_UPDATE}" "%{KERNEL_SYSCONFIG_FILE}"
   echo "test -e %{COMOONICS_NEW_KERNEL_PKG_UPDATE} && source %{COMOONICS_NEW_KERNEL_PKG_UPDATE}" >> %{KERNEL_SYSCONFIG_FILE}
 fi
 
+%{APPDIR}/manage_chroot.sh -a patch_files
+
 /bin/true
 
 %postun
@@ -151,6 +155,7 @@ fi
 %attr(755, root, root) %{INITDIR}/bootsr
 %attr(755, root, root) %{INITDIR}/mountcdsls
 %attr(755, root, root) %{SBINDIR}/halt.local
+%attr(755, root, root) %{APPDIR}/patches/halt
 %attr(644, root, root) %{APPDIR}/patches/new-kernel-pkg-update.sh
 %attr(755, root, root) %{APPDIR}/patches/netfs
 %attr(755, root, root) %{APPDIR}/patches/network
@@ -161,15 +166,30 @@ fi
 rm -rf %{buildroot}
 
 %changelog
-* Tue Nov 29 2011 Marc Grimme <grimme ( at )atix.de> - 5.0-3_rhel5
+* Mon May 07 2012 Marc Grimme <grimme( at )atix.de> 5.0-6
+   - initscripts/rhel5/new-kernel-pkg-update.sh
+       would yield an error if grub.conf exists but is not used (NFS Root).
+* Tue Mar 08 2012 Marc Grimme <grimme( at )atix.de> 5.0-5
+    - netfs added xtab for stop (did not work for nfs)
+* Tue Feb 14 2012 Marc Grimme <grimme( at )atix.de> 5.0-4
+   - initscripts/bootsr: 
+    - changed stop order of bootsr to be stopped later
+      (after clvmd has been stoped). 
+    - removed clean_start (obsolete) 
+    - check_sharedroot now knows of gfs and gfs2 
+    - start: calling clusterfs_init and cc_init independently from root 
+             filesystem and cluster type (different parameters) 
+     - stop: calling clusterfs_init and cc_init independently from
+             root filesystem and cluster type (different parameters)
+* Tue Nov 29 2011 Marc Grimme <grimme ( at )atix.de> - 5.0-3
   * initscripts/bootsr: moved inclusion of /etc/init.d/functions and
     /etc/rc.status after inclusion of libs. Now all outputs should be seen at
     console.
-* Fri Nov 25 2011 Marc Grimme <grimme( at )atix.de> - 5.0-2_rhel5
+* Fri Nov 25 2011 Marc Grimme <grimme( at )atix.de> - 5.0-2
   * initscripts/bootsr: - Added call to update the repository from initrd -
     Only remount cdsl environment if it is not only in /etc/mtab existant - other
     handling fixes with chrootneeded
-* Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> - 5.0-1_rhel5
+* Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> - 5.0-1
   * Rebase for Release 5.0
 * Wed Oct 26 2011 Marc Grimme <grimme( at )atix.de> - 1.4-4.rhel6
 - added netfs and network initscript to be overwritten.

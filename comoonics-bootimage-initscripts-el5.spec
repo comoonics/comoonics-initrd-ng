@@ -71,7 +71,7 @@ Requires: comoonics-bootimage >= 5.0
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-rhel5
 #Conflicts: 
-Release: 4_rhel5
+Release: 6_rhel5
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -189,6 +189,8 @@ if ! grep "source %{COMOONICS_NEW_KERNEL_PKG_UPDATE}" "%{KERNEL_SYSCONFIG_FILE}"
   echo "test -e %{COMOONICS_NEW_KERNEL_PKG_UPDATE} && source %{COMOONICS_NEW_KERNEL_PKG_UPDATE}" >> %{KERNEL_SYSCONFIG_FILE}
 fi
 
+%{APPDIR}/manage_chroot.sh -a patch_files
+
 /bin/true
 
 %postun
@@ -221,11 +223,24 @@ fi
 rm -rf %{buildroot}
 
 %changelog
-* Tue Nov 29 2011 Marc Grimme <grimme ( at )atix.de> - 5.0-4_rhel5
+* Mon May 07 2012 Marc Grimme <grimme( at )atix.de> 5.0-6
+   - initscripts/rhel5/new-kernel-pkg-update.sh
+       would yield an error if grub.conf exists but is not used (NFS Root).
+* Tue Feb 14 2012 Marc Grimme <grimme( at )atix.de> 5.0-5
+   - initscripts/bootsr: 
+    - changed stop order of bootsr to be stopped later
+      (after clvmd has been stoped). 
+    - removed clean_start (obsolete) 
+    - check_sharedroot now knows of gfs and gfs2 
+    - start: calling clusterfs_init and cc_init independently from root 
+             filesystem and cluster type (different parameters) 
+     - stop: calling clusterfs_init and cc_init independently from
+             root filesystem and cluster type (different parameters)
+* Tue Nov 29 2011 Marc Grimme <grimme ( at )atix.de> - 5.0-4
   * initscripts/bootsr: moved inclusion of /etc/init.d/functions and
     /etc/rc.status after inclusion of libs. Now all outputs should be seen at
     console.
-* Fri Nov 25 2011 Marc Grimme <grimme ( at )atix.de> - 5.0-3_rhel5
+* Fri Nov 25 2011 Marc Grimme <grimme ( at )atix.de> - 5.0-3
   * initscripts/bootsr: - Added call to update the repository from initrd -
     Only remount cdsl environment if it is not only in /etc/mtab existant - other
     handling fixes with chrootneeded

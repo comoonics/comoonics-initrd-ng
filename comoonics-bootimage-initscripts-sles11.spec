@@ -68,7 +68,7 @@ BuildArch: noarch
 Requires: comoonics-bootimage >= 5.0
 Requires: comoonics-bootimage-listfiles-sles11
 #Conflicts:
-Release: 2_sles11
+Release: 3_sles11
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -128,14 +128,24 @@ true
 %attr(755, root, root) %{INITDIR}/halt.local
 
 %changelog
-* Tue Nov 29 2011 Marc Grimme <grimme ( at )atix.de> - 5.0-4_rhel5
+* Tue Feb 14 2012 Marc Grimme <grimme( at )atix.de> 5.0-3
+   - initscripts/bootsr: 
+    - changed stop order of bootsr to be stopped later
+      (after clvmd has been stoped). 
+    - removed clean_start (obsolete) 
+    - check_sharedroot now knows of gfs and gfs2 
+    - start: calling clusterfs_init and cc_init independently from root 
+             filesystem and cluster type (different parameters) 
+     - stop: calling clusterfs_init and cc_init independently from
+             root filesystem and cluster type (different parameters)
+* Tue Nov 29 2011 Marc Grimme <grimme ( at )atix.de> - 5.0-2
   * initscripts/bootsr: moved inclusion of /etc/init.d/functions and
     /etc/rc.status after inclusion of libs. Now all outputs should be seen at
     console.
   * initscripts/bootsr: - Added call to update the repository from initrd -
     Only remount cdsl environment if it is not only in /etc/mtab existant - other
     handling fixes with chrootneeded
-* Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1_sles11
+* Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
   * Rebase for Release 5.0
 * Tue Oct 25 2011 Marc Grimme <grimme( at )atix.de> 1.4-14.sles11
 - take bootsr from upstream.
