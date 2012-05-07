@@ -51,10 +51,11 @@ function rhel6_hardware_detect() {
 #  SOURCE
 #
 function rhel6_udev_start() {
-    UDEVVERSION=$(udevadm --version)
+    udevtriggeropts=${udevtriggeropts:-$@}
+    local UDEVVERSION=$(udevadm --version)
     rhel6_udev_daemon_start
-	UDEV_LOG_PRIO_ARG=--log-priority
-	UDEV_QUEUE_EMPTY="udevadm settle --timeout=0"
+	local UDEV_LOG_PRIO_ARG=--log-priority
+	local UDEV_QUEUE_EMPTY="udevadm settle --timeout=0"
 
 	if [ $UDEVVERSION -lt 140 ]; then
     	UDEV_LOG_PRIO_ARG=--log_priority
