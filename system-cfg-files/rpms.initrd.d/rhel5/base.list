@@ -6,3 +6,4 @@ nss_ldap		\.so
 MAKEDEV
 pam             ^/\(sbin\|etc\)
 mktemp
+zlib
