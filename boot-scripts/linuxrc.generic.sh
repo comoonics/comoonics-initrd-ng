@@ -278,7 +278,7 @@ for ipconfig in $(repository_get_value ipConfig); do
   	# If only the device is given as ipconfig parameter we suppose there is already
     # a configuration existant in /etc/sysconfig/network-scripts
   	dev=$ipconfig
-    networkipconfig="$dev $networkipconfig"
+    # networkipconfig="$dev $networkipconfig"
     __ipconfig="$dev"
     eval $(grep TYPE $networkdir/ifcfg-$dev)
     _type=$TYPE
@@ -297,7 +297,7 @@ for ipconfig in $(repository_get_value ipConfig); do
     _type=$(getPosFromIPString 8, $ipconfig)
     _bridge=$(getPosFromIPString 9, $ipconfig)
   fi
-  if [ "$_type" = "bridge" ]; then
+  if [ "$_type" = "BRIDGE" ] || [ "$_type" = "BRIDGE" ]; then
     bridgeipconfig="$bridgeipconfig $__ipconfig"
   elif [[ "$dev" =~ "[a-z]+[0-9]+\.[0-9]+" ]]; then
     vlanipconfig="$vlanipconfig $__ipconfig"
