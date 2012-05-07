@@ -90,13 +90,7 @@ function nicConfig {
   done
 
   if [ -n "$ipconfig" ] && [ "$ipconfig" != "skip" ]; then
-    sleep 2
-    xen_dom0_detect
-    if [ $? -eq 0 ]; then
-      xen_ip2Config $ipconfig
-    else
-      exec_local ip2Config ${ipconfig} >&2
-    fi
+    exec_local ip2Config ${ipconfig} >&2
     echo "$ipconfig"
 #    exec_local ip2Config $(getPosFromIPString 1, $ipconfig):$(getPosFromIPString 2, $ipconfig):$(getPosFromIPString 3, $ipconfig):$(getPosFromIPString 4, $ipconfig):$(hostname):$dev
   fi
