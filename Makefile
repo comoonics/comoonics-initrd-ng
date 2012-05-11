@@ -549,7 +549,12 @@ rpmbuild-initscripts-fedora: archive
 .PHONY:rpmsign
 rpmsign:
 	@echo "Signing packages"
-	rpm --resign $(RPM_PACKAGE_BIN_DIR)/$(PACKAGE_NAME)-*.rpm $(RPM_PACKAGE_SRC_DIR)/$(PACKAGE_NAME)-*.src.rpm
+	$(RPM_SIGN_COMMAND) $(RPM_PACKAGE_BIN_DIR)/$(PACKAGE_NAME)-*.rpm $(RPM_PACKAGE_SRC_DIR)/$(PACKAGE_NAME)-*.src.rpm
+
+.PHONY:rpmchecksig
+rpmchecksig:
+	@echo "Checking signature of the packages"
+	$(RPM_CHECKSIG_COMMAND) $(RPM_PACKAGE_BIN_DIR)/$(PACKAGE_NAME)-*.rpm $(RPM_PACKAGE_SRC_DIR)/$(PACKAGE_NAME)-*.src.rpm
 
 .PHONY: channelcopy
 channelcopy:
