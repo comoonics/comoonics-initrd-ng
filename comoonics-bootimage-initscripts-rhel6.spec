@@ -71,7 +71,7 @@ Requires: comoonics-bootimage >= 5.0
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-rhel6
 #Conflicts: 
-Release: 6_rhel6
+Release: 7_rhel6
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -166,6 +166,10 @@ fi
 rm -rf %{buildroot}
 
 %changelog
+* Wed May 16 2012 Marc Grimme <grimme( at )atix.de> 5.0-7
+   - Error: would not power down on NFS sharedroot
+     etc/init.d/halt: made more flexible to detect problem that arise 
+     from NFS Sharedroot usage.
 * Mon May 07 2012 Marc Grimme <grimme( at )atix.de> 5.0-6
    - initscripts/rhel5/new-kernel-pkg-update.sh
        would yield an error if grub.conf exists but is not used (NFS Root).
