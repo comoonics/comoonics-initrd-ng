@@ -139,16 +139,18 @@ fi
 # Unmount loopback stuff first
 __umount_loopback_loop
 
-# Unmount RPC pipe file systems
-__umount_loop ''$xtab' { next; }
-$3 ~ /^rpc_pipefs$/ || $3 ~ /^rpc_svc_gss_pipefs$/ {print $2}' \
+# Unmount RPC pipe file systems if not rootfs is nfs
+if awk -v returnc=0 '$3!="rootfs" && $2=="/" && $3=="nfs" { returnc=1 } END { exit returnc; }' /proc/mounts &>/dev/null; then
+  __umount_loop '$3 ~ /^rpc_pipefs$/ || $3 ~ /^rpc_svc_gss_pipefs$/ {print $2}' \
     /proc/mounts \
     $"Unmounting pipe file systems: " \
     $"Unmounting pipe file systems (retry): " \
     -f
+fi
 
 LANG=C __umount_loop '$2 ~ /^\/$|^\/proc|^\/dev/{next}
         '$xtab' { next; }
+    $3 ~ /^rpc_pipefs$/ || $3 ~ /^rpc_svc_gss_pipefs$/ { next; }
 	$3 == "tmpfs" || $3 == "proc" {print $2 ; next}
 	$3 ~ /(loopfs|autofs|nfs|cifs|smbfs|ncpfs|sysfs)/ {next}
 	/(^none|^\/dev\/ram|^\/dev\/root$)/ {next}
