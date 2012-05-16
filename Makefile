@@ -554,7 +554,7 @@ rpmsign:
 .PHONY:rpmchecksig
 rpmchecksig:
 	@echo "Checking signature of the packages"
-	$(RPM_CHECKSIG_COMMAND) $(RPM_PACKAGE_BIN_DIR)/$(PACKAGE_NAME)-*.rpm $(RPM_PACKAGE_SRC_DIR)/$(PACKAGE_NAME)-*.src.rpm
+	$(RPM_CHECKSIG_COMMAND) $(RPM_PACKAGE_BIN_DIR)/$(PACKAGE_NAME)-*.rpm $(RPM_PACKAGE_SRC_DIR)/$(PACKAGE_NAME)-*.src.rpm | grep -v "dsa sha1 md5 gpg OK" 2>/dev/null && { echo "FAILED"; exit 1;} || true
 
 .PHONY: channelcopy
 channelcopy:
