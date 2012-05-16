@@ -84,7 +84,8 @@ for i in /dev/md/*.pid; do
     OMITARGS="$OMITARGS -o $(cat $i)"
 done
 for pid in $(cat /etc/xkillallprocs); do 
-   [ -n "$pid" ] && OMITARGS="$OMITARGS -o $pid"
+   test -n "$pid" && test "$pid" -ge 0 2>/dev/null && OMITARGS="$OMITARGS -o $pid"
+   test -n "$pid" && test "$pid" -ge 0 2>/dev/null || { pidid=$(pidof $pid); test -n "$pidid" && OMITARGS="$OMITARGS -o $pidid"; }
 done
 
 kill_all $"Sending all processes the TERM signal..." -15 $OMITARGS
@@ -139,7 +140,8 @@ fi
 __umount_loopback_loop
 
 # Unmount RPC pipe file systems
-__umount_loop '$3 ~ /^rpc_pipefs$/ || $3 ~ /^rpc_svc_gss_pipefs$/ {print $2}' \
+__umount_loop ''$xtab' { next; }
+$3 ~ /^rpc_pipefs$/ || $3 ~ /^rpc_svc_gss_pipefs$/ {print $2}' \
     /proc/mounts \
     $"Unmounting pipe file systems: " \
     $"Unmounting pipe file systems (retry): " \
