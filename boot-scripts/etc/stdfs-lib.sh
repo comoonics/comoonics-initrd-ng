@@ -425,6 +425,9 @@ function umount_filesystem {
 function parse_cdsltab {
     local filterfunc=${1:-exclude_initrd_mountpoints}
     local newroot=${2:-/}
+    local xtabmounts=$3
+    local dest=""
+    local ret=0
     
     while read line; do
         if $filterfunc $line; then
@@ -436,18 +439,26 @@ function parse_cdsltab {
             # if more then 2 arguments are read from line we suppose this is a filesystem to be mounted
             opts=( $line )
             if [ ${#opts[@]} -le 2 ]; then
+                dest=${opts[0]}
                 if [ -n "$newroot" ] && [ "$newroot" != "/" ]; then
                     opts[0]="${newroot}${opts[0]}"
                 fi
-                clusterfs_mount_cdsl ${opts[@]} 
+                clusterfs_mount_cdsl ${opts[@]} && 
+                [ -n "$xtabmounts" ] && repository_append_value "$xtabmounts" " $dest"
             else
-                if [ -n "$newroot" ] && [ "$newroot" != "/" ]; then
-                    opts[2]="${newroot}${opts[2]}"
-                fi
                 if [ "${opts[0]}" = "bind" ] && [ -n "$newroot" ] && [ "$newroot" != "/" ]; then
+                    dest=${opts[2]}
                     opts[1]="${newroot}${opts[1]}"
+                elif [ -n "$newroot" ] && [ "$newroot" != "/" ]; then
+                    dest=$opts[2]
+                    opts[2]="${newroot}${opts[2]}"
+                elif [ "${opts[0]}" = "bind" ]; then
+                    dest=${opts[2]}
+                else
+                    dest=${opts[2]}
                 fi
-                clusterfs_mount ${opts[@]}
+                clusterfs_mount ${opts[@]} &&
+                [ -n "$xtabmounts" ] && repository_append_value $xtabmounts " $dest"
             fi
         fi
       done

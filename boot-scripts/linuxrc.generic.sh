@@ -385,6 +385,7 @@ if [ $(repository_get_value chrootneeded) -eq 0 ]; then
   build_chroot $(repository_get_value nodeid)
   return_code $?
   echo_local_debug "res: $res -> chroot_mount="$(repository_get_value chroot_mount)", chroot_path="$(repository_get_value chroot_path)
+  repository_append_value xtabmounts " $(repository_get_value chroot_mount)"
   step "chroot environment created" "chroot"
 fi
 
@@ -463,6 +464,7 @@ if [ "$(repository_get_value cdsl_local_dir)" != "nocdsl" ] && [ "$(repository_g
   if [ $return_c -ne 0 ]; then
 	breakp "$(errormsg err_rootfs_mount_cdsl $(repository_get_value root))"
   fi
+  repository_append_value xtabmounts " $(repository_get_value cdsl_local_dir)"
 else
   echo_local_debug "Skipped mounting of cdsl."
 fi
@@ -508,10 +510,11 @@ if [ $? -eq 0 ] && [ -n "$filesystems" ]; then
     if [ $return_c -ne 0 ]; then
       breakp "$(errormsg err_clusterfs_mount)"
     fi
+    repository_append_value xtabmounts " $(repository_get_value $dest)"
   done
   step "Additional filesystems $filesystems mounted." "fsmount"
 elif [ -n "$cdsltabfile" ] && [ -f "$cdsltabfile" ]; then
-  cat $cdsltabfile | parse_cdsltab "only_initrd_mountpoints" "$(repository_get_value newroot)"
+  cat $cdsltabfile | parse_cdsltab "only_initrd_mountpoints" "$(repository_get_value newroot)" "xtabmounts"
   step "Additional filesystems $filesystems mounted." "fsmount"
 fi
 
@@ -552,9 +555,9 @@ return_code
 if [ -z "$(getPosInList ro $(repository_get_value mountopts) ,)" ]; then
   echo_local -n "Writing xtab.. "
   if [ $(repository_get_value chrootneeded) -eq 0 ]; then
-    create_xtab "$(repository_get_value newroot)/$(repository_get_value xtabfile)" "/$(repository_get_value cdsl_local_dir)" "$(repository_get_value chroot_mount)" "/var/run" 
+    create_xtab "$(repository_get_value newroot)/$(repository_get_value xtabfile)" "$(repository_get_value chroot_mount)" $(repository_get_value xtabmounts "") 
   else  
-    create_xtab "$(repository_get_value newroot)/$(repository_get_value xtabfile)" "/$(repository_get_value cdsl_local_dir)" "/var/run"
+    create_xtab "$(repository_get_value newroot)/$(repository_get_value xtabfile)" "$(repository_get_value cdsl_local_dir)" $(repository_get_value xtabmounts "")
   fi
   success
 

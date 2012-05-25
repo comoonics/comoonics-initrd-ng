@@ -1731,7 +1731,7 @@ rm -rf %{buildroot}
   - boot-scripts/com-realhalt.sh: 
       fixed passing of parameters to clusterfs_services_stop
   - boot-scripts/etc/gfs2-lib.sh: many bugfixes to work with RHEL6 and gfs2.
-  -  boot-scripts/etc/boot-lib.sh: added sleep for 4 seconds after telinit u.
+  - boot-scripts/etc/boot-lib.sh: added sleep for 4 seconds after telinit u.
        Seems to make the reload more stable with rhel6.
   - querymap.cfg: added legacy chroot queries.
   - manage_chroot.sh: same default xkillallprocsfile as initrd.
