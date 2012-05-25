@@ -70,7 +70,7 @@ Requires:      comoonics-bootimage-listfiles-all
 Requires:      comoonics-tools-py
 Requires:      comoonics-release >= 5.0
 #Conflicts:
-Release:       13_%{LINUXDISTROSHORT}
+Release:       14_%{LINUXDISTROSHORT}
 Vendor:        ATIX AG
 Packager:      ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -1686,6 +1686,10 @@ fi
 rm -rf %{buildroot}
 
 %changelog
+* Fri May 25 2012 Marc Grimme <grimme( at )atix.de> - 5.0-14
+  - boot-scripts/linuxrc.generic.sh boot-scripts/etc/stdfs-lib.sh
+    write all file systems being mounted inside the initrd to /etc/xtab.
+    All file systems mounted from the initrd will be umounted as last (Bug #467).
 * Mon May 07 2012 Marc Grimme <grimme( at )atix.de> - 5.0-13
   - system-cfg-files/rpms.initrd.d/rhel5/base.list: added zlib.
   - system-cfg-files/rpms.initrd.d/rhel/base.list: added grep rpm for 
