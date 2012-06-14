@@ -1686,6 +1686,10 @@ fi
 rm -rf %{buildroot}
 
 %changelog
+* Thu Jun 14 2012 Marc Grimme <grimme( at )atix.de> - 5.0-15
+  - boot-scripts/linuxrc.generic.sh:
+    Fixed bug with wrong detection of nodeid if no nodeid specified and
+    nodes are 1 (should default to 1 and continue).
 * Fri May 25 2012 Marc Grimme <grimme( at )atix.de> - 5.0-14
   - boot-scripts/linuxrc.generic.sh boot-scripts/etc/stdfs-lib.sh
     write all file systems being mounted inside the initrd to /etc/xtab.
