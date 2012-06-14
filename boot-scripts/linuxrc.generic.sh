@@ -140,8 +140,8 @@ return_code || breakp $(errormsg err_cc_validate $repository_get_value cluster_c
 step "Successfully validated cluster configuration" "ccvalidate"
 
 # get number of nodeids and change float to int
-nodes=$(cc_get nodes 2>/dev/null | sed -e 's/\.[0-9]*$//')
-nodes=${nodes:-0}
+nodes=$(cc_get_nodeids 2>/dev/null | sed -e 's/\.[0-9]*$//')
+nodes=${nodes:-$(getParameter nodeids 0)}
 #nodeid must be first
 nodeid=$(getParameter nodeid $(cc_getdefaults nodeid))
 # No need for hwdetection if either nodeid is set or nodes==1 or simulation mode is enabled
@@ -166,7 +166,7 @@ nodeid=$(getParameter nodeid $(cc_getdefaults nodeid))
 echo_local -n "Detecting nodeid & nodename "
 if [ -z "$nodeid" ] && [ -n "$nodes" ] && [ "$nodes" == "1" ]; then
 	# if no nodeid found until now and nodes are only 1 either get nodeid from cmdline or set to 1.
-	nodeid=$(getParameter nodeid $(cc_get nodeids 2>/dev/null | cut -f1 -d" "))
+	nodeid=$(getParameter nodeid $(cc_get_nodeids 2>/dev/null | cut -f1 -d" "))
 fi
 [ -z "$nodeid" ] && breakp "$(errormsg err_cc_nodeid)"
 nodename=$(getParameter nodename $(cc_getdefaults nodename))
