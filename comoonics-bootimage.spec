@@ -731,6 +731,40 @@ Conflicts: comoonics-bootimage-listfiles-sles10-nfs
 %description listfiles-sles10-ocfs2
 OSR extra files that are only relevant for SLES10 Versions and OCFS2 support
 
+%package listfiles-sles11-ext3
+Version: 5.0
+Release: 1_sles11
+Requires: comoonics-bootimage >= 5.0
+Requires: /etc/redhat-release
+Requires: comoonics-bootimage-listfiles-sles11
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
+Summary: Extrafiles for SuSE Linux Enterprise Server and Ext3
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Conflicts: comoonics-bootimage-listfiles-sles11-ext4
+Conflicts: comoonics-bootimage-listfiles-sles11-nfs
+Conflicts: comoonics-bootimage-listfiles-sles11-ocfs2
+Conflicts: comoonics-bootimage-extras-ocfs2
+
+%description listfiles-sles11-ext3
+OSR extra files that are only relevant for SLES11 and EXT3
+
+%package listfiles-sles11-ext4
+Version: 5.0
+Release: 1_sles11
+Requires: comoonics-bootimage >= 5.0
+Requires: /etc/redhat-release
+Requires: comoonics-bootimage-listfiles-sles11
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
+Summary: Extrafiles for SuSE Linux Enterprise Server and Ext4
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Conflicts: comoonics-bootimage-listfiles-sles11-ext3
+Conflicts: comoonics-bootimage-listfiles-sles11-nfs
+Conflicts: comoonics-bootimage-listfiles-sles11-ocfs2
+Conflicts: comoonics-bootimage-extras-ocfs2
+
+%description listfiles-sles11-ext4
+OSR extra files that are only relevant for SLES11 and EXT4
+
 %package listfiles-sles11-nfs
 Version: 5.0
 Release: 2_sles11
@@ -1154,6 +1188,12 @@ for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; don
 for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
 
 %post listfiles-sles10-ocfs2
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post listfiles-sles11-ext3
+for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
+
+%post listfiles-sles11-ext4
 for cachefile in %{CACHEFILES}; do test -f "$cachefile" && rm -f $cachefile; done; true
 
 %post listfiles-sles11-nfs
@@ -1613,6 +1653,10 @@ fi
 %files listfiles-sles10-ocfs2
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/ocfs2.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/ocfs2.list
+
+%files listfiles-sles11-ext3
+
+%files listfiles-sles11-ext4
 
 %files listfiles-sles11-nfs
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/nfs.list
@@ -3385,6 +3429,14 @@ rm -rf %{buildroot}
 * Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-4
 - introduced the changelog
 
+%changelog listfiles-rhel5-ext3
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - initial revision
+
+%changelog listfiles-rhel5-ext4
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - initial revision
+
 %changelog listfiles-rhel5-gfs
 * Mon Feb 13 2012 Marc Grimme <grimme( at )atix.de> 5.0-3
   - moved comoonics.list to rhel5 directory. Not needed for RHEL6
@@ -3404,22 +3456,6 @@ rm -rf %{buildroot}
   * Rebase for Release 5.0
 * Thu Oct 20 2011 Marc Grimme <grimme@atix.de> 0.1-1
 - first version for comoonics-5.0-pre
-
-%changelog listfiles-fedora-nfs
-* Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 0.1-8
-- new version for comoonics-5.0-pre with post script
-* Tue Mar 08 2011 Marc Grimme <grimme@atix.de> 0.1-7
-- first version for comoonics-5.0-pre
-- added post.mkinitrd.d/03-nfs-deps.sh (setup of /etc/passwd for nfs if need be)
-- added files.mkinitrd.d/nfs.list (/etc/rpc)
-* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-6
-- first version for comoonics-4.6-rc1 
-* Mon Sep 28 2009 Marc Grimme <grimme@atix.de> - 0.1-5
-- Finalized version with all changes
-* Tue Aug 11 2009 Marc Grimme <grimme@atix.de> - 0.1-4
-- Added a network list file for fedora (libidn)
-* Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-3
-- introduced the changelog
 
 %changelog listfiles-rhel5-nfs
 * Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
@@ -3442,6 +3478,14 @@ rm -rf %{buildroot}
   * Rebase for Release 5.0
 * Fri Aug 05 2011 Marc Grimme <grimme@atix.de> 0.1-1
   initial revision
+
+%changelog listfiles-rhel6-ext3
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - initial revision
+
+%changelog listfiles-rhel6-ext4
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
+  - initial revision
 
 %changelog listfiles-rhel6-nfs
 * Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
@@ -3498,6 +3542,14 @@ rm -rf %{buildroot}
 * Fri Aug 05 2011 Marc Grimme <grimme@atix.de> 0.1-1
   initial revision
 
+%changelog listfiles-sles11-ext3
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
+  - initial revision
+
+%changelog listfiles-sles11-ext4
+* Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
+  - initial revision
+
 %changelog listfiles-sles11-nfs
 * Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
   - added post scripts.
@@ -3515,6 +3567,22 @@ rm -rf %{buildroot}
   * Rebase for Release 5.0
 * Fri Aug 05 2011 Marc Grimme <grimme@atix.de> 0.1-1
   initial revision
+
+%changelog listfiles-fedora-nfs
+* Fri Mar 11 2011 Marc Grimme <grimme@atix.de> 0.1-8
+- new version for comoonics-5.0-pre with post script
+* Tue Mar 08 2011 Marc Grimme <grimme@atix.de> 0.1-7
+- first version for comoonics-5.0-pre
+- added post.mkinitrd.d/03-nfs-deps.sh (setup of /etc/passwd for nfs if need be)
+- added files.mkinitrd.d/nfs.list (/etc/rpc)
+* Mon Mar 08 2010 Marc Grimme <grimme@atix.de> 0.1-6
+- first version for comoonics-4.6-rc1 
+* Mon Sep 28 2009 Marc Grimme <grimme@atix.de> - 0.1-5
+- Finalized version with all changes
+* Tue Aug 11 2009 Marc Grimme <grimme@atix.de> - 0.1-4
+- Added a network list file for fedora (libidn)
+* Tue Jan 29 2009 Marc Grimme <grimme@atix.de> - 0.1-3
+- introduced the changelog
 
 %changelog listfiles-syslogd
 * Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
