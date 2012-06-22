@@ -70,7 +70,7 @@ Requires:      comoonics-bootimage-listfiles-all
 Requires:      comoonics-tools-py
 Requires:      comoonics-release >= 5.0
 #Conflicts:
-Release:       14_%{LINUXDISTROSHORT}
+Release:       16_%{LINUXDISTROSHORT}
 Vendor:        ATIX AG
 Packager:      ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -1734,6 +1734,8 @@ fi
 rm -rf %{buildroot}
 
 %changelog
+* Fri Jun 22 2012 Marc Grimme <grimme( at )atix.de> - 5.0-16
+  - Skip selinux if no selinux tools can be found but do not break.
 * Thu Jun 14 2012 Marc Grimme <grimme( at )atix.de> - 5.0-15
   - boot-scripts/linuxrc.generic.sh:
     Fixed bug with wrong detection of nodeid if no nodeid specified and

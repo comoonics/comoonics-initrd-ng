@@ -61,6 +61,9 @@ function selinux_load_policy() {
           return 1
        fi
        return 0
+    elif [ ! -x "$NEWROOT/usr/sbin/load_policy" ] && [ ! -x "$NEWROOT/sbin/load_policy" ] && [ ! -f "$NEWROOT/etc/selinux/config" ]; then
+       error_local "No selinux available. Skipping."
+       return 0
     elif [ $permissive -eq 0 -a "$SELINUX" != "disabled" ]; then
        error_local "Machine in enforcing mode and cannot execute load_policy."
        error_local "To disable selinux, add selinux=0 to the kernel command line."
