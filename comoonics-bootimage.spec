@@ -735,7 +735,7 @@ OSR extra files that are only relevant for SLES10 Versions and OCFS2 support
 Version: 5.0
 Release: 1_sles11
 Requires: comoonics-bootimage >= 5.0
-Requires: /etc/redhat-release
+Requires: /etc/SuSE-release
 Requires: comoonics-bootimage-listfiles-sles11
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
 Summary: Extrafiles for SuSE Linux Enterprise Server and Ext3
@@ -752,7 +752,7 @@ OSR extra files that are only relevant for SLES11 and EXT3
 Version: 5.0
 Release: 1_sles11
 Requires: comoonics-bootimage >= 5.0
-Requires: /etc/redhat-release
+Requires: /etc/SuSE-release
 Requires: comoonics-bootimage-listfiles-sles11
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
 Summary: Extrafiles for SuSE Linux Enterprise Server and Ext4
@@ -768,6 +768,8 @@ OSR extra files that are only relevant for SLES11 and EXT4
 %package listfiles-sles11-nfs
 Version: 5.0
 Release: 2_sles11
+Requires: comoonics-bootimage >= 5.0
+Requires: /etc/SuSE-release
 Requires: comoonics-bootimage-extras-nfs
 Requires: comoonics-bootimage-listfiles-sles11
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
@@ -782,6 +784,8 @@ OSR extra files that are only relevant for SLES11 Versions and nfs support
 %package listfiles-sles11-ocfs2
 Version: 5.0
 Release: 2_sles11
+Requires: comoonics-bootimage >= 5.0
+Requires: /etc/SuSE-release
 Requires: comoonics-bootimage-extras-ocfs2
 Requires: comoonics-bootimage-listfiles-sles11
 Requires: sysvinit-comoonics
