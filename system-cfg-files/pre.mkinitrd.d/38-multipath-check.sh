@@ -8,7 +8,7 @@ if [ -n "$rootdev" ] && [ -e "$rootdev" ]; then
     if lvm_check $rootdev; then
         vgname=$(lvm_get_vg $rootdev)
         if [ -n "$vgname" ]; then
-            rootdev=$(pvs -a | awk '$2=="'$vgname'" { print $1; }')
+            rootdev=$(pvs -a 2>/dev/null | awk '$2=="'$vgname'" { print $1; }')
         fi
     fi
     if device_mapper_multipath_check $rootdev; then
