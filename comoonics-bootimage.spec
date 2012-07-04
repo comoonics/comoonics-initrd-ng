@@ -70,7 +70,7 @@ Requires:      comoonics-bootimage-listfiles-all
 Requires:      comoonics-tools-py
 Requires:      comoonics-release >= 5.0
 #Conflicts:
-Release:       16_%{LINUXDISTROSHORT}
+Release:       17_%{LINUXDISTROSHORT}
 Vendor:        ATIX AG
 Packager:      ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -469,7 +469,7 @@ OSR extra files that are only relevant for Novell SLES 10
 
 %package listfiles-sles11
 Version: 5.0
-Release: 2_sles11
+Release: 3_sles11
 Requires: comoonics-bootimage >= 5.0
 Requires: /etc/SuSE-release
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
@@ -783,7 +783,7 @@ OSR extra files that are only relevant for SLES11 Versions and nfs support
 
 %package listfiles-sles11-ocfs2
 Version: 5.0
-Release: 2_sles11
+Release: 3_sles11
 Requires: comoonics-bootimage >= 5.0
 Requires: /etc/SuSE-release
 Requires: comoonics-bootimage-extras-ocfs2
@@ -1571,7 +1571,6 @@ fi
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/sles/empty.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/sles/network.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/base.list
-%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/comoonics.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/hardware.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/empty.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/network.list
@@ -1671,6 +1670,7 @@ fi
 %files listfiles-sles11-ocfs2
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/files.initrd.d/ocfs2.list
 %config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/ocfs2.list
+%config %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/sles/comoonics.list
 
 %files listfiles-selinux-rhel5
 %attr(0644, root, root) %{CONFIGDIR}/bootimage/rpms.initrd.d/rhel/selinux.list
@@ -1734,6 +1734,8 @@ fi
 rm -rf %{buildroot}
 
 %changelog
+* Fri Jun 22 2012 Marc Grimme <grimme( at )atix.de> - 5.0-17
+  - Fixed cosmetic error output on pre.mkinitrd.d/38-multipath script with pvs -a.
 * Fri Jun 22 2012 Marc Grimme <grimme( at )atix.de> - 5.0-16
   - Skip selinux if no selinux tools can be found but do not break.
 * Thu Jun 14 2012 Marc Grimme <grimme( at )atix.de> - 5.0-15
@@ -3396,6 +3398,8 @@ rm -rf %{buildroot}
 - initial revision
 
 %changelog listfiles-sles11
+* Fri Jun 22 2012 Marc Grimme <grimme( at )atix.de> 5.0-3
+  - removed depfile sles/comoonics.list to listfiles-sles11-ocfs2
 * Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
   - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
@@ -3567,6 +3571,8 @@ rm -rf %{buildroot}
 - first version for comoonics-5.0-pre
 
 %changelog listfiles-sles11-ocfs2
+* Fri Jun 22 2012 Marc Grimme <grimme( at )atix.de> 5.0-3
+  - moved sles/comoonics.list to here.
 * Tue Nov 08 2011 Marc Grimme <grimme( at )atix.de> 5.0-2
   - added post scripts.
 * Tue Nov 01 2011 Marc Grimme <grimme( at )atix.de> 5.0-1
