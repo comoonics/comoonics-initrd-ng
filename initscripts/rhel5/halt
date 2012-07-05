@@ -204,10 +204,6 @@ awk ''$xtab'{ next; }
     fstab-decode $UMOUNT -f $line
 done
 
-if [ -x /sbin/halt.local ]; then
-   /sbin/halt.local "$message" "$HALTARGS" "$kexec_command" "$command"
-fi
-
 # Remount read only anything that's left mounted.
 # echo $"Remounting remaining filesystems readonly"
 mount | awk '{ print $3 }' | while read line; do
@@ -236,5 +232,9 @@ fi
 
 HALTARGS="-d"
 [ "$INIT_HALT" != "HALT" ] && HALTARGS="$HALTARGS -p"
+
+if [ -x /sbin/halt.local ]; then
+   /sbin/halt.local "$message" "$HALTARGS" "$kexec_command" "$command"
+fi
 
 exec $command $HALTARGS
