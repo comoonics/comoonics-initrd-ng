@@ -71,7 +71,7 @@ Requires: comoonics-bootimage >= 5.0
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-rhel6
 #Conflicts: 
-Release: 7_rhel6
+Release: 8_rhel6
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -166,6 +166,9 @@ fi
 rm -rf %{buildroot}
 
 %changelog
+* Thu Jul 05 2012 Marc Grimme <grimme( at )atix.de> 5.0-7
+   - initscripts/rhel5/halt: fixed bug with missing parameters to halt/reboot
+       will not switchoff/reboot as desired.
 * Wed May 16 2012 Marc Grimme <grimme( at )atix.de> 5.0-7
    - Error: would not power down on NFS sharedroot
      etc/init.d/halt: made more flexible to detect problem that arise 
