@@ -142,6 +142,9 @@ step "Successfully validated cluster configuration" "ccvalidate"
 # get number of nodeids and change float to int
 nodes=$(cc_get_nodeids 2>/dev/null | sed -e 's/\.[0-9]*$//')
 nodes=${nodes:-$(getParameter nodeids 0)}
+if [ "$(echo "$nodes" | wc -w)" -gt 1 ]; then
+    nodes=$(echo $nodes | wc -w)
+fi
 #nodeid must be first
 nodeid=$(getParameter nodeid $(cc_getdefaults nodeid))
 # No need for hwdetection if either nodeid is set or nodes==1 or simulation mode is enabled
@@ -489,7 +492,7 @@ if [ $? -eq 0 ] && [ -n "$filesystems" ]; then
         mountopts=$(cc_get filesystem_dest_mountopts $(repository_get_value nodeid) $dest)
     mountwait=$(cc_get filesystem_dest_mountwait $(repository_get_value nodeid) $dest)
     mounttimes=$(cc_get filesystem_dest_mounttimes $(repository_get_value nodeid) $dest)
-    dest=$(repository_get_value newroot)/$(cc_get filesystem_dest_dest $(repository_get_value nodeid) $dest)
+    dest2=$(repository_get_value newroot)/$(cc_get filesystem_dest_dest $(repository_get_value nodeid) $dest)
     [ -z "$mountwait" ] && mountwait="$(repository_get_value mountwait)"
     [ -z "$mounttimes" ] && mountwait="$(repository_get_value mounttimes)"
     if lvm_check $source; then
@@ -506,7 +509,7 @@ if [ $? -eq 0 ] && [ -n "$filesystems" ]; then
 		  breakp "Please try to check the filesystem on $source manually." 
 	    fi
     fi 
-    clusterfs_mount "$fstype" "$source" "$dest" "$mountopts" "$mounttimes" "$mountwait" 
+    clusterfs_mount "$fstype" "$source" "$dest2" "$mountopts" "$mounttimes" "$mountwait" 
     if [ $return_c -ne 0 ]; then
       breakp "$(errormsg err_clusterfs_mount)"
     fi
