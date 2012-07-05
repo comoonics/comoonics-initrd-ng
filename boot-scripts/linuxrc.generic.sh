@@ -510,7 +510,7 @@ if [ $? -eq 0 ] && [ -n "$filesystems" ]; then
     if [ $return_c -ne 0 ]; then
       breakp "$(errormsg err_clusterfs_mount)"
     fi
-    repository_append_value xtabmounts " $(repository_get_value $dest)"
+    repository_append_value xtabmounts " $dest"
   done
   step "Additional filesystems $filesystems mounted." "fsmount"
 elif [ -n "$cdsltabfile" ] && [ -f "$cdsltabfile" ]; then

@@ -1734,6 +1734,8 @@ fi
 rm -rf %{buildroot}
 
 %changelog
+* Thu Jul 05 2012 Marc Grimme <grimme( at )atix.de> - 5.0-19
+  - Fixed bug in xtab generation when using cluster.conf
 * Thu Jul 05 2012 Marc Grimme <grimme( at )atix.de> - 5.0-18
   - Fixed bug in shutdown startup when chroot is available (GFS, GFS2)
   - Fixed bug with missing vlan driver in initrd (llc was missing).
