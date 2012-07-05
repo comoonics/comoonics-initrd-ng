@@ -70,7 +70,7 @@ Requires:      comoonics-bootimage-listfiles-all
 Requires:      comoonics-tools-py
 Requires:      comoonics-release >= 5.0
 #Conflicts:
-Release:       17_%{LINUXDISTROSHORT}
+Release:       18_%{LINUXDISTROSHORT}
 Vendor:        ATIX AG
 Packager:      ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -397,7 +397,7 @@ Vi includes for comoonics-bootimage (takes vim)
 
 %package listfiles-all
 Version: 5.0
-Release: 3_%{LINUXDISTROSHORT}
+Release: 4_%{LINUXDISTROSHORT}
 Requires: comoonics-bootimage >= 5.0
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
 Distribution: %{DISTRIBUTIONBASE}
@@ -1734,6 +1734,9 @@ fi
 rm -rf %{buildroot}
 
 %changelog
+* Thu Jul 05 2012 Marc Grimme <grimme( at )atix.de> - 5.0-18
+  - Fixed bug in shutdown startup when chroot is available (GFS, GFS2)
+  - Fixed bug with missing vlan driver in initrd (llc was missing).
 * Fri Jun 22 2012 Marc Grimme <grimme( at )atix.de> - 5.0-17
   - Fixed cosmetic error output on pre.mkinitrd.d/38-multipath script with pvs -a.
 * Fri Jun 22 2012 Marc Grimme <grimme( at )atix.de> - 5.0-16
@@ -3283,6 +3286,8 @@ rm -rf %{buildroot}
   - initial revision
 
 %changelog listfiles-all
+* Thu Jul 05 2012 Marc Grimme <grimme( at )atix.de> - 5.0-4
+  * Fixed bug with missing vlan drivers (llc is also required).
 * Fri Feb 03 2012 Marc Grimme <grimme( at )atix.de> - 5.0-3
   * Fixed bugs
     * #458 - Boot fails with network adapters using 8021q drivers (be2net)

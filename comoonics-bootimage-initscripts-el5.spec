@@ -71,7 +71,7 @@ Requires: comoonics-bootimage >= 5.0
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-rhel5
 #Conflicts: 
-Release: 6_rhel5
+Release: 7_rhel5
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -223,6 +223,9 @@ fi
 rm -rf %{buildroot}
 
 %changelog
+* Thu Jul 05 2012 Marc Grimme <grimme( at )atix.de> 5.0-7
+   - initscripts/rhel5/halt: fixed bug with missing parameters to halt/reboot
+       will not switchoff/reboot as desired.
 * Mon May 07 2012 Marc Grimme <grimme( at )atix.de> 5.0-6
    - initscripts/rhel5/new-kernel-pkg-update.sh
        would yield an error if grub.conf exists but is not used (NFS Root).
