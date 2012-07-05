@@ -148,7 +148,7 @@ fi
 #nodeid must be first
 nodeid=$(getParameter nodeid $(cc_getdefaults nodeid))
 # No need for hwdetection if either nodeid is set or nodes==1 or simulation mode is enabled
-if [ -z "$nodeid" ] || ([ "$nodes" -ne 0 ] && [ "$nodes" -gt 1 ]) && ([ -z "$simulation" ] || [ "$simulation" -ne 1 ]) ; then
+if [ -z "$nodeid" ] && [ "$nodes" -ne 0 ] && [ "$nodes" -gt 1 ] && ([ -z "$simulation" ] || [ "$simulation" -ne 1 ]) ; then
   num_names=$(cc_get_nic_names | wc -w)
   num_drivers=$(cc_get_nic_drivers | wc -w)
   drivers=""
@@ -306,7 +306,7 @@ for ipconfig in $(repository_get_value ipConfig); do
     vlanipconfig="$vlanipconfig $__ipconfig"
   elif [[ "$dev" =~ "^bond" ]]; then
     bondipconfig="$bondipconfig $__ipconfig" 
-    networkipconfig="$networkipconfig $__ipconfig"
+    #    networkipconfig="$networkipconfig $__ipconfig"
   else
     networkipconfig="$networkipconfig $__ipconfig"
   fi
@@ -321,12 +321,11 @@ unset __ipconfig
 repository_store_value ipConfig "$_ipconfig"
 step "Network configuration finished" "netconfig"
 
-for ipconfig in $networkipconfig $vlanipconfig $bridgeipconfig $restartipconfig; do
+for ipconfig in $networkipconfig $bondipconfig $vlanipconfig $bridgeipconfig $restartipconfig; do
   dev=$(getPosFromIPString 6, $ipconfig)
   driver=$(getPosFromIPString 11, $ipconfig)
-  nicAutoUp $ipconfig
-  if [ $? -eq 0 ] || [ -z "$dev" ]; then
-  	[ -z "$dev" ] && dev=$ipconfig
+  [ -z "$dev" ] && dev=$ipconfig
+  if [ -z "$dev" ] || nicAutoUp $dev; then
   	if [ -n "$driver" ]; then
   		echo_local -n "Loading driver $driver for nic $dev.."
   		exec_local modprobe $driver

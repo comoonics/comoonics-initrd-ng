@@ -109,8 +109,9 @@ function nicConfig {
 function nicAutoUp() {
    local _err=0
    local ipconfig=$1
-   local onboot=$(getPosFromIPString 10, $ipconfig)
-   if [ "$onboot" = "yes" ]; then
+   local ifcfgfile=$($(repository_get_value distribution)_get_networkpath)/ifcfg-$ipconfig
+   eval $(LANG=C grep "ONBOOT=" $ifcfgfile)
+   if [ "$ONBOOT" = "yes" ]; then
    	return 0
    else
     return 1
@@ -133,7 +134,7 @@ function nicUp() {
    local timeout=${timeout:-2}
    local SLAVE=""
    # ignore slaves
-   ifcfgfile=$($(repository_get_value distribution)_get_networkpath)/ifcfg-$1
+   local ifcfgfile=$($(repository_get_value distribution)_get_networkpath)/ifcfg-$1
    if [ -n "$ifcfgfile" ] && [ -f "$ifcfgfile" ]; then
      eval $(LANG=C grep "SLAVE=" $ifcfgfile)
    fi
