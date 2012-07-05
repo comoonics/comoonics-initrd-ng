@@ -206,7 +206,7 @@ done
 
 # Remount read only anything that's left mounted.
 # echo $"Remounting remaining filesystems readonly"
-mount | awk '{ print $3 }' | while read line; do
+mount | awk ''$xtab'{ next; }{ print $3 }' | while read line; do
     fstab-decode mount -n -o ro,remount $line
 done
 
