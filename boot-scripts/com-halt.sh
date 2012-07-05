@@ -72,36 +72,15 @@ if [ -n "$CHROOT_PATH" ] && [ -d "$CHROOT_PATH/mnt/newroot" ]; then
   if [ $# -eq 0 ]; then
     #FIXME: the following should be distribution dependent.
     echo_local -n "Detecting power cycle type (actlevel=$actlevel)"
-    cmd=$(detectHalt "$actlevel" . /mnt/newroot)
+    cmd=$(detectHalt "$actlevel" . $(repository_get_value newroot))
     return_code $?
     echo_local -N
   else
-    cmd=$@
+    opts=
+    [ -n "$2" ] && opts=$2
+    [ -n "$4" ] && cmd="$4 $opts"
+    [ -z "$cmd" ] && [ -n "$1" ] && cmd="$1"
   fi
   #mkdir -p $CHROOT_PATH/mnt/newroot
-  exec chroot . ./com-realhalt.sh -r /mnt/newroot $cmd
+  exec chroot . ./com-realhalt.sh -r $(repository_get_value newroot) $cmd
 fi
-####################
-# $Log: com-halt.sh,v $
-# Revision 1.9  2010-08-26 12:18:02  marc
-# - always secure that /proc and /sys are mounted
-#
-# Revision 1.8  2010/02/21 12:05:19  marc
-# kicked an old bash
-#
-# Revision 1.7  2010/02/16 10:04:49  marc
-# - remount / and chroot rw if they were mounted ro.
-#
-# Revision 1.6  2010/02/15 14:05:53  marc
-# remount chroot rw
-#
-# Revision 1.5  2009/10/07 11:41:16  marc
-# - added initEnv for nice UI
-# - added parameters to make detectHalt more generic
-#
-# Revision 1.4  2009/09/28 13:09:02  marc
-# - Implemented new way to also use com-halt as halt.local either in /sbin or /etc/init.d dependent on distribution
-#
-# Revision 1.3  2008/10/14 10:57:07  marc
-# Enhancement #273 and dependencies implemented (flexible boot of local fs systems)
-#
