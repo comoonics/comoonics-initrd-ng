@@ -70,7 +70,7 @@ Requires:      comoonics-bootimage-listfiles-all
 Requires:      comoonics-tools-py
 Requires:      comoonics-release >= 5.0
 #Conflicts:
-Release:       18_%{LINUXDISTROSHORT}
+Release:       19_%{LINUXDISTROSHORT}
 Vendor:        ATIX AG
 Packager:      ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -86,7 +86,7 @@ Scripts for creating an initrd in a OSR cluster environment
 
 %package extras-localconfigs
 Version: 5.0
-Release: 8_%{LINUXDISTROSHORT}
+Release: 9_%{LINUXDISTROSHORT}
 Requires: comoonics-bootimage >= 5.0
 Obsoletes: comoonics-bootimage-extras-osr
 Summary: Extra for cluster configuration via local files
@@ -409,7 +409,7 @@ OSR Listfiles that are only relevant for all linux distributions
 
 %package listfiles-rhel5
 Version: 5.0
-Release: 3_rhel5
+Release: 4_rhel5
 Requires: comoonics-bootimage >= 5.0
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-all
@@ -424,7 +424,7 @@ OSR extra files that are only relevant for RHEL Versions
 
 %package listfiles-rhel6
 Version: 5.0
-Release: 3_rhel6
+Release: 4_rhel6
 Requires: comoonics-bootimage >= 5.0
 Requires: /etc/redhat-release
 Requires: comoonics-bootimage-listfiles-all
@@ -1735,6 +1735,9 @@ rm -rf %{buildroot}
 
 %changelog
 * Thu Jul 05 2012 Marc Grimme <grimme( at )atix.de> - 5.0-19
+  - Changed network interface detection.
+    Udev will only be started if need be. 
+    Physical NICs will be started before bond interface
   - Fixed bug in xtab generation when using cluster.conf
 * Thu Jul 05 2012 Marc Grimme <grimme( at )atix.de> - 5.0-18
   - Fixed bug in shutdown startup when chroot is available (GFS, GFS2)
@@ -2904,6 +2907,10 @@ rm -rf %{buildroot}
 - first offical rpm version
 
 %changelog extras-localconfigs
+* Thu Jul 05 2012 Marc Grimme <grimme( at )atix.de> - 5.0-8
+  - system-cfg-files/post.mkinitrd.d/19-copy-network-configurations.sh:
+    - will also copy all configuration files but disable those which
+      will be started later. 
 * Tue Feb 28 2012 Marc Grimme <grimme( at )atix.de> - 5.0-7
   - system-cfg-files/pre.mkinitrd.d/01-clean-repository
     new dep script that cleans some settings that should be detected newly.
@@ -3335,6 +3342,9 @@ rm -rf %{buildroot}
   - initial revision 
 
 %changelog listfiles-rhel5
+* Thu Jul 05 2012 Marc Grimme <grimme( at )atix.de> 5.0-4
+  - system-cfg-files/rpms.initrd.d/rhel5/base.list,
+    added grep (required by network functionality)
 * Tue Feb 14 2012 Marc Grimme <grimme( at )atix.de> 5.0-3
   - system-cfg-files/rpms.initrd.d/rhel/comoonics.list,
     .../rpms.initrd.d/rhel5/comoonics.list: 
@@ -3371,6 +3381,9 @@ rm -rf %{buildroot}
   - initial revision 
 
 %changelog listfiles-rhel6
+* Thu Jul 05 2012 Marc Grimme <grimme( at )atix.de> 5.0-4
+  - system-cfg-files/rpms.initrd.d/rhel6/base.list,
+    added grep (required by network functionality)
 * Tue Feb 14 2012 Marc Grimme <grimme( at )atix.de> 5.0-3
   - system-cfg-files/rpms.initrd.d/rhel/comoonics.list,
     .../rpms.initrd.d/rhel5/comoonics.list: 
