@@ -63,7 +63,7 @@
 /lib/modules/\.*/kernel/net/ipv6/ip6_tunnel.ko
 /lib/modules/\.*/kernel/net/ipv6/netfilter/\.*
 /lib/modules/\.*/kernel/net/key\.*
-/lib/modules/\.*/kernel/net/llc\.*
+#/lib/modules/\.*/kernel/net/llc\.*
 /lib/modules/\.*/kernel/net/mac80211\.*
 /lib/modules/\.*/kernel/net/netfilter\.*
 /lib/modules/\.*/kernel/net/phonet\.*
