@@ -23,6 +23,9 @@ if [ -d "${networkconfigdir}" ]; then
                     if [ "${STARTMODE}" = "nfsroot" ]; then
                         echo_local_debug "Copying $nicconfig => ${DEST_PATH}/${CONFDIR}/network/${nicconfig}.${nodeid}"
                         (cat ${cdsltree}/${nodeid}/$nicconfig | grep -v "^ONBOOT="; echo "ONBOOT=yes";) > ${DEST_PATH}/${CONFDIR}/network/$(basename ${nicconfig}).${nodeid}
+                    else 
+                        echo_local_debug "Copying (disabled) $nicconfig => ${DEST_PATH}/${CONFDIR}/network/${nicconfig}.${nodeid}"
+                        (cat ${cdsltree}/${nodeid}/$nicconfig | grep -v "^ONBOOT="; echo "ONBOOT=no";) > ${DEST_PATH}/${CONFDIR}/network/$(basename ${nicconfig}).${nodeid}
                     fi
                     if [ -n "$HWADDR" ]; then
                         HWADDR=$(echo $HWADDR | tr [A-Z] [a-z])
@@ -38,6 +41,13 @@ if [ -d "${networkconfigdir}" ]; then
                     if [ -f "${nicconfig}" ]; then
                         echo_local_debug "Copying $nicconfig => ${DEST_PATH}/${CONFDIR}/network/${nicconfig}.${nodeid}"
                         ( cat $nicconfig  | grep -v "^ONBOOT="; echo "ONBOOT=yes";) > ${DEST_PATH}/${CONFDIR}/network/$(basename ${nicconfig}).${nodeid} 
+                    fi
+                done
+            else
+                for nodeid in $(cc_get_nodeids); do 
+                    if [ -f "${nicconfig}" ]; then
+                        echo_local_debug "Copying (disabled) $nicconfig => ${DEST_PATH}/${CONFDIR}/network/${nicconfig}.${nodeid}"
+                        ( cat $nicconfig  | grep -v "^ONBOOT="; echo "ONBOOT=no";) > ${DEST_PATH}/${CONFDIR}/network/$(basename ${nicconfig}).${nodeid} 
                     fi
                 done
             fi
