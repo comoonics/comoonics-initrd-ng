@@ -449,6 +449,7 @@ function parse_cdsltab {
                 if [ "${opts[0]}" = "bind" ] && [ -n "$newroot" ] && [ "$newroot" != "/" ]; then
                     dest=${opts[2]}
                     opts[1]="${newroot}${opts[1]}"
+                    opts[2]="${newroot}${opts[2]}"
                 elif [ -n "$newroot" ] && [ "$newroot" != "/" ]; then
                     dest=$opts[2]
                     opts[2]="${newroot}${opts[2]}"
