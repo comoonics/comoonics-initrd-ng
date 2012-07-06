@@ -917,8 +917,8 @@ function sysctl_load() {
 	if [ -e "$sysctlconf" ]; then
 		echo_local -n "Loading sysctl.."
 		echo_local_debug -N -n "sysctl.conf: $sysctlconf"
-		exec_local "sysctl -q -p $sysctlconf > /dev/null"
-		return_code
+		exec_local "sysctl -q -p $sysctlconf &> /dev/null"
+		return_code 0
 	fi
 }
 #**************** sysctl_load
