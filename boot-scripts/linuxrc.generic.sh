@@ -557,9 +557,9 @@ return_code
 if [ -z "$(getPosInList ro $(repository_get_value mountopts) ,)" ]; then
   echo_local -n "Writing xtab.. "
   if [ $(repository_get_value chrootneeded) -eq 0 ]; then
-    create_xtab "$(repository_get_value newroot)/$(repository_get_value xtabfile)" "$(repository_get_value chroot_mount)" $(repository_get_value xtabmounts "") 
+    create_xtab "$(repository_get_value newroot)/$(repository_get_value xtabfile)" $(repository_get_value xtabmounts "") 
   else  
-    create_xtab "$(repository_get_value newroot)/$(repository_get_value xtabfile)" "$(repository_get_value cdsl_local_dir)" $(repository_get_value xtabmounts "")
+    create_xtab "$(repository_get_value newroot)/$(repository_get_value xtabfile)" $(repository_get_value xtabmounts "")
   fi
   success
 
