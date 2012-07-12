@@ -76,7 +76,7 @@ function getCluType {
      clutype=$($(repository_get_value ccs_xml_query) --filename $conf -q clustertype 2>/dev/null) || clutype=$($(repository_get_value ccs_xml_query) --filename $conf -q query_value /cluster/@type 2>/dev/null)
      if [ -z "$clutype" ] && $(repository_get_value ccs_xml_query) --filename $conf query_value /cluster/clusternodes/clusternode/com_info &>/dev/null; then
    	    clutype="gfs"
-     else
+     elif [ -z "$clutype" ]; then
         clutype="osr"
      fi
    fi
