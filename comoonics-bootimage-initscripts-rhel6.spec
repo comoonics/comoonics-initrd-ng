@@ -71,7 +71,7 @@ Requires: comoonics-bootimage >= 5.0
 Requires: comoonics-bootimage-listfiles-all
 Requires: comoonics-bootimage-listfiles-rhel6
 #Conflicts: 
-Release: 9_rhel6
+Release: 10_rhel6
 Vendor: ATIX AG
 Packager: ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -166,6 +166,8 @@ fi
 rm -rf %{buildroot}
 
 %changelog
+* Fri Jul 06 2012 Marc Grimme <grimme( at )atix.de> 5.0-10
+   - adapted latest RHEL6 changes from upstream (new-kernel-pkg-update.sh)
 * Thu Jul 05 2012 Marc Grimme <grimme( at )atix.de> 5.0-9
    - initscripts/rhel5/halt: don't remount ro with cluster file system.
 * Thu Jul 05 2012 Marc Grimme <grimme( at )atix.de> 5.0-8
