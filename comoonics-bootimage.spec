@@ -937,7 +937,7 @@ Files needed for fence_vmware in the kernel
 %package listfiles-vmware-vmxnet3
 Version: 5.0
 Release: 1
-Requires: comoonics-boogimage >= 1.4
+Requires: comoonics-bootimage >= 1.4
 Summary: Listfiles for vmware vmxnet3 drivers from rpm
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 %description listfiles-vmware-vmxnet3
