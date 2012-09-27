@@ -250,6 +250,7 @@ CFG_FILES=basefiles.list \
     rpms.initrd.d/rsyslogd.list \
     rpms.initrd.d/syslog-ng.list \
     rpms.initrd.d/syslogd.list \
+    rpms.initrd.d/vmware-vmxnet3.list \
     rpms.initrd.d/rhel/base.list \
     rpms.initrd.d/rhel/comoonics.list \
     rpms.initrd.d/rhel/dm_multipath.list \
