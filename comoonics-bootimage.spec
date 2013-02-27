@@ -70,7 +70,7 @@ Requires:      comoonics-bootimage-listfiles-all
 Requires:      comoonics-tools-py
 Requires:      comoonics-release >= 5.0
 #Conflicts:
-Release:       19_%{LINUXDISTROSHORT}
+Release:       20_%{LINUXDISTROSHORT}
 Vendor:        ATIX AG
 Packager:      ATIX AG <http://bugzilla.atix.de>
 ExclusiveArch: noarch
@@ -397,7 +397,7 @@ Vi includes for comoonics-bootimage (takes vim)
 
 %package listfiles-all
 Version: 5.0
-Release: 4_%{LINUXDISTROSHORT}
+Release: 5_%{LINUXDISTROSHORT}
 Requires: comoonics-bootimage >= 5.0
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
 Distribution: %{DISTRIBUTIONBASE}
@@ -1748,6 +1748,8 @@ fi
 rm -rf %{buildroot}
 
 %changelog
+* Thu Feb 27 2013 Marc Grimme <grimme( at )atix.de> - 5.0-20
+  - Fixed bug that /etc/modprobe.d was not included in initrd BZ#469
 * Thu Jul 05 2012 Marc Grimme <grimme( at )atix.de> - 5.0-19
   - Changed network interface detection.
     Udev will only be started if need be. 
@@ -3309,6 +3311,8 @@ rm -rf %{buildroot}
   - initial revision
 
 %changelog listfiles-all
+* Thu Feb 27 2013 Marc Grimme <grimme( at )atix.de> - 5.0-5
+  * Fixed bug that /etc/modprobe.d was not included in initrd. BZ #469
 * Thu Jul 05 2012 Marc Grimme <grimme( at )atix.de> - 5.0-4
   * Fixed bug with missing vlan drivers (llc is also required).
 * Fri Feb 03 2012 Marc Grimme <grimme( at )atix.de> - 5.0-3
