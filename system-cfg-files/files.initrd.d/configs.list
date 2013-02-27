@@ -14,3 +14,5 @@
 /etc/resolv.conf
 /etc/hosts
 /etc/modprobe.conf        optional
+# Get all dependent modprobe files from /etc/modprobe.d
+@map /etc/modprobe.d	/etc/modprobe.d
