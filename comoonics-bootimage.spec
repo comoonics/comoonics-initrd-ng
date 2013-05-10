@@ -939,8 +939,7 @@ Version: 5.0
 Release: 1
 Requires: comoonics-bootimage >= 1.4
 Summary: Listfiles for vmware vmxnet3 drivers from rpm
-Group:   System Environment/Base
-Distribution: %{DISTRIBUTIONEXTRAS}
+Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 %description listfiles-vmware-vmxnet3
 Listfiles for vmware vmxnet3 drivers from rpm
