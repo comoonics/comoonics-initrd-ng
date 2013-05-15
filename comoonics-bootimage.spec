@@ -936,7 +936,7 @@ Files needed for fence_vmware in the kernel
 
 %package listfiles-vmware-vmxnet3
 Version: 5.0
-Release: 1
+Release: 1_%{LINUXDISTROSHORT}
 Requires: comoonics-bootimage >= 1.4
 Summary: Listfiles for vmware vmxnet3 drivers from rpm
 Group:   %{GROUPPARENT}/%{GROUPCHILDBASE}
