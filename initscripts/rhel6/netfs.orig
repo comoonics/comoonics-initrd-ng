@@ -19,17 +19,15 @@
 . /etc/init.d/functions
 . /etc/sysconfig/network
 
-xtab=$(awk 'BEGIN{printf"/("}{ gsub(/\//, "\\/"); printf $0"|";}END{printf"^$)/"}' /etc/xtab 2>/dev/null)
-
 NFSFSTAB=$(LC_ALL=C awk '!/^#/ && $3 ~ /^nfs/ && $3 != "nfsd" && $4 !~ /noauto/ { print $2 }' /etc/fstab)
 CIFSFSTAB=$(LC_ALL=C awk '!/^#/ && $3 == "cifs" && $4 !~ /noauto/ { print $2 }' /etc/fstab)
 NCPFSTAB=$(LC_ALL=C awk '!/^#/ && $3 == "ncpfs" && $4 !~ /noauto/ { print $2 }' /etc/fstab)
 NETDEVFSTAB=$(LC_ALL=C awk '!/^#/ && $4 ~/_netdev/ && $4 !~ /noauto/ { print $1 }' /etc/fstab)
 
-NFSMTAB=`LC_ALL=C awk '$3 ~ /^nfs/ && $3 != "nfsd" && $2 != "/" && $2 !~ '$xtab' { print $2 }' /proc/mounts`
+NFSMTAB=$(LC_ALL=C awk '$3 ~ /^nfs/ && $3 != "nfsd" && $2 != "/" { print $2 }' /proc/mounts)
 CIFSMTAB=$(LC_ALL=C awk '$3 == "cifs" { print $2 }' /proc/mounts)
 NCPMTAB=$(LC_ALL=C awk '$3 == "ncpfs" { print $2 }' /proc/mounts)
-NETDEVMTAB=`LC_ALL=C awk '$4 ~ /_netdev/ && $2 != "/" && $2 !~ '$xtab' { print $2 }' /etc/mtab`
+NETDEVMTAB=$(LC_ALL=C awk '$4 ~ /_netdev/ && $2 != "/" { print $2 }' /etc/mtab)
 
 # See how we were called.
 case "$1" in
@@ -80,8 +78,8 @@ case "$1" in
 	    fi
 	    
 	    if [ "$rc" -gt 1 ]; then
-		if [ -x /bin/plymouth ] && /bin/plymouth --ping ; then
-			/bin/plymouth --hide-splash
+		if [ -x /usr/bin/plymouth ] && /usr/bin/plymouth --ping ; then
+			/usr/bin/plymouth --hide-splash
 		fi
 		failure "$STRING"
 		tty >/dev/null 2>&1 || exit 1
@@ -100,21 +98,20 @@ case "$1" in
 	   fi
 	  }
 	touch /var/lock/subsys/netfs
-	# The 'no' applies to all listed filesystem types. See mount(8).
-	action $"Mounting other filesystems: " mount -a -t nonfs,nfs4,cifs,ncpfs,gfs2
+	action $"Mounting other filesystems: " mount -a -t nonfs,nfs4,cifs,ncpfs,gfs
 	;;
   stop)
         # Unmount loopback stuff first
         [ "$EUID" != "0" ] && exit 4
 	__umount_loopback_loop
   	if [ -n "$NETDEVMTAB" ]; then
-		__umount_loop '$4 ~ /_netdev/ && $2 != "/" && $2 !~ '$xtab' {print $2}' \
+		__umount_loop '$4 ~ /_netdev/ && $2 != "/" {print $2}' \
 			/etc/mtab \
 			$"Unmounting network block filesystems: " \
 			$"Unmounting network block filesystems (retry): "
 	fi
   	if [ -n "$NFSMTAB" ]; then
-		__umount_loop '$3 ~ /^nfs/ && $3 != "nfsd" && $2 != "/" && $2 !~ '$xtab' {print $2}' \
+		__umount_loop '$3 ~ /^nfs/ && $3 != "nfsd" && $2 != "/" {print $2}' \
 			/proc/mounts \
 			$"Unmounting NFS filesystems: " \
 			$"Unmounting NFS filesystems (retry): " \

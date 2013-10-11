@@ -202,6 +202,11 @@ osr_resolve_element_alias() {
   local elements=$1
   case $elements in
     "ip") echo "eth_name_ip" ;;
+    "chroot_fstype") echo "chrootenv_fstype";;
+    "chroot_mountpoint") echo "chrootenv_mountpoint";;
+    "chroot_device") echo "chrootenv_device";;
+    "chroot_dir") echo "chrootenv_dir";;
+    "chroot_mountopts") echo "chrootenv_mountopts";;
     *)    echo "$elements" ;;
   esac
 }
@@ -378,7 +383,7 @@ osr_get_macs() {
 #   hwaddr=macaddress
 #   returns the nodeid of this macaddress
 osr_get_nodeid() {
-  local _mac=$1
+  local _mac=$(echo $1 | tr [A-Z] [a-z])
   local mac=""
   local macs=""
   
@@ -391,6 +396,7 @@ osr_get_nodeid() {
   	  continue
   	fi
   	for mac in $macs; do
+  	  mac=$(echo $mac | tr [A-Z] [a-z])
   	  if [ $_mac == $mac ]; then
   	    echo "$nodeid"
   	    return 0
@@ -478,8 +484,9 @@ osr_validate() {
 #*********** osr_validate
 
 #
-# osr_auto_hosts
+# osr_auto_hosts(hostsfile)
 osr_auto_hosts() {
+  local hostsfile=${1:-/etc/hosts}
   local nodeid=""
   local netdev=""
   local nodename=""
@@ -495,5 +502,7 @@ osr_auto_hosts() {
         [ -n "$ip" ] && [ -n "$nodename" ] && echo "$ip $nodename"
       fi
     done  
-  done 
+  done
+  echo
+  [ -n "$hostsfile" ] && [ -f "$hostsfile" ] && cat $hostsfile   
 }

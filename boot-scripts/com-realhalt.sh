@@ -202,43 +202,12 @@ exec_local umount_filesystem  $_filesystem 1
 return_code
 step "halt: Umounting oldroot" "halt_umountoldroot"
 
-clusterfs_services_stop
+lvm_check $(repository_get_value root)
+lvm_sup=$?
+clusterfs_services_stop "" "" "$lvm_sup"
 step "halt: Stopped clusterfs services" "halt_stopclusterfs"
 
 sleep 2
 
 echo_local "Finally calling "$(repository_get_value haltcmd) 
 $cmd
-
-#####################
-# $Log: com-realhalt.sh,v $
-# Revision 1.18  2011-02-11 15:09:53  marc
-# - fixed a breakpointname
-#
-# Revision 1.17  2010/09/01 09:49:01  marc
-# - added initHaltProcess instead of initEnv
-#
-# Revision 1.16  2010/08/26 12:18:36  marc
-# also copy /dev/console
-#
-# Revision 1.15  2010/08/12 07:37:56  marc
-# check for the existence of /dev/initctl being what ever it is not a file as before.
-#
-# Revision 1.14  2010/02/16 10:04:27  marc
-# removed fenced -c and fence_tool lines as they belong to gfs relevant libs if need be.
-#
-# Revision 1.13  2009/12/09 09:28:45  marc
-# introduced umount_filesystem instead of implementing anytime.
-#
-# Revision 1.12  2009/10/08 08:05:04  marc
-# oldroot in repo
-# and bugfix when umounting /dev/pts
-#
-# Revision 1.11  2009/10/07 11:55:10  marc
-# - Changed the halt process so that first every process accessing an fs is killed the the fs is umounted
-# - Cosmetics and usability changes
-#
-# Revision 1.10  2009/09/28 13:09:59  marc
-# - Implemented new way to also use com-realhalt as halt.local either in /sbin or /etc/init.d dependent on distribution
-# - debugging and stepmode autodetection
-#

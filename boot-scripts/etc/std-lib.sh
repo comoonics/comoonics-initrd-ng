@@ -26,6 +26,10 @@
 #    Library for std operations
 #*******
 
+isNonPosixBash() {
+    [ -n "$SHELLOPTS" ] && [[ ! "$SHELLOPTS" =~ "posix" ]]
+}
+
 #****f* boot-lib.sh/sourceLibs
 #  NAME
 #    sourceLibs
@@ -563,8 +567,8 @@ function exec_local() {
   	[ "$dstep_ans" == "c" ] && repository_del_value dstep
   fi
   if [ $do_exec -eq 1 ]; then
-  	if [ -n "$tmpfile_out" ] && [ -n "$tmpfile_err" ]; then
-  		$* 1> >(tee $tmpfile_out) 2> >(tee $tmpfile_err)
+  	if isNonPosixBash && [ -n "$tmpfile_out" ] && [ -n "$tmpfile_err" ]; then
+  		eval '$* 1> >(tee $tmpfile_out) 2> >(tee $tmpfile_err)'
   		return_c=$?
   		wait
   	else

@@ -42,7 +42,7 @@ fi
 
 source $(dirname $0)/boot-scripts/etc/std-lib.sh
 source $(dirname $0)/boot-scripts/etc/repository-lib.sh
-repository_clear
+# repository_clear
 sourceLibs $(dirname $0)/boot-scripts
 clutype=$(repository_get_value clutype)
 rootfs=$(get_mounted_rootfs)
@@ -251,7 +251,8 @@ function update_chroot() {
       exec_ordered_scripts_in $pre_mkinitrd_path $chrootdir
       [ $rc -eq 0 ] && rc=$?
     fi
-    if [ -z "$cachedir" ] || [ ! -e "${cachedir}/$indexfile" ] ; then
+    
+    if [ -z "$cachedir" ] || [ ! -s "${cachedir}/$indexfile" ] ; then
 	  # extracting rpms
 	  if [ -n "$rpm_filename" ] && [ -e "$rpm_filename" ]; then
 		echo_local -N -n "rpmfiles.."
@@ -266,8 +267,10 @@ function update_chroot() {
       echo_local -N -n "copying ($chrootdir ${cachedir}/$indexfile)... "
       ( echo $rpmfilelist; echo $filelist ) | tr ' ' '\n'| sort -u | grep -v "^.$" | grep -v "^..$" | tr '&' '\n' | copy_filelist $chrootdir > ${cachedir}/$indexfile
       [ $rc -eq 0 ] && rc=$?
-	else
-	  cat ${cachedir}/$indexfile | copy_filelist $chrootdir > ${cachedir}/$indexfile
+	elif [ -n "${cachedir}" ] && [ -n "$chrootdir" ]; then
+	  cat ${cachedir}/$indexfile | copy_filelist $chrootdir > ${cachedir}/$indexfile.tmp
+      rm -f $cachedir/${indexfile}
+      mv -f $cachedir/${indexfile}.tmp $cachedir/${indexfile}
       [ $rc -eq 0 ] && rc=$?
     fi
 	
@@ -283,7 +286,7 @@ function update_chroot() {
 function createxfiles {
 	repository_store_value xtabfile /etc/xtab
 	repository_store_value xrootfsfile /etc/xrootfs
-	repository_store_value xkillallprocsfile /etc/xkillall_procs
+	repository_store_value xkillallprocsfile /etc/xkillallprocs
 	clusterfs_chroot_needed initrd
 	__default=$?
 	getParameter chrootneeded $__default &>/dev/null
@@ -500,19 +503,13 @@ function unpatch_files {
 #
 function check_sharedroot {
   local root_fstype=$1
-  if [ "$root_fstype" = "gfs" ] || [ "$root_fstype" = "ocfs2" ] || [ "$root_fstype" = "nfs" ] || [ "$root_fstype" = "glusterfs" ]; then
+  if [ "${root_fstype:0:3}" = "gfs" ] || [ "$root_fstype" = "ocfs2" ] || [ "$root_fstype" = "nfs" ] || [ "$root_fstype" = "glusterfs" ]; then
     return 1
   else
     return 0
   fi
 }
 #************ check_sharedroot
-
-#include /etc/sysconfig/cluster
-
-if [ -e /etc/sysconfig/cluster ]; then
-	. /etc/sysconfig/cluster
-fi
 
 # TO DO get chrootdir from cluster-lib.sh
 # - test chrootdir/

@@ -107,4 +107,6 @@ unset logo
 unset shellissue
 unset shellissuetmp
 
+alias logger="logger -p daemon.notice"
+
 typeset -f plymouth_hide >/dev/null 2>&1 && plymouth_hide >/dev/null 2>&1

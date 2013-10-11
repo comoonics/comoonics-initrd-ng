@@ -62,6 +62,7 @@ EXEC_FILES=create-gfs-initrd-generic.sh \
   manage_chroot.sh \
   manage_initrd_repository \
   com-chroot \
+  com-forcdsls \
   boot-scripts/com-halt.sh \
   boot-scripts/com-realhalt.sh \
   boot-scripts/linuxrc \
@@ -120,6 +121,8 @@ LIB_FILES=create-gfs-initrd-lib.sh \
   boot-scripts/etc/rhel5/nfs-lib.sh \
   boot-scripts/etc/rhel5/selinux-lib.sh \
   boot-scripts/etc/rhel6/boot-lib.sh \
+  boot-scripts/etc/rhel6/gfs-lib.sh \
+  boot-scripts/etc/rhel6/gfs2-lib.sh \
   boot-scripts/etc/rhel6/hardware-lib.sh \
   boot-scripts/etc/rhel6/network-lib.sh \
   boot-scripts/etc/rhel6/nfs-lib.sh \
@@ -247,6 +250,7 @@ CFG_FILES=basefiles.list \
     rpms.initrd.d/rsyslogd.list \
     rpms.initrd.d/syslog-ng.list \
     rpms.initrd.d/syslogd.list \
+    rpms.initrd.d/vmware-vmxnet3.list \
     rpms.initrd.d/rhel/base.list \
     rpms.initrd.d/rhel/comoonics.list \
     rpms.initrd.d/rhel/dm_multipath.list \
@@ -256,6 +260,7 @@ CFG_FILES=basefiles.list \
     rpms.initrd.d/rhel/python.list \
     rpms.initrd.d/rhel/selinux.list \
     rpms.initrd.d/rhel5/base.list \
+    rpms.initrd.d/rhel5/comoonics.list \
     rpms.initrd.d/rhel5/comoonics-flexd.list \
 	rpms.initrd.d/rhel5/empty.list \
 	rpms.initrd.d/rhel5/perl.list \
@@ -268,6 +273,9 @@ CFG_FILES=basefiles.list \
     rpms.initrd.d/rhel6/base.list \
     rpms.initrd.d/rhel6/comoonics-flexd.list \
     rpms.initrd.d/rhel6/dm_multipath.list \
+    rpms.initrd.d/rhel6/fencedeps.list \
+    rpms.initrd.d/rhel6/fence_virt.list \
+    rpms.initrd.d/rhel6/fence_xvm.list \
     rpms.initrd.d/rhel6/gfs2.list \
     rpms.initrd.d/rhel6/hardware.list \
     rpms.initrd.d/rhel6/network.list \
@@ -298,6 +306,7 @@ CFG_FILES=basefiles.list \
     filters.list \
     filters.initrd.d/empty.list \
     filters.initrd.d/kernel.list \
+    pre.mkinitrd.d/01-clean-repository.sh \
     pre.mkinitrd.d/20-clusterconf-validate.sh \
     pre.mkinitrd.d/30-rootfs-check.sh \
     pre.mkinitrd.d/35-rootdevice-check.sh \
@@ -334,6 +343,7 @@ CFG_DIR_CHROOT=$(SYSTEM_CFG_DIR)/bootimage-chroot
 #
 CFG_FILES_CHROOT=files.list \
 	rpms.list \
+	rpms.initrd.d/rhel6/fence_virt.list \
 	rpms.initrd.d/imsd-plugins.list
 	
 #************ CFG_FILES 
@@ -540,7 +550,12 @@ rpmbuild-initscripts-fedora: archive
 .PHONY:rpmsign
 rpmsign:
 	@echo "Signing packages"
-	rpm --resign $(RPM_PACKAGE_BIN_DIR)/$(PACKAGE_NAME)-*.rpm $(RPM_PACKAGE_SRC_DIR)/$(PACKAGE_NAME)-*.src.rpm
+	$(RPM_SIGN_COMMAND) $(RPM_PACKAGE_BIN_DIR)/$(PACKAGE_NAME)-*.rpm $(RPM_PACKAGE_SRC_DIR)/$(PACKAGE_NAME)-*.src.rpm
+
+.PHONY:rpmchecksig
+rpmchecksig:
+	@echo "Checking signature of the packages"
+	$(RPM_CHECKSIG_COMMAND) $(RPM_PACKAGE_BIN_DIR)/$(PACKAGE_NAME)-*.rpm $(RPM_PACKAGE_SRC_DIR)/$(PACKAGE_NAME)-*.src.rpm | grep -v "dsa sha1 md5 gpg OK" 2>/dev/null && { echo "FAILED"; exit 1;} || true
 
 .PHONY: channelcopy
 channelcopy:
@@ -550,7 +565,7 @@ channelcopy:
 	   channelalias=`echo $$channel | cut -f2 -d:`; \
        for architecture in $(ARCHITECTURES); do \
 	      echo -n "Copying rpms to channel $(CHANNELDIR)/$$channelname/$$distribution/$$architecture.."; \
-	      ./build/copy_rpms.sh $(SHORTDISTRO) $(CHANNELDIR)/$$channelname $$channelalias $$architecture; \
+	      bash ./build/copy_rpms.sh $(SHORTDISTRO) $(CHANNELDIR)/$$channelname $$channelalias $$architecture; \
 	      echo "(DONE)"; \
 	   done; \
 	done;

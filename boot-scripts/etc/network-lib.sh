@@ -90,13 +90,7 @@ function nicConfig {
   done
 
   if [ -n "$ipconfig" ] && [ "$ipconfig" != "skip" ]; then
-    sleep 2
-    xen_dom0_detect
-    if [ $? -eq 0 ]; then
-      xen_ip2Config $ipconfig
-    else
-      exec_local ip2Config ${ipconfig} >&2
-    fi
+    exec_local ip2Config ${ipconfig} >&2
     echo "$ipconfig"
 #    exec_local ip2Config $(getPosFromIPString 1, $ipconfig):$(getPosFromIPString 2, $ipconfig):$(getPosFromIPString 3, $ipconfig):$(getPosFromIPString 4, $ipconfig):$(hostname):$dev
   fi
@@ -115,8 +109,9 @@ function nicConfig {
 function nicAutoUp() {
    local _err=0
    local ipconfig=$1
-   local onboot=$(getPosFromIPString 10, $ipconfig)
-   if [ "$onboot" = "yes" ]; then
+   local ifcfgfile=$($(repository_get_value distribution)_get_networkpath)/ifcfg-$ipconfig
+   eval $(LANG=C grep "ONBOOT=" $ifcfgfile)
+   if [ "$ONBOOT" = "yes" ]; then
    	return 0
    else
     return 1
@@ -137,10 +132,19 @@ function nicUp() {
    local count=0
    local maxcount=${timeout:-30}
    local timeout=${timeout:-2}
-   /sbin/ifup $*
-   errorcode=$?
-   while ! ip link show dev "$1" | grep "UP,LOWER_UP" &>/dev/null && [ "$count" -le $maxcount ]; do sleep $timeout; count=$(( $count + 1 )); done
-   ip link show dev "$1" | grep "UP,LOWER_UP" &>/dev/null
+   local SLAVE=""
+   # ignore slaves
+   local ifcfgfile=$($(repository_get_value distribution)_get_networkpath)/ifcfg-$1
+   if [ -n "$ifcfgfile" ] && [ -f "$ifcfgfile" ]; then
+     eval $(LANG=C grep "SLAVE=" $ifcfgfile)
+   fi
+   if [ "$SLAVE" != "yes" ]; then      
+     /sbin/ifup $*
+   else
+     true
+   fi
+   #   while ! ip link show dev "$1" | grep "UP,LOWER_UP" &>/dev/null && [ "$count" -le $maxcount ]; do sleep $timeout; count=$(( $count + 1 )); done
+   #ip link show dev "$1" | grep "UP,LOWER_UP" &>/dev/null
    return $?
 }
 #************ ifup

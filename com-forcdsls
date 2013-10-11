@@ -1,0 +1,169 @@
+#!/bin/bash
+# @(#)$File$
+#
+# Copyright (c) 2001 ATIX GmbH, 2007 ATIX AG.
+# Einsteinstrasse 10, 85716 Unterschleissheim, Germany
+# All rights reserved.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+cdslinvadm=${cdslinvadm:-$(which com-cdslinvadm 2>/dev/null)}
+cdslinvadm=${cdslinvadm:-/usr/bin/com-cdslinvadm}
+
+nodeids=
+exists=1
+default=
+prefix=
+nodefault=
+verbose=
+
+usage() {
+    cat <<EOF
+$0 [--exists] [--nodeid=nodeid]* [--default=defaultdir] [--prefix=prefix] cmdline
+Will execute the cmdline. Before the cmdline is executed it is examined for 
+files given as parameters. If a file is a cdsl it will be replaced by all 
+filespaths leading to the real cdsl (see examples below).
+
+--notexists: ignores the check if the file (cdslfile) exists and will only add existent 
+     cdslfiles to the command. (Default: False: don't check for existence)
+     
+--nodeid=nodeid: overwrites the automatically detected available nodeids. This
+     parameter can be specified multiple times. Default is all nodeids found in
+     the cdslpath given by the command: $cdslinvadm get tree.
+     
+--default=defaultsdir: specifies the default directory in the cdsltree.
+     Defaults to $cdslinvadm get default_dir
+
+--nodefault: will not take the default dir into account.
+     Default: not set.
+     
+--prefix=prefix: adds that given prefix to each cdslfile being replaces.
+     (see examples below.) Default: 
+     
+--verbose: be more verbose
+
+Examples:
+Given /etc/sysconfig/network is a cdsl pointing to 
+   /.cluster/cdsl/1,2,3,default/etc/sysconfig/network
+Then the following command will yield the following:
+$0 ls /etc/sysconfig/network
+/.cluster/cdsl/1/etc/sysconfig/network
+/.cluster/cdsl/2/etc/sysconfig/network
+/.cluster/cdsl/3/etc/sysconfig/network
+/.cluster/cdsl/default/etc/sysconfig/network
+
+Wheras 
+$0 --nodeid=1 --nodeid=2 ls /etc/sysconfig/network
+yields:
+
+/.cluster/cdsl/1/etc/sysconfig/network
+/.cluster/cdsl/2/etc/sysconfig/network
+/.cluster/cdsl/default/etc/sysconfig/network
+Wheras 
+$0 --nodeid=1 --nodeid=2 --nodefault ls /etc/sysconfig/network
+yields:
+
+/.cluster/cdsl/1/etc/sysconfig/network
+/.cluster/cdsl/2/etc/sysconfig/network
+EOF
+}
+
+error() {
+    echo $@ >&2
+}
+verbose() {
+    [ "$verbose" = "1" ] && echo $@ >&2
+}
+
+if [ -z "$1" ]; then
+    error "Wrong parameters."
+    usage
+    exit 1
+fi
+
+while [ -n "$1" ]; do
+   if [ "${1:0:2}" = "--" ]; then
+      param=${1:2}
+      value=${param#*=}
+      [ "$value" = "$param" ] && value=
+      param=${param%%=*}
+      shift
+      case "$param" in
+        nodeid)
+            if [ -z "$value" ]; then 
+                value=$1
+                shift
+            fi
+            nodeids="$nodeids $value"
+            ;;
+        notexists)
+            exists=
+            ;;
+        nodefault)
+            nodefault=1
+            ;;
+        verbose)
+            verbose=1
+            ;;
+        default)
+            if [ -z "$value" ]; then 
+                value=$1
+                shift
+            fi
+            default=$value
+            ;;
+        prefix)
+            if [ -z "$value" ]; then 
+                value=$1
+                shift
+            fi
+            prefix=$value
+            ;;
+         *)
+            error "Called with wrong parameters."
+            usage
+            exit 2
+            ;;
+      esac
+   else
+       break
+   fi
+done
+
+[ -z "$nodeids" ] && nodeids=$(find /$($cdslinvadm get tree)/[0-9]* -maxdepth 0 -type d -printf "%f ")
+[ -z "$default" ] && default="$($cdslinvadm get default_dir)"
+[ "$nodefault" = "1" ] && default=
+params=( )
+i=0
+tree=$($cdslinvadm get tree)
+while [ -n "$1" ]; do
+  param="$1"
+  if ( [ "$exists" != "1" ] || [ -e "$param" ] ) && cdsl=$($cdslinvadm getcdsl $param 2>/dev/null); then
+    cdsl=${cdsl%% *}
+    for nodeid in $(echo "$nodeids $default"); do
+      cdslpath="/${tree}/${nodeid}"
+      param="${prefix}${cdslpath}/$cdsl"
+      params[$i]=$param
+      i=$(( $i + 1 ))
+    done
+  else
+    params[$i]=$param
+    i=$(( $i + 1 ))
+  fi
+  shift
+done
+
+verbose "Executing: ${params[@]}"
+${params[@]}

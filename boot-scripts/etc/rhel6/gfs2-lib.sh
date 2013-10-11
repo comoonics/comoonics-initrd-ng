@@ -1,5 +1,3 @@
-#!/bin/bash
-# @(#)$File$
 #
 # Copyright (c) 2001 ATIX GmbH, 2007 ATIX AG.
 # Einsteinstrasse 10, 85716 Unterschleissheim, Germany
@@ -19,19 +17,22 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Changes to the comoonics changeroot environment and executes the given cmd.
+# Dependencies for RHEL6
 
-predir=/opt/atix/comoonics-bootimage/boot-scripts
-source ${predir}/etc/std-lib.sh
-sourceLibs ${predir}
-
-CHROOT_PATH=$(/opt/atix/comoonics-bootimage/manage_chroot.sh -p)
-
-if [ $# -eq 0 ]; then
-   echo "Type help to get more information.."
-   echo "Type exit to continue work.."
-
-   exec chroot $CHROOT_PATH bash --rcfile /etc/bashrc
-else
-   exec chroot $CHROOT_PATH bash -c "source /etc/bashrc; $*"
-fi
+#****f* gfs-lib.sh/gfs2_get_userspace_procs
+#  NAME
+#    gfs2_get_userspace_procs
+#  SYNOPSIS
+#    gfs2_get_userspace_procs()
+#  DESCRIPTION
+#    gets userspace program pids that are to be running dependent on rootfs
+#    NOTE:
+#    As of RHEL6 killall5 supports omit pids we return the pids of the processes
+#    not the names any more.
+#  SOURCE
+function gfs2_get_userspace_procs() {
+  for service in corosync fenced gfs_controld dlm_controld groupd qdiskd; do
+      pidof $service 2>/dev/null
+  done
+}
+#******** gfs2_get_userspace_procs

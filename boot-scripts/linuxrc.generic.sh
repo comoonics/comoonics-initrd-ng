@@ -140,12 +140,15 @@ return_code || breakp $(errormsg err_cc_validate $repository_get_value cluster_c
 step "Successfully validated cluster configuration" "ccvalidate"
 
 # get number of nodeids and change float to int
-nodes=$(cc_get nodes 2>/dev/null | sed -e 's/\.[0-9]*$//')
-nodes=${nodes:-0}
+nodes=$(cc_get_nodeids 2>/dev/null | sed -e 's/\.[0-9]*$//')
+nodes=${nodes:-$(getParameter nodeids 0)}
+if [ "$(echo "$nodes" | wc -w)" -gt 1 ]; then
+    nodes=$(echo $nodes | wc -w)
+fi
 #nodeid must be first
 nodeid=$(getParameter nodeid $(cc_getdefaults nodeid))
 # No need for hwdetection if either nodeid is set or nodes==1 or simulation mode is enabled
-if [ -z "$nodeid" ] || ([ "$nodes" -ne 0 ] && [ "$nodes" -gt 1 ]) && ([ -z "$simulation" ] || [ "$simulation" -ne 1 ]) ; then
+if [ -z "$nodeid" ] && [ "$nodes" -ne 0 ] && [ "$nodes" -gt 1 ] && ([ -z "$simulation" ] || [ "$simulation" -ne 1 ]) ; then
   num_names=$(cc_get_nic_names | wc -w)
   num_drivers=$(cc_get_nic_drivers | wc -w)
   drivers=""
@@ -166,7 +169,7 @@ nodeid=$(getParameter nodeid $(cc_getdefaults nodeid))
 echo_local -n "Detecting nodeid & nodename "
 if [ -z "$nodeid" ] && [ -n "$nodes" ] && [ "$nodes" == "1" ]; then
 	# if no nodeid found until now and nodes are only 1 either get nodeid from cmdline or set to 1.
-	nodeid=$(getParameter nodeid $(cc_get nodeids 2>/dev/null | cut -f1 -d" "))
+	nodeid=$(getParameter nodeid $(cc_get_nodeids 2>/dev/null | cut -f1 -d" "))
 fi
 [ -z "$nodeid" ] && breakp "$(errormsg err_cc_nodeid)"
 nodename=$(getParameter nodename $(cc_getdefaults nodename))
@@ -273,36 +276,44 @@ _ipconfig=""
 __ipconfig=""
 for ipconfig in $(repository_get_value ipConfig); do
   dev=$(getPosFromIPString 6, $ipconfig)
-  if [ -z "$dev" ]; then
+  networkdir=$($(repository_get_value distribution)_get_networkpath)
+  if [ -z "$dev" ] && [ -f "${networkdir}/ifcfg-${ipconfig}" ]; then
   	# If only the device is given as ipconfig parameter we suppose there is already
     # a configuration existant in /etc/sysconfig/network-scripts
   	dev=$ipconfig
-    networkipconfig="$networkipconfig $dev"
+    # networkipconfig="$dev $networkipconfig"
+    __ipconfig="$dev"
+    eval $(grep TYPE $networkdir/ifcfg-$dev)
+    _type=$TYPE
+    unset TYPE
+    eval $(grep BRIDGE $networkdir/ifcfg-$dev)
+    _bridge=$BRIDGE
+    unset BRIDGE
   else
     hwids=$(repository_get_value hardwareids)
     echo_local -n "Creating network configuration for $dev"
     __ipconfig=$(nicConfig $ipconfig "$hwids")
+    if [ $? -ne 0 ]; then
+      breakp $(err_nic_config)
+    fi
+    return_code $?
     _type=$(getPosFromIPString 8, $ipconfig)
     _bridge=$(getPosFromIPString 9, $ipconfig)
-    if [ "$_type" = "bridge" ]; then
-      bridgeipconfig="$bridgeipconfig $__ipconfig"
-    elif [[ "$dev" =~ "[a-z]+[0-9]+\.[0-9]+" ]]; then
-      vlanipconfig="$vlanipconfig $__ipconfig"
-    elif [[ "$dev" =~ "^bond" ]]; then
-      bondipconfig="$bondipconfig $__ipconfig" 
-      networkipconfig="$networkipconfig $__ipconfig"
-    else
-      networkipconfig="$networkipconfig $__ipconfig"
-    fi
   fi
-  if [ $? -ne 0 ]; then
-	breakp $(err_nic_config)
+  if [ "$_type" = "BRIDGE" ] || [ "$_type" = "BRIDGE" ]; then
+    bridgeipconfig="$bridgeipconfig $__ipconfig"
+  elif [[ "$dev" =~ "[a-z]+[0-9]+\.[0-9]+" ]]; then
+    vlanipconfig="$vlanipconfig $__ipconfig"
+  elif [[ "$dev" =~ "^bond" ]]; then
+    bondipconfig="$bondipconfig $__ipconfig" 
+    #    networkipconfig="$networkipconfig $__ipconfig"
+  else
+    networkipconfig="$networkipconfig $__ipconfig"
   fi
   if [ -n "$_bridge" ]; then
     restartipconfig="$restartipconfig $__ipconfig"
   fi
   _ipconfig="$_ipconfig "$__ipconfig
-  return_code $?
 done
 unset _type
 unset __ipconfig
@@ -310,12 +321,11 @@ unset __ipconfig
 repository_store_value ipConfig "$_ipconfig"
 step "Network configuration finished" "netconfig"
 
-for ipconfig in $networkipconfig $vlanipconfig $bridgeipconfig $restartipconfig; do
+for ipconfig in $networkipconfig $bondipconfig $vlanipconfig $bridgeipconfig $restartipconfig; do
   dev=$(getPosFromIPString 6, $ipconfig)
-   driver=$(getPosFromIPString 11, $ipconfig)
-  nicAutoUp $ipconfig
-  if [ $? -eq 0 ] || [ -z "$dev" ]; then
-  	[ -z "$dev" ] && dev=$ipconfig
+  driver=$(getPosFromIPString 11, $ipconfig)
+  [ -z "$dev" ] && dev=$ipconfig
+  if [ -z "$dev" ] || nicAutoUp $dev; then
   	if [ -n "$driver" ]; then
   		echo_local -n "Loading driver $driver for nic $dev.."
   		exec_local modprobe $driver
@@ -332,7 +342,7 @@ for ipconfig in $networkipconfig $vlanipconfig $bridgeipconfig $restartipconfig;
 done
 step "Network started" "netstart"
 
-cc_auto_syslogconfig "$(repository_get_value nodeid)" / "no" "$(repository_get_value syslog_logfile)"
+cc_auto_syslogconfig "$(repository_get_value nodeid)" / "" "$(repository_get_value syslog_logfile)"
 is_syslog=$?
 if [ $is_syslog -eq 0 ]; then
   cc_syslog_start
@@ -374,17 +384,16 @@ cc_auto_hosts
 
 if [ $(repository_get_value chrootneeded) -eq 0 ]; then
   echo_local -n "Building comoonics chroot environment"
-  res=( $(build_chroot $(repository_get_value nodeid)) )
-  repository_store_value chroot_mount ${res[0]}
-  repository_store_value chroot_path ${res[1]}
+  build_chroot $(repository_get_value nodeid)
   return_code $?
   echo_local_debug "res: $res -> chroot_mount="$(repository_get_value chroot_mount)", chroot_path="$(repository_get_value chroot_path)
+  repository_append_value xtabmounts " $(repository_get_value chroot_mount)"
   step "chroot environment created" "chroot"
 fi
 
 # but only if /dev is not the same inode as $chroot_path /dev
 if [ $is_syslog -eq 0 ] && ! is_same_inode /dev $(repository_get_value chroot_path)/dev; then
-  cc_auto_syslogconfig $(repository_get_value nodeid) $(repository_get_value chroot_path) "no" $(repository_get_value syslog_logfile)
+  cc_auto_syslogconfig $(repository_get_value nodeid) $(repository_get_value chroot_path) "" $(repository_get_value syslog_logfile)
   cc_syslog_start $(repository_get_value chroot_path) no_klog
   step "Syslog services started in chroot $(repository_get_value chroot_path)" "syslogchroot"
 fi
@@ -404,6 +413,7 @@ if [ -z "$(repository_get_value quorumack)" ]; then
   exec_local cluster_checkhosts_alive
   return_code
   if [ $return_c -ne 0 ]; then
+    usbLoad
   	echo_local ""
   	echo_local ""
   	echo_local "I couldn't talk to the required number of cluster nodes."
@@ -456,6 +466,7 @@ if [ "$(repository_get_value cdsl_local_dir)" != "nocdsl" ] && [ "$(repository_g
   if [ $return_c -ne 0 ]; then
 	breakp "$(errormsg err_rootfs_mount_cdsl $(repository_get_value root))"
   fi
+  repository_append_value xtabmounts " $(repository_get_value cdsl_local_dir)"
 else
   echo_local_debug "Skipped mounting of cdsl."
 fi
@@ -480,7 +491,7 @@ if [ $? -eq 0 ] && [ -n "$filesystems" ]; then
         mountopts=$(cc_get filesystem_dest_mountopts $(repository_get_value nodeid) $dest)
     mountwait=$(cc_get filesystem_dest_mountwait $(repository_get_value nodeid) $dest)
     mounttimes=$(cc_get filesystem_dest_mounttimes $(repository_get_value nodeid) $dest)
-    dest=$(repository_get_value newroot)/$(cc_get filesystem_dest_dest $(repository_get_value nodeid) $dest)
+    dest2=$(repository_get_value newroot)/$(cc_get filesystem_dest_dest $(repository_get_value nodeid) $dest)
     [ -z "$mountwait" ] && mountwait="$(repository_get_value mountwait)"
     [ -z "$mounttimes" ] && mountwait="$(repository_get_value mounttimes)"
     if lvm_check $source; then
@@ -497,14 +508,15 @@ if [ $? -eq 0 ] && [ -n "$filesystems" ]; then
 		  breakp "Please try to check the filesystem on $source manually." 
 	    fi
     fi 
-    clusterfs_mount "$fstype" "$source" "$dest" "$mountopts" "$mounttimes" "$mountwait" 
+    clusterfs_mount "$fstype" "$source" "$dest2" "$mountopts" "$mounttimes" "$mountwait" 
     if [ $return_c -ne 0 ]; then
       breakp "$(errormsg err_clusterfs_mount)"
     fi
+    repository_append_value xtabmounts " $dest"
   done
   step "Additional filesystems $filesystems mounted." "fsmount"
 elif [ -n "$cdsltabfile" ] && [ -f "$cdsltabfile" ]; then
-  cat $cdsltabfile | parse_cdsltab "only_initrd_mountpoints" "$(repository_get_value newroot)"
+  cat $cdsltabfile | parse_cdsltab "only_initrd_mountpoints" "$(repository_get_value newroot)" "xtabmounts"
   step "Additional filesystems $filesystems mounted." "fsmount"
 fi
 
@@ -537,7 +549,7 @@ fi
   
 echo_local -n "Writing information to /dev/.initramfs ..."
 [ -d /dev/.initramfs ] || mkdir /dev/.initramfs
-for parameter in cluster_conf nodeid nodename nodeids chroot_path chrootneeded rootfs; do
+for parameter in cluster_conf nodeid nodename nodeids chroot_path chrootneeded rootfs root; do
   repository_get_value $parameter > /dev/.initramfs/comoonics.$parameter
 done
 return_code
@@ -545,9 +557,9 @@ return_code
 if [ -z "$(getPosInList ro $(repository_get_value mountopts) ,)" ]; then
   echo_local -n "Writing xtab.. "
   if [ $(repository_get_value chrootneeded) -eq 0 ]; then
-    create_xtab "$(repository_get_value newroot)/$(repository_get_value xtabfile)" "/$(repository_get_value cdsl_local_dir)" "$(repository_get_value chroot_mount)" "/var/run" 
+    create_xtab "$(repository_get_value newroot)/$(repository_get_value xtabfile)" $(repository_get_value xtabmounts "") 
   else  
-    create_xtab "$(repository_get_value newroot)/$(repository_get_value xtabfile)" "/$(repository_get_value cdsl_local_dir)" "/var/run"
+    create_xtab "$(repository_get_value newroot)/$(repository_get_value xtabfile)" $(repository_get_value xtabmounts "")
   fi
   success
 
@@ -620,7 +632,7 @@ fi
 chrootneeded=$(repository_get_value chrootneeded)
 # Resetup syslog to forward messages to the localhost (whatever it does with those messages) but only if chroot is needed.
 if [ $chrootneeded -eq 0 ]; then
-  cc_auto_syslogconfig "" "" "$(repository_get_value newroot)/$(repository_get_value chroot_path)" "no" "localhost" "no_klog"
+  cc_auto_syslogconfig "$(repository_get_value nodeid)" "$(repository_get_value newroot)/$(repository_get_value chroot_path)" "no" "" "$(repository_get_value syslogserver)" "no_klog"
   cc_syslog_start "$(repository_get_value newroot)/$(repository_get_value chroot_path)" no_klog
 fi
 step "Restarted syslogd" "syslogrestart"

@@ -52,6 +52,19 @@ package=""
 mbkernel=""
 mbargs=""
 
+usage() {
+    echo "Usage: `basename $0` [-v] [--mkinitrd] [--rminitrd] [--dracut]" >&2
+    echo "       [--initrdfile=<initrd-image>] [--depmod] [--rmmoddep]" >&2
+    echo "       [--kernel-args=<args>] [--remove-args=<args>]" >&2
+    echo "       [--banner=<banner>] [--multiboot=multiboot]" >&2
+    echo "       [--mbargs=mbargs] [--make-default] [--add-dracut-args]" >&2
+    echo "       [--add-plymouth-initrd]" >&2
+    echo "       [--host-only]" >&2
+    echo "       <--install | --remove | --update | --rpmposttrans> <kernel-version>" >&2
+    echo "       (ex: `basename $0` --mkinitrd --depmod --install 2.4.7-2)" >&2
+    exit 1
+}
+
 install() {
     # XXX kernel should be able to be specified also (or work right on ia64)
     if [ ! -f $bootPrefix/$kernelName-$version ] ; then
@@ -100,6 +113,18 @@ install() {
     else
 	   [ -n "$verbose" ] && echo "[comoonics] $grubConfig does not exist, not running grubby"
     fi
+    true
+}
+
+rpmposttrans()
+{
+    local files
+    local f
+    files="/etc/kernel/postinst.d/*[^~] /etc/kernel/postinst.d/$version/*[^~]"
+    for f in $files ; do
+        [ -f $f -a -x $f ] || continue
+        $f $version $bootPrefix/$kernelName-$version
+    done
 }
 
 remove() {
@@ -109,6 +134,7 @@ remove() {
     else
 	    [ -n "$verbose" ] && echo "[comoonics] $grubConfig does not exist, not running grubby"
     fi
+    true
 }
 
 update() {
@@ -120,6 +146,7 @@ update() {
     else
 	    [ -n "$verbose" ] && echo "[comoonics] $grubConfig does not exist, not running grubby"
     fi
+    true
 }
 
 mkinitrd() {
@@ -157,6 +184,10 @@ while [ $# -gt 0 ]; do
 	    --rminitrd)
 	        initrd="remove"
 	        ;;
+
+            --host-only)
+                # nothing in this case
+                ;;
 
 	    --initrdfile*)
 	        if echo $1 | grep '=' >/dev/null ; then
@@ -229,13 +260,22 @@ while [ $# -gt 0 ]; do
 	       if echo $1 | grep '=' >/dev/null ; then
 	    	  package=`echo $1 | sed 's/^--package=//'`
 	       else
-		      package=$2
-		      shift
+                  package=$2
+	          shift
 	       fi		    
 	       ;;
 
-		--dracut)
-		   ;;
+            --dracut)
+               # skip as we use comoonics
+               ;;
+
+            --add-dracut-args)
+                adddracutargs=--add-dracut-args
+                ;;
+
+            --add-plymouth-initrd)
+                addplymouthinitrd=--add-plymouth-initrd
+                ;;
 
 	    -v)
 	       verbose=-v
@@ -255,6 +295,19 @@ while [ $# -gt 0 ]; do
 
     shift
 done
+
+# make sure the mode is valid
+if [ "$mode" != "--install" -a "$mode" != "--remove"  -a "$mode" != "--update" -a "$mode" != "--rpmposttrans" ] ; then
+    usage
+fi
+
+if [ -z "$version" ]; then
+    usage
+fi
+
+if [ "$mode" != "--install" -a "$makedefault" ]; then
+    usage
+fi
 
 # set the initrd file based on arch; ia64 is the only currently known oddball
 if [ -z "$initrdfile" ]; then
@@ -286,12 +339,9 @@ if [ ! -x $grubby ] ; then
 fi
 
 
-[ -n "$grubConfig" ] && [ -f "$grubConfig" ] && cfgGrub=1;
+[ -n "$grubConfig" ] && [ -f "$grubConfig" ] && cfgGrub=1 || cfgGrub=0
 
-if [ "$cfgGrub" -ne 1 ]; then
-	echo "Could not find a valid boot loader configuration. Please adapt manually."
-	exit 0
-elif [ "$mode" == "--install" ] && [ $cfgGrub -eq 1 ]; then
+if [ "$mode" == "--install" ] && [ $cfgGrub -eq 1 ]; then
     install
     exit 0
 elif [ "$mode" == "--remove" ] && [ $cfgGrub -eq 1 ]; then
@@ -300,4 +350,6 @@ elif [ "$mode" == "--remove" ] && [ $cfgGrub -eq 1 ]; then
 elif [ "$mode" == "--update" ] && [ $cfgGrub -eq 1 ]; then
     update
     exit 0
+elif [ "$mode" == "--rpmposttrans" ]; then
+    rpmposttrans
 fi

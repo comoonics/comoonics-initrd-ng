@@ -18,16 +18,24 @@ if [ -d "${networkconfigdir}" ]; then
         if cdslinfo=$($cdslinvadm getcdsl $nicconfig 2>/dev/null); then
             for nodeid in $(cc_get_nodeids); do 
                 if [ -f "${cdsltree}/${nodeid}/${nicconfig}" ]; then
-                    . ${cdsltree}/${nodeid}/$nicconfig
+                    eval $(grep STARTMODE ${cdsltree}/${nodeid}/$nicconfig)
+                    eval $(grep HWADDR ${cdsltree}/${nodeid}/$nicconfig)
                     if [ "${STARTMODE}" = "nfsroot" ]; then
                         echo_local_debug "Copying $nicconfig => ${DEST_PATH}/${CONFDIR}/network/${nicconfig}.${nodeid}"
                         (cat ${cdsltree}/${nodeid}/$nicconfig | grep -v "^ONBOOT="; echo "ONBOOT=yes";) > ${DEST_PATH}/${CONFDIR}/network/$(basename ${nicconfig}).${nodeid}
+                    else 
+                        echo_local_debug "Copying (disabled) $nicconfig => ${DEST_PATH}/${CONFDIR}/network/${nicconfig}.${nodeid}"
+                        (cat ${cdsltree}/${nodeid}/$nicconfig | grep -v "^ONBOOT="; echo "ONBOOT=no";) > ${DEST_PATH}/${CONFDIR}/network/$(basename ${nicconfig}).${nodeid}
                     fi
-                    unset STARTMODE
+                    if [ -n "$HWADDR" ]; then
+                        HWADDR=$(echo $HWADDR | tr [A-Z] [a-z])
+                        repository_append_value ${nodeid}_hwaddr " $HWADDR"
+                    fi
+                    unset STARTMODE HWADDR
                 fi
             done
         else
-            . $nicconfig
+            eval $(grep STARTMODE $nicconfig)
             if [ "${STARTMODE}" = "nfsroot" ]; then
                 for nodeid in $(cc_get_nodeids); do 
                     if [ -f "${nicconfig}" ]; then
@@ -35,9 +43,17 @@ if [ -d "${networkconfigdir}" ]; then
                         ( cat $nicconfig  | grep -v "^ONBOOT="; echo "ONBOOT=yes";) > ${DEST_PATH}/${CONFDIR}/network/$(basename ${nicconfig}).${nodeid} 
                     fi
                 done
+            else
+                for nodeid in $(cc_get_nodeids); do 
+                    if [ -f "${nicconfig}" ]; then
+                        echo_local_debug "Copying (disabled) $nicconfig => ${DEST_PATH}/${CONFDIR}/network/${nicconfig}.${nodeid}"
+                        ( cat $nicconfig  | grep -v "^ONBOOT="; echo "ONBOOT=no";) > ${DEST_PATH}/${CONFDIR}/network/$(basename ${nicconfig}).${nodeid} 
+                    fi
+                done
             fi
             unset STARTMODE
         fi
     done
 fi
+unset networkconfigdir networkconfigfilter
 true

@@ -2,7 +2,7 @@
 #
 # $Id: fenceacksv.sh,v 1.12 2011-01-31 17:55:59 marc Exp $
 #
-# chkconfig: 345 24 76
+# chkconfig: 345 24 38
 # description: Starts and stops imsd (integrated management server device
 #
 #

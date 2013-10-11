@@ -570,6 +570,10 @@ function switchRoot() {
   echo_local  " comoonics generic switchroot"
   echo_local " newroot=$newroot chrootneeded=$chrootneeded "
 
+  # needed for SuSE 11
+  export ROOTFS_BLKDEV=$(repository_get_value root)
+  export ROOTFS_REALDEV=$(repository_get_value root)
+  
   #get init_cmd from /proc
   if [ -n "$chrootneeded" ] && [ "$chrootneeded" -eq 0 ] && [ -e "$newroot/$cominit" ]; then
   	init_cmd="$cominit $(cat /proc/cmdline)"
@@ -716,7 +720,8 @@ function createTemp {
 #  SOURCE
 #
 function restart_init {
-	exec_local telinit u
+	exec_local telinit u || exec_local telinit u
+	sleep 4
 }
 #************ restart_init
 

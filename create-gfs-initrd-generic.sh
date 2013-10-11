@@ -373,7 +373,7 @@ if [ -d "$pre_mkinitrd_path" ] && [ -n "$pre_do" ] && [ $pre_do -eq 1 ]; then
 fi
 
 if [ -z "$update" ]; then
-  if [ $use_cachefile -ne 1 ] || [ ! -e "$cachedir/$indexfile" ]; then
+  if [ $use_cachefile -ne 1 ] || [ ! -s "$cachedir/$indexfile" ]; then
     cachefileinuse=1
     # extracting rpms
     if [ -n "$rpm_filename" ] && [ -e "$rpm_filename" ]; then
